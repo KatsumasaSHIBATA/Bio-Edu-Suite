@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNA Alignment & Editing Studio v2.4 | Bio-Edu Suite</title>
+    <title>DNA Alignment & Editing Studio v2.5 | Bio-Edu Suite</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
-        /* 🚨修正: height: 100vh; overflow: hidden; を削除し、min-height: 100vh; に変更してスクロールを許可 */
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
+        
+        /* 🚨修正: height: 100vh; と overflow: hidden; を撤廃し、自然なスクロールを許可 */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
         
         /* 共通ヘッダー */
         .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 30; flex-shrink: 0; }
@@ -16,11 +17,11 @@
         .header p { margin: 4px 0 0 0; font-size: 11px; color: #1abc9c; font-weight: 600; letter-spacing: 0.5px; }
         .version-badge { position: absolute; right: 20px; top: 15px; background: #34495e; color: #1abc9c; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid #1abc9c; }
 
+        /* 🚨修正: min-height: 0; を削除し、コンテンツが潰れないように保護 */
         .main-content { width: 100%; max-width: 1400px; margin: 0 auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; flex: 1; }
         
         .card { background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; border-top: 4px solid #3498db; flex-shrink: 0; }
-        
-        .card-header { background: #34495e; color: white; padding: 8px 15px; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;}
+        .card-header { background: #34495e; color: white; padding: 10px 18px; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;}
         .card-body { padding: 15px; display: flex; flex-direction: column; gap: 10px; }
 
         /* 根拠表示用スタイル */
@@ -61,8 +62,7 @@
 
         .keyboard-hints { background: #fff8e1; padding: 6px 15px; font-size: 11px; color: #d35400; border: 1px solid #f5b041; border-radius: 4px; display: flex; justify-content: space-between; font-weight: 500; margin-bottom: 5px; }
 
-        /* メインエディタエリア */
-        /* 🚨修正: min-heightを指定し、スクロール時にエディタが潰れないように保護 */
+        /* 🚨 メインエディタエリア: タブレットで潰れないように最低高さを保証 */
         .editor-card { flex: 1; display: flex; flex-direction: column; min-height: 500px; border-top-color: #9b59b6; position: relative;}
         .editor-container { flex: 1; overflow: auto; background: white; display: flex; position: relative; user-select: none; }
         
@@ -117,7 +117,7 @@
 
         .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 10px 15px; font-size: 11px; color: #2c3e50; line-height: 1.5; border-bottom: 1px solid #dcdde1; }
         .bench-tip strong { color: #2980b9; font-size: 11px; }
-        .mega-invite { background: #fff8e1; border: 1px solid #f5b041; padding: 8px 15px; font-size: 11px; color: #7e5109; line-height: 1.5; display: flex; align-items: center; gap: 10px;}
+        .mega-invite { background: #fff8e1; border: 1px solid #f5b041; padding: 8px 15px; font-size: 11px; color: #7e5109; line-height: 1.5; display: flex; align-items: center; gap: 10px; margin-bottom: 10px;}
 
         .status-bar { background: #2c3e50; color: white; padding: 8px 20px; font-size: 12px; display: flex; justify-content: space-between; font-weight: 600; letter-spacing: 0.5px; z-index: 30; flex-shrink: 0; margin-top: auto;}
         .footer { background: #1a252f; padding: 10px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; flex-shrink: 0; }
@@ -131,7 +131,7 @@
             .slider-container { width: 100%; justify-content: space-between; }
             .header h1 { font-size: 16px; margin-right: 40px; }
             .version-badge { top: 10px; right: 10px; padding: 2px 6px; }
-            .header-primer-stats { flex-direction: column; align-items: flex-start; }
+            .header-primer-stats { flex-direction: column; align-items: flex-start; gap: 5px; }
             .editor-container { -webkit-overflow-scrolling: touch; }
             .names-column { width: 120px !important; }
             .name-header { font-size: 9px; padding-left: 5px; }
@@ -145,7 +145,7 @@
     <div class="header">
         <h1>🧬 DNA Alignment & Editing Studio</h1>
         <p>Bio-Edu Suite: Sequence Processing & Primer Design Environment</p>
-        <div class="version-badge">v2.4</div>
+        <div class="version-badge">v2.5</div>
     </div>
 </div>
 
@@ -280,7 +280,7 @@
 </div>
 
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v2.4 | Developed for Bioinformatics & Wet-Lab Education
+    &copy; 2026 Bio-Edu Suite v2.5 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
 <script>
