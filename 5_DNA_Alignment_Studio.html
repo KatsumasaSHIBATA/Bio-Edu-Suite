@@ -3,12 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNA Alignment & Editing Studio v2.5 | Bio-Edu Suite</title>
+    <title>DNA Alignment & Editing Studio v2.3 | Bio-Edu Suite</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
-        
-        /* 🚨修正: height: 100vh; と overflow: hidden; を撤廃し、自然なスクロールを許可 */
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
         /* 共通ヘッダー */
         .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 30; flex-shrink: 0; }
@@ -17,11 +15,11 @@
         .header p { margin: 4px 0 0 0; font-size: 11px; color: #1abc9c; font-weight: 600; letter-spacing: 0.5px; }
         .version-badge { position: absolute; right: 20px; top: 15px; background: #34495e; color: #1abc9c; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid #1abc9c; }
 
-        /* 🚨修正: min-height: 0; を削除し、コンテンツが潰れないように保護 */
-        .main-content { width: 100%; max-width: 1400px; margin: 0 auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; flex: 1; }
+        .main-content { width: 100%; max-width: 1400px; margin: 0 auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; flex: 1; min-height: 0; }
         
         .card { background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; border-top: 4px solid #3498db; flex-shrink: 0; }
-        .card-header { background: #34495e; color: white; padding: 10px 18px; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;}
+        
+        .card-header { background: #34495e; color: white; padding: 8px 15px; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;}
         .card-body { padding: 15px; display: flex; flex-direction: column; gap: 10px; }
 
         /* 根拠表示用スタイル */
@@ -62,8 +60,8 @@
 
         .keyboard-hints { background: #fff8e1; padding: 6px 15px; font-size: 11px; color: #d35400; border: 1px solid #f5b041; border-radius: 4px; display: flex; justify-content: space-between; font-weight: 500; margin-bottom: 5px; }
 
-        /* 🚨 メインエディタエリア: タブレットで潰れないように最低高さを保証 */
-        .editor-card { flex: 1; display: flex; flex-direction: column; min-height: 500px; border-top-color: #9b59b6; position: relative;}
+        /* メインエディタエリア */
+        .editor-card { flex: 1; display: flex; flex-direction: column; min-height: 0; border-top-color: #9b59b6; position: relative;}
         .editor-container { flex: 1; overflow: auto; background: white; display: flex; position: relative; user-select: none; }
         
         .names-column { width: 280px; background: #f8f9f9; border-right: 2px solid #bdc3c7; flex-shrink: 0; z-index: 10; position: sticky; left: 0; box-shadow: 2px 0 5px rgba(0,0,0,0.03); }
@@ -108,7 +106,7 @@
         .mutation-bg { background-color: #e74c3c !important; color: white !important; font-weight: 900; z-index: 1; }
         .conserved-bg { background-color: #d5f5e3 !important; color: #1e8449 !important; font-weight: 900; z-index: 1; }
 
-        /* ヘッダー埋め込み型 プライマー設計ナビ */
+        /* 🚀 ヘッダー埋め込み型 プライマー設計ナビ（日本語統一版） */
         .header-primer-stats { display: flex; gap: 15px; font-size: 12px; background: #1a252f; padding: 6px 15px; border-radius: 4px; border-left: 4px solid #8e44ad; transition: opacity 0.2s; align-items: center; box-shadow: inset 0 1px 3px rgba(0,0,0,0.3); opacity: 0; pointer-events: none; flex-wrap: wrap;}
         .h-stat { display: flex; align-items: baseline; gap: 4px; color: #ecf0f1; font-weight: bold; }
         .val-seq { font-family: 'Courier New', Courier, monospace; color: #f1c40f; font-weight: bold; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px; letter-spacing: 1px;}
@@ -117,23 +115,36 @@
 
         .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 10px 15px; font-size: 11px; color: #2c3e50; line-height: 1.5; border-bottom: 1px solid #dcdde1; }
         .bench-tip strong { color: #2980b9; font-size: 11px; }
-        .mega-invite { background: #fff8e1; border: 1px solid #f5b041; padding: 8px 15px; font-size: 11px; color: #7e5109; line-height: 1.5; display: flex; align-items: center; gap: 10px; margin-bottom: 10px;}
+        .mega-invite { background: #fff8e1; border: 1px solid #f5b041; padding: 8px 15px; font-size: 11px; color: #7e5109; line-height: 1.5; display: flex; align-items: center; gap: 10px;}
 
-        .status-bar { background: #2c3e50; color: white; padding: 8px 20px; font-size: 12px; display: flex; justify-content: space-between; font-weight: 600; letter-spacing: 0.5px; z-index: 30; flex-shrink: 0; margin-top: auto;}
+        .status-bar { background: #2c3e50; color: white; padding: 8px 20px; font-size: 12px; display: flex; justify-content: space-between; font-weight: 600; letter-spacing: 0.5px; z-index: 30; flex-shrink: 0; }
         .footer { background: #1a252f; padding: 10px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; flex-shrink: 0; }
-
-        /* --- 📱 スマホ・タブレット最適化 --- */
+        /* --- 📱 スマホ最適化（レスポンシブ・デザイン） --- */
         @media screen and (max-width: 768px) {
+            /* 画面の余白を減らして広く使う */
             .main-content { padding: 10px; flex-direction: column !important; }
             .card { min-width: 100% !important; margin-bottom: 10px; }
-            .toolbar-row { flex-direction: column; align-items: stretch; gap: 8px; }
+            
+            /* 横並びのボタンや入力欄を、縦積みの押しやすいサイズに変更 */
+            .toolbar-row, .scoring-panel { flex-direction: column; align-items: stretch; gap: 8px; }
             .btn, .search-input, .primer-input { width: 100% !important; justify-content: center; padding: 12px; font-size: 14px; }
-            .slider-container { width: 100%; justify-content: space-between; }
+            .slider-container, .slider-group { width: 100%; justify-content: space-between; }
+            
+            /* ヘッダー周りの調整 */
             .header h1 { font-size: 16px; margin-right: 40px; }
             .version-badge { top: 10px; right: 10px; padding: 2px 6px; }
-            .header-primer-stats { flex-direction: column; align-items: flex-start; gap: 5px; }
-            .editor-container { -webkit-overflow-scrolling: touch; }
-            .names-column { width: 120px !important; }
+            .header-primer-stats { flex-direction: column; align-items: flex-start; }
+            
+            /* 横スクロール領域を「スマホ特有の滑らかなスクロール」にする */
+            .matrix-container, .sequence-grid, .trace-outer-container, .canvas-container, .alignment-detail { 
+                -webkit-overflow-scrolling: touch; 
+            }
+            
+            /* キャンバス（系統樹など）が画面を突き破らないように制限 */
+            canvas { max-width: 100% !important; height: auto !important; }
+            
+            /* アプリ④：名前列の幅を狭くして、配列を見やすくする */
+            .names-column { width: 100px !important; }
             .name-header { font-size: 9px; padding-left: 5px; }
             .seq-name-input { font-size: 10px; }
         }
@@ -145,7 +156,7 @@
     <div class="header">
         <h1>🧬 DNA Alignment & Editing Studio</h1>
         <p>Bio-Edu Suite: Sequence Processing & Primer Design Environment</p>
-        <div class="version-badge">v2.5</div>
+        <div class="version-badge">v2.3</div>
     </div>
 </div>
 
@@ -245,6 +256,7 @@
                 <span class="h-stat">GC含量: <span id="psGC" class="val-display">-</span><span class="val-target">% (適正:40-60)</span></span>
                 <span class="h-stat">Tm値: <span id="psTm" class="val-display">-</span><span class="val-target">℃ (適正:55-65)</span></span>
             </div>
+
         </div>
         
         <div class="bench-tip">
@@ -280,7 +292,7 @@
 </div>
 
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v2.5 | Developed for Bioinformatics & Wet-Lab Education
+    &copy; 2026 Bio-Edu Suite v2.3 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
 <script>
@@ -339,6 +351,7 @@
         renderEditorSync(); 
     }
 
+    // --- Drag & Drop ---
     const dropZone = document.getElementById('dropZone');
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
         dropZone.addEventListener(eventName, preventDefaults, false);
@@ -703,6 +716,7 @@
         renderEditorSync(); 
     }
 
+    // --- 簡易MSA (Needleman-Wunsch) ---
     function alignPairNW(s1, s2) {
         let m = s1.length, n = s2.length;
         let dp = new Int32Array((m + 1) * (n + 1));
@@ -897,6 +911,7 @@
         }
     }
 
+    // --- ドラッグでプライマー設計機能 (判定ロジック強化) ---
     const sequenceGrid = document.getElementById('sequenceGrid');
     
     sequenceGrid.addEventListener('mousedown', function(e) {
@@ -929,14 +944,16 @@
     });
 
     function calculatePrimerStats(seq) {
-        let displaySeq = seq.length > 20 ? seq.substring(0, 18) + '...' : seq;
+        let displaySeq = seq.length > 25 ? seq.substring(0, 22) + '...' : seq;
         document.getElementById('psSeq').innerText = displaySeq;
         
+        // 長さ判定
         let len = seq.length;
         let lenEl = document.getElementById('psLen');
         lenEl.innerText = len;
         lenEl.style.color = (len >= 18 && len <= 25) ? '#2ecc71' : '#e74c3c';
         
+        // GC含量判定
         let a = (seq.match(/A/gi) || []).length;
         let t = (seq.match(/T/gi) || []).length;
         let g = (seq.match(/G/gi) || []).length;
@@ -947,6 +964,7 @@
         gcEl.innerText = gc.toFixed(1);
         gcEl.style.color = (gc >= 40 && gc <= 60) ? '#2ecc71' : '#e74c3c';
         
+        // Tm値判定
         let tm = 0;
         if (len < 14) {
             tm = (a + t) * 2 + (g + c) * 4;
@@ -995,6 +1013,7 @@
         }
     }
 
+    // --- FASTA出力 ---
     function exportFastaAll() {
         let output = "";
         sequences.forEach(s => { output += `>${s.name}\n${s.data.join('').replace(/-/g, '')}\n`; });
@@ -1002,6 +1021,7 @@
         a.download = "aligned_samples.fasta"; a.click();
     }
 
+    // --- CLUSTAL形式出力 ---
     function exportClustalAll() {
         if(sequences.length === 0) return;
         
