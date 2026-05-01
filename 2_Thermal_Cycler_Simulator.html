@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thermal Cycler Simulator v1.1 | Bio-Edu Suite</title>
+    <title>Thermal Cycler Simulator v1.2 | Bio-Edu Suite</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
 
@@ -26,37 +26,54 @@
         .toolbar { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
         .btn { background: #fdfefe; border: 1px solid #bdc3c7; padding: 8px 16px; cursor: pointer; font-size: 13px; border-radius: 4px; font-weight: bold; transition: all 0.2s; color: #2c3e50; }
         .btn:hover { background: #eaf2f8; border-color: #3498db; color: #2980b9; }
-        .btn-run { background: #e74c3c; color: white; border-color: #c0392b; font-size: 14px; padding: 10px 20px; box-shadow: 0 4px 0 #c0392b; }
+        .btn-run { background: #e74c3c; color: white; border-color: #c0392b; font-size: 14px; padding: 10px 20px; box-shadow: 0 4px 0 #c0392b; width: 100%; max-width: 400px; margin: 0 auto;}
         .btn-run:hover { background: #c0392b; transform: translateY(2px); box-shadow: 0 2px 0 #922b21; color: white;}
         .btn-run:active { transform: translateY(4px); box-shadow: none; }
 
         .select-group { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: bold; color: #34495e; background: #f8f9f9; padding: 8px 15px; border-radius: 6px; border: 1px solid #bdc3c7;}
         select { padding: 5px; border-radius: 4px; border: 1px solid #bdc3c7; font-family: inherit; font-size: 13px; }
 
-        /* サーマルサイクラーUI */
-        /* 🚨スマホ対応: はみ出しを防ぐためラッパーで囲む */
-        .cycler-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 10px; }
+        /* 🚨【完全修正】絶対に潰れない横スクロールラッパー */
+        .cycler-scroll-wrapper { 
+            width: 100%; 
+            overflow-x: auto; 
+            -webkit-overflow-scrolling: touch; 
+            border-radius: 8px; 
+            border: 4px solid #2c3e50; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
         
-        .cycler-screen { background: #1a252f; border-radius: 8px; padding: 20px; color: #ecf0f1; position: relative; border: 4px solid #2c3e50; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); min-width: 600px; /* 🚨グラフが潰れないように最小幅を設定 */ }
+        .cycler-screen { 
+            background: #1a252f; 
+            padding: 20px; 
+            color: #ecf0f1; 
+            position: relative; 
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5); 
+            /* PCと同じ広さを強制的に確保（絶対に縮まない） */
+            width: 800px; 
+            min-width: 800px; 
+        }
+
         .profile-container { display: flex; align-items: flex-end; justify-content: space-around; height: 250px; margin-top: 20px; padding-bottom: 30px; border-bottom: 2px dashed #34495e; position: relative; }
         
-        .step { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; width: 80px; position: relative; }
+        .step { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; width: 80px; flex-shrink: 0; position: relative; }
         .step-bar { width: 40px; background: #3498db; border-radius: 4px 4px 0 0; transition: height 0.3s, background 0.3s; position: relative; display: flex; justify-content: center; box-shadow: 0 0 10px rgba(52, 152, 219, 0.3); }
         
         .temp-input-wrap { position: absolute; top: -35px; background: rgba(0,0,0,0.6); padding: 4px; border-radius: 4px; display: flex; align-items: center; gap: 2px; }
         .time-input-wrap { position: absolute; bottom: -35px; background: rgba(0,0,0,0.6); padding: 4px; border-radius: 4px; display: flex; align-items: center; gap: 2px; }
         
-        .cycler-input { width: 45px; background: transparent; border: none; border-bottom: 1px solid #1abc9c; color: #1abc9c; font-family: 'Courier New', monospace; font-size: 16px; font-weight: bold; text-align: center; }
+        /* 🚨入力ボックスも固定幅にして改行崩れを防止 */
+        .cycler-input { width: 45px !important; flex-shrink: 0; background: transparent; border: none; border-bottom: 1px solid #1abc9c; color: #1abc9c; font-family: 'Courier New', monospace; font-size: 16px; font-weight: bold; text-align: center; }
         .cycler-input:focus { outline: none; background: rgba(26, 188, 156, 0.2); }
         .unit { font-size: 11px; color: #bdc3c7; }
 
         .step-name { position: absolute; bottom: -60px; font-size: 11px; font-weight: bold; color: #95a5a6; text-transform: uppercase; letter-spacing: 1px; text-align: center; width: 100px; }
 
         /* サイクル設定 */
-        .cycle-bracket { position: absolute; border: 2px solid #e67e22; border-top: none; height: 15px; bottom: 5px; left: 20%; right: 40%; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 20px; }
+        .cycle-bracket { position: absolute; border: 2px solid #e67e22; border-top: none; height: 15px; bottom: 5px; left: 20%; right: 38%; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 20px; }
         .cycle-input-wrap { background: #1a252f; padding: 0 10px; color: #e67e22; font-weight: bold; display: flex; align-items: center; gap: 5px; transform: translateY(15px); }
 
-        .status-panel { display: flex; justify-content: space-between; margin-top: 20px; font-family: 'Courier New', monospace; font-size: 14px; color: #1abc9c; background: #0b1319; padding: 10px; border-radius: 4px;}
+        .status-panel { display: flex; justify-content: space-between; margin-top: 30px; font-family: 'Courier New', monospace; font-size: 14px; color: #1abc9c; background: #0b1319; padding: 10px; border-radius: 4px;}
         
         .hot { background: #e74c3c !important; box-shadow: 0 0 10px rgba(231, 76, 60, 0.4) !important; }
         .cold { background: #3498db !important; }
@@ -75,7 +92,7 @@
 
         .footer { background: #1a252f; width: 100%; padding: 15px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; margin-top: auto; }
 
-        /* 📱 スマホ最適化 */
+        /* 📱 スマホ最適化 (安全な箇所のみ適用) */
         @media screen and (max-width: 768px) {
             .main-content { padding: 10px; }
             .toolbar { flex-direction: column; align-items: stretch; gap: 10px; }
@@ -90,7 +107,7 @@
     <div class="header">
         <h1>🔥 Thermal Cycler Simulator</h1>
         <p>Bio-Edu Suite: PCR Protocol Optimization & Logical Troubleshooting</p>
-        <div class="version-badge">v1.1</div>
+        <div class="version-badge">v1.2</div>
     </div>
 </div>
 
@@ -125,7 +142,7 @@
                 <button class="btn" onclick="preset('touchdown')">📉 タッチダウン</button>
             </div>
 
-            <div class="cycler-wrapper">
+            <div class="cycler-scroll-wrapper">
                 <div class="cycler-screen">
                     <div class="profile-container">
                         
@@ -202,7 +219,7 @@
 </div>
 
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v1.1 | Developed for Bioinformatics & Wet-Lab Education
+    &copy; 2026 Bio-Edu Suite v1.2 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
 <script>
@@ -237,7 +254,6 @@
         const fin_time = parseInt(document.getElementById('time_fin').value) || 0;
         const cycles = parseInt(document.getElementById('cycles').value) || 0;
 
-        // ざっくりとした時間計算 (ランプ速度等を考慮して各ステップ+5秒の余裕を見る)
         let cycleTime = (den_time + 5) + (ann_time + 5) + (ext_time + 5);
         let totalSeconds = id_time + (cycleTime * cycles) + fin_time;
 
