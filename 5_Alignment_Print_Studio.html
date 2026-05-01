@@ -85,9 +85,6 @@
             /* ページまたぎ防止の魔法のCSS */
             .alignment-block { page-break-inside: avoid; break-inside: avoid; overflow-x: visible; }
         }
-    </style>
-    <style id="pageOrientationStyle">
-        @media print { @page { size: A4 landscape; margin: 15mm; } }
         /* --- 📱 スマホ最適化（レスポンシブ・デザイン） --- */
         @media screen and (max-width: 768px) {
             /* 画面の余白を減らして広く使う */
@@ -117,6 +114,9 @@
             .name-header { font-size: 9px; padding-left: 5px; }
             .seq-name-input { font-size: 10px; }
         }
+    </style>
+    <style id="pageOrientationStyle">
+        @media print { @page { size: A4 landscape; margin: 15mm; } }
     </style>
 </head>
 <body>
