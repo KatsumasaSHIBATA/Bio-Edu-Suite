@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNA Alignment & Editing Studio v2.4 | Bio-Edu Suite</title>
+    <title>DNA Alignment & Editing Studio v2.5 | Bio-Edu Suite</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         /* 🚨修正1: 画面の固定を解除し、下まで自然にスクロールできるように変更 */
@@ -116,12 +116,12 @@
 
         .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 10px 15px; font-size: 11px; color: #2c3e50; line-height: 1.5; border-bottom: 1px solid #dcdde1; }
         .bench-tip strong { color: #2980b9; font-size: 11px; }
-        .mega-invite { background: #fff8e1; border: 1px solid #f5b041; padding: 8px 15px; font-size: 11px; color: #7e5109; line-height: 1.5; display: flex; align-items: center; gap: 10px;}
+        .mega-invite { background: #fff8e1; border: 1px solid #f5b041; padding: 8px 15px; font-size: 11px; color: #7e5109; line-height: 1.5; display: flex; align-items: center; gap: 10px; margin-bottom: 10px;}
 
         .status-bar { background: #2c3e50; color: white; padding: 8px 20px; font-size: 12px; display: flex; justify-content: space-between; font-weight: 600; letter-spacing: 0.5px; z-index: 30; flex-shrink: 0; margin-top: auto;}
         .footer { background: #1a252f; padding: 10px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; flex-shrink: 0; }
         
-        /* 🚨修正4: スマホ・タブレット最適化CSS */
+        /* 🚨【スマホ・タブレット完全対応パッチ】 */
         @media screen and (max-width: 768px) {
             .main-content { padding: 10px; flex-direction: column !important; }
             .card { min-width: 100% !important; margin-bottom: 10px; }
@@ -130,7 +130,15 @@
             .slider-container { width: 100%; justify-content: space-between; }
             .header h1 { font-size: 16px; margin-right: 40px; }
             .version-badge { top: 10px; right: 10px; padding: 2px 6px; }
-            .header-primer-stats { flex-direction: column; align-items: flex-start; gap: 5px; }
+            
+            /* 🚨修正ポイント①: プライマー設計ナビの間延びをなくし、コンパクトに折り返す */
+            .editor-card .card-header { flex-direction: column; align-items: flex-start; gap: 8px; padding: 10px; }
+            .header-primer-stats { width: 100%; flex-direction: row; flex-wrap: wrap; gap: 8px; padding: 8px 12px; margin-top: 2px; border-radius: 6px; }
+
+            /* 🚨修正ポイント②: スマホでは「プロツール招待」の横並び(Flex)を解除し、自然なブロック表示にして変な改行を防ぐ */
+            .mega-invite { display: block; padding: 12px; line-height: 1.6; }
+            .mega-invite strong { display: block; margin-bottom: 6px; font-size: 12px; }
+
             .editor-container { -webkit-overflow-scrolling: touch; }
             
             /* スマホで配列を広く見せるため、名前列を狭くする */
@@ -148,7 +156,7 @@
     <div class="header">
         <h1>🧬 DNA Alignment & Editing Studio</h1>
         <p>Bio-Edu Suite: Sequence Processing & Primer Design Environment</p>
-        <div class="version-badge">v2.4</div>
+        <div class="version-badge">v2.5</div>
     </div>
 </div>
 
@@ -232,7 +240,7 @@
                 <span style="font-size:11px; font-weight:bold; color:#8e44ad; margin-left:5px;">※配列をドラッグ(長押し選択)で設計ナビが起動します。</span>
                 
                 <div style="flex-grow: 1;"></div> 
-                </div>
+            </div>
         </div>
     </div>
 
@@ -282,7 +290,7 @@
 </div>
 
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v2.4 | Developed for Bioinformatics & Wet-Lab Education
+    &copy; 2026 Bio-Edu Suite v2.5 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
 <script>
@@ -341,7 +349,6 @@
         renderEditorSync(); 
     }
 
-    // --- Drag & Drop ---
     const dropZone = document.getElementById('dropZone');
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
         dropZone.addEventListener(eventName, preventDefaults, false);
