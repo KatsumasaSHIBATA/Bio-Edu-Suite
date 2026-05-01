@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thermal Cycler Simulator v1.0 | Bio-Edu Suite</title>
+    <title>Thermal Cycler Simulator v1.1 | Bio-Edu Suite</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
 
@@ -61,8 +61,12 @@
         .manual-btn:active { transform: translateY(3px); box-shadow: none; }
         .manual-btn.student { background: #3498db; box-shadow: 0 3px 0 #2980b9; }
 
+        /* 🚨 新設：機器全体を囲むラッパー（スマホでの横スクロール用） */
+        .machine-scroll-wrapper { width: 100%; display: flex; justify-content: center; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
         /* 機器本体 */
-        .machine-body { background: #e0e6ed; width: 100%; max-width: 680px; border-radius: 12px; padding: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.2), inset 0 2px 5px rgba(255,255,255,0.8); border: 1px solid #bdc3c7; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        /* 🚨 変更：min-width: 680px; を追加し、スマホ画面でも絶対に潰れないように保護 */
+        .machine-body { background: #e0e6ed; width: 100%; max-width: 680px; min-width: 680px; border-radius: 12px; padding: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.2), inset 0 2px 5px rgba(255,255,255,0.8); border: 1px solid #bdc3c7; display: flex; flex-direction: column; align-items: center; gap: 20px; }
         .machine-vent { width: 100%; height: 15px; display: flex; gap: 12px; margin-bottom: -10px; }
         .vent-line { flex: 1; height: 5px; background: #95a5a6; border-radius: 3px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.5); }
 
@@ -130,35 +134,20 @@
         .manual-table th { background: #ecf0f1; color: #2c3e50; font-weight: bold; }
 
         /* 共通フッター */
-        .footer { width: 100%; background: #1a252f; padding: 15px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; margin-top: auto; border-top: 1px solid #2c3e50; }
-        /* --- 📱 スマホ最適化（レスポンシブ・デザイン） --- */
+        .footer { background: #1a252f; width: 100%; padding: 15px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; margin-top: auto; border-top: 1px solid #2c3e50; }
+        
+        /* 📱 スマホ・タブレット最適化 (安全な箇所のみ適用) */
         @media screen and (max-width: 768px) {
-            /* 画面の余白を減らして広く使う */
-            .main-content { padding: 10px; flex-direction: column !important; }
-            .card { min-width: 100% !important; margin-bottom: 10px; }
+            .main-content { padding: 10px; }
+            .scenario-inputs { grid-template-columns: 1fr; }
+            .btn-container { flex-direction: column; }
+            .manual-btn { width: 100%; text-align: center; }
             
-            /* 横並びのボタンや入力欄を、縦積みの押しやすいサイズに変更 */
-            .toolbar-row, .scoring-panel { flex-direction: column; align-items: stretch; gap: 8px; }
-            .btn, .search-input, .primer-input { width: 100% !important; justify-content: center; padding: 12px; font-size: 14px; }
-            .slider-container, .slider-group { width: 100%; justify-content: space-between; }
-            
-            /* ヘッダー周りの調整 */
-            .header h1 { font-size: 16px; margin-right: 40px; }
-            .version-badge { top: 10px; right: 10px; padding: 2px 6px; }
-            .header-primer-stats { flex-direction: column; align-items: flex-start; }
-            
-            /* 横スクロール領域を「スマホ特有の滑らかなスクロール」にする */
-            .matrix-container, .sequence-grid, .trace-outer-container, .canvas-container, .alignment-detail { 
-                -webkit-overflow-scrolling: touch; 
+            /* 🚨 機器本体スクロールラッパーのスマホ挙動設定 */
+            .machine-scroll-wrapper {
+                justify-content: flex-start; /* 画面が狭いときは左端からスクロール開始 */
+                padding-bottom: 15px;
             }
-            
-            /* キャンバス（系統樹など）が画面を突き破らないように制限 */
-            canvas { max-width: 100% !important; height: auto !important; }
-            
-            /* アプリ④：名前列の幅を狭くして、配列を見やすくする */
-            .names-column { width: 100px !important; }
-            .name-header { font-size: 9px; padding-left: 5px; }
-            .seq-name-input { font-size: 10px; }
         }
     </style>
 </head>
@@ -166,13 +155,14 @@
 
 <div class="header-container">
     <div class="header">
-        <h1>🧬 Thermal Cycler Simulator</h1>
-        <p>Bio-Edu Suite: Dynamic Protocol Optimization</p>
-        <div class="version-badge">v1.0</div>
+        <h1>🔥 Thermal Cycler Simulator</h1>
+        <p>Bio-Edu Suite: PCR Protocol Optimization & Logical Troubleshooting</p>
+        <div class="version-badge">v1.1</div>
     </div>
 </div>
 
 <div class="main-content">
+    
     <div class="scenario-panel">
         <h2>🧬 機器に入力する全パラメーター</h2>
         <div class="scenario-desc">
@@ -267,88 +257,90 @@
         </div>
     </div>
 
-    <div class="machine-body">
-        <div class="machine-vent">
-            <div class="vent-line"></div><div class="vent-line"></div><div class="vent-line"></div>
-            <div class="vent-line"></div><div class="vent-line"></div><div class="vent-line"></div>
-        </div>
-        
-        <div class="lcd-bezel">
-            <div class="lcd-screen" id="lcdScreen">
-                <div class="lcd-title" id="lcdTitleRow">
-                    <span>EDIT: <span id="progNameDisplay">[PCR-K]</span></span>
-                    <span>VOL: <input type="text" id="volInput" class="lcd-input vol" value="20"> ul</span>
-                </div>
-                
-                <div class="lcd-row" data-index="0">
-                    <div class="lcd-col-label">1: INIT</div>
-                    <input type="text" id="t1" class="lcd-input" value="94.0">C
-                    <input type="text" id="m1" class="lcd-input time" value="02:00">
-                </div>
-                <div class="lcd-row" data-index="1">
-                    <div class="lcd-col-label">2: DENAT</div>
-                    <input type="text" id="t2" class="lcd-input" value="98.0">C
-                    <input type="text" id="m2" class="lcd-input time" value="00:10">
-                </div>
-                <div class="lcd-row" data-index="2">
-                    <div class="lcd-col-label">3: ANNEAL</div>
-                    <input type="text" id="t3" class="lcd-input" value="60.0">C
-                    <input type="text" id="m3" class="lcd-input time" value="00:05">
-                </div>
-                <div class="lcd-row" data-index="3">
-                    <div class="lcd-col-label">4: EXTEND</div>
-                    <input type="text" id="t4" class="lcd-input" value="68.0">C
-                    <input type="text" id="m4" class="lcd-input time" value="00:05">
-                </div>
-                <div class="lcd-row" data-index="4" style="padding-left: 15px;">
-                    <div class="lcd-col-label">CYCLE N</div>
-                    <input type="text" id="cyc" class="lcd-input" value="30">X
-                </div>
-                <div class="lcd-row" data-index="5">
-                    <div class="lcd-col-label">5: FINAL</div>
-                    <input type="text" id="t5" class="lcd-input" value="68.0">C
-                    <input type="text" id="m5" class="lcd-input time" value="02:00">
-                </div>
-            </div>
-            <div style="font-size:10px; color:#7f8c8d; margin-top:8px; text-align:center;">
-                ※ プログラム完了後、機器は自動的に4℃ HOLD（冷蔵保存）へ移行します。
-            </div>
-        </div>
-
-        <div class="hardware-panel">
-            <div class="action-keys">
-                <button class="hw-btn hw-btn-run" onclick="runPCR()">RUN</button>
-                <button class="hw-btn hw-btn-pause" onclick="alert('一時停止します')">PAUSE</button>
-                <button class="hw-btn hw-btn-stop" onclick="location.reload()">STOP</button>
+    <div class="machine-scroll-wrapper">
+        <div class="machine-body">
+            <div class="machine-vent">
+                <div class="vent-line"></div><div class="vent-line"></div><div class="vent-line"></div>
+                <div class="vent-line"></div><div class="vent-line"></div><div class="vent-line"></div>
             </div>
             
-            <div class="nav-keys">
-                <div class="cross-keys">
-                    <div></div>
-                    <button class="hw-btn hw-btn-arrow" onmousedown="event.preventDefault();" onclick="moveCursor(-1)">▲</button>
-                    <div></div>
-                    <button class="hw-btn hw-btn-arrow" onmousedown="event.preventDefault();" onclick="alert('画面をクリックしてください')">◀</button>
-                    <button class="hw-btn hw-btn-ent" onmousedown="event.preventDefault();" onclick="alert('入力を確定しました')">ENT</button>
-                    <button class="hw-btn hw-btn-arrow" onmousedown="event.preventDefault();" onclick="alert('次の項目へ')">▶</button>
-                    <div></div>
-                    <button class="hw-btn hw-btn-arrow" onmousedown="event.preventDefault();" onclick="moveCursor(1)">▼</button>
-                    <div></div>
+            <div class="lcd-bezel">
+                <div class="lcd-screen" id="lcdScreen">
+                    <div class="lcd-title" id="lcdTitleRow">
+                        <span>EDIT: <span id="progNameDisplay">[PCR-K]</span></span>
+                        <span>VOL: <input type="text" id="volInput" class="lcd-input vol" value="20"> ul</span>
+                    </div>
+                    
+                    <div class="lcd-row" data-index="0">
+                        <div class="lcd-col-label">1: INIT</div>
+                        <input type="text" id="t1" class="lcd-input" value="94.0">C
+                        <input type="text" id="m1" class="lcd-input time" value="02:00">
+                    </div>
+                    <div class="lcd-row" data-index="1">
+                        <div class="lcd-col-label">2: DENAT</div>
+                        <input type="text" id="t2" class="lcd-input" value="98.0">C
+                        <input type="text" id="m2" class="lcd-input time" value="00:10">
+                    </div>
+                    <div class="lcd-row" data-index="2">
+                        <div class="lcd-col-label">3: ANNEAL</div>
+                        <input type="text" id="t3" class="lcd-input" value="60.0">C
+                        <input type="text" id="m3" class="lcd-input time" value="00:05">
+                    </div>
+                    <div class="lcd-row" data-index="3">
+                        <div class="lcd-col-label">4: EXTEND</div>
+                        <input type="text" id="t4" class="lcd-input" value="68.0">C
+                        <input type="text" id="m4" class="lcd-input time" value="00:05">
+                    </div>
+                    <div class="lcd-row" data-index="4" style="padding-left: 15px;">
+                        <div class="lcd-col-label">CYCLE N</div>
+                        <input type="text" id="cyc" class="lcd-input" value="30">X
+                    </div>
+                    <div class="lcd-row" data-index="5">
+                        <div class="lcd-col-label">5: FINAL</div>
+                        <input type="text" id="t5" class="lcd-input" value="68.0">C
+                        <input type="text" id="m5" class="lcd-input time" value="02:00">
+                    </div>
+                </div>
+                <div style="font-size:10px; color:#7f8c8d; margin-top:8px; text-align:center;">
+                    ※ プログラム完了後、機器は自動的に4℃ HOLD（冷蔵保存）へ移行します。
                 </div>
             </div>
 
-            <div class="num-pad">
-                <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('7')">7</button>
-                <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('8')">8</button>
-                <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('9')">9</button>
-                <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('4')">4</button>
-                <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('5')">5</button>
-                <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('6')">6</button>
-                <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('1')">1</button>
-                <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('2')">2</button>
-                <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('3')">3</button>
-                <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('.')">.</button>
-                <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('0')">0</button>
-                <button class="hw-btn hw-btn-c" onmousedown="event.preventDefault();" onclick="clearNum()">C</button>
+            <div class="hardware-panel">
+                <div class="action-keys">
+                    <button class="hw-btn hw-btn-run" onclick="runPCR()">RUN</button>
+                    <button class="hw-btn hw-btn-pause" onclick="alert('一時停止します')">PAUSE</button>
+                    <button class="hw-btn hw-btn-stop" onclick="location.reload()">STOP</button>
+                </div>
+                
+                <div class="nav-keys">
+                    <div class="cross-keys">
+                        <div></div>
+                        <button class="hw-btn hw-btn-arrow" onmousedown="event.preventDefault();" onclick="moveCursor(-1)">▲</button>
+                        <div></div>
+                        <button class="hw-btn hw-btn-arrow" onmousedown="event.preventDefault();" onclick="alert('画面をクリックしてください')">◀</button>
+                        <button class="hw-btn hw-btn-ent" onmousedown="event.preventDefault();" onclick="alert('入力を確定しました')">ENT</button>
+                        <button class="hw-btn hw-btn-arrow" onmousedown="event.preventDefault();" onclick="alert('次の項目へ')">▶</button>
+                        <div></div>
+                        <button class="hw-btn hw-btn-arrow" onmousedown="event.preventDefault();" onclick="moveCursor(1)">▼</button>
+                        <div></div>
+                    </div>
+                </div>
+
+                <div class="num-pad">
+                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('7')">7</button>
+                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('8')">8</button>
+                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('9')">9</button>
+                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('4')">4</button>
+                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('5')">5</button>
+                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('6')">6</button>
+                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('1')">1</button>
+                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('2')">2</button>
+                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('3')">3</button>
+                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('.')">.</button>
+                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('0')">0</button>
+                    <button class="hw-btn hw-btn-c" onmousedown="event.preventDefault();" onclick="clearNum()">C</button>
+                </div>
             </div>
         </div>
     </div>
@@ -421,7 +413,7 @@
 </div>
 
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v1.0 | Developed for Bioinformatics & Wet-Lab Education
+    &copy; 2026 Bio-Edu Suite v1.1 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
 <script>
