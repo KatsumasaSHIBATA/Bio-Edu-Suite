@@ -7,80 +7,150 @@
     <style>
         *, *::before, *::after { box-sizing: border-box; }
 
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
         
         /* 共通ヘッダー */
         .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 10; }
         .header { width: 100%; max-width: 1000px; padding: 15px 20px; color: white; display: flex; flex-direction: column; position: relative; }
-        .header h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 1px; color: #fff; }
+        .header h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 1px; color: #fff; padding-right: 70px; line-height: 1.3; }
         .header p { margin: 5px 0 0 0; font-size: 12px; color: #1abc9c; font-weight: 600; letter-spacing: 0.5px; }
-        .version-badge { position: absolute; right: 20px; top: 20px; background: #34495e; color: #1abc9c; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid #1abc9c; }
+        .version-badge { position: absolute; right: 20px; top: 15px; background: #34495e; color: #1abc9c; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid #1abc9c; }
 
-        .main-content { width: 100%; max-width: 1000px; padding: 20px; display: flex; flex-direction: column; gap: 20px; flex: 1; }
+        .main-content { width: 100%; max-width: 1000px; padding: 25px 20px; display: flex; flex-direction: column; align-items: center; gap: 25px; flex: 1; }
 
-        .card { background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; border-top: 4px solid #e67e22; }
-        .card-header { background: #34495e; color: white; padding: 12px 20px; font-size: 16px; font-weight: bold; }
-        .card-body { padding: 20px; }
-
-        /* ツールバー */
-        .toolbar { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
-        .btn { background: #fdfefe; border: 1px solid #bdc3c7; padding: 8px 16px; cursor: pointer; font-size: 13px; border-radius: 4px; font-weight: bold; transition: all 0.2s; color: #2c3e50; }
-        .btn:hover { background: #eaf2f8; border-color: #3498db; color: #2980b9; }
-        .btn-run { background: #e74c3c; color: white; border-color: #c0392b; font-size: 14px; padding: 10px 20px; box-shadow: 0 4px 0 #c0392b; }
-        .btn-run:hover { background: #c0392b; transform: translateY(2px); box-shadow: 0 2px 0 #922b21; color: white;}
-        .btn-run:active { transform: translateY(4px); box-shadow: none; }
-
-        .select-group { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: bold; color: #34495e; background: #f8f9f9; padding: 8px 15px; border-radius: 6px; border: 1px solid #bdc3c7;}
-        select { padding: 5px; border-radius: 4px; border: 1px solid #bdc3c7; font-family: inherit; font-size: 13px; }
-
-        /* 🚨 サーマルサイクラーUI：v1.0のシンプルなデザインを完全復刻 */
-        /* スマホではみ出さないよう横スクロールだけを許可 */
-        .cycler-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 10px; border-radius: 8px;}
+        /* 🚨 PC版 v1.0の完璧なレイアウトを完全復元 */
+        .scenario-panel { background: #fff; width: 100%; padding: 20px 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 4px solid #e74c3c; display: flex; flex-direction: column; }
+        .scenario-panel h2 { margin: 0 0 8px 0; font-size: 18px; color: #2c3e50; border-bottom: 2px solid #f4f6f7; padding-bottom: 8px; }
+        .scenario-desc { font-size: 13px; color: #5d6d7e; margin-bottom: 15px; line-height: 1.6; }
         
-        .cycler-screen { background: #1a252f; border-radius: 8px; padding: 20px; color: #ecf0f1; position: relative; border: 4px solid #2c3e50; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); min-width: 600px; }
-        .profile-container { display: flex; align-items: flex-end; justify-content: space-around; height: 250px; margin-top: 20px; padding-bottom: 30px; border-bottom: 2px dashed #34495e; position: relative; }
+        /* v1.0の自動詰め込みグリッド (間延び防止) */
+        .scenario-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; font-size: 12px; }
         
-        .step { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; width: 80px; position: relative; }
-        .step-bar { width: 40px; background: #3498db; border-radius: 4px 4px 0 0; transition: height 0.3s, background 0.3s; position: relative; display: flex; justify-content: center; box-shadow: 0 0 10px rgba(52, 152, 219, 0.3); }
+        .rationale-btn { background: #1abc9c; color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s;}
+        .rationale-btn:hover { background: #16a085; transform: scale(1.1); }
+        .rationale-text { display: none; background: #fef9e7; border: 1px solid #f39c12; padding: 10px; border-radius: 6px; font-size: 11px; color: #7e5109; margin-top: 4px; margin-bottom: 8px; line-height: 1.5; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); font-weight: normal; }
         
-        .temp-input-wrap { position: absolute; top: -35px; background: rgba(0,0,0,0.6); padding: 4px; border-radius: 4px; display: flex; align-items: center; gap: 2px; }
-        .time-input-wrap { position: absolute; bottom: -35px; background: rgba(0,0,0,0.6); padding: 4px; border-radius: 4px; display: flex; align-items: center; gap: 2px; }
+        .input-group { background: #fdfefe; padding: 12px; border-radius: 6px; border: 1px solid #d5dbdb; box-shadow: inset 0 1px 3px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 5px; }
+        .input-group label { color: #c0392b; font-weight: 800; font-size: 12px; margin-bottom: 2px; display: flex; align-items: center; }
+        .input-group select, .input-group input { padding: 6px; border-radius: 4px; border: 1px solid #bdc3c7; font-size: 13px; font-weight: bold; color: #2c3e50; outline: none; width: 100%; transition: 0.2s; }
+        .input-group input:focus, .input-group select:focus { border-color: #3498db; box-shadow: 0 0 0 2px rgba(52,152,219,0.2); }
+        .input-group input[type="number"], .input-group input[type="text"] { font-family: monospace; }
         
-        .cycler-input { width: 45px; background: transparent; border: none; border-bottom: 1px solid #1abc9c; color: #1abc9c; font-family: 'Courier New', monospace; font-size: 16px; font-weight: bold; text-align: center; }
-        .cycler-input:focus { outline: none; background: rgba(26, 188, 156, 0.2); }
-        .unit { font-size: 11px; color: #bdc3c7; }
+        .input-help { font-size: 11px; color: #7f8c8d; line-height: 1.4; margin-top: 4px; }
+        .dynamic-hint { background: #fdf2e9; color: #d35400; font-size: 11px; font-weight: bold; padding: 6px 8px; border-radius: 4px; border-left: 4px solid #e67e22; margin-top: 5px; line-height: 1.4; }
 
-        .step-name { position: absolute; bottom: -60px; font-size: 11px; font-weight: bold; color: #95a5a6; text-transform: uppercase; letter-spacing: 1px; text-align: center; width: 100px; }
+        .reagent-grid { display: grid; grid-template-columns: 1fr 65px; gap: 4px; align-items: center; font-size: 11px; font-weight: bold; color: #34495e; }
+        .reagent-grid input { padding: 4px; text-align: right; font-size: 12px; }
+        .reagent-total { border-top: 1px dashed #bdc3c7; margin-top: 4px; padding-top: 4px; text-align: right; color: #e74c3c; font-size: 13px; font-weight: 900; }
+        .vol-guide { background: #e8f8f5; color: #16a085; font-size: 10px; padding: 4px; text-align: center; border-radius: 4px; margin-bottom: 5px; font-weight: bold;}
 
-        /* サイクル設定 */
-        .cycle-bracket { position: absolute; border: 2px solid #e67e22; border-top: none; height: 15px; bottom: 5px; left: 20%; right: 40%; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 20px; }
-        .cycle-input-wrap { background: #1a252f; padding: 0 10px; color: #e67e22; font-weight: bold; display: flex; align-items: center; gap: 5px; transform: translateY(15px); }
+        /* v1.0の縦長Tmコンテナ (他のマスと同じ幅に収まる) */
+        .tm-container { display: flex; flex-direction: column; justify-content: center; align-items: center; background: #2c3e50; padding: 15px; border-radius: 6px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); grid-column: span 1; }
+        .tm-label { font-size: 11px; color: #bdc3c7; font-weight: bold; margin-bottom: 4px; text-align: center; }
+        .tm-display { color: #f1c40f; font-size: 14px; font-weight: 900; white-space: nowrap; margin-bottom: 8px; }
+        .tm-avg { background: #27ae60; color: #fff; padding: 6px 15px; border-radius: 4px; font-size: 18px; font-weight: 900; border: 1px solid #2ecc71; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
-        .status-panel { display: flex; justify-content: space-between; margin-top: 20px; font-family: 'Courier New', monospace; font-size: 14px; color: #1abc9c; background: #0b1319; padding: 10px; border-radius: 4px;}
+        /* v1.0の現場のコツ (グリッド内で全幅を使う) */
+        .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 10px; border-radius: 6px; font-size: 11px; color: #2c3e50; margin-top: 15px; line-height: 1.5; font-weight: normal; grid-column: 1 / -1;}
+        .bench-tip strong { color: #2980b9; font-size: 11px;}
+
+        .btn-container { display:flex; gap:10px; margin-top: 15px; justify-content: flex-end; }
+        .manual-btn { background: #e67e22; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; box-shadow: 0 3px 0 #d35400; transition: 0.1s; }
+        .manual-btn:active { transform: translateY(3px); box-shadow: none; }
+        .manual-btn.student { background: #3498db; box-shadow: 0 3px 0 #2980b9; }
+
+        /* 🚨 スマホ用 v1.6の横スクロールラッパー */
+        .machine-scroll-wrapper { width: 100%; display: flex; justify-content: center; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 10px;}
+
+        /* 機器本体（絶対に潰れない固定サイズ） */
+        .machine-body { background: #e0e6ed; width: 100%; max-width: 680px; min-width: 680px; border-radius: 12px; padding: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.2), inset 0 2px 5px rgba(255,255,255,0.8); border: 1px solid #bdc3c7; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        .machine-vent { width: 100%; height: 15px; display: flex; gap: 12px; margin-bottom: -10px; }
+        .vent-line { flex: 1; height: 5px; background: #95a5a6; border-radius: 3px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.5); }
+
+        /* 液晶ディスプレイ */
+        .lcd-bezel { background: #1a252f; padding: 15px; border-radius: 8px; width: 100%; border: 2px solid #34495e; box-shadow: inset 0 0 20px rgba(0,0,0,0.9), 0 2px 5px rgba(255,255,255,0.5); }
+        .lcd-screen { background: #78a381; width: 100%; height: 210px; border: inset 3px rgba(0,0,0,0.4); padding: 12px; font-family: 'Courier New', Courier, monospace; color: #0a1f12; font-weight: bold; overflow-y: auto; font-size: 15px; display: flex; flex-direction: column; text-shadow: 0px 0px 1px rgba(0,0,0,0.2); }
         
-        .hot { background: #e74c3c !important; box-shadow: 0 0 10px rgba(231, 76, 60, 0.4) !important; }
-        .cold { background: #3498db !important; }
-        .warm { background: #f1c40f !important; box-shadow: 0 0 10px rgba(241, 196, 15, 0.3) !important; }
+        .lcd-title { border-bottom: 2px solid #0a1f12; padding-bottom: 6px; margin-bottom: 12px; display: flex; justify-content: space-between; font-size: 13px; align-items: center; border-radius: 2px; padding: 2px 5px;}
+        .lcd-title.selected { background: #0a1f12; color: #78a381; }
+        
+        .lcd-row { display: flex; padding: 4px 6px; margin-bottom: 4px; align-items: center; transition: 0.1s; border-radius: 2px; }
+        .lcd-row.selected { background: #0a1f12; color: #78a381; }
+        .lcd-col-label { width: 120px; text-transform: uppercase; }
+        
+        .lcd-input { background: transparent; border: none; border-bottom: 2px solid transparent; color: inherit; font-family: inherit; font-size: inherit; font-weight: inherit; text-align: center; outline: none; width: 50px; padding: 0 2px; cursor: text; }
+        .lcd-input.time { width: 65px; }
+        .lcd-input.vol { width: 35px; text-align: right; }
+        
+        .lcd-row.selected .lcd-input:focus, .lcd-title.selected .lcd-input:focus { border-bottom-color: #78a381; animation: blink 1s step-end infinite; }
+        @keyframes blink { 50% { border-bottom-color: transparent; } }
 
-        /* モーダル (フィードバック) */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 100; padding: 20px;}
-        .modal-content { background: white; padding: 25px; border-radius: 8px; max-width: 600px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        .modal-header { font-size: 18px; font-weight: bold; margin-bottom: 15px; color: #2c3e50; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; }
-        .feedback-box { background: #fadbd8; border-left: 5px solid #c0392b; padding: 15px; margin-bottom: 15px; border-radius: 4px; }
-        .feedback-title { font-weight: bold; color: #c0392b; margin-bottom: 10px; }
-        .success-box { background: #d5f5e3; border-left: 5px solid #27ae60; padding: 15px; margin-bottom: 15px; border-radius: 4px; }
-        .success-title { font-weight: bold; color: #27ae60; margin-bottom: 10px; }
-        .hint-list { margin: 0; padding-left: 20px; font-size: 13px; color: #2c3e50; line-height: 1.6;}
-        .hint-label { font-weight: bold; color: #e67e22; }
+        /* 操作パネル */
+        .hardware-panel { width: 100%; display: flex; justify-content: space-between; gap: 20px; align-items: stretch; background: #bdc3c7; padding: 20px; border-radius: 8px; border: 1px solid #95a5a6; box-shadow: inset 0 2px 4px rgba(255,255,255,0.8), 0 4px 8px rgba(0,0,0,0.1); }
+        
+        .action-keys { display: flex; flex-direction: column; gap: 12px; width: 110px; justify-content: center; }
+        .hw-btn-run { background: #27ae60; color: white; border-color: #1e8449; box-shadow: 0 5px 0 #1e8449; height: 65px; font-size: 20px; letter-spacing: 1px; }
+        .hw-btn-pause { background: #f1c40f; color: #2c3e50; border-color: #d4ac0d; box-shadow: 0 4px 0 #d4ac0d; height: 40px; font-size: 14px; }
+        .hw-btn-stop { background: #e74c3c; color: white; border-color: #c0392b; box-shadow: 0 4px 0 #c0392b; height: 40px; font-size: 14px; }
+        .hw-btn-run:active, .hw-btn-pause:active, .hw-btn-stop:active { transform: translateY(4px); box-shadow: none; margin-top: 4px; margin-bottom: -4px; }
 
-        .footer { background: #1a252f; width: 100%; padding: 15px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; margin-top: auto; }
+        .nav-keys { display: flex; align-items: center; justify-content: center; flex: 1; }
+        .cross-keys { display: grid; grid-template-columns: repeat(3, 50px); grid-template-rows: repeat(3, 45px); gap: 6px; }
+        .hw-btn-arrow { background: #dcdde1; font-size: 20px; color: #34495e; }
+        .hw-btn-ent { background: #3498db; color: white; font-size: 15px; grid-column: 2; grid-row: 2; box-shadow: 0 4px 0 #2980b9; border-color: #2980b9; }
+        .hw-btn-arrow:active, .hw-btn-ent:active { transform: translateY(4px); box-shadow: none; margin-top: 4px; margin-bottom: -4px; }
 
-        /* 📱 スマホ最適化 (v1.0の美しさを保ちつつ、ボタンだけを押しやすく) */
+        .num-pad { display: grid; grid-template-columns: repeat(3, 45px); grid-template-rows: repeat(4, 40px); gap: 6px; }
+        .hw-btn-num { background: #ecf0f1; font-size: 18px; font-weight: bold; color: #2c3e50; }
+        .hw-btn-c { background: #e67e22; color: white; box-shadow: 0 4px 0 #d35400; border-color: #d35400; font-size: 18px; }
+        .hw-btn-num:active, .hw-btn-c:active { transform: translateY(4px); box-shadow: none; margin-top: 4px; margin-bottom: -4px; }
+
+        .hw-btn { border: 1px solid #95a5a6; border-radius: 4px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 0 #bdc3c7; transition: 0.1s; text-transform: uppercase; display: flex; align-items: center; justify-content: center; user-select: none; }
+
+        /* モーダル群 */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; justify-content: center; align-items: center; padding: 20px; }
+        .modal-content { background: white; width: 100%; max-width: 800px; max-height: 90vh; border-radius: 8px; padding: 30px; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.8); position: relative; }
+        .modal-content h2 { margin-top: 0; font-size: 20px; color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; }
+        .modal-close { position: absolute; top: 20px; right: 20px; background: #e74c3c; color: white; border: none; padding: 8px 15px; cursor: pointer; border-radius: 4px; font-weight: bold; font-size: 13px; box-shadow: 0 3px 0 #c0392b; }
+        .modal-close:active { transform: translateY(3px); box-shadow: none; }
+        
+        .feedback-box { background: #fdf2e9; border: 2px solid #e67e22; border-radius: 8px; padding: 20px; text-align: left; }
+        .feedback-title { font-size: 18px; font-weight: bold; color: #d35400; margin-bottom: 10px; border-bottom: 1px dashed #d35400; padding-bottom: 5px; }
+        .hint-list { list-style: none; padding: 0; margin: 0; }
+        .hint-list li { background: white; border-left: 5px solid #e67e22; padding: 12px; margin-bottom: 10px; font-size: 14px; border-radius: 0 4px 4px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1); line-height: 1.5; color: #34495e;}
+        .hint-label { font-weight: bold; color: #c0392b; display: block; margin-bottom: 3px; font-size: 13px; }
+        
+        .success-box { background: #fff; border: 2px solid #2ecc71; border-radius: 8px; padding: 25px; text-align: center; }
+        .success-title { font-size: 24px; font-weight: bold; color: #27ae60; margin-bottom: 15px; }
+
+        .graph-outer { background: #f8f9fa; padding: 20px 10px; border-radius: 6px; border: 1px solid #dee2e6; margin-top: 20px; width: 100%; position: relative; }
+        canvas { width: 100%; height: auto; display: block; }
+
+        .manual-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+        .manual-table th, .manual-table td { border: 1px solid #bdc3c7; padding: 10px; text-align: left; }
+        .manual-table th { background: #ecf0f1; color: #2c3e50; font-weight: bold; }
+
+        .footer { background: #1a252f; width: 100%; padding: 15px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; margin-top: auto; border-top: 1px solid #2c3e50; }
+        
+        /* 🚨【スマホ専用の絶対保護パッチ】(v1.6の成功ロジック) */
         @media screen and (max-width: 768px) {
             .main-content { padding: 10px; }
-            .toolbar { flex-direction: column; align-items: stretch; gap: 10px; }
-            .select-group { flex-direction: column; align-items: flex-start; }
-            .btn, select { width: 100%; }
+            
+            /* グリッドを1カラムに強制し、重なりや左寄りを防止 */
+            .scenario-inputs { grid-template-columns: 1fr; gap: 12px; }
+            .input-group[style*="grid-column: span 2"] { grid-column: span 1 !important; }
+            .tm-container { grid-column: span 1 !important; }
+            .bench-tip { grid-column: span 1 !important; }
+
+            .btn-container { flex-direction: column; margin-top: 10px; }
+            .manual-btn { width: 100%; text-align: center; }
+            
+            .header h1 { font-size: 18px; padding-right: 60px; }
+            .version-badge { top: 12px; right: 10px; }
+
+            /* 機器のスクロールは左寄せにして自然に */
+            .machine-scroll-wrapper { justify-content: flex-start; padding-bottom: 15px;}
+            .machine-body { padding: 20px; gap: 15px; }
         }
     </style>
 </head>
@@ -88,7 +158,7 @@
 
 <div class="header-container">
     <div class="header">
-        <h1>🔥 Thermal Cycler Simulator</h1>
+        <h1>🧬 Thermal Cycler Simulator</h1>
         <p>Bio-Edu Suite: PCR Protocol Optimization & Logical Troubleshooting</p>
         <div class="version-badge">v1.7</div>
     </div>
@@ -96,109 +166,252 @@
 
 <div class="main-content">
     
-    <div class="card">
-        <div class="card-header">⚙️ プロトコル設定 (Protocol Setup)</div>
-        <div class="card-body">
+    <div class="scenario-panel">
+        <h2>🧬 機器に入力する全パラメーター</h2>
+        <div class="scenario-desc">
+            液晶画面のすべての入力項目（INITからFINALまで）は、以下の要素から論理的に導き出されます。<br>酵素を変更すると、必要な試薬組成（レシピ）や標準液量も変化します。
+        </div>
+        
+        <div class="scenario-inputs">
             
-            <div class="toolbar">
-                <div class="select-group">
-                    🎯 ターゲット長:
-                    <select id="targetLength" onchange="checkTime()">
-                        <option value="500">〜500 bp (短い)</option>
-                        <option value="1500" selected>約 1.5 kb (標準)</option>
-                        <option value="4000">約 4.0 kb (長い)</option>
-                    </select>
+            <div class="input-group">
+                <label>1. 使用酵素 (添付文書) <button class="rationale-btn" onclick="toggleRationale('rat_enz')" title="なぜ酵素を選ぶの？">?</button></label>
+                <div id="rat_enz" class="rationale-text">
+                    <strong>【根拠】</strong> 酵素によって「耐熱性(DENAT)」や「合成速度(EXTEND)」が異なります。KOD Oneは超高速、Taqは標準的など、それぞれの特性に合わせたプログラムを組む必要があります。
                 </div>
-                <div class="select-group">
-                    🧬 鋳型DNA:
-                    <select id="templateType">
-                        <option value="genomic" selected>ゲノムDNA (複雑)</option>
-                        <option value="plasmid">プラスミド (単純・高濃度)</option>
-                        <option value="cDNA">cDNA (RT-PCR産物)</option>
-                    </select>
+                <select id="enzymeSelect" onchange="updateRecipe()">
+                    <option value="KODOne">TOYOBO KOD One (2x Premix)</option>
+                    <option value="PrimeSTAR">TaKaRa PrimeSTAR GXL</option>
+                    <option value="ExTaq">TaKaRa Ex Taq</option>
+                </select>
+                <div class="input-help">変性・伸長温度と合成速度が決定。</div>
+            </div>
+            
+            <div class="input-group">
+                <label>2. 目的の増幅長 (bp) <button class="rationale-btn" onclick="toggleRationale('rat_len')" title="なぜ長さを入れるの？">?</button></label>
+                <div id="rat_len" class="rationale-text">
+                    <strong>【根拠】</strong> PCRにおける「伸長時間(EXTEND)」を決めるための最重要パラメーターです。酵素が1kb(1000塩基)を合成するのに何秒かかるかを計算し、長さに見合った時間を設定しないと、途中で切れた不完全なDNAになってしまいます。
+                </div>
+                <div style="display:flex; align-items:center; gap:5px;">
+                    <input type="number" id="targetLength" value="1000" style="width: 70px;"> bp
+                </div>
+                <div class="input-help">酵素速度と掛け合わせて伸長時間が決定。(1kb = 1000bp)</div>
+            </div>
+
+            <div class="input-group" style="grid-column: span 2;">
+                <label>3. プライマー配列 (アニーリング) <button class="rationale-btn" onclick="toggleRationale('rat_pri')" title="なぜ配列を入れるの？">?</button></label>
+                <div id="rat_pri" class="rationale-text">
+                    <strong>【根拠】</strong> プライマーがDNAにくっつく温度（Tm値）は、A/T（2重水素結合）とG/C（3重水素結合）の割合で決まります。「ANNEAL温度」はこのTm値を基準に設定し、高すぎるとくっつかず、低すぎると間違った場所にくっつく（非特異的増幅）原因になります。
+                </div>
+                <div style="display:flex; gap:5px; margin-bottom:4px; align-items:center;">
+                    <span style="font-size:11px; width:15px; font-weight:bold; color:#2c3e50;">F:</span>
+                    <input type="text" id="primerF" value="CCATCCAACATCTCAGCATGATGAAA" oninput="calculateTm()">
+                </div>
+                <div style="display:flex; gap:5px; align-items:center;">
+                    <span style="font-size:11px; width:15px; font-weight:bold; color:#2c3e50;">R:</span>
+                    <input type="text" id="primerR" value="CCCCTCAGAATGATATTTGTCCTCA" oninput="calculateTm()">
+                </div>
+                <div id="annealHintText" class="dynamic-hint">
+                    💡 KOD Oneは、アニーリング基準値(Tm平均)と同じ温度に設定します。
+                </div>
+                <div style="font-size:10px; color:#7f8c8d; margin-top:6px; text-align:right;">※ Tm値は塩基配列よりWallace法で算出</div>
+            </div>
+
+            <div class="input-group" style="grid-column: span 2;">
+                <label>4. 抽出サンプル (サイクル数) <button class="rationale-btn" onclick="toggleRationale('rat_sam')" title="なぜサンプルを選ぶの？">?</button></label>
+                <div id="rat_sam" class="rationale-text">
+                    <strong>【根拠】</strong> 元の細胞に含まれるDNAの「コピー数（存在量）」によって、必要なサイクル数(CYCLE N)が変わります。ミトコンドリアDNAやプラスミドは元から量が多いため、回しすぎるとノイズが出ます。ゲノムDNAは少ないため、しっかり回す必要があります。
+                </div>
+                <select id="sampleSelect" onchange="updateCycleHint()">
+                    <option value="meat_mt">ミトコンドリアDNA (食肉など)</option>
+                    <option value="genomic">ゲノムDNA (ヒト・動物・植物など)</option>
+                    <option value="plasmid">プラスミドDNA</option>
+                </select>
+                <div id="cycleHintText" class="dynamic-hint" style="background:#e8f8f5; color:#16a085; border-color:#1abc9c;">
+                    💡 mtDNAは細胞内に多コピー存在します。増えすぎを防ぐため 25〜30回 が推奨です。
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>5. 試薬組成 (VOL液量) <button class="rationale-btn" onclick="toggleRationale('rat_vol')" title="なぜVOLを入れるの？">?</button></label>
+                <div id="rat_vol" class="rationale-text">
+                    <strong>【根拠】</strong> PCR機器は、入力された「VOL」の液量に基づいて、ヒーターの加熱・冷却パワー（熱容量）を自動計算しています。ここが間違っていると、設定温度に達するスピードが狂い、実験が失敗します。
+                </div>
+                <div class="vol-guide" id="volGuideText">標準反応液量: 20 µL</div>
+                <div class="reagent-grid" id="reagentGrid">
+                    </div>
+            </div>
+
+            <div class="tm-container">
+                <span class="tm-label">算出された個別のTm値</span>
+                <div class="tm-display" id="tmValueDisplay">F: --.-℃ / R: --.-℃</div>
+                <span class="tm-label" style="color:#1abc9c; margin-top:4px;">★ アニーリング基準値 (Tm平均)</span>
+                <div class="tm-avg" id="tmAvgDisplay">--.- ℃</div>
+            </div>
+            
+            <div class="bench-tip" style="grid-column: 1 / -1;">
+                <strong>💡 現場のコツ（プログラムの組み方）</strong><br>
+                サーマルサイクラーの設定は「何となく」ではなく、必ず<b>酵素のメーカー指示書（プロトコル）</b>と<b>自分のターゲット長・Tm値</b>を掛け合わせて論理的に決定します。設定ミスは貴重な試薬と時間を無駄にする一番の原因です！
+            </div>
+        </div>
+        
+        <div class="btn-container">
+            <button class="manual-btn student" onclick="openStudentManual()">📖 クイックガイド (操作手順)</button>
+            <button class="manual-btn" onclick="openAdminManual()">⚙️ 各酵素の公式推奨条件</button>
+        </div>
+    </div>
+
+    <div class="machine-scroll-wrapper">
+        <div class="machine-body">
+            <div class="machine-vent">
+                <div class="vent-line"></div><div class="vent-line"></div><div class="vent-line"></div>
+                <div class="vent-line"></div><div class="vent-line"></div><div class="vent-line"></div>
+            </div>
+            
+            <div class="lcd-bezel">
+                <div class="lcd-screen" id="lcdScreen">
+                    <div class="lcd-title" id="lcdTitleRow">
+                        <span>EDIT: <span id="progNameDisplay">[PCR-K]</span></span>
+                        <span>VOL: <input type="text" id="volInput" class="lcd-input vol" value="20"> ul</span>
+                    </div>
+                    
+                    <div class="lcd-row" data-index="0">
+                        <div class="lcd-col-label">1: INIT</div>
+                        <input type="text" id="t1" class="lcd-input" value="94.0">C
+                        <input type="text" id="m1" class="lcd-input time" value="02:00">
+                    </div>
+                    <div class="lcd-row" data-index="1">
+                        <div class="lcd-col-label">2: DENAT</div>
+                        <input type="text" id="t2" class="lcd-input" value="98.0">C
+                        <input type="text" id="m2" class="lcd-input time" value="00:10">
+                    </div>
+                    <div class="lcd-row" data-index="2">
+                        <div class="lcd-col-label">3: ANNEAL</div>
+                        <input type="text" id="t3" class="lcd-input" value="60.0">C
+                        <input type="text" id="m3" class="lcd-input time" value="00:05">
+                    </div>
+                    <div class="lcd-row" data-index="3">
+                        <div class="lcd-col-label">4: EXTEND</div>
+                        <input type="text" id="t4" class="lcd-input" value="68.0">C
+                        <input type="text" id="m4" class="lcd-input time" value="00:05">
+                    </div>
+                    <div class="lcd-row" data-index="4" style="padding-left: 15px;">
+                        <div class="lcd-col-label">CYCLE N</div>
+                        <input type="text" id="cyc" class="lcd-input" value="30">X
+                    </div>
+                    <div class="lcd-row" data-index="5">
+                        <div class="lcd-col-label">5: FINAL</div>
+                        <input type="text" id="t5" class="lcd-input" value="68.0">C
+                        <input type="text" id="m5" class="lcd-input time" value="02:00">
+                    </div>
+                </div>
+                <div style="font-size:10px; color:#7f8c8d; margin-top:8px; text-align:center;">
+                    ※ プログラム完了後、機器は自動的に4℃ HOLD（冷蔵保存）へ移行します。
+                </div>
+            </div>
+
+            <div class="hardware-panel">
+                <div class="action-keys">
+                    <button class="hw-btn hw-btn-run" onclick="runPCR()">RUN</button>
+                    <button class="hw-btn hw-btn-pause" onclick="alert('一時停止します')">PAUSE</button>
+                    <button class="hw-btn hw-btn-stop" onclick="location.reload()">STOP</button>
                 </div>
                 
-                <div style="flex-grow: 1;"></div>
-                
-                <button class="btn" onclick="preset('standard')">🔄 標準(Standard)</button>
-                <button class="btn" onclick="preset('fast')">⚡ 高速(Fast KOD)</button>
-                <button class="btn" onclick="preset('touchdown')">📉 タッチダウン</button>
-            </div>
-
-            <div class="cycler-wrapper">
-                <div class="cycler-screen">
-                    <div class="profile-container">
-                        
-                        <div class="step">
-                            <div class="temp-input-wrap"><input type="number" id="t_id" class="cycler-input hot" value="95" oninput="updateGraph()"><span class="unit">℃</span></div>
-                            <div class="step-bar" id="bar_id"></div>
-                            <div class="time-input-wrap"><input type="number" id="time_id" class="cycler-input" value="120" oninput="updateGraph()"><span class="unit">s</span></div>
-                            <div class="step-name">Initial Denature</div>
-                        </div>
-
-                        <div class="step">
-                            <div class="temp-input-wrap"><input type="number" id="t_den" class="cycler-input hot" value="98" oninput="updateGraph()"><span class="unit">℃</span></div>
-                            <div class="step-bar" id="bar_den"></div>
-                            <div class="time-input-wrap"><input type="number" id="time_den" class="cycler-input" value="10" oninput="updateGraph()"><span class="unit">s</span></div>
-                            <div class="step-name">Denature</div>
-                        </div>
-
-                        <div class="step">
-                            <div class="temp-input-wrap"><input type="number" id="t_ann" class="cycler-input cold" value="55" oninput="updateGraph()"><span class="unit">℃</span></div>
-                            <div class="step-bar" id="bar_ann"></div>
-                            <div class="time-input-wrap"><input type="number" id="time_ann" class="cycler-input" value="30" oninput="updateGraph()"><span class="unit">s</span></div>
-                            <div class="step-name">Annealing</div>
-                        </div>
-
-                        <div class="step">
-                            <div class="temp-input-wrap"><input type="number" id="t_ext" class="cycler-input warm" value="72" oninput="updateGraph()"><span class="unit">℃</span></div>
-                            <div class="step-bar" id="bar_ext"></div>
-                            <div class="time-input-wrap"><input type="number" id="time_ext" class="cycler-input" value="60" oninput="updateGraph()"><span class="unit">s</span></div>
-                            <div class="step-name">Extension</div>
-                        </div>
-
-                        <div class="step">
-                            <div class="temp-input-wrap"><input type="number" id="t_fin" class="cycler-input warm" value="72" oninput="updateGraph()"><span class="unit">℃</span></div>
-                            <div class="step-bar" id="bar_fin"></div>
-                            <div class="time-input-wrap"><input type="number" id="time_fin" class="cycler-input" value="300" oninput="updateGraph()"><span class="unit">s</span></div>
-                            <div class="step-name">Final Extend</div>
-                        </div>
-
-                        <div class="step">
-                            <div class="temp-input-wrap"><input type="number" id="t_hld" class="cycler-input cold" value="4" oninput="updateGraph()" readonly><span class="unit">℃</span></div>
-                            <div class="step-bar" id="bar_hld"></div>
-                            <div class="time-input-wrap"><input type="text" value="∞" class="cycler-input" readonly></div>
-                            <div class="step-name">Hold</div>
-                        </div>
-
-                        <div class="cycle-bracket">
-                            <div class="cycle-input-wrap">
-                                CYCLES: <input type="number" id="cycles" class="cycler-input" value="30" style="color:#e67e22; border-color:#e67e22;" oninput="updateGraph()"> x
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <div class="status-panel">
-                        <span id="estTime">Estimated Time: --:--:--</span>
-                        <span>Status: READY</span>
+                <div class="nav-keys">
+                    <div class="cross-keys">
+                        <div></div>
+                        <button class="hw-btn hw-btn-arrow" onmousedown="event.preventDefault();" onclick="moveCursor(-1)">▲</button>
+                        <div></div>
+                        <button class="hw-btn hw-btn-arrow" onmousedown="event.preventDefault();" onclick="alert('画面をクリックしてください')">◀</button>
+                        <button class="hw-btn hw-btn-ent" onmousedown="event.preventDefault();" onclick="alert('入力を確定しました')">ENT</button>
+                        <button class="hw-btn hw-btn-arrow" onmousedown="event.preventDefault();" onclick="alert('次の項目へ')">▶</button>
+                        <div></div>
+                        <button class="hw-btn hw-btn-arrow" onmousedown="event.preventDefault();" onclick="moveCursor(1)">▼</button>
+                        <div></div>
                     </div>
                 </div>
-            </div>
 
-            <div style="margin-top:20px; text-align:center;">
-                <button class="btn btn-run" onclick="runSimulation()">▶ PCRを実行して結果を判定する (RUN)</button>
+                <div class="num-pad">
+                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('7')">7</button>
+                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('8')">8</button>
+                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('9')">9</button>
+                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('4')">4</button>
+                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('5')">5</button>
+                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('6')">6</button>
+                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('1')">1</button>
+                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('2')">2</button>
+                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('3')">3</button>
+                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('.')">.</button>
+                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('0')">0</button>
+                    <button class="hw-btn hw-btn-c" onmousedown="event.preventDefault();" onclick="clearNum()">C</button>
+                </div>
             </div>
+        </div>
+    </div>
+
+    <div id="runModal" class="modal">
+        <div class="modal-content" style="text-align: center;">
+            <div id="runMessage">判定中...</div>
+            <button class="hw-btn" style="margin: 15px auto 0; padding: 10px 25px; display:inline-flex;" onclick="closeModal('runModal')">CLOSE</button>
         </div>
     </div>
 </div>
 
-<div class="modal" id="runModal">
+<div id="studentManualModal" class="modal">
     <div class="modal-content">
-        <div class="modal-header">🔬 PCR シミュレーション結果</div>
-        <div id="runMessage"></div>
-        <div style="text-align:right; margin-top:20px;">
-            <button class="btn" onclick="document.getElementById('runModal').style.display='none'">閉じる (Edit Protocol)</button>
+        <button class="modal-close" onclick="closeModal('studentManualModal')">✕ 閉じる</button>
+        <h2 style="margin-top:0;">📖 クイックガイド (操作手順)</h2>
+        <div style="font-size: 13px; line-height: 1.6; color: #34495e;">
+            <p>※使用する酵素（ポリメラーゼ）に合わせて、液晶画面のプログラム名が自動で切り替わります。</p>
+            
+            <h3 style="color:#2980b9; border-left:4px solid #3498db; padding-left:10px; margin-bottom:5px;">■ テンキーを使った入力方法</h3>
+            <p><b>1. 画面の入力欄（VOL, 温度, 時間など）をクリック</b>してカーソルを合わせます。<br>
+               <b>2. Cキー</b>を押して、既存の数字を消去します。<br>
+               <b>3. テンキー</b>（0〜9, .）を押して新しい数値を入力します。</p>
+
+            <h3 style="color:#2980b9; border-left:4px solid #3498db; padding-left:10px; margin-bottom:5px;">■ 各入力欄のルール</h3>
+            <p><b>【VOL（反応液量）】</b><br>
+               左パネルで計算した試薬の<b>合計量</b>を正確に入力してください。ここを間違えると温度制御の計算が狂い、実験が失敗します。</p>
+            <p><b>【温度】</b><br>
+               例：94.5℃の場合、<b>「9」「4」「5」</b>または<b>「9」「4」「.」「5」</b>と打ってください。</p>
+            <p><b>【時間】</b><br>
+               例：2分30秒の場合、<b>「0」「2」「3」「0」</b>と打ってください。（自動で分:秒として計算されます）</p>
+        </div>
+    </div>
+</div>
+
+<div id="adminManualModal" class="modal">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal('adminManualModal')">✕ 閉じる</button>
+        <h2 style="margin-top:0;">⚙️ 添付文書：各酵素の公式推奨条件</h2>
+        <div style="font-size: 13px; line-height: 1.6; color: #34495e;">
+            <p style="font-size:12px; color:#e74c3c; font-weight:bold; margin-bottom:5px;">💡 計算のヒント: 1 kb = 1000 bp です。増幅長(bp)を1000で割って時間を計算してください。</p>
+            <table class="manual-table">
+                <tr><th>酵素名</th><th>変性 (DENAT)</th><th>アニーリング (ANNEAL)</th><th>伸長 (EXTEND)</th></tr>
+                <tr>
+                    <td style="font-weight:bold; color:#8e44ad;">KOD One</td>
+                    <td>98℃ 10秒</td>
+                    <td><span style="color:#e74c3c; font-weight:bold;">Tm平均と同じ温度</span> 5秒</td>
+                    <td><span style="color:#e74c3c; font-weight:bold;">68℃ (1秒 / kb)</span></td>
+                </tr>
+                <tr>
+                    <td style="font-weight:bold; color:#27ae60;">PrimeSTAR GXL</td>
+                    <td>98℃ 10秒</td>
+                    <td><span style="color:#e74c3c; font-weight:bold;">55〜60℃</span> 15秒〜</td>
+                    <td><span style="color:#e74c3c; font-weight:bold;">68℃ (1分 / kb)</span></td>
+                </tr>
+                <tr>
+                    <td style="font-weight:bold; color:#2980b9;">Ex Taq</td>
+                    <td>94-98℃ 10-30秒</td>
+                    <td><span style="color:#e74c3c; font-weight:bold;">50〜60℃</span> 30秒</td>
+                    <td><span style="color:#e74c3c; font-weight:bold;">72℃ (1分 / kb)</span></td>
+                </tr>
+            </table>
+            <p style="font-size:11px; color:#7f8c8d; margin-top:10px;">
+                ※1: <b>初期変性(INIT)</b>はDENATと同じ（または94℃以上）に設定し、ホットスタート酵素の場合は約2分間加熱して活性化させます。<br>
+                ※2: <b>最終伸長(FINAL)</b>はEXTENDと同じ至適温度に設定し、未完成のDNA鎖を最後まで合成させます(通常1〜5分)。<br>
+                ※3: <b>保存(HOLD)</b>は反応後のDNAの分解を防ぐため、自動的に冷蔵温度(4.0℃)で維持されます。
+            </p>
         </div>
     </div>
 </div>
@@ -208,100 +421,375 @@
 </div>
 
 <script>
-    function updateGraph() {
-        const steps = ['id', 'den', 'ann', 'ext', 'fin', 'hld'];
-        
-        steps.forEach(s => {
-            const t = parseInt(document.getElementById(`t_${s}`).value) || 0;
-            const bar = document.getElementById(`bar_${s}`);
-            const input = document.getElementById(`t_${s}`);
-            
-            // 高さを計算 (4℃=10%, 98℃=100%)
-            let h = Math.max(10, (t / 100) * 100);
-            bar.style.height = `${h}%`;
-
-            // 色付け
-            input.className = 'cycler-input';
-            bar.className = 'step-bar';
-            if (t >= 90) { input.classList.add('hot'); bar.classList.add('hot'); }
-            else if (t >= 65 && t <= 75) { input.classList.add('warm'); bar.classList.add('warm'); }
-            else if (t <= 60) { input.classList.add('cold'); bar.classList.add('cold'); }
-        });
-
-        checkTime();
-    }
-
-    function checkTime() {
-        const id_time = parseInt(document.getElementById('time_id').value) || 0;
-        const den_time = parseInt(document.getElementById('time_den').value) || 0;
-        const ann_time = parseInt(document.getElementById('time_ann').value) || 0;
-        const ext_time = parseInt(document.getElementById('time_ext').value) || 0;
-        const fin_time = parseInt(document.getElementById('time_fin').value) || 0;
-        const cycles = parseInt(document.getElementById('cycles').value) || 0;
-
-        // ざっくりとした時間計算 (ランプ速度等を考慮して各ステップ+5秒の余裕を見る)
-        let cycleTime = (den_time + 5) + (ann_time + 5) + (ext_time + 5);
-        let totalSeconds = id_time + (cycleTime * cycles) + fin_time;
-
-        let h = Math.floor(totalSeconds / 3600);
-        let m = Math.floor((totalSeconds % 3600) / 60);
-        let s = totalSeconds % 60;
-
-        document.getElementById('estTime').innerText = `Estimated Time: ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-    }
-
-    function preset(type) {
-        if(type === 'standard') {
-            document.getElementById('t_id').value = 95; document.getElementById('time_id').value = 120;
-            document.getElementById('t_den').value = 95; document.getElementById('time_den').value = 30;
-            document.getElementById('t_ann').value = 55; document.getElementById('time_ann').value = 30;
-            document.getElementById('t_ext').value = 72; document.getElementById('time_ext').value = 60;
-            document.getElementById('t_fin').value = 72; document.getElementById('time_fin').value = 300;
-            document.getElementById('cycles').value = 30;
-        } else if (type === 'fast') {
-            document.getElementById('t_id').value = 98; document.getElementById('time_id').value = 10;
-            document.getElementById('t_den').value = 98; document.getElementById('time_den').value = 10;
-            document.getElementById('t_ann').value = 60; document.getElementById('time_ann').value = 5;
-            document.getElementById('t_ext').value = 68; document.getElementById('time_ext').value = 15;
-            document.getElementById('t_fin').value = 68; document.getElementById('time_fin').value = 60;
-            document.getElementById('cycles').value = 30;
-        } else if (type === 'touchdown') {
-            document.getElementById('t_id').value = 95; document.getElementById('time_id').value = 120;
-            document.getElementById('t_den').value = 95; document.getElementById('time_den').value = 30;
-            document.getElementById('t_ann').value = 65; document.getElementById('time_ann').value = 30;
-            document.getElementById('t_ext').value = 72; document.getElementById('time_ext').value = 60;
-            document.getElementById('t_fin').value = 72; document.getElementById('time_fin').value = 300;
-            document.getElementById('cycles').value = 35;
-            alert("💡 Touchdown設定：最初の数サイクルでアニーリング温度を1℃ずつ下げていく特殊なプログラムです。非特異的増幅を防ぐのに有効です。（このシミュレータでは初期の高い温度のみ入力しています）");
+    function toggleRationale(id) {
+        const el = document.getElementById(id);
+        if(el.style.display === 'block') {
+            el.style.display = 'none';
+        } else {
+            document.querySelectorAll('.rationale-text').forEach(e => e.style.display = 'none');
+            el.style.display = 'block';
         }
-        updateGraph();
     }
 
-    function runSimulation() {
-        const targetLen = parseInt(document.getElementById('targetLength').value);
-        const sample = document.getElementById('templateType').value;
+    const recipes = {
+        KODOne: {
+            guide: "標準反応液量: 20 µL (Master Mix仕様)",
+            items: [
+                { id: 'rMix', label: '2x KOD Master Mix:', default: 10.0 },
+                { id: 'rPriF', label: 'Primer F (10µM):', default: 1.0 },
+                { id: 'rPriR', label: 'Primer R (10µM):', default: 1.0 },
+                { id: 'rDna', label: 'DNA (抽出液):', default: 2.0 },
+                { id: 'rDw', label: 'DW (滅菌水):', default: 6.0 }
+            ]
+        },
+        PrimeSTAR: {
+            guide: "標準反応液量: 50 µL (個別添加仕様)",
+            items: [
+                { id: 'rBuf', label: '5x GXL Buffer:', default: 10.0 },
+                { id: 'rDntp', label: 'dNTP Mixture:', default: 4.0 },
+                { id: 'rPriF', label: 'Primer F (10µM):', default: 1.0 },
+                { id: 'rPriR', label: 'Primer R (10µM):', default: 1.0 },
+                { id: 'rEnz', label: 'PrimeSTAR 酵素:', default: 1.0 },
+                { id: 'rDna', label: 'DNA (抽出液):', default: 2.0 },
+                { id: 'rDw', label: 'DW (滅菌水):', default: 31.0 }
+            ]
+        },
+        ExTaq: {
+            guide: "標準反応液量: 50 µL (個別添加仕様)",
+            items: [
+                { id: 'rBuf', label: '10x ExTaq Buffer:', default: 5.0 },
+                { id: 'rDntp', label: 'dNTP Mixture:', default: 4.0 },
+                { id: 'rPriF', label: 'Primer F (10µM):', default: 1.0 },
+                { id: 'rPriR', label: 'Primer R (10µM):', default: 1.0 },
+                { id: 'rEnz', label: 'Ex Taq 酵素:', default: 0.25 },
+                { id: 'rDna', label: 'DNA (抽出液):', default: 2.0 },
+                { id: 'rDw', label: 'DW (滅菌水):', default: 36.75 }
+            ]
+        }
+    };
 
-        const denT = parseInt(document.getElementById('t_den').value);
-        const annT = parseInt(document.getElementById('t_ann').value);
-        const extT = parseInt(document.getElementById('t_ext').value);
-        const extTime = parseInt(document.getElementById('time_ext').value);
-        const cyc = parseInt(document.getElementById('cycles').value);
+    window.onload = function() { 
+        updateRecipe(); 
+        calculateTm(); 
+        selectRow(0); 
+    };
+
+    function updateRecipe() {
+        const val = document.getElementById('enzymeSelect').value;
+        const progNameEl = document.getElementById('progNameDisplay');
+        const annealHintEl = document.getElementById('annealHintText');
+        const guideEl = document.getElementById('volGuideText');
+        const gridEl = document.getElementById('reagentGrid');
+        
+        if(val === 'KODOne') {
+            progNameEl.innerText = '[PCR-K]';
+            annealHintEl.innerHTML = "💡 KOD Oneは、<b>アニーリング基準値(Tm平均)</b>と同じ温度に設定します。";
+        } else if(val === 'PrimeSTAR') {
+            progNameEl.innerText = '[PCR-P]';
+            annealHintEl.innerHTML = "💡 Taq系酵素は、<b>アニーリング基準値(Tm平均)</b>を参考にしつつ【55〜60℃】に設定します。";
+        } else if(val === 'ExTaq') {
+            progNameEl.innerText = '[PCR-E]';
+            annealHintEl.innerHTML = "💡 一般的なTaqは、<b>アニーリング基準値(Tm平均)</b>を参考にしつつ【50〜60℃】に設定します。";
+        }
+
+        const rData = recipes[val];
+        guideEl.innerText = rData.guide;
+        
+        let html = '';
+        rData.items.forEach(item => {
+            html += `<span>${item.label}</span><input type="number" step="0.01" class="reagent-input" value="${item.default}" oninput="calculateVol()">`;
+        });
+        html += `<span class="reagent-total">合計液量:</span><div class="reagent-total" id="rTotal">-- µL</div>`;
+        gridEl.innerHTML = html;
+        
+        calculateVol(); 
+    }
+
+    function calculateVol() {
+        const inputs = document.querySelectorAll('.reagent-input');
+        let total = 0;
+        inputs.forEach(input => { total += parseFloat(input.value) || 0; });
+        document.getElementById('rTotal').innerText = total.toFixed(2) + " µL";
+        return total;
+    }
+
+    function updateCycleHint() {
+        const val = document.getElementById('sampleSelect').value;
+        const hintEl = document.getElementById('cycleHintText');
+        if(val === 'meat_mt') {
+            hintEl.innerHTML = "💡 mtDNAは細胞内に多コピー存在します。増えすぎを防ぐため <b>25〜30回</b> が推奨です。";
+        } else if(val === 'genomic') {
+            hintEl.innerHTML = "💡 ゲノムDNAはターゲットの割合が非常に低いため、<b>30〜35回</b> しっかり回す必要があります。";
+        } else if(val === 'plasmid') {
+            hintEl.innerHTML = "💡 プラスミドはターゲット濃度が極めて高いため、<b>20〜25回</b> の少ないサイクルで十分です。";
+        }
+    }
+
+    function calculateTm() {
+        function calc(seq) {
+            if (!seq) return 0;
+            let a = (seq.match(/A/g) || []).length;
+            let t = (seq.match(/T/g) || []).length;
+            let g = (seq.match(/G/g) || []).length;
+            let c = (seq.match(/C/g) || []).length;
+            if (seq.length < 14) return (a + t) * 2 + (g + c) * 4;
+            else return 64.9 + 41 * (g + c - 16.4) / seq.length;
+        }
+        let tmF = calc(document.getElementById('primerF').value.toUpperCase().replace(/[^ATGC]/g, ''));
+        let tmR = calc(document.getElementById('primerR').value.toUpperCase().replace(/[^ATGC]/g, ''));
+        let avg = (tmF + tmR) / 2;
+        
+        document.getElementById('tmValueDisplay').innerText = `F: ${tmF.toFixed(1)}℃ / R: ${tmR.toFixed(1)}℃`;
+        document.getElementById('tmAvgDisplay').innerText = avg > 0 ? `${avg.toFixed(1)} ℃` : "--.- ℃";
+    }
+
+    let activeLcdInput = null;
+    let currentRow = 0;
+    const totalRows = 6; 
+
+    function selectRow(index) {
+        document.querySelectorAll('.lcd-row').forEach(row => row.classList.remove('selected'));
+        document.getElementById('lcdTitleRow').classList.remove('selected');
+        if (index === -1) document.getElementById('lcdTitleRow').classList.add('selected');
+        else if (index >= 0 && index <= 5) {
+            let target = document.querySelector(`.lcd-row[data-index="${index}"]`);
+            if(target) { target.classList.add('selected'); currentRow = index; }
+        }
+    }
+    
+    function moveCursor(direction) {
+        let newIndex = currentRow + direction;
+        if(newIndex >= 0 && newIndex <= 5) selectRow(newIndex);
+    }
+
+    document.querySelectorAll('.lcd-input').forEach(input => {
+        if(!input.hasAttribute('readonly')){
+            input.addEventListener('focus', function() {
+                activeLcdInput = this;
+                let row = this.closest('.lcd-row');
+                if(row) selectRow(parseInt(row.dataset.index));
+                else selectRow(-1);
+            });
+        }
+    });
+
+    function typeNum(char) {
+        if (activeLcdInput) {
+            if (activeLcdInput.value.length < 5) activeLcdInput.value += char;
+        } else alert("入力したい項目を画面上でクリックしてからテンキーを押してください。");
+    }
+
+    function clearNum() {
+        if (activeLcdInput) activeLcdInput.value = "";
+    }
+
+    function openStudentManual() { document.getElementById('studentManualModal').style.display = 'flex'; }
+    function openAdminManual() { document.getElementById('adminManualModal').style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    function parseTemp(valStr) {
+        if (!valStr) return 0;
+        let val = parseFloat(valStr);
+        if (val >= 100 && !valStr.includes('.')) return val / 10;
+        return val;
+    }
+
+    function timeToSeconds(timeStr) {
+        if (!timeStr) return 0;
+        if (timeStr.includes(':')) {
+            let parts = timeStr.split(':');
+            return parseInt(parts[0] || 0) * 60 + parseInt(parts[1] || 0);
+        } else {
+            let str = timeStr.padStart(4, '0'); 
+            return parseInt(str.substring(0, 2) || 0) * 60 + parseInt(str.substring(2, 4) || 0);
+        }
+    }
+
+    function drawFinalGraph(canvasId) {
+        const canvas = document.getElementById(canvasId);
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+
+        const temps = [
+            parseTemp(document.getElementById('t1').value),
+            parseTemp(document.getElementById('t2').value),
+            parseTemp(document.getElementById('t3').value),
+            parseTemp(document.getElementById('t4').value),
+            parseTemp(document.getElementById('t5').value)
+        ];
+        const times = [
+            document.getElementById('m1').value,
+            document.getElementById('m2').value,
+            document.getElementById('m3').value,
+            document.getElementById('m4').value,
+            document.getElementById('m5').value
+        ];
+        
+        const labels = ["1: INIT", "2: DENAT", "3: ANNEAL", "4: EXTEND", "5: FINAL"];
+        
+        const getY = (t) => (h - 40) - (t / 110) * (h - 110);
+        
+        const startX = 50;
+        const stepW = (w - 100) / 5;
+
+        // 軸
+        ctx.strokeStyle = '#2c3e50';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(startX, 20); ctx.lineTo(startX, h - 30); 
+        ctx.lineTo(w - 20, h - 30); 
+        ctx.stroke();
+
+        ctx.fillStyle = '#2c3e50';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('温度(℃)', 5, 15);
+        ctx.textAlign = 'right';
+        ctx.fillText('時間 (Time)', w - 20, h - 10);
+
+        // 温度線
+        ctx.strokeStyle = '#2980b9';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(startX, getY(25)); 
+
+        let points = [];
+        let cx = startX;
+        for(let i=0; i < 5; i++) {
+            cx += stepW * 0.3;
+            let y = getY(temps[i]);
+            ctx.lineTo(cx, y);
+            points.push({x: cx, y: y});
+            
+            cx += stepW * 0.7;
+            ctx.lineTo(cx, y);
+            points.push({x: cx, y: y});
+        }
+        ctx.stroke();
+
+        // 4℃ HOLD
+        let lastX = points[9].x;
+        let holdY = getY(4);
+        ctx.beginPath();
+        ctx.moveTo(lastX, points[9].y);
+        ctx.lineTo(lastX + stepW * 0.2, holdY);
+        ctx.lineTo(w - 20, holdY);
+        ctx.strokeStyle = '#95a5a6';
+        ctx.setLineDash([4, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        ctx.fillStyle = '#7f8c8d';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.fillText('4℃ HOLD', w - 45, holdY - 8);
+
+        // ラベル描画
+        ctx.textAlign = 'center';
+        for(let i=0; i < 5; i++) {
+            let midX = points[i*2].x + (points[i*2+1].x - points[i*2].x)/2;
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = 'bold 11px sans-serif';
+            ctx.fillText(labels[i], midX, points[i*2].y - 25);
+            ctx.fillStyle = '#e74c3c';
+            ctx.font = 'bold 13px sans-serif';
+            ctx.fillText(`${temps[i].toFixed(1)}℃`, midX, points[i*2].y - 10);
+            ctx.fillStyle = '#27ae60';
+            ctx.font = 'bold 12px sans-serif';
+            ctx.fillText(times[i], midX, points[i*2].y + 15);
+        }
+
+        // サイクル表記
+        const cyc = document.getElementById('cyc').value || "30";
+        let maxCycleTemp = Math.max(temps[1], temps[2], temps[3]);
+        let cycleY = getY(maxCycleTemp) - 35; 
+        
+        ctx.strokeStyle = '#e67e22';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(points[2].x, cycleY); ctx.lineTo(points[7].x, cycleY);
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.moveTo(points[2].x, cycleY - 5); ctx.lineTo(points[2].x, cycleY + 5);
+        ctx.moveTo(points[7].x, cycleY - 5); ctx.lineTo(points[7].x, cycleY + 5);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        ctx.fillStyle = '#d35400';
+        ctx.font = 'bold 13px sans-serif';
+        ctx.fillText(`2〜4 を ${cyc} 回ループ`, (points[2].x + points[7].x)/2, cycleY - 8);
+
+        // 基準線
+        ctx.setLineDash([2, 2]);
+        ctx.strokeStyle = '#bdc3c7';
+        ctx.lineWidth = 1;
+        ctx.textAlign = 'right';
+        [98, 72, 60, 55].forEach(t => {
+            let y = getY(t);
+            ctx.beginPath(); ctx.moveTo(startX, y); ctx.lineTo(w-20, y); ctx.stroke();
+            ctx.fillStyle = '#7f8c8d';
+            ctx.font = '10px sans-serif';
+            ctx.fillText(t, startX - 5, y + 4);
+        });
+        ctx.setLineDash([]);
+    }
+
+    // 全パラメーターの厳密な論理判定
+    function runPCR() {
+        const enzyme = document.getElementById('enzymeSelect').value;
+        const targetLen = parseInt(document.getElementById('targetLength').value);
+        const sample = document.getElementById('sampleSelect').value;
+        let avgTm = parseFloat(document.getElementById('tmAvgDisplay').innerText) || 55.0;
+        
+        const correctVol = calculateVol();
+        const inputVol = parseInt(document.getElementById('volInput').value || 0);
+        
+        const t1 = parseTemp(document.getElementById('t1').value);
+        const t2 = parseTemp(document.getElementById('t2').value);
+        const t3 = parseTemp(document.getElementById('t3').value);
+        const t4 = parseTemp(document.getElementById('t4').value);
+        const t5 = parseTemp(document.getElementById('t5').value);
+        const m4 = document.getElementById('m4').value;
+        const m5 = document.getElementById('m5').value;
+        const cyc = parseInt(document.getElementById('cyc').value || 0);
 
         let hints = [];
 
-        if (denT < 90) hints.push({ label: "Denature (熱変性)", text: "温度が低すぎます。二重らせんが完全に解離せず、次の反応に進めません。通常は94℃〜98℃に設定します。" });
-        if (annT >= extT) hints.push({ label: "Annealing (結合)", text: "アニーリング温度がExtension（伸長）温度より高くなっています！プライマーが結合する前に伸長反応が始まってしまう論理的エラーです。" });
-        if (annT < 45) hints.push({ label: "Annealing (結合)", text: "温度が低すぎます。プライマーが目的以外の似た配列にもベタベタと結合してしまい、非特異的増幅（ノイズ）の嵐になります。" });
-        
-        const reqExtTime = targetLen === 4000 ? 120 : (targetLen === 1500 ? 60 : 30);
-        if (extTime < reqExtTime * 0.8) {
-            hints.push({ label: "Extension (伸長) の時間", text: `ターゲット長(${targetLen}bp)に対して時間が短すぎます。DNAポリメラーゼが最後まで合成しきれず、不完全な短いDNAばかりになります。` });
-        } else if (extTime > reqExtTime * 3) {
-            hints.push({ label: "Extension (伸長) の時間", text: `ターゲット長に対して時間が長すぎます。酵素の寿命を無駄に縮め、実験時間が長引くだけです。` });
+        if (inputVol !== correctVol) hints.push({ label: "反応液量 (VOL)", text: `機器に入力された液量(${inputVol}µL)が、パネルで計算した試薬の合計量(${correctVol}µL)と一致していません。機器のヒーター加熱パワー（熱容量の計算）が狂い、温度制御に失敗します。` });
+
+        if (Math.abs(t1 - t2) > 1.0 && t1 < 94.0) hints.push({ label: "1: INIT 温度", text: "初期変性は、通常その後の DENAT と同じ温度（または94℃以上）に設定し、DNAを初回解離・酵素を活性化させます。" });
+        if (Math.abs(t5 - t4) > 1.0) hints.push({ label: "5: FINAL 温度", text: "最終伸長は、EXTEND と同じ至適温度に設定して合成を完結させます。異なる温度では酵素が十分に働きません。" });
+        if (timeToSeconds(m5) < 60) hints.push({ label: "5: FINAL 時間", text: "未完成の鎖を末端まで完全に合成させるため、最終伸長は「1〜5分」程度長めにとることが推奨されます。" });
+
+        if (enzyme === "KODOne" || enzyme === "PrimeSTAR") {
+            if (t2 < 97.0) hints.push({ label: "2: DENAT 温度", text: "強力な酵素は、DNAをしっかり解離させるために98℃（機器のブレを考慮し最低97℃）の設定が推奨されます。" });
+            if (Math.abs(t4 - 68.0) > 1.0) hints.push({ label: "4: EXTEND 温度", text: "高正確性酵素の至適温度は68℃です。72℃等では酵素が失活しやすくなります。" });
+        } else {
+            if (t2 < 94.0 || t2 > 98.0) hints.push({ label: "2: DENAT 温度", text: "標準Taqの変性温度は94〜98℃の許容範囲内に設定してください。" });
+            if (Math.abs(t4 - 72.0) > 1.0) hints.push({ label: "4: EXTEND 温度", text: "標準Taqの至適温度は72℃です。" });
         }
 
-        if (sample === 'cDNA') {
-            if (cyc > 35) hints.push({ label: "CYCLE N (サイクル数)", text: "cDNAで35サイクル以上回すのは危険です。元の発現量の差が飽和して分からなくなり、コンタミによるノイズも増幅されます。" });
+        if (enzyme === "KODOne") {
+            if (Math.abs(t3 - avgTm) > 3.0) hints.push({ label: "3: ANNEAL 温度", text: `アニーリング基準値(${avgTm.toFixed(1)}℃)と同じ温度を推奨します。±3℃以上ズレると特異性が低下し、ノイズが出ます。` });
+        } else {
+            if (t3 < 50.0 || t3 > 60.0) hints.push({ label: "3: ANNEAL 温度", text: `通常50℃〜60℃の間に設定します。これより低いと非特異的増幅が起き、高いとプライマーが結合しません。` });
+        }
+
+        if (enzyme === "KODOne") {
+            let req = Math.max(1, Math.ceil(targetLen / 1000));
+            let setTime = timeToSeconds(m4);
+            if (setTime < req) hints.push({ label: "4: EXTEND 時間", text: `計算上は短いですが、機器の制約と確実な合成のため最低 ${req}秒（または余裕を見て数秒）は設定してください。` });
+            if (setTime > req + 15) hints.push({ label: "4: EXTEND 時間", text: `設定時間が長すぎます。KOD Oneは超高速のため、無駄な時間（酵素へのダメージ）となります。` });
+        } else {
+            let req = Math.ceil(targetLen / 1000 * 60);
+            if (timeToSeconds(m4) < req - 5) hints.push({ label: "4: EXTEND 時間", text: `1分/kbの酵素の場合、${targetLen}bpには約 ${req}秒 必要です。短すぎると未完成のDNA鎖になります。` });
+        }
+
+        if (sample === 'meat_mt') {
+            if (cyc < 25 || cyc > 32) hints.push({ label: "CYCLE N (サイクル数)", text: "ミトコンドリアDNAはターゲットが非常に豊富です。増えすぎによる非特異的ノイズを防ぐため「25〜30回」程度が最適です。" });
         } else if (sample === 'genomic') {
             if (cyc < 30 || cyc > 40) hints.push({ label: "CYCLE N (サイクル数)", text: "ゲノムDNAはターゲット割合が低いため、しっかり「30〜35回」回して指数関数的増幅を完了させる必要があります。" });
         } else if (sample === 'plasmid') {
@@ -314,21 +802,20 @@
 
         if (hints.length > 0) {
             let errorHtml = `<div class="feedback-box"><div class="feedback-title">⚠️ 論理的エラー：設定の科学的根拠を見直してください</div><ul class="hint-list">`;
-            hints.forEach(h => errorHtml += `<li><span class="hint-label">💡 ${h.label} について</span><br>${h.text}</li>`);
+            hints.forEach(h => errorHtml += `<li><span class="hint-label">💡 ${h.label} について</span>${h.text}</li>`);
             errorHtml += '</ul></div>';
             msgDiv.innerHTML = errorHtml;
         } else {
             msgDiv.innerHTML = `
                 <div class="success-box">
                     <div class="success-title">🎉 PCRプログラム大成功！</div>
-                    <p>温度も時間もサイクル数も完璧に論理的です。<br>この設定なら、目的の ${targetLen}bp のDNA領域だけが美しく特異的に増幅されるでしょう！</p>
-                </div>
-                <p style="font-size:13px; color:#7f8c8d; text-align:center;">👉 次のステップ「Virtual PCR & RFLP Simulator」で、<br>実際にバンドが増幅されるか電気泳動で確認しましょう。</p>
-            `;
+                    <div style="font-size:13px; margin-bottom:12px; color:#2c3e50;">全パラメーターが科学的根拠に基づいて設定されました。以下が実行された温度プロファイルです。</div>
+                    <div class="graph-outer"><canvas id="finalGraph" width="700" height="300"></canvas></div>
+                </div>`;
+            setTimeout(() => { drawFinalGraph('finalGraph'); }, 100);
         }
     }
-
-    window.onload = updateGraph;
 </script>
+
 </body>
 </html>
