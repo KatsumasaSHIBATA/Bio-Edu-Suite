@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alignment Print Studio v1.0 | Bio-Edu Suite</title>
+    <style>
+        /* 全体のボックスサイズとリセット */
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        
+        /* 共通ヘッダー */
+        .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 10; }
+        .header { width: 100%; max-width: 1000px; padding: 15px 20px; color: white; display: flex; flex-direction: column; position: relative; }
+        .header h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 1px; color: #fff; }
+        .header p { margin: 5px 0 0 0; font-size: 12px; color: #1abc9c; font-weight: 600; letter-spacing: 0.5px; }
+        .version-badge { position: absolute; right: 20px; top: 20px; background: #34495e; color: #1abc9c; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid #1abc9c; }
+
+        .main-content { width: 100%; max-width: 1000px; padding: 25px 20px; display: flex; flex-direction: column; gap: 20px; flex: 1; }
+
+        /* コントロールパネル */
+        .control-panel { background: #fff; width: 100%; padding: 20px 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 4px solid #3498db; }
+        .control-panel h2 { margin: 0 0 10px 0; font-size: 16px; color: #2c3e50; display: flex; align-items: center; gap: 8px; }
+        .desc-text { font-size: 12px; color: #7f8c8d; margin-bottom: 15px; line-height: 1.5; }
+
+        /* 根拠表示用スタイル */
+        .rationale-btn { background: #1abc9c; color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s;}
+        .rationale-btn:hover { background: #16a085; transform: scale(1.1); }
+        .rationale-text { display: none; background: #fef9e7; border: 1px solid #f39c12; padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; margin-bottom: 15px; line-height: 1.5; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
+
+        /* テキストエリア（エディタ風） */
+        textarea { width: 100%; height: 180px; font-family: 'Courier New', Consolas, monospace; font-size: 12px; padding: 15px; border: 2px dashed #bdc3c7; border-radius: 6px; box-sizing: border-box; resize: vertical; outline: none; background: #fdfefe; color: #2c3e50; line-height: 1.4; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); transition: 0.2s;}
+        textarea:focus { border-color: #3498db; border-style: solid; }
+
+        /* 印刷設定グリッド */
+        .settings-grid { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; flex-wrap: wrap; gap: 15px; background: #f8f9fa; padding: 15px 20px; border-radius: 6px; border: 1px solid #dee2e6; }
+        
+        .setting-item { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: bold; color: #34495e;}
+        
+        input[type="range"] { width: 100px; cursor: pointer; accent-color: #3498db; }
+        input[type="text"].keyword-input { padding: 6px 10px; border: 1px solid #bdc3c7; border-radius: 4px; width: 120px; font-family: monospace; font-size: 12px; font-weight: bold; color: #e74c3c; outline: none; transition: 0.2s;}
+        input[type="text"].keyword-input:focus { border-color: #e74c3c; box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2); }
+        
+        /* ラジオボタン（トグル風） */
+        .radio-group { display: flex; gap: 4px; background: #ecf0f1; padding: 4px; border-radius: 6px; border: 1px solid #bdc3c7; }
+        .radio-group label { cursor: pointer; padding: 6px 15px; border-radius: 4px; font-size: 11px; font-weight: bold; color: #7f8c8d; transition: 0.2s; user-select: none; }
+        .radio-group input[type="radio"] { display: none; }
+        .radio-group input[type="radio"]:checked + label { background: #3498db; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        
+        /* 印刷ボタン */
+        .btn-print { background: #27ae60; color: white; border: none; padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: 900; box-shadow: 0 4px 0 #1e8449; font-size: 14px; transition: 0.1s; display: flex; align-items: center; gap: 8px; letter-spacing: 1px; }
+        .btn-print:active { transform: translateY(4px); box-shadow: none; }
+
+        /* 現場のコツパネル */
+        .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px; border-radius: 6px; font-size: 11px; color: #2c3e50; margin-top: 15px; line-height: 1.6; }
+        .bench-tip strong { color: #2980b9; font-size: 12px;}
+
+        /* プレビューパネル（仮想の紙） */
+        .preview-panel { display: flex; flex-direction: column; align-items: center; width: 100%;}
+        .preview-title { font-size: 12px; font-weight: bold; color: #7f8c8d; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; text-transform: uppercase;}
+        
+        .paper-preview { width: 100%; max-width: 1000px; background: white; padding: 40px; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #bdc3c7; overflow-x: auto; min-height: 300px; }
+        
+        /* アライメントブロック（印刷ロジックの要） */
+        .alignment-block {
+            font-family: 'Courier New', Consolas, monospace;
+            white-space: pre;
+            line-height: 1.2;
+            color: #000;
+            overflow-x: visible;
+            margin-bottom: 1.5em; /* ブロック間の余白 */
+        }
+
+        /* 共通フッター */
+        .footer { width: 100%; background: #1a252f; padding: 15px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; margin-top: auto; border-top: 1px solid #2c3e50; }
+
+        /* 🖨️ 印刷時専用のスタイル（UIを完全に消し、紙面だけを残す） */
+        @media print {
+            body { background: white; padding: 0; margin: 0; }
+            .no-print { display: none !important; }
+            .main-content { padding: 0; gap: 0; display: block; max-width: none; }
+            .paper-preview { max-width: none; box-shadow: none; padding: 0; border: none; overflow: visible; min-height: auto; }
+            
+            /* ページまたぎ防止の魔法のCSS */
+            .alignment-block { page-break-inside: avoid; break-inside: avoid; overflow-x: visible; }
+        }
+    </style>
+    <style id="pageOrientationStyle">
+        @media print { @page { size: A4 landscape; margin: 15mm; } }
+        /* --- 📱 スマホ最適化（レスポンシブ・デザイン） --- */
+        @media screen and (max-width: 768px) {
+            /* 画面の余白を減らして広く使う */
+            .main-content { padding: 10px; flex-direction: column !important; }
+            .card { min-width: 100% !important; margin-bottom: 10px; }
+            
+            /* 横並びのボタンや入力欄を、縦積みの押しやすいサイズに変更 */
+            .toolbar-row, .scoring-panel { flex-direction: column; align-items: stretch; gap: 8px; }
+            .btn, .search-input, .primer-input { width: 100% !important; justify-content: center; padding: 12px; font-size: 14px; }
+            .slider-container, .slider-group { width: 100%; justify-content: space-between; }
+            
+            /* ヘッダー周りの調整 */
+            .header h1 { font-size: 16px; margin-right: 40px; }
+            .version-badge { top: 10px; right: 10px; padding: 2px 6px; }
+            .header-primer-stats { flex-direction: column; align-items: flex-start; }
+            
+            /* 横スクロール領域を「スマホ特有の滑らかなスクロール」にする */
+            .matrix-container, .sequence-grid, .trace-outer-container, .canvas-container, .alignment-detail { 
+                -webkit-overflow-scrolling: touch; 
+            }
+            
+            /* キャンバス（系統樹など）が画面を突き破らないように制限 */
+            canvas { max-width: 100% !important; height: auto !important; }
+            
+            /* アプリ④：名前列の幅を狭くして、配列を見やすくする */
+            .names-column { width: 100px !important; }
+            .name-header { font-size: 9px; padding-left: 5px; }
+            .seq-name-input { font-size: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header-container no-print">
+    <div class="header">
+        <h1>🧬 Alignment Print Studio</h1>
+        <p>Bio-Edu Suite: Smart Paging & Formatting for CLUSTAL Data</p>
+        <div class="version-badge">v1.0</div>
+    </div>
+</div>
+
+<div class="main-content">
+    
+    <div class="control-panel no-print">
+        <h2>📄 アライメントデータの入力と書式設定
+            <button class="rationale-btn" onclick="toggleRationale('rat_print')" title="なぜこのツールが必要？">?</button>
+        </h2>
+        
+        <div id="rat_print" class="rationale-text">
+            <strong>【根拠：なぜ論文用の書式ツールが必要なのか？】</strong><br>
+            ① <strong>CLUSTAL形式の重要性：</strong> アライメント結果を「60塩基ごとのブロック」に分けて表示するCLUSTAL形式は、論文や学会発表における世界標準フォーマットです。<br>
+            ② <strong>分割のタブー（真っ二つ防止）：</strong> このブロックが、ページをまたいで「上半分が1ページ目、下半分が2ページ目」に分断されることは、読み手を極度に混乱させるため<strong>論文の図表ルールとして絶対にNG</strong>です。<br>
+            このツールは、指定したキーワードを使って「ここまでが1ブロック」と認識し、絶対に途中で改ページさせない（<code>page-break-inside: avoid</code>）魔法のレイアウトを自動生成します。
+        </div>
+
+        <div class="desc-text">
+            EBIのClustal Omegaや、MEGA等で出力したテキストデータをそのまま貼り付けてください。<br>
+            指定したキーワードを検知してブロック化し、A4用紙の底辺で配列が真っ二つに分断されるのを防ぎます。
+        </div>
+        
+        <textarea id="inputText" placeholder="ここにアライメントのテキストデータ（CLUSTAL形式など）を貼り付けてください..."></textarea>
+        
+        <div class="settings-grid">
+            <div class="setting-item">
+                <span style="color: #c0392b;">✂️ ブロック終端の認識キー:</span>
+                <input type="text" id="breakKeyword" class="keyword-input" value="Primer_R" oninput="renderText()">
+                <span style="font-size:10px; font-weight:normal; color:#7f8c8d;">を含む行をひと塊(ブロック)とする</span>
+            </div>
+
+            <div class="setting-item" style="border-left: 2px solid #ecf0f1; padding-left: 15px;">
+                <span>📄 用紙の向き:</span>
+                <div class="radio-group">
+                    <input type="radio" id="ori_land" name="orientation" value="landscape" checked onchange="updateOrientation()">
+                    <label for="ori_land">横 (A4)</label>
+                    <input type="radio" id="ori_port" name="orientation" value="portrait" onchange="updateOrientation()">
+                    <label for="ori_port">縦 (A4)</label>
+                </div>
+            </div>
+
+            <div class="setting-item" style="border-left: 2px solid #ecf0f1; padding-left: 15px;">
+                <label for="fontSize">🔍 文字サイズ:</label>
+                <input type="range" id="fontSize" min="4" max="14" step="0.5" value="9" oninput="updateFontSize(this.value)">
+                <span id="fontSizeDisplay" style="color: #3498db; min-width: 45px; text-align:right; font-size:14px; font-family: monospace;">9.0pt</span>
+            </div>
+            
+            <button class="btn-print" onclick="window.print()">🖨️ PDF保存 / 印刷</button>
+        </div>
+
+        <div class="bench-tip">
+            <strong>💡 現場のコツ（等幅フォントの絶対ルール）</strong><br>
+            DNA配列やアミノ酸配列をWordやPowerPointにコピペする際、Arialや游ゴシックなどの「プロポーショナルフォント（文字ごとに幅が違うフォント）」を使うと、<strong>縦のラインが完全にズレてしまいデータが台無しになります。</strong><br>
+            本ツールは、強制的に「Courier New」などの等幅（Monospace）フォントを適用するため、コピー＆ペーストのミスを防ぐことができます。
+        </div>
+    </div>
+
+    <div class="preview-panel">
+        <div class="preview-title no-print">👁️ 印刷プレビュー (A4用紙イメージ)</div>
+        <div class="paper-preview" id="printArea"></div>
+    </div>
+
+</div>
+
+<div class="footer no-print">
+    &copy; 2026 Bio-Edu Suite v1.0 | Developed for Bioinformatics & Wet-Lab Education
+</div>
+
+<script>
+    function toggleRationale(id) {
+        const el = document.getElementById(id);
+        el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+    }
+
+    const inputText = document.getElementById('inputText');
+    const printArea = document.getElementById('printArea');
+    const breakKeywordInput = document.getElementById('breakKeyword');
+    const styleTag = document.getElementById('pageOrientationStyle');
+    let currentFontSize = "9pt";
+
+    inputText.addEventListener('input', renderText);
+
+    function escapeHTML(str) {
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function renderText() {
+        const text = inputText.value;
+        const keyword = breakKeywordInput.value.trim();
+        let html = '';
+
+        if (keyword) {
+            const lines = text.split('\n');
+            let currentBlock = '';
+            
+            for (let i = 0; i < lines.length; i++) {
+                currentBlock += escapeHTML(lines[i]) + '\n';
+                
+                // キーワードの行を見つけたら、そこをブロックの底とする
+                if (lines[i].includes(keyword)) {
+                    // 保存性記号（*）や空白行も一緒にブロックに含める
+                    while (i + 1 < lines.length && (lines[i + 1].trim() === '' || lines[i+1].startsWith(' '))) {
+                        i++;
+                        currentBlock += escapeHTML(lines[i]) + '\n';
+                    }
+                    html += `<div class="alignment-block" style="font-size: ${currentFontSize};">${currentBlock}</div>`;
+                    currentBlock = ''; 
+                }
+            }
+            if (currentBlock.trim().length > 0) {
+                html += `<div class="alignment-block" style="font-size: ${currentFontSize};">${currentBlock}</div>`;
+            }
+        } else {
+            // キーワードが空の場合は単純に空白行で分割
+            const blocks = text.split(/\n\s*\n/);
+            blocks.forEach(block => {
+                if (block.trim().length > 0) {
+                    html += `<div class="alignment-block" style="font-size: ${currentFontSize};">${escapeHTML(block)}\n</div>`;
+                }
+            });
+        }
+        printArea.innerHTML = html;
+    }
+
+    function updateFontSize(value) {
+        currentFontSize = parseFloat(value).toFixed(1) + 'pt';
+        document.getElementById('fontSizeDisplay').innerText = currentFontSize;
+        
+        const blocks = document.querySelectorAll('.alignment-block');
+        blocks.forEach(block => {
+            block.style.fontSize = currentFontSize;
+        });
+    }
+
+    function updateOrientation() {
+        const orientation = document.querySelector('input[name="orientation"]:checked').value;
+        styleTag.innerHTML = `@media print { @page { size: A4 ${orientation}; margin: 15mm; } }`;
+    }
+
+    const demoText = `CLUSTAL O(1.2.4) multiple sequence alignment
+
+Primer_F_L14841             ------------------------------------------------------------	0
+Sus_scrofa_NC000845         ---ATGACCAACATCCGAAAATCACACCCACTAATAAAAATTATCAACAACGCATTCATT	57
+Bos_taurus_NC006853         ---ATGACTAACATTCGAAAGTCCCACCCACTAATAAAAATTGTAAACAATGCATTCATC	57
+Gallus_gallus_NC001323      ATGGCACCCAACATTCGAAAATCCCACCCCCTACTAAAAATAATTAACAACTCCCTAATC	60
+Primer_R_H15149_RC          ------------------------------------------------------------	0
+                                                                                        
+
+Primer_F_L14841             ------------CCATCCAACATCTCAGCATGATGAAA----------------------	26
+Sus_scrofa_NC000845         GACCTCCCAGCCCCCTCAAACATCTCATCATGATGAAACTTCGGTTCCCTCTTAGGCATC	117
+Bos_taurus_NC006853         GACCTTCCAGCCCCATCAAACATTTCATCATGATGAAATTTCGGTTCCCTCCTGGGAATC	117
+Gallus_gallus_NC001323      GACCTCCCAGCCCCATCCAACATCTCTGCTTGATGAAATTTCGGCTCCCTATTAGCAGTC	120
+Primer_R_H15149_RC          ------------------------------------------------------------	0`;
+    
+    inputText.value = demoText;
+    renderText();
+</script>
+</body>
+</html>

@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCR Master Mix Studio v1.0 | Bio-Edu Suite</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        
+        /* 共通ヘッダー */
+        .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 10; }
+        .header { width: 100%; max-width: 1000px; padding: 15px 20px; color: white; display: flex; flex-direction: column; position: relative; }
+        .header h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 1px; color: #fff; }
+        .header p { margin: 5px 0 0 0; font-size: 12px; color: #1abc9c; font-weight: 600; }
+        .version-badge { position: absolute; right: 20px; top: 20px; background: #34495e; color: #1abc9c; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid #1abc9c; }
+        
+        .main-content { width: 100%; max-width: 1000px; padding: 20px; display: flex; flex-wrap: wrap; gap: 20px; flex: 1; align-items: flex-start;}
+        .card { background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; flex: 1; min-width: 320px; border-top: 4px solid #3498db; display: flex; flex-direction: column; }
+        .card-header { background: #34495e; color: white; padding: 12px 18px; font-size: 15px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+        .card-body { padding: 18px; flex: 1; display: flex; flex-direction: column; }
+        
+        /* 根拠表示用スタイル */
+        .rationale-btn { background: #1abc9c; color: white; border-radius: 50%; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s;}
+        .rationale-btn:hover { background: #16a085; transform: scale(1.1); }
+        .rationale-text { display: none; background: #fef9e7; border: 1px solid #f39c12; padding: 12px; border-radius: 6px; font-size: 12px; color: #7e5109; margin-top: 8px; line-height: 1.5; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
+
+        .input-group { margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; background: #f8f9fa; padding: 8px 12px; border-radius: 6px; border: 1px solid #e0e6ed;}
+        .input-group label { font-size: 12px; font-weight: 600; color: #34495e; flex: 1; }
+        input[type="number"], select { padding: 6px 8px; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 13px; font-weight: bold; color: #2c3e50; outline: none; transition: 0.2s;}
+        input[type="number"]:focus, select:focus { border-color: #3498db; box-shadow: 0 0 0 2px rgba(52,152,219,0.2); }
+        input[type="number"] { width: 75px; text-align: right; }
+        input[type="number"].error { border-color: #e74c3c; background: #fdf2f2; color: #c0392b; }
+        
+        .toggle-container { display: flex; gap: 5px; margin-bottom: 15px; background: #ecf0f1; padding: 4px; border-radius: 6px; }
+        .toggle-container label { flex: 1; text-align: center; padding: 8px; font-size: 11px; font-weight: bold; color: #7f8c8d; cursor: pointer; border-radius: 4px; user-select: none; transition: 0.2s;}
+        .toggle-container input[type="radio"] { display: none; }
+        .toggle-container input[type="radio"]:checked + label { background: #3498db; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
+        .result-box { background: #ebf5fb; border-left: 4px solid #3498db; padding: 12px; border-radius: 4px; margin-top: 15px; }
+        .result-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 13px; font-weight: bold; border-bottom: 1px dashed #d6eaf8; padding-bottom: 3px;}
+        .result-val { color: #e67e22; font-size: 15px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+        th, td { border: 1px solid #bdc3c7; padding: 8px 8px; text-align: right; }
+        th { background: #ecf0f1; text-align: center; color: #2c3e50; font-weight: bold;}
+        td:first-child { text-align: left; font-weight: 600; background: #fafbfc; width: 45%; }
+        .mm-result-val { font-size: 14px; color: #e74c3c; font-weight: 900; }
+        .tbl-input { width: 60px; padding: 4px; text-align: right; border: 1px solid #bdc3c7; border-radius: 3px; font-size: 12px; font-weight: bold; }
+        
+        /* 共通フッター */
+        .footer { width: 100%; background: #1a252f; padding: 15px 20px; text-align: center; font-size: 11px; color: #7f8c8d; margin-top: auto; border-top: 1px solid #2c3e50; letter-spacing: 0.5px;}
+        
+        .highlight-notice { background: #fdf2f2; border: 1px solid #f8d7da; color: #721c24; padding: 12px; border-radius: 6px; font-size: 12px; margin-top: 10px; font-weight: bold; line-height: 1.5; }
+        .calc-panel { background: #fdfefe; border: 1px solid #e5e8e8; padding: 12px; border-radius: 6px; margin-bottom: 15px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);}
+
+        /* エラーアシストパネル */
+        .assist-panel { display: none; background: #fdf2f2; border: 2px solid #e74c3c; border-radius: 6px; padding: 15px; margin-top: 15px; box-shadow: 0 4px 10px rgba(231,76,60,0.1); animation: fadeIn 0.3s ease-in-out;}
+        .assist-header { font-weight: bold; color: #c0392b; font-size: 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
+        .assist-item { background: #fff; padding: 12px; border-left: 4px solid #e74c3c; margin-bottom: 8px; border-radius: 0 4px 4px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .assist-item:last-child { margin-bottom: 0; }
+        .assist-title { font-size: 12px; font-weight: bold; color: #c0392b; margin-bottom: 6px; }
+        .assist-reason { font-size: 11px; color: #34495e; margin-bottom: 8px; line-height: 1.5; }
+        .assist-fix { font-size: 11px; color: #27ae60; font-weight: bold; display: flex; gap: 4px; background: #eafaf1; padding: 6px; border-radius: 4px;}
+        
+        /* 現場のコツパネル */
+        .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px; border-radius: 6px; font-size: 11px; color: #2c3e50; margin-top: auto; line-height: 1.6; }
+        .bench-tip strong { color: #2980b9; font-size: 12px;}
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        /* --- 📱 スマホ最適化（レスポンシブ・デザイン） --- */
+        @media screen and (max-width: 768px) {
+            /* 画面の余白を減らして広く使う */
+            .main-content { padding: 10px; flex-direction: column !important; }
+            .card { min-width: 100% !important; margin-bottom: 10px; }
+            
+            /* 横並びのボタンや入力欄を、縦積みの押しやすいサイズに変更 */
+            .toolbar-row, .scoring-panel { flex-direction: column; align-items: stretch; gap: 8px; }
+            .btn, .search-input, .primer-input { width: 100% !important; justify-content: center; padding: 12px; font-size: 14px; }
+            .slider-container, .slider-group { width: 100%; justify-content: space-between; }
+            
+            /* ヘッダー周りの調整 */
+            .header h1 { font-size: 16px; margin-right: 40px; }
+            .version-badge { top: 10px; right: 10px; padding: 2px 6px; }
+            .header-primer-stats { flex-direction: column; align-items: flex-start; }
+            
+            /* 横スクロール領域を「スマホ特有の滑らかなスクロール」にする */
+            .matrix-container, .sequence-grid, .trace-outer-container, .canvas-container, .alignment-detail { 
+                -webkit-overflow-scrolling: touch; 
+            }
+            
+            /* キャンバス（系統樹など）が画面を突き破らないように制限 */
+            canvas { max-width: 100% !important; height: auto !important; }
+            
+            /* アプリ④：名前列の幅を狭くして、配列を見やすくする */
+            .names-column { width: 100px !important; }
+            .name-header { font-size: 9px; padding-left: 5px; }
+            .seq-name-input { font-size: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header-container">
+    <div class="header">
+        <h1>🧬 PCR Master Mix Studio</h1>
+        <p>Bio-Edu Suite: Precision Planning & Preparation</p>
+        <div class="version-badge">v1.0</div>
+    </div>
+</div>
+
+<div class="main-content">
+    
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 20px; min-width: 320px;">
+        
+        <div class="card">
+            <div class="card-header">💧 1. DNA 希釈計算 
+                <button class="rationale-btn" onclick="toggleRationale('rat_dil')" title="なぜ希釈するの？">?</button>
+            </div>
+            <div class="card-body">
+                <div id="rat_dil" class="rationale-text">
+                    <strong>【根拠：なぜDNA抽出液を薄めるのか？】</strong><br>
+                    ① <strong>阻害物質の回避：</strong> 粗抽出液には、PCR酵素を阻害するタンパク質や脂質が含まれています。<br>
+                    ② <strong>ターゲットDNAの過剰：</strong> サンプル（筋肉細胞のミトコンドリア等）によってはターゲットDNAが過剰な場合があります。<br>
+                    そのままでは濃すぎて失敗するため、「DNAが薄まるリスク」より「阻害を回避するメリット」を優先し、適宜（10倍等に）希釈するのが鉄則です。
+                </div>
+                <div class="toggle-container">
+                    <input type="radio" id="dil_mode_ratio" name="dil_mode" checked onchange="toggleDilutionMode()">
+                    <label for="dil_mode_ratio">濃度測定なし(比率)</label>
+                    <input type="radio" id="dil_mode_conc" name="dil_mode" onchange="toggleDilutionMode()">
+                    <label for="dil_mode_conc">濃度測定あり(C1V1)</label>
+                </div>
+                <div id="panel_dil_ratio">
+                    <div class="input-group"><label>DNA原液量</label><input type="number" id="dr_vol" value="5" oninput="calcDilution()"><span>μL</span></div>
+                    <div class="input-group"><label>希釈倍率</label>
+                        <select id="dr_ratio" onchange="calcDilution()">
+                            <option value="5">5倍</option><option value="10" selected>10倍</option><option value="20">20倍</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="panel_dil_conc" style="display: none;">
+                    <div class="input-group"><label>現在の濃度(C1)</label><input type="number" id="dc_c1" value="100" oninput="calcDilution()"><span>ng/μL</span></div>
+                    <div class="input-group"><label>目標の濃度(C2)</label><input type="number" id="dc_c2" value="20" oninput="calcDilution()"><span>ng/μL</span></div>
+                    <div class="input-group"><label>作りたい量(V2)</label><input type="number" id="dc_v2" value="50" oninput="calcDilution()"><span>μL</span></div>
+                </div>
+                
+                <div id="dil_assist_panel" class="assist-panel" style="margin-top: 10px;">
+                    <div class="assist-header">⚠️ 希釈エラー</div>
+                    <div id="dil_assist_content"></div>
+                </div>
+
+                <div class="result-box">
+                    <div class="result-row"><span>DNA原液:</span><span class="result-val" id="res_dil_dna">5.0 μL</span></div>
+                    <div class="result-row"><span>DW (滅菌水):</span><span class="result-val" id="res_dil_water">45.0 μL</span></div>
+                </div>
+
+                <div class="bench-tip" style="margin-top: 15px;">
+                    <strong>💡 現場のコツ（保存について）</strong><br>
+                    ・<strong>原液の保存:</strong> 粗抽出（簡易抽出）の場合は沈殿物を吸わないよう上澄みだけを別チューブに移して保存します。精製キット（カラム等）で抽出した場合は全量をそのまま-20℃で保存可能です。<br>
+                    ・<strong>希釈液の保存:</strong> しばらくの間なら-20℃でOKですが、長期保存するとチューブ壁面に吸着して濃度が低下するため、次回の実験時に原液から作り直します。
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="border-top-color: #9b59b6;">
+            <div class="card-header">⚙️ 2. 総液量設定 (Total Vol)
+                <button class="rationale-btn" onclick="toggleRationale('rat_vol')" title="なぜ液量を変えるの？">?</button>
+            </div>
+            <div class="card-body">
+                <div id="rat_vol" class="rationale-text">
+                    <strong>【根拠：なぜ総液量を変えるのか？】</strong><br>
+                    PCRの液量は、その後の「ゴール」から逆算します。<br>
+                    ・<strong>泳動のみ(10-20µL):</strong> 増幅確認だけなので、酵素節約のため少量。<br>
+                    ・<strong>RFLP用(30µL等):</strong> コントロール(5µL)＋酵素A(10µL)＋酵素B(10µL)と、後で液を「分割」するために多めに作ります。<br>
+                    ・<strong>シーケンス用(50µL):</strong> 精製（カラム等）でのDNA吸着ロスを見越し、大容量で回して量を稼ぎます。
+                </div>
+                <div class="calc-panel">
+                    <div class="input-group" style="background:transparent; border:none; padding:0; margin-bottom:8px;">
+                        <label>基本量 (泳動確認用)</label>
+                        <input type="number" id="vol_base" value="10" oninput="updateTotalVol()"><span>μL</span>
+                    </div>
+                    <div class="input-group" style="background:transparent; border:none; padding:0; margin-bottom:8px;">
+                        <label>制限酵素の数 (+10μL/種)</label>
+                        <select id="vol_re" style="width:75px;" onchange="updateTotalVol()">
+                            <option value="0">0 種</option><option value="1">1 種</option><option value="2" selected>2 種</option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="background:transparent; border:none; padding:0; margin-bottom:0;">
+                        <label>シーケンス精製用 (+20μL)</label>
+                        <select id="vol_seq" style="width:75px;" onchange="updateTotalVol()">
+                            <option value="0" selected>なし</option><option value="20">あり</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-group" style="background:#e8eaed;">
+                    <label style="font-weight:900;">推奨 PCR総液量</label>
+                    <input type="number" id="mm_total_vol" value="30" style="background:#2c3e50; color:white;" oninput="recalcVolumes()"><span>μL</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" style="border-top-color: #1abc9c; flex: 1.5; min-width: 350px;">
+        <div class="card-header">🧪 3. Master Mix 計算表
+            <button class="rationale-btn" onclick="toggleRationale('rat_mm')" title="計算のルールは？">?</button>
+        </div>
+        <div class="card-body">
+            <div id="rat_mm" class="rationale-text">
+                <strong>【計算の罠と根拠】</strong><br>
+                <strong>① 総液量（分母）の罠:</strong> 濃度計算の基準となる「総液量」とは、MMだけの量ではなく、「最後にDNAを加えた後の完全な全量」のことです。<br>
+                <strong>② Primerの独立計算:</strong> FとRは別々の物質です。「合計」ではなく「それぞれ別々に」総液量の1/20〜1/30を入れます。<br>
+                <strong>③ サンプル数の数え方:</strong> 「実サンプル」＋「ポジコン(成功確認)」＋「ネガコン(水・コンタミ確認)」の合計チューブ数を入れます。ネガコンは実験の証明に【必須】です。<br>
+                <strong>④ N+1（10%マージン）:</strong> チップ内側に残る物理的ロスを防ぐため、必ず10%余分に作ります。
+            </div>
+            <div class="input-group">
+                <label>使用する酵素</label>
+                <select id="enzyme_type" onchange="changeEnzymeType()">
+                    <option value="premix">KOD One (2x Premix)</option>
+                    <option value="buf10x">Ex Taq (10x Buffer)</option>
+                    <option value="buf5x">PrimeSTAR GXL (5x Buffer)</option>
+                </select>
+            </div>
+            <div class="input-group" style="background:#e8f8f5;">
+                <label>総チューブ数 (実検体＋Control)</label>
+                <input type="number" id="mm_n" value="6" min="1" oninput="calcMM()">
+            </div>
+            <div style="font-size: 11px; font-weight: bold; color: #e67e22; text-align: right; margin-bottom: 5px;">
+                💡 10%マージン込: <span id="res_n_total" style="font-size: 14px;">6.6</span> 反応分
+            </div>
+
+            <table>
+                <thead>
+                    <tr><th>試薬名</th><th>1反応(μL)</th><th id="mm_col_head">MM (x6.6)</th></tr>
+                </thead>
+                <tbody id="mm_table">
+                    <tr><td>💧 DW (滅菌水)</td><td id="val_1x_water" style="font-weight:bold; color:#2980b9;">13.0</td><td class="mm-result-val" id="val_mm_water">85.8</td></tr>
+                    <tr class="row-premix"><td id="lbl_premix">2x KOD Master Mix</td><td id="val_1x_premix">15.0</td><td class="mm-result-val" id="val_mm_premix">99.0</td></tr>
+                    <tr class="row-sep" style="display:none;"><td id="lbl_buffer">10x Buffer</td><td><input type="number" id="val_1x_buf" value="3.0" class="tbl-input" oninput="calcMM()"></td><td class="mm-result-val" id="val_mm_buf">19.8</td></tr>
+                    <tr class="row-sep" style="display:none;"><td>dNTP Mixture</td><td><input type="number" id="val_1x_dntp" value="2.4" class="tbl-input" oninput="calcMM()"></td><td class="mm-result-val" id="val_mm_dntp">15.8</td></tr>
+                    <tr><td>Primer F (10µM)</td><td><input type="number" id="val_1x_fp" value="1.0" class="tbl-input" oninput="calcMM()"></td><td class="mm-result-val" id="val_mm_fp">6.6</td></tr>
+                    <tr><td>Primer R (10µM)</td><td><input type="number" id="val_1x_rp" value="1.0" class="tbl-input" oninput="calcMM()"></td><td class="mm-result-val" id="val_mm_rp">6.6</td></tr>
+                    <tr class="row-sep" style="display:none;"><td id="lbl_taq">Ex Taq 酵素</td><td><input type="number" id="val_1x_taq" value="0.15" class="tbl-input" oninput="calcMM()"></td><td class="mm-result-val" id="val_mm_taq">1.0</td></tr>
+                    <tr style="background:#34495e; color:white;"><td>チューブへの分注量 (MM)</td><td id="val_1x_dist" style="font-weight:bold;">29.0</td><td style="color:#f1c40f;" id="val_mm_total">191.4</td></tr>
+                    <tr><td style="color:#e74c3c;">🦠 DNA (抽出液)</td><td><input type="number" id="val_1x_dna" value="1.0" class="tbl-input" oninput="calcMM()"></td><td style="font-size:10px; color:#7f8c8d;">MMに入れない</td></tr>
+                </tbody>
+            </table>
+
+            <div class="bench-tip" style="margin-top: 15px; background:#fef9e7; border-color:#f1c40f; color:#7e5109;">
+                <strong>💡 現場のコツ（試薬を入れる黄金の順番）</strong><br>
+                表の上から順番に入れるのがプロの鉄則です！<br>
+                一番量が多い水(DW)を底に入れ、酵素(Taq)は浸透圧ショックで死なないようMMの最後に加えます。DNAはコンタミを防ぐため、各チューブにMMを配り終わった後、<strong>完全に別枠で一番最後</strong>に入れます。
+            </div>
+
+            <div id="assist_panel" class="assist-panel">
+                <div class="assist-header">👨‍🏫 AI Educational Assist (警告)</div>
+                <div id="assist_content"></div>
+            </div>
+
+            <div class="highlight-notice">
+                【手順】完成したMMを各チューブに <span id="notice_dist">29.0</span> μL ずつ配り、<br>
+                最後に DNA を <span id="notice_dna">1.0</span> μL ずつ加え、Total <span id="notice_total">30.0</span> μL にします。<br>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    &copy; 2026 Bio-Edu Suite v1.0 | Developed for Bioinformatics & Wet-Lab Education
+</div>
+
+<script>
+    function toggleRationale(id) {
+        const el = document.getElementById(id);
+        if(el.style.display === 'block') {
+            el.style.display = 'none';
+        } else {
+            // Close others
+            document.querySelectorAll('.rationale-text').forEach(e => e.style.display = 'none');
+            el.style.display = 'block';
+        }
+    }
+
+    window.onload = () => { updateTotalVol(); };
+
+    function toggleDilutionMode() {
+        const isRatio = document.getElementById('dil_mode_ratio').checked;
+        document.getElementById('panel_dil_ratio').style.display = isRatio ? 'block' : 'none';
+        document.getElementById('panel_dil_conc').style.display = isRatio ? 'none' : 'block';
+        calcDilution();
+    }
+
+    function calcDilution() {
+        const isRatio = document.getElementById('dil_mode_ratio').checked;
+        const assistPanel = document.getElementById('dil_assist_panel');
+        const assistContent = document.getElementById('dil_assist_content');
+        let dna = 0, water = 0;
+        let warnings = [];
+
+        if (isRatio) {
+            const v = parseFloat(document.getElementById('dr_vol').value) || 0;
+            const r = parseFloat(document.getElementById('dr_ratio').value) || 1;
+            dna = v; water = v * (r - 1);
+        } else {
+            const c1 = parseFloat(document.getElementById('dc_c1').value) || 0;
+            const c2 = parseFloat(document.getElementById('dc_c2').value) || 0;
+            const v2 = parseFloat(document.getElementById('dc_v2').value) || 0;
+            
+            if (c2 > c1) {
+                warnings.push(`
+                    <div class="assist-item">
+                        <div class="assist-title">✖ 希釈不能（目標濃度が高すぎます）</div>
+                        <div class="assist-reason">【理由】現在のDNA濃度(${c1})より、目標濃度(${c2})の方が高くなっています。水を加えて濃くすることは物理的に不可能です。</div>
+                        <div class="assist-fix">👉【修正】目標の濃度(C2)を下げるか、現在の濃度(C1)が正しいか確認してください。</div>
+                    </div>`);
+            } else if (c1 > 0) { 
+                dna = (c2 * v2) / c1; water = v2 - dna; 
+            }
+        }
+
+        if(warnings.length > 0) {
+            assistPanel.style.display = 'block';
+            assistContent.innerHTML = warnings.join('');
+            document.getElementById('res_dil_dna').innerText = "エラー";
+            document.getElementById('res_dil_water').innerText = "エラー";
+        } else {
+            assistPanel.style.display = 'none';
+            document.getElementById('res_dil_dna').innerText = dna.toFixed(1) + " μL";
+            document.getElementById('res_dil_water').innerText = water.toFixed(1) + " μL";
+        }
+    }
+
+    function updateTotalVol() {
+        const base = parseFloat(document.getElementById('vol_base').value) || 0;
+        const reCount = parseFloat(document.getElementById('vol_re').value) || 0;
+        const seq = parseFloat(document.getElementById('vol_seq').value) || 0;
+        document.getElementById('mm_total_vol').value = base + (reCount * 10) + seq;
+        recalcVolumes();
+    }
+
+    function changeEnzymeType() {
+        const type = document.getElementById('enzyme_type').value;
+        const total = parseFloat(document.getElementById('mm_total_vol').value) || 0;
+        document.querySelectorAll('.row-premix').forEach(el => el.style.display = type === 'premix' ? 'table-row' : 'none');
+        document.querySelectorAll('.row-sep').forEach(el => el.style.display = type !== 'premix' ? 'table-row' : 'none');
+        
+        if (type === 'buf10x') {
+            document.getElementById('lbl_buffer').innerText = "10x ExTaq Buffer";
+            document.getElementById('lbl_taq').innerText = "Ex Taq 酵素";
+            document.getElementById('val_1x_buf').value = (total / 10).toFixed(1);
+        } else if (type === 'buf5x') {
+            document.getElementById('lbl_buffer').innerText = "5x GXL Buffer";
+            document.getElementById('lbl_taq').innerText = "PrimeSTAR 酵素";
+            document.getElementById('val_1x_buf').value = (total / 5).toFixed(1);
+        }
+        calcMM();
+    }
+
+    function recalcVolumes() {
+        const total = parseFloat(document.getElementById('mm_total_vol').value) || 0;
+        let newPrimerVol = (total / 30).toFixed(1);
+        if(newPrimerVol < 0.5) newPrimerVol = 0.5;
+        document.getElementById('val_1x_fp').value = newPrimerVol;
+        document.getElementById('val_1x_rp').value = newPrimerVol;
+        changeEnzymeType(); 
+    }
+
+    function calcMM() {
+        const n = parseInt(document.getElementById('mm_n').value) || 1;
+        const nTotal = n + Math.max(1, n * 0.1);
+        document.getElementById('res_n_total').innerText = nTotal.toFixed(1);
+        document.getElementById('mm_col_head').innerText = `MM (x${nTotal.toFixed(1)})`;
+
+        const totalVol = parseFloat(document.getElementById('mm_total_vol').value) || 0;
+        const type = document.getElementById('enzyme_type').value;
+        let sumReagents = 0;
+        
+        const fp = parseFloat(document.getElementById('val_1x_fp').value) || 0;
+        const rp = parseFloat(document.getElementById('val_1x_rp').value) || 0;
+        sumReagents += (fp + rp);
+        
+        let taq = 0;
+
+        document.getElementById('val_1x_fp').classList.remove('error');
+        document.getElementById('val_1x_rp').classList.remove('error');
+        document.getElementById('val_1x_dna').classList.remove('error');
+        document.getElementById('val_1x_taq').classList.remove('error');
+
+        document.getElementById('val_mm_fp').innerText = (fp * nTotal).toFixed(1);
+        document.getElementById('val_mm_rp').innerText = (rp * nTotal).toFixed(1);
+
+        if (type === 'premix') {
+            const premix = totalVol / 2;
+            sumReagents += premix;
+            document.getElementById('val_1x_premix').innerText = premix.toFixed(1);
+            document.getElementById('val_mm_premix').innerText = (premix * nTotal).toFixed(1);
+        } else {
+            const buf = parseFloat(document.getElementById('val_1x_buf').value) || 0;
+            const dntp = parseFloat(document.getElementById('val_1x_dntp').value) || 0;
+            taq = parseFloat(document.getElementById('val_1x_taq').value) || 0;
+            sumReagents += (buf + dntp + taq);
+            document.getElementById('val_mm_buf').innerText = (buf * nTotal).toFixed(1);
+            document.getElementById('val_mm_dntp').innerText = (dntp * nTotal).toFixed(1);
+            document.getElementById('val_mm_taq').innerText = (taq * nTotal).toFixed(1);
+        }
+
+        const dnaVol = parseFloat(document.getElementById('val_1x_dna').value) || 0;
+        let water = totalVol - dnaVol - sumReagents;
+
+        // --- AI Educational Assist Logic ---
+        let warnings = [];
+        
+        // 1. Water Error
+        if (water < 0) {
+            warnings.push(`
+                <div class="assist-item">
+                    <div class="assist-title">💧 容量オーバー（水がマイナスです）</div>
+                    <div class="assist-reason">【理由】入力された試薬とDNAの合計量が、設定した「総液量(${totalVol}µL)」を超えています。</div>
+                    <div class="assist-fix">👉【修正】総液量を増やすか、各試薬の量を減らしてください。</div>
+                </div>`);
+            document.getElementById('val_1x_water').style.color = "#e74c3c";
+            document.getElementById('val_1x_water').innerText = "エラー";
+            document.getElementById('val_mm_water').innerText = "---";
+        } else {
+            document.getElementById('val_1x_water').style.color = "#2980b9";
+            document.getElementById('val_1x_water').innerText = water.toFixed(1);
+            document.getElementById('val_mm_water').innerText = (water * nTotal).toFixed(1);
+        }
+
+        // 2. DNA Excess
+        if (dnaVol > totalVol * 0.2) {
+            document.getElementById('val_1x_dna').classList.add('error');
+            warnings.push(`
+                <div class="assist-item">
+                    <div class="assist-title">🦠 DNA抽出液が多すぎます</div>
+                    <div class="assist-reason">【理由】DNA液（特に簡易抽出による粗抽出液）を総液量の20%以上入れると、混雑する不純物や『PCR阻害物質』のせいで酵素がうまく働きません。</div>
+                    <div class="assist-fix">👉【修正】DNA量を総液量の10%未満（${totalVol}µLなら1〜2µL）に減らすか、DNA原液を水で希釈して使用してください。</div>
+                </div>`);
+        }
+
+        // 3. Primer Excess
+        if (fp > totalVol * 0.1 || rp > totalVol * 0.1) {
+            if(fp > totalVol * 0.1) document.getElementById('val_1x_fp').classList.add('error');
+            if(rp > totalVol * 0.1) document.getElementById('val_1x_rp').classList.add('error');
+            warnings.push(`
+                <div class="assist-item">
+                    <div class="assist-title">🧬 プライマーが多すぎます</div>
+                    <div class="assist-reason">【理由】プライマー濃度が高すぎると、プライマー同士がくっついて増える『プライマーダイマー』というノイズが発生し、本命のDNAが増えなくなります。</div>
+                    <div class="assist-fix">👉【修正】FとRそれぞれ、総液量の1/20〜1/30（${totalVol}µLなら${(totalVol/30).toFixed(1)}〜${(totalVol/20).toFixed(1)}µL）に減らしてください。</div>
+                </div>`);
+        }
+
+        // 4. Taq Excess
+        if (type !== 'premix' && taq > totalVol * 0.05) {
+            document.getElementById('val_1x_taq').classList.add('error');
+            warnings.push(`
+                <div class="assist-item">
+                    <div class="assist-title">🧪 酵素(Taq)の入れすぎです</div>
+                    <div class="assist-reason">【理由】酵素の原液には凍結防止の「グリセロール」が含まれており、これが総液量の5%を超えるとPCRの反応を強力に阻害します。</div>
+                    <div class="assist-fix">👉【修正】酵素量は通常 0.25〜0.5µL（総液量の約1%）に設定してください。</div>
+                </div>`);
+        }
+
+        const assistPanel = document.getElementById('assist_panel');
+        const assistContent = document.getElementById('assist_content');
+        if (warnings.length > 0) {
+            assistPanel.style.display = 'block';
+            assistContent.innerHTML = warnings.join('');
+        } else {
+            assistPanel.style.display = 'none';
+        }
+
+        const dist = totalVol - dnaVol;
+        document.getElementById('val_1x_dist').innerText = dist.toFixed(1);
+        document.getElementById('val_mm_total').innerText = (dist * nTotal).toFixed(1);
+        document.getElementById('notice_dist').innerText = dist.toFixed(1);
+        document.getElementById('notice_dna').innerText = dnaVol.toFixed(1);
+        document.getElementById('notice_total').innerText = totalVol.toFixed(1);
+    }
+</script>
+</body>
+</html>

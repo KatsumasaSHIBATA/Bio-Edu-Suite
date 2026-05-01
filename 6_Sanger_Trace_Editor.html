@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sanger Trace Editor v1.0 | Bio-Edu Suite</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        /* 共通ヘッダー */
+        .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 30; flex-shrink: 0; }
+        .header { width: 100%; max-width: 1400px; padding: 10px 20px; color: white; display: flex; flex-direction: column; position: relative; }
+        .header h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 1px; color: #fff; }
+        .header p { margin: 4px 0 0 0; font-size: 11px; color: #1abc9c; font-weight: 600; letter-spacing: 0.5px; }
+        .version-badge { position: absolute; right: 20px; top: 15px; background: #34495e; color: #1abc9c; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid #1abc9c; }
+
+        .main-content { width: 100%; max-width: 1400px; margin: 0 auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; flex: 1; min-height: 0; }
+        
+        .card { background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; border-top: 4px solid #3498db; flex-shrink: 0; }
+        .card-header { background: #34495e; color: white; padding: 10px 18px; font-size: 14px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+        .card-body { padding: 15px; display: flex; flex-direction: column; gap: 12px; }
+
+        /* 根拠表示用スタイル */
+        .rationale-btn { background: #1abc9c; color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; }
+        .rationale-btn:hover { background: #16a085; transform: scale(1.1); }
+        .rationale-text { display: none; background: #fef9e7; border: 1px solid #f39c12; padding: 10px; border-radius: 4px; font-size: 11px; color: #7e5109; margin-bottom: 5px; line-height: 1.5; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
+
+        /* ツールバー */
+        .toolbar-row { display: flex; width: 100%; gap: 15px; align-items: center; flex-wrap: wrap; }
+        .step-label { font-size: 13px; font-weight: bold; color: #e67e22; min-width: 80px; display: flex; align-items: center; }
+
+        .btn { background: #fdfefe; border: 1px solid #bdc3c7; padding: 6px 12px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 5px; border-radius: 4px; font-weight: bold; transition: all 0.2s; color: #2c3e50; white-space: nowrap; }
+        .btn:hover:not(:disabled) { background: #eaf2f8; border-color: #3498db; color: #2980b9; }
+        .btn:disabled { color: #a0a0a0; cursor: not-allowed; background: #f4f6f6; border-color: #dcdde1; opacity: 0.7; }
+        
+        .btn-primary { background: #3498db; color: white; border-color: #2980b9; }
+        .btn-primary:hover:not(:disabled) { background: #2980b9; color: white; }
+        .btn-success { background: #27ae60; color: white; border-color: #1e8449; }
+        .btn-success:hover:not(:disabled) { background: #219150; color: white; }
+        
+        .divider { width: 1px; height: 24px; background: #dcdde1; margin: 0 5px; }
+
+        .slider-group { display: flex; align-items: center; gap: 8px; background: #f8f9f9; padding: 6px 12px; border-radius: 4px; border: 1px solid #dcdde1; font-size: 11px; font-weight: bold; color: #34495e; }
+        input[type=range] { width: 80px; cursor: pointer; }
+        
+        .search-input { padding: 6px 10px; font-family: monospace; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 12px; width: 180px; text-transform: uppercase;}
+        .search-input:focus { outline: none; border-color: #3498db; box-shadow: 0 0 3px rgba(52,152,219,0.3); }
+
+        /* ドラッグ＆ドロップエリア */
+        .drop-zone { border: 2px dashed #bdc3c7; border-radius: 6px; padding: 20px; text-align: center; background: #fafbfc; transition: 0.2s; cursor: pointer; }
+        .drop-zone:hover, .drop-zone.dragover { background: #e8f8f5; border-color: #1abc9c; }
+        .drop-zone p { margin: 0; font-size: 13px; color: #7f8c8d; font-weight: bold; }
+
+        /* 現場のコツパネル */
+        .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 10px 15px; font-size: 11px; color: #2c3e50; line-height: 1.5; }
+        .bench-tip strong { color: #2980b9; font-size: 11px; }
+        .keyboard-hints { background: #fff8e1; padding: 6px 15px; font-size: 11px; color: #d35400; border: 1px solid #f5b041; border-radius: 4px; font-weight: 500; margin-bottom: 5px; }
+
+        /* 波形ビュアー (Trace Viewer) */
+        .trace-card { flex: 1; display: flex; flex-direction: column; min-height: 0; border-top-color: #9b59b6; }
+        .trace-outer-container { flex: 1; overflow-x: auto; overflow-y: hidden; background: white; border: 1px solid #bdc3c7; position: relative; display: flex; flex-direction: column; }
+        .trace-inner { position: relative; height: 100%; min-width: 100%; }
+        
+        .bases-layer { position: absolute; top: 0; left: 0; height: 30px; background: rgba(236, 240, 241, 0.8); border-bottom: 1px solid #bdc3c7; width: 100%; z-index: 10; display: flex; }
+        .canvas-layer { position: absolute; top: 30px; left: 0; height: calc(100% - 30px); background: #fff; z-index: 1; }
+        
+        /* ベース(塩基)要素 */
+        .base-char { position: absolute; top: 0; width: 20px; text-align: center; margin-left: -10px; font-family: monospace; font-size: 14px; font-weight: 900; line-height: 30px; cursor: pointer; user-select: none; transition: 0.1s; border-radius: 2px;}
+        .base-char:hover { background: #bdc3c7; }
+        .base-char.selected { background: #3498db; color: #fff !important; box-shadow: 0 0 0 2px #2980b9; z-index: 20;}
+        .base-char.deleted { text-decoration: line-through; color: #95a5a6 !important; opacity: 0.5; }
+        .base-char.edited { border-bottom: 3px solid #e74c3c; background: #fadbd8; }
+        .base-char.highlight { background: #f1c40f; color: #2c3e50 !important; }
+
+        .c-A { color: #27ae60; } .c-T { color: #e74c3c; } .c-G { color: #2c3e50; } .c-C { color: #2980b9; }
+
+        .status-bar { background: #2c3e50; color: white; padding: 8px 20px; font-size: 12px; display: flex; justify-content: space-between; font-weight: 600; letter-spacing: 0.5px; z-index: 30; flex-shrink: 0; }
+        .footer { background: #1a252f; padding: 10px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; flex-shrink: 0; }
+        
+        input[type="file"] { display: none; }
+        /* --- 📱 スマホ最適化（レスポンシブ・デザイン） --- */
+        @media screen and (max-width: 768px) {
+            /* 画面の余白を減らして広く使う */
+            .main-content { padding: 10px; flex-direction: column !important; }
+            .card { min-width: 100% !important; margin-bottom: 10px; }
+            
+            /* 横並びのボタンや入力欄を、縦積みの押しやすいサイズに変更 */
+            .toolbar-row, .scoring-panel { flex-direction: column; align-items: stretch; gap: 8px; }
+            .btn, .search-input, .primer-input { width: 100% !important; justify-content: center; padding: 12px; font-size: 14px; }
+            .slider-container, .slider-group { width: 100%; justify-content: space-between; }
+            
+            /* ヘッダー周りの調整 */
+            .header h1 { font-size: 16px; margin-right: 40px; }
+            .version-badge { top: 10px; right: 10px; padding: 2px 6px; }
+            .header-primer-stats { flex-direction: column; align-items: flex-start; }
+            
+            /* 横スクロール領域を「スマホ特有の滑らかなスクロール」にする */
+            .matrix-container, .sequence-grid, .trace-outer-container, .canvas-container, .alignment-detail { 
+                -webkit-overflow-scrolling: touch; 
+            }
+            
+            /* キャンバス（系統樹など）が画面を突き破らないように制限 */
+            canvas { max-width: 100% !important; height: auto !important; }
+            
+            /* アプリ④：名前列の幅を狭くして、配列を見やすくする */
+            .names-column { width: 100px !important; }
+            .name-header { font-size: 9px; padding-left: 5px; }
+            .seq-name-input { font-size: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header-container">
+    <div class="header">
+        <h1>🧬 Sanger Trace Editor</h1>
+        <p>Bio-Edu Suite: AB1 Binary Parsing, Trace Visualization & Curation</p>
+        <div class="version-badge">v1.0</div>
+    </div>
+</div>
+
+<div class="main-content">
+    
+    <div class="card">
+        <div class="card-header">⚙️ in silico 生データ品質管理パネル</div>
+        <div class="card-body">
+            
+            <div id="rat_ab1" class="rationale-text">
+                <strong>【根拠：なぜ波形（.ab1）を直接見るのか？】</strong><br>
+                シーケンサーはDNAの末端に付いた「4色の蛍光色素」をカメラで読み取り、波形(Trace)として出力します。機械が自動で波形から塩基（A,T,G,C）を判定しますが、波形が乱れた場所では間違えたり「N（判読不能）」と判定したりします。<br>
+                <strong>「機械を100%信用せず、生データ（波形）を人間の目で確認して手動で修正(キュレーション)する」</strong>のが、論文を書くための絶対条件です。
+            </div>
+            <div id="rat_trim" class="rationale-text">
+                <strong>【根拠：なぜノイズカットが必要か？】</strong><br>
+                サンガーシーケンスの原理上、反応の最初（0〜50塩基付近）と最後（800塩基以降）は必ず波形が乱れ、ノイズだらけになります。自分がPCRで使った「プライマー配列」を検索して見つけ出し、<strong>プライマーより外側のノイズ領域は全て削除する（トリミング）</strong>のが鉄則です。
+            </div>
+
+            <div class="toolbar-row">
+                <span class="step-label">1. データ読込 <button class="rationale-btn" onclick="toggleRationale('rat_ab1')" title="波形を見る意味は？">?</button></span>
+                
+                <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                    <p>📂 ここをクリック、または <b>.ab1 ファイル</b> をドラッグ＆ドロップ</p>
+                    <input type="file" id="fileInput" accept=".ab1" onchange="handleFileSelect(event)">
+                </div>
+            </div>
+
+            <div class="toolbar-row">
+                <span class="step-label">2. 表示調整</span>
+                <div class="slider-group">
+                    ↔️ 幅 (X): <input type="range" id="scaleX" min="0.5" max="3" step="0.1" value="1.0" oninput="redrawAll()" disabled>
+                </div>
+                <div class="slider-group">
+                    ↕️ 高さ (Y): <input type="range" id="scaleY" min="0.5" max="5" step="0.1" value="1.5" oninput="redrawAll()" disabled>
+                </div>
+            </div>
+            
+            <div class="toolbar-row">
+                <span class="step-label">3. 検索＆カット <button class="rationale-btn" onclick="toggleRationale('rat_trim')" title="なぜカットするの？">?</button></span>
+                <input type="text" id="searchInput" class="search-input" placeholder="プライマー配列等を入力..." disabled>
+                <button class="btn" id="btnSearch" onclick="searchSequence()" disabled>🔍 検索 (黄色ハイライト)</button>
+                
+                <div class="divider"></div>
+                
+                <button class="btn" id="btnTrimLeft" onclick="trimLeft()" disabled>✂️ 選択位置より左側を一括削除</button>
+                <button class="btn" id="btnTrimRight" onclick="trimRight()" disabled>✂️ 選択位置より右側を一括削除</button>
+            </div>
+            
+            <div class="toolbar-row">
+                <span class="step-label">4. FASTA出力</span>
+                <button class="btn btn-success" id="btnExport" onclick="exportFasta()" disabled>💾 手動補正後の配列をFASTAで保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card trace-card">
+        <div class="card-header">📊 波形ビュアー (Trace Curation)</div>
+        
+        <div class="bench-tip">
+            <strong>💡 現場のコツ（一括カットの使い方）</strong><br>
+            ・検索で見つけたPrimer Fの先頭をクリックし、「✂️ 左側を一括削除」を押すと、それより前のノイズがすべて消えます。<br>
+            ・同様に、Primer Rの末尾をクリックし、「✂️ 右側を一括削除」を押すと、それ以降のノイズがすべて消えます。
+        </div>
+
+        <div class="keyboard-hints">
+            <span>【手動キュレーション】 塩基をクリックして選択 ➡ 波形の青い縦線を確認 ➡ <b>[A/T/G/C/N]キー</b>で修正 ｜ <b>[Backspace]</b>で削除 ｜ <b>[←][→]</b>で移動</span>
+        </div>
+
+        <div class="trace-outer-container" id="traceContainer">
+            <div class="trace-inner" id="traceInner">
+                <div class="bases-layer" id="basesLayer"></div>
+                <canvas class="canvas-layer" id="traceCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="status-bar">
+    <span id="statusText">ステップ1: シーケンス結果（.ab1 ファイル）を読み込んでください。</span>
+    <span id="fileInfoText">File: - | Base: -</span>
+</div>
+
+<div class="footer">
+    &copy; 2026 Bio-Edu Suite v1.0 | Developed for Bioinformatics & Wet-Lab Education
+</div>
+
+<script>
+    function toggleRationale(id) {
+        const el = document.getElementById(id);
+        if(el.style.display === 'block') {
+            el.style.display = 'none';
+        } else {
+            document.querySelectorAll('.rationale-text').forEach(e => e.style.display = 'none');
+            el.style.display = 'block';
+        }
+    }
+
+    // --- Drag & Drop ---
+    const dropZone = document.getElementById('dropZone');
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+    function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+    dropZone.addEventListener('dragover', () => dropZone.classList.add('dragover'));
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', (e) => {
+        dropZone.classList.remove('dragover');
+        if(e.dataTransfer.files.length > 0) processFile(e.dataTransfer.files[0]);
+    });
+
+    function handleFileSelect(e) {
+        if(e.target.files.length > 0) processFile(e.target.files[0]);
+    }
+
+    // --- データ保存用変数 ---
+    let ab1Data = null; 
+    let currentFileName = "";
+    let selectedBaseIndex = -1;
+
+    // --- 色設定 ---
+    const colorMap = {
+        'A': '#27ae60', // 緑
+        'T': '#e74c3c', // 赤
+        'G': '#2c3e50', // 黒
+        'C': '#2980b9'  // 青
+    };
+
+    // --- ABIF (.ab1) Binary Parser ---
+    function processFile(file) {
+        currentFileName = file.name;
+        document.getElementById('statusText').innerText = "バイナリ解析中...";
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                ab1Data = parseAB1(e.target.result);
+                document.getElementById('statusText').innerText = "解析完了。波形を確認し、[A/T/G/C]や[Backspace]キーでキュレーションを行ってください。";
+                document.getElementById('fileInfoText').innerText = `File: ${currentFileName}`;
+                
+                // UIアンロック
+                document.getElementById('scaleX').disabled = false;
+                document.getElementById('scaleY').disabled = false;
+                document.getElementById('searchInput').disabled = false;
+                document.getElementById('btnSearch').disabled = false;
+                document.getElementById('btnTrimLeft').disabled = false;
+                document.getElementById('btnTrimRight').disabled = false;
+                document.getElementById('btnExport').disabled = false;
+
+                selectedBaseIndex = -1;
+                redrawAll();
+            } catch (err) {
+                alert("ファイルの解析に失敗しました。正しい .ab1 ファイルか確認してください。\n" + err);
+                document.getElementById('statusText').innerText = "エラーが発生しました。";
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    function parseAB1(arrayBuffer) {
+        const dv = new DataView(arrayBuffer);
+        const magic = String.fromCharCode(dv.getUint8(0), dv.getUint8(1), dv.getUint8(2), dv.getUint8(3));
+        if (magic !== 'ABIF') throw new Error("Invalid format");
+
+        const dirOffset = dv.getInt32(26);
+        const dirCount = dv.getInt32(18);     
+        const dirEntrySize = dv.getInt16(16); 
+
+        let dirs = [];
+        for (let i = 0; i < dirCount; i++) {
+            let offset = dirOffset + i * dirEntrySize;
+            let name = String.fromCharCode(dv.getUint8(offset), dv.getUint8(offset+1), dv.getUint8(offset+2), dv.getUint8(offset+3));
+            let tag = dv.getInt32(offset+4);
+            let numElems = dv.getInt32(offset+12);
+            let dataSize = dv.getInt32(offset+16);
+            let dataOffset = dv.getInt32(offset+20);
+            if (dataSize <= 4) dataOffset = offset+20;
+            dirs.push({ name, tag, numElems, dataOffset });
+        }
+
+        const getDir = (n, t) => dirs.find(d => d.name === n && d.tag === t);
+
+        let fwoDir = getDir('FWO_', 1);
+        let fwo = "GATC"; // Applied Biosystems Default
+        if (fwoDir) {
+            fwo = "";
+            for(let i=0; i<fwoDir.numElems; i++) fwo += String.fromCharCode(dv.getUint8(fwoDir.dataOffset + i));
+        }
+
+        let pbasDir = getDir('PBAS', 2) || getDir('PBAS', 1);
+        let plocDir = getDir('PLOC', 2) || getDir('PLOC', 1);
+
+        if (!pbasDir || !plocDir) throw new Error("Base call data missing");
+
+        let bases = [];
+        for(let i=0; i<pbasDir.numElems; i++) {
+            bases.push({
+                char: String.fromCharCode(dv.getUint8(pbasDir.dataOffset + i)),
+                loc: dv.getInt16(plocDir.dataOffset + i * 2),
+                isDeleted: false,
+                isEdited: false,
+                isHighlight: false
+            });
+        }
+
+        let traces = { A: [], T: [], G: [], C: [] };
+        let maxVal = 0;
+        let traceLength = 0;
+
+        for (let i = 0; i < 4; i++) {
+            let dataDir = getDir('DATA', 9 + i);
+            if (dataDir) {
+                let baseChar = fwo[i];
+                let arr = new Int16Array(dataDir.numElems);
+                for (let j = 0; j < dataDir.numElems; j++) {
+                    let val = dv.getInt16(dataDir.dataOffset + j * 2);
+                    arr[j] = val;
+                    if (val > maxVal) maxVal = val;
+                }
+                traces[baseChar] = arr;
+                if (dataDir.numElems > traceLength) traceLength = dataDir.numElems;
+            }
+        }
+
+        return { bases, traces, maxVal, traceLength };
+    }
+
+    // --- 描画ロジック ---
+    function redrawAll() {
+        if(!ab1Data) return;
+        const scaleX = parseFloat(document.getElementById('scaleX').value);
+        const scaleY = parseFloat(document.getElementById('scaleY').value);
+        
+        // Canvasサイズの決定
+        const container = document.getElementById('traceInner');
+        const canvas = document.getElementById('traceCanvas');
+        const basesLayer = document.getElementById('basesLayer');
+        
+        // 適度なスケール係数（波形のデータ点間のピクセル距離）
+        const baseWidth = 2.0; 
+        const totalWidth = Math.min(ab1Data.traceLength * baseWidth * scaleX, 30000); 
+        
+        container.style.width = totalWidth + 'px';
+        canvas.width = totalWidth;
+        canvas.height = container.clientHeight - 30; // 上部の塩基行を除く
+        
+        drawTraces(canvas, scaleX, scaleY, baseWidth);
+        renderBases(basesLayer, scaleX, baseWidth);
+    }
+
+    function drawTraces(canvas, scaleX, scaleY, baseWidth) {
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+
+        const dataLen = ab1Data.traceLength;
+        const drawScaleY = (h * 0.9) / (ab1Data.maxVal / scaleY);
+
+        // --- プロ用ガイドラインの描画 ---
+        // 1. 全塩基の薄い縦線（位置の目安）
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(189, 195, 199, 0.4)'; // 薄いグレー
+        ctx.lineWidth = 1;
+        ab1Data.bases.forEach(b => {
+            if(!b.isDeleted) {
+                let x = b.loc * baseWidth * scaleX;
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, h);
+            }
+        });
+        ctx.stroke();
+
+        // 2. 選択中塩基のハイライト（青い帯と破線）
+        if (selectedBaseIndex !== -1) {
+            let b = ab1Data.bases[selectedBaseIndex];
+            let selectedX = b.loc * baseWidth * scaleX;
+            
+            // 背景の薄青い帯
+            ctx.fillStyle = 'rgba(52, 152, 219, 0.15)'; 
+            ctx.fillRect(selectedX - 10, 0, 20, h);
+            
+            // 頂点を貫く青い破線
+            ctx.beginPath();
+            ctx.moveTo(selectedX, 0);
+            ctx.lineTo(selectedX, h);
+            ctx.strokeStyle = 'rgba(41, 128, 185, 0.9)'; // 濃い青
+            ctx.setLineDash([5, 5]); // 破線
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            ctx.setLineDash([]); // リセット
+        }
+
+        // --- 4チャンネルの波形描画 ---
+        ['G', 'A', 'T', 'C'].forEach(base => {
+            const arr = ab1Data.traces[base];
+            if(!arr) return;
+            
+            ctx.beginPath();
+            ctx.strokeStyle = colorMap[base];
+            ctx.lineWidth = 1.5;
+            
+            for(let i=0; i<dataLen; i++) {
+                let x = i * baseWidth * scaleX;
+                if (x > w) break;
+                let y = h - (arr[i] * drawScaleY);
+                if(i===0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+        });
+    }
+
+    function renderBases(container, scaleX, baseWidth) {
+        container.innerHTML = '';
+        const frag = document.createDocumentFragment();
+
+        ab1Data.bases.forEach((b, index) => {
+            let x = b.loc * baseWidth * scaleX;
+            let div = document.createElement('div');
+            
+            let classes = ['base-char', `c-${b.char}`];
+            if(b.isDeleted) classes.push('deleted');
+            if(b.isEdited) classes.push('edited');
+            if(b.isHighlight) classes.push('highlight');
+            if(index === selectedBaseIndex) classes.push('selected');
+            
+            div.className = classes.join(' ');
+            div.style.left = x + 'px';
+            div.innerText = b.char;
+            div.dataset.index = index;
+
+            div.onclick = () => { selectBase(index); };
+            frag.appendChild(div);
+        });
+
+        container.appendChild(frag);
+    }
+
+    function selectBase(index) {
+        selectedBaseIndex = index;
+        redrawAll(); 
+        
+        const container = document.getElementById('traceContainer');
+        const scaleX = parseFloat(document.getElementById('scaleX').value);
+        const baseWidth = 2.0;
+        let x = ab1Data.bases[index].loc * baseWidth * scaleX;
+        
+        let minScroll = x - container.clientWidth / 2;
+        container.scrollTo({ left: Math.max(0, minScroll), behavior: 'smooth' });
+    }
+
+    // --- キーボード操作（キュレーション機能） ---
+    document.addEventListener('keydown', function(e) {
+        if(e.target.tagName === 'INPUT' || !ab1Data || selectedBaseIndex === -1) return;
+        
+        let prevent = false;
+        let key = e.key.toUpperCase();
+        let baseObj = ab1Data.bases[selectedBaseIndex];
+
+        if (e.key === 'ArrowRight') {
+            selectedBaseIndex = Math.min(ab1Data.bases.length - 1, selectedBaseIndex + 1);
+            prevent = true;
+        } else if (e.key === 'ArrowLeft') {
+            selectedBaseIndex = Math.max(0, selectedBaseIndex - 1);
+            prevent = true;
+        } else if (e.key === 'Backspace' || e.key === 'Delete') {
+            baseObj.isDeleted = !baseObj.isDeleted; 
+            if(baseObj.isDeleted) selectedBaseIndex = Math.min(ab1Data.bases.length - 1, selectedBaseIndex + 1);
+            prevent = true;
+        } else if (['A','T','G','C','N'].includes(key)) {
+            baseObj.char = key;
+            baseObj.isEdited = true;
+            baseObj.isDeleted = false;
+            selectedBaseIndex = Math.min(ab1Data.bases.length - 1, selectedBaseIndex + 1);
+            prevent = true;
+        }
+
+        if (prevent) {
+            e.preventDefault();
+            redrawAll();
+        }
+    });
+
+    // --- 検索機能 ---
+    function searchSequence() {
+        if(!ab1Data) return;
+        let query = document.getElementById('searchInput').value.toUpperCase().replace(/[^ATGC]/g, '');
+        if(!query) return;
+
+        // 全体のハイライト解除
+        ab1Data.bases.forEach(b => b.isHighlight = false);
+
+        // 削除されていない塩基だけで文字列生成
+        let validIndices = [];
+        let seqStr = "";
+        ab1Data.bases.forEach((b, i) => {
+            if(!b.isDeleted) {
+                seqStr += b.char;
+                validIndices.push(i);
+            }
+        });
+
+        let matchIdx = seqStr.indexOf(query);
+        if(matchIdx !== -1) {
+            // ハイライト適用
+            for(let i=0; i<query.length; i++) {
+                let actualIndex = validIndices[matchIdx + i];
+                ab1Data.bases[actualIndex].isHighlight = true;
+            }
+            selectBase(validIndices[matchIdx]);
+            document.getElementById('statusText').innerText = `検索成功。これより外側のノイズは「一括削除」ボタンで削除してください。`;
+        } else {
+            alert("指定された配列が見つかりません。");
+        }
+    }
+
+    // --- 一括カット機能 (Trim Left / Right) ---
+    function trimLeft() {
+        if(!ab1Data || selectedBaseIndex === -1) {
+            alert("カットする基準となる塩基をクリックして選択してください。");
+            return;
+        }
+        for(let i = 0; i < selectedBaseIndex; i++) {
+            ab1Data.bases[i].isDeleted = true;
+        }
+        redrawAll();
+        document.getElementById('statusText').innerText = "選択位置より左側の領域を一括削除しました。";
+    }
+
+    function trimRight() {
+        if(!ab1Data || selectedBaseIndex === -1) {
+            alert("カットする基準となる塩基をクリックして選択してください。");
+            return;
+        }
+        // 選択塩基の「次」から末尾までを削除
+        for(let i = selectedBaseIndex + 1; i < ab1Data.bases.length; i++) {
+            ab1Data.bases[i].isDeleted = true;
+        }
+        redrawAll();
+        document.getElementById('statusText').innerText = "選択位置より右側の領域を一括削除しました。";
+    }
+
+    // --- FASTA出力 ---
+    function exportFasta() {
+        if(!ab1Data) return;
+        let seqStr = "";
+        ab1Data.bases.forEach(b => {
+            if(!b.isDeleted) seqStr += b.char;
+        });
+        
+        let headerName = currentFileName.replace(/\.ab1$/i, '_curated');
+        let output = `>${headerName}\n${seqStr}\n`;
+        
+        const a = document.createElement('a'); 
+        a.href = URL.createObjectURL(new Blob([output], { type: 'text/plain' }));
+        a.download = `${headerName}.fasta`; 
+        a.click();
+        
+        document.getElementById('statusText').innerText = `FASTAファイルを保存しました！このデータを Alignment Studio に入れて解析を進めましょう。`;
+    }
+</script>
+
+</body>
+</html>
