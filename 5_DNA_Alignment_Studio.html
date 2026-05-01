@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNA Alignment & Editing Studio v2.5 | Bio-Edu Suite</title>
+    <title>DNA Alignment & Editing Studio v2.7 | Bio-Edu Suite</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         /* 🚨修正1: 画面の固定を解除し、下まで自然にスクロールできるように変更 */
@@ -121,7 +121,7 @@
         .status-bar { background: #2c3e50; color: white; padding: 8px 20px; font-size: 12px; display: flex; justify-content: space-between; font-weight: 600; letter-spacing: 0.5px; z-index: 30; flex-shrink: 0; margin-top: auto;}
         .footer { background: #1a252f; padding: 10px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; flex-shrink: 0; }
         
-        /* 🚨【スマホ・タブレット完全対応パッチ】 */
+        /* 🚨【スマホ・タブレット完全対応パッチ (v2.7)】 */
         @media screen and (max-width: 768px) {
             .main-content { padding: 10px; flex-direction: column !important; }
             .card { min-width: 100% !important; margin-bottom: 10px; }
@@ -131,9 +131,9 @@
             .header h1 { font-size: 16px; margin-right: 40px; }
             .version-badge { top: 10px; right: 10px; padding: 2px 6px; }
             
-            /* 🚨修正ポイント①: プライマー設計ナビの間延びをなくし、コンパクトに折り返す */
-            .editor-card .card-header { flex-direction: column; align-items: flex-start; gap: 8px; padding: 10px; }
-            .header-primer-stats { width: 100%; flex-direction: row; flex-wrap: wrap; gap: 8px; padding: 8px 12px; margin-top: 2px; border-radius: 6px; }
+            /* 🚨修正ポイント①: プライマー設計ナビの余白を極限まで削り、コンパクトにする */
+            .editor-card .card-header { flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px; }
+            .header-primer-stats { width: 100%; flex-direction: row; flex-wrap: wrap; gap: 4px; padding: 6px 10px; margin-top: 0; border-radius: 4px; }
 
             /* 🚨修正ポイント②: スマホでは「プロツール招待」の横並び(Flex)を解除し、自然なブロック表示にして変な改行を防ぐ */
             .mega-invite { display: block; padding: 12px; line-height: 1.6; }
@@ -156,7 +156,7 @@
     <div class="header">
         <h1>🧬 DNA Alignment & Editing Studio</h1>
         <p>Bio-Edu Suite: Sequence Processing & Primer Design Environment</p>
-        <div class="version-badge">v2.5</div>
+        <div class="version-badge">v2.7</div>
     </div>
 </div>
 
@@ -279,7 +279,7 @@
     </div>
     
     <div class="mega-invite">
-        <strong>🔗 Step up to professional tools:</strong>
+        <strong>🔗 Step up to professional tools:</strong><br>
         本当の研究で「多数の配列」「長い配列」を正確にアライメント(MSA)するには、このアプリの簡易機能ではなく、世界標準の解析アルゴリズム<b>「MAFFT」</b>や<b>「Clustal Omega」</b>を使いましょう。
     </div>
 </div>
@@ -290,7 +290,7 @@
 </div>
 
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v2.5 | Developed for Bioinformatics & Wet-Lab Education
+    &copy; 2026 Bio-Edu Suite v2.7 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
 <script>
@@ -569,7 +569,7 @@
             updateMutationsAndRender(); 
             
             scrollToPos(alignedPosF);
-            document.getElementById('statusText').innerText = "検索成功！不要な両端（ノイズ領域）は「3. 手動カット（一括削除）」で削り落としてください。";
+            document.getElementById('statusText').innerText = "検索成功！不要な両端（ノイズ領域）は「3. 手 manual-cut (一括削除)」で削り落としてください。";
         }, 50);
     }
 
