@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thermal Cycler Simulator v1.5 | Bio-Edu Suite</title>
+    <title>Thermal Cycler Simulator v1.6 | Bio-Edu Suite</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
 
@@ -13,27 +13,27 @@
         .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 10; }
         .header { width: 100%; max-width: 1000px; padding: 15px 20px; color: white; display: flex; flex-direction: column; position: relative; }
         
-        /* 🚨修正: タイトルがバッジの下に潜り込まないよう余白を確保し、サイズを調整 */
         .header h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 1px; color: #fff; padding-right: 70px; line-height: 1.3; }
         .header p { margin: 5px 0 0 0; font-size: 12px; color: #1abc9c; font-weight: 600; letter-spacing: 0.5px; }
         .version-badge { position: absolute; right: 20px; top: 15px; background: #34495e; color: #1abc9c; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid #1abc9c; }
 
         .main-content { width: 100%; max-width: 1000px; padding: 25px 20px; display: flex; flex-direction: column; align-items: center; gap: 25px; flex: 1; }
 
-        /* 教育パネル：全5大要素 */
+        /* 教育パネル */
         .scenario-panel { background: #fff; width: 100%; padding: 20px 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 4px solid #e74c3c; display: flex; flex-direction: column; }
         .scenario-panel h2 { margin: 0 0 8px 0; font-size: 18px; color: #2c3e50; border-bottom: 2px solid #f4f6f7; padding-bottom: 8px; }
         .scenario-desc { font-size: 13px; color: #5d6d7e; margin-bottom: 15px; line-height: 1.6; }
         
-        /* 🚨修正: グリッドを明示的に2カラムに指定し、美しく配置する */
-        .scenario-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 12px; }
+        /* 🚨PC版のスマートな2カラムグリッド */
+        .scenario-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 12px; align-items: stretch; }
         
         /* 根拠表示用スタイル */
         .rationale-btn { background: #1abc9c; color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s;}
         .rationale-btn:hover { background: #16a085; transform: scale(1.1); }
         .rationale-text { display: none; background: #fef9e7; border: 1px solid #f39c12; padding: 10px; border-radius: 6px; font-size: 11px; color: #7e5109; margin-top: 4px; margin-bottom: 8px; line-height: 1.5; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); font-weight: normal; }
         
-        .input-group { background: #fdfefe; padding: 12px; border-radius: 6px; border: 1px solid #d5dbdb; box-shadow: inset 0 1px 3px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 5px; }
+        /* 🚨間延び防止: justify-content: flex-start; で上詰めに */
+        .input-group { background: #fdfefe; padding: 12px; border-radius: 6px; border: 1px solid #d5dbdb; box-shadow: inset 0 1px 3px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 5px; justify-content: flex-start; }
         .input-group label { color: #c0392b; font-weight: 800; font-size: 12px; margin-bottom: 2px; display: flex; align-items: center; }
         .input-group select, .input-group input { padding: 6px; border-radius: 4px; border: 1px solid #bdc3c7; font-size: 13px; font-weight: bold; color: #2c3e50; outline: none; width: 100%; transition: 0.2s; }
         .input-group input:focus, .input-group select:focus { border-color: #3498db; box-shadow: 0 0 0 2px rgba(52,152,219,0.2); }
@@ -49,38 +49,19 @@
         
         .vol-guide { background: #e8f8f5; color: #16a085; font-size: 10px; padding: 4px; text-align: center; border-radius: 4px; margin-bottom: 5px; font-weight: bold;}
 
-        /* 🚨修正: Tm値表示コンテナ (PCで横伸びを禁止し、VOLの右隣にピタッと収める) */
+        /* 🚨Tmコンテナ: 先生がお気に入りだったv1.1のコンパクトなデザインに完全復元 */
         .tm-container { 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            align-items: center; 
-            background: #2c3e50; 
-            padding: 15px; 
-            border-radius: 6px; 
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); 
-            grid-column: span 1; /* グリッドの1列分を使用 */
-            gap: 10px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; 
+            background: #2c3e50; padding: 15px; border-radius: 6px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); 
+            grid-column: span 1; text-align: center;
         }
-        .tm-box { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; width: 100%; }
-        .tm-label { font-size: 11px; color: #bdc3c7; font-weight: bold; text-align: center; width: 100%; }
-        .tm-display { color: #f1c40f; font-size: 14px; font-weight: 900; text-align: center; width: 100%; }
-        .tm-avg { 
-            display: inline-block; /* 物理的な横伸びを防ぐ */
-            background: #27ae60; color: #fff; padding: 6px 20px; border-radius: 4px; 
-            font-size: 18px; font-weight: 900; border: 1px solid #2ecc71; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2); 
-            text-align: center;
-        }
+        .tm-label { font-size: 11px; color: #bdc3c7; font-weight: bold; margin-bottom: 4px; }
+        .tm-display { color: #f1c40f; font-size: 14px; font-weight: 900; white-space: nowrap; margin-bottom: 8px; }
+        .tm-avg { background: #27ae60; color: #fff; padding: 6px 15px; border-radius: 4px; font-size: 18px; font-weight: 900; border: 1px solid #2ecc71; box-shadow: 0 2px 4px rgba(0,0,0,0.2); display: inline-block;}
 
         /* 現場のコツパネル */
-        .bench-tip { 
-            background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px 15px; 
-            border-radius: 4px; font-size: 12px; color: #2c3e50; margin: 0; 
-            line-height: 1.5; grid-column: 1 / -1; /* これだけは下部で全幅を使用 */
-            width: 100%; box-sizing: border-box;
-        }
-        .bench-tip strong { color: #2980b9; font-size: 12px;}
+        .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 10px 15px; border-radius: 6px; font-size: 11px; color: #2c3e50; margin-top: 15px; line-height: 1.5; font-weight: normal; grid-column: 1 / -1; }
+        .bench-tip strong { color: #2980b9; font-size: 11px;}
 
         .btn-container { display:flex; gap:10px; margin-top: 15px; justify-content: flex-end; }
         .manual-btn { background: #e67e22; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; box-shadow: 0 3px 0 #d35400; transition: 0.1s; }
@@ -161,14 +142,16 @@
         /* 共通フッター */
         .footer { background: #1a252f; width: 100%; padding: 15px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; margin-top: auto; border-top: 1px solid #2c3e50; }
         
-        /* 🚨【スマホ・タブレット完全対応パッチ】 */
+        /* 📱 スマホ・タブレット最適化（確実な1カラム化と左寄り防止） */
         @media screen and (max-width: 768px) {
             .main-content { padding: 10px; gap: 15px; }
             .scenario-panel { padding: 15px; }
             
-            /* スマホ時はグリッドを1カラムに強制し、重なりや左寄りを防止 */
+            /* スマホ時はグリッドを1カラムに強制 */
             .scenario-inputs { grid-template-columns: 1fr; gap: 12px; }
-            .input-group[style*="grid-column: span 2"] { grid-column: span 1 !important; }
+            
+            /* span2設定や全幅設定を解除し、自然な幅にする */
+            .input-group, .tm-container, .bench-tip { grid-column: span 1 !important; }
             
             .btn-container { flex-direction: column; margin-top: 10px; }
             .manual-btn { width: 100%; text-align: center; }
@@ -176,10 +159,7 @@
             .header h1 { font-size: 18px; padding-right: 60px; }
             .version-badge { top: 12px; right: 10px; }
 
-            /* スマホでTmパネルとコツパネルが左寄りになるのを防ぐため span 1 を強制 */
-            .tm-container { grid-column: span 1 !important; }
-            .bench-tip { grid-column: span 1 !important; }
-
+            /* 機器のスクロールは左端から自然に開始 */
             .machine-scroll-wrapper { justify-content: flex-start; padding-bottom: 15px;}
             .machine-body { padding: 20px; gap: 15px; }
         }
@@ -191,7 +171,7 @@
     <div class="header">
         <h1>🧬 Thermal Cycler Simulator</h1>
         <p>Bio-Edu Suite: PCR Protocol Optimization & Logical Troubleshooting</p>
-        <div class="version-badge">v1.5</div>
+        <div class="version-badge">v1.6</div>
     </div>
 </div>
 
@@ -273,14 +253,10 @@
             </div>
 
             <div class="tm-container">
-                <div class="tm-box">
-                    <span class="tm-label">算出された個別のTm値</span>
-                    <div class="tm-display" id="tmValueDisplay">F: --.-℃ / R: --.-℃</div>
-                </div>
-                <div class="tm-box">
-                    <span class="tm-label" style="color:#1abc9c;">★ アニーリング基準値 (Tm平均)</span>
-                    <div class="tm-avg" id="tmAvgDisplay">--.- ℃</div>
-                </div>
+                <span class="tm-label">算出された個別のTm値</span>
+                <div class="tm-display" id="tmValueDisplay">F: --.-℃ / R: --.-℃</div>
+                <span class="tm-label" style="color:#1abc9c; margin-top:4px;">★ アニーリング基準値 (Tm平均)</span>
+                <div class="tm-avg" id="tmAvgDisplay">--.- ℃</div>
             </div>
             
             <div class="bench-tip">
@@ -451,7 +427,7 @@
 </div>
 
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v1.5 | Developed for Bioinformatics & Wet-Lab Education
+    &copy; 2026 Bio-Edu Suite v1.6 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
 <script>
