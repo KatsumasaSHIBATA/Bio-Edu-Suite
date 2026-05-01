@@ -85,35 +85,6 @@
             /* ページまたぎ防止の魔法のCSS */
             .alignment-block { page-break-inside: avoid; break-inside: avoid; overflow-x: visible; }
         }
-        /* --- 📱 スマホ最適化（レスポンシブ・デザイン） --- */
-        @media screen and (max-width: 768px) {
-            /* 画面の余白を減らして広く使う */
-            .main-content { padding: 10px; flex-direction: column !important; }
-            .card { min-width: 100% !important; margin-bottom: 10px; }
-            
-            /* 横並びのボタンや入力欄を、縦積みの押しやすいサイズに変更 */
-            .toolbar-row, .scoring-panel { flex-direction: column; align-items: stretch; gap: 8px; }
-            .btn, .search-input, .primer-input { width: 100% !important; justify-content: center; padding: 12px; font-size: 14px; }
-            .slider-container, .slider-group { width: 100%; justify-content: space-between; }
-            
-            /* ヘッダー周りの調整 */
-            .header h1 { font-size: 16px; margin-right: 40px; }
-            .version-badge { top: 10px; right: 10px; padding: 2px 6px; }
-            .header-primer-stats { flex-direction: column; align-items: flex-start; }
-            
-            /* 横スクロール領域を「スマホ特有の滑らかなスクロール」にする */
-            .matrix-container, .sequence-grid, .trace-outer-container, .canvas-container, .alignment-detail { 
-                -webkit-overflow-scrolling: touch; 
-            }
-            
-            /* キャンバス（系統樹など）が画面を突き破らないように制限 */
-            canvas { max-width: 100% !important; height: auto !important; }
-            
-            /* アプリ④：名前列の幅を狭くして、配列を見やすくする */
-            .names-column { width: 100px !important; }
-            .name-header { font-size: 9px; padding-left: 5px; }
-            .seq-name-input { font-size: 10px; }
-        }
     </style>
     <style id="pageOrientationStyle">
         @media print { @page { size: A4 landscape; margin: 15mm; } }
