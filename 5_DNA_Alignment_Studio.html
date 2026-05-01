@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNA Alignment & Editing Studio v2.7 | Bio-Edu Suite</title>
+    <title>DNA Alignment & Editing Studio v2.8 | Bio-Edu Suite</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
-        /* 🚨修正1: 画面の固定を解除し、下まで自然にスクロールできるように変更 */
+        /* 画面の固定を解除し、下まで自然にスクロールできるように変更 */
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
         
         /* 共通ヘッダー */
@@ -16,7 +16,7 @@
         .header p { margin: 4px 0 0 0; font-size: 11px; color: #1abc9c; font-weight: 600; letter-spacing: 0.5px; }
         .version-badge { position: absolute; right: 20px; top: 15px; background: #34495e; color: #1abc9c; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid #1abc9c; }
 
-        /* 🚨修正2: コンテンツエリアが潰れないように保護 */
+        /* コンテンツエリアが潰れないように保護 */
         .main-content { width: 100%; max-width: 1400px; margin: 0 auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; flex: 1; }
         
         .card { background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; border-top: 4px solid #3498db; flex-shrink: 0; }
@@ -61,7 +61,7 @@
 
         .keyboard-hints { background: #fff8e1; padding: 6px 15px; font-size: 11px; color: #d35400; border: 1px solid #f5b041; border-radius: 4px; display: flex; justify-content: space-between; font-weight: 500; margin-bottom: 5px; }
 
-        /* 🚨修正3: エディタエリアが潰れないように min-height: 500px を設定 */
+        /* エディタエリアが潰れないように min-height: 500px を設定 */
         .editor-card { flex: 1; display: flex; flex-direction: column; min-height: 500px; border-top-color: #9b59b6; position: relative;}
         .editor-container { flex: 1; overflow: auto; background: white; display: flex; position: relative; user-select: none; }
         
@@ -116,12 +116,14 @@
 
         .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 10px 15px; font-size: 11px; color: #2c3e50; line-height: 1.5; border-bottom: 1px solid #dcdde1; }
         .bench-tip strong { color: #2980b9; font-size: 11px; }
+        
+        /* 🚨 PC側のメガインバイト（ここは先生のコードを一文字も変えず維持） */
         .mega-invite { background: #fff8e1; border: 1px solid #f5b041; padding: 8px 15px; font-size: 11px; color: #7e5109; line-height: 1.5; display: flex; align-items: center; gap: 10px; margin-bottom: 10px;}
 
         .status-bar { background: #2c3e50; color: white; padding: 8px 20px; font-size: 12px; display: flex; justify-content: space-between; font-weight: 600; letter-spacing: 0.5px; z-index: 30; flex-shrink: 0; margin-top: auto;}
         .footer { background: #1a252f; padding: 10px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; flex-shrink: 0; }
         
-        /* 🚨【スマホ・タブレット完全対応パッチ (v2.7)】 */
+        /* 📱 スマホ・タブレット最適化（ここだけを修正） */
         @media screen and (max-width: 768px) {
             .main-content { padding: 10px; flex-direction: column !important; }
             .card { min-width: 100% !important; margin-bottom: 10px; }
@@ -131,22 +133,27 @@
             .header h1 { font-size: 16px; margin-right: 40px; }
             .version-badge { top: 10px; right: 10px; padding: 2px 6px; }
             
-            /* 🚨修正ポイント①: プライマー設計ナビの余白を極限まで削り、コンパクトにする */
-            .editor-card .card-header { flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px; }
-            .header-primer-stats { width: 100%; flex-direction: row; flex-wrap: wrap; gap: 4px; padding: 6px 10px; margin-top: 0; border-radius: 4px; }
+            /* 🚨修正ポイント①: プライマー設計ナビの余白を消滅させ、横に詰め込む */
+            .editor-card .card-header { flex-direction: column; align-items: flex-start; gap: 8px; padding: 10px; }
+            .header-primer-stats { 
+                flex-direction: row; /* 縦積みをやめて横並びにする */
+                flex-wrap: wrap;     /* はみ出た分だけ折り返す */
+                align-items: center; 
+                gap: 4px 8px;        /* 隙間を極限まで小さく */
+                padding: 6px 10px; 
+                width: 100%; 
+                margin-top: 0;       /* 上の余白を消去 */
+            }
 
-            /* 🚨修正ポイント②: スマホでは「プロツール招待」の横並び(Flex)を解除し、自然なブロック表示にして変な改行を防ぐ */
+            /* 🚨修正ポイント②: MAFFTの案内をスマホではブロック表示にして綺麗に改行させる */
             .mega-invite { display: block; padding: 12px; line-height: 1.6; }
             .mega-invite strong { display: block; margin-bottom: 6px; font-size: 12px; }
 
             .editor-container { -webkit-overflow-scrolling: touch; }
-            
-            /* スマホで配列を広く見せるため、名前列を狭くする */
             .names-column { width: 120px !important; }
             .name-header { font-size: 9px; padding-left: 5px; }
             .seq-name-input { font-size: 10px; }
-            
-            .divider { display: none; } /* スマホでは不要な区切り線を消す */
+            .divider { display: none; }
         }
     </style>
 </head>
@@ -156,7 +163,7 @@
     <div class="header">
         <h1>🧬 DNA Alignment & Editing Studio</h1>
         <p>Bio-Edu Suite: Sequence Processing & Primer Design Environment</p>
-        <div class="version-badge">v2.7</div>
+        <div class="version-badge">v2.8</div>
     </div>
 </div>
 
@@ -279,7 +286,7 @@
     </div>
     
     <div class="mega-invite">
-        <strong>🔗 Step up to professional tools:</strong><br>
+        <strong>🔗 Step up to professional tools:</strong>
         本当の研究で「多数の配列」「長い配列」を正確にアライメント(MSA)するには、このアプリの簡易機能ではなく、世界標準の解析アルゴリズム<b>「MAFFT」</b>や<b>「Clustal Omega」</b>を使いましょう。
     </div>
 </div>
@@ -290,7 +297,7 @@
 </div>
 
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v2.7 | Developed for Bioinformatics & Wet-Lab Education
+    &copy; 2026 Bio-Edu Suite v2.8 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
 <script>
@@ -569,7 +576,7 @@
             updateMutationsAndRender(); 
             
             scrollToPos(alignedPosF);
-            document.getElementById('statusText').innerText = "検索成功！不要な両端（ノイズ領域）は「3. 手 manual-cut (一括削除)」で削り落としてください。";
+            document.getElementById('statusText').innerText = "検索成功！不要な両端（ノイズ領域）は「3. 手動カット（一括削除）」で削り落としてください。";
         }, 50);
     }
 
