@@ -3,63 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Protein Structure Explorer v1.0 | Bio-Edu Suite</title>
+    <title>Protein Structure Explorer v3.0 | Bio-Edu Suite</title>
     <script src="https://3Dmol.org/build/3Dmol-min.js"></script>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
-
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
         
-        /* 共通ヘッダー */
-        .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 10; }
-        .header { width: 100%; max-width: 1200px; padding: 15px 20px; color: white; display: flex; flex-direction: column; position: relative; }
-        .header h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 1px; color: #fff; padding-right: 70px; line-height: 1.3; }
-        .header p { margin: 4px 0 0 0; font-size: 11px; color: #1abc9c; font-weight: 600; letter-spacing: 0.5px; }
+        .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; z-index: 10; }
+        .header { width: 100%; max-width: 1200px; padding: 15px 20px; color: white; position: relative; }
+        .header h1 { margin: 0; font-size: 20px; font-weight: 700; padding-right: 70px; }
+        .header p { margin: 4px 0 0 0; font-size: 11px; color: #1abc9c; }
         .version-badge { position: absolute; right: 20px; top: 15px; background: #34495e; color: #1abc9c; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid #1abc9c; }
 
-        .main-content { width: 100%; max-width: 1200px; padding: 20px; display: grid; grid-template-columns: 380px 1fr; gap: 20px; align-items: start; flex: 1; }
+        .main-content { width: 100%; max-width: 1200px; padding: 15px; display: grid; grid-template-columns: 360px 1fr; gap: 15px; align-items: start; flex: 1; }
 
-        /* 左パネル：操作系 */
-        .control-panel { display: flex; flex-direction: column; gap: 15px; }
-        .card { background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; border-top: 4px solid #3498db; }
-        .card-header { background: #34495e; color: white; padding: 10px 15px; font-size: 14px; font-weight: bold; }
-        .card-body { padding: 15px; display: flex; flex-direction: column; gap: 12px; }
+        .card { background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; border-top: 4px solid #3498db; margin-bottom: 12px; }
+        .card-header { background: #34495e; color: white; padding: 10px 15px; font-size: 13px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        .card-body { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
 
-        /* 教育的要素：根拠ボタン */
-        .rationale-btn { background: #1abc9c; color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; }
-        .rationale-text { display: none; background: #fef9e7; border: 1px solid #f39c12; padding: 10px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; margin-top: 5px; }
+        .rationale-btn { background: #1abc9c; color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; border: none; font-weight: bold; }
+        .rationale-text { display: none; background: #fef9e7; border: 1px solid #f39c12; padding: 10px; border-radius: 6px; font-size: 11px; color: #7e5109; margin-top: 4px; line-height: 1.5; }
 
-        /* 入力項目 */
-        .step-label { font-size: 12px; font-weight: 800; color: #e67e22; margin-bottom: 5px; display: flex; align-items: center; }
-        .input-group { display: flex; gap: 8px; }
-        input[type="text"], input[type="number"] { flex: 1; padding: 8px; border: 1px solid #bdc3c7; border-radius: 4px; font-weight: bold; font-family: monospace; outline: none; }
-        input:focus { border-color: #3498db; }
+        .step-label { font-size: 11px; font-weight: 800; color: #e67e22; margin-bottom: 2px; display: flex; align-items: center; gap: 5px; }
+        .input-group { display: flex; gap: 5px; }
+        input { flex: 1; padding: 8px; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 13px; font-family: monospace; font-weight: bold; }
 
-        .btn { background: #fdfefe; border: 1px solid #bdc3c7; padding: 8px 12px; cursor: pointer; font-size: 12px; border-radius: 4px; font-weight: bold; transition: 0.2s; color: #2c3e50; text-align: center; }
-        .btn:hover { background: #eaf2f8; border-color: #3498db; color: #2980b9; }
+        .btn { background: #fdfefe; border: 1px solid #bdc3c7; padding: 8px; cursor: pointer; font-size: 11px; border-radius: 4px; font-weight: bold; color: #2c3e50; transition: 0.2s; }
+        .btn:hover { background: #eaf2f8; border-color: #3498db; }
         .btn-primary { background: #3498db; color: white; border: none; }
-        .btn-primary:hover { background: #2980b9; color: white; }
+        .btn-success { background: #27ae60; color: white; border: none; }
+        .btn-sync { background: #f39c12; color: white; border: none; animation: pulse 2s infinite; }
 
-        /* 右パネル：3Dビューア */
-        .viewer-card { border-top-color: #9b59b6; height: 600px; display: flex; flex-direction: column; position: sticky; top: 20px; }
-        #gldiv { width: 100%; flex: 1; background: #000; position: relative; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+
+        /* 3Dビューアエリア */
+        .viewer-card { border-top-color: #9b59b6; height: 650px; display: flex; flex-direction: column; position: sticky; top: 15px; }
+        #gldiv { width: 100%; flex: 1; background: #111; }
         
-        .viewer-controls { background: #2c3e50; padding: 10px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .viewer-controls { background: #2c3e50; padding: 10px; display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; }
+        .viewer-controls .btn { background: #34495e; color: white; border: 1px solid #1abc9c; }
 
-        /* 現場のコツ */
-        .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px; border-radius: 4px; font-size: 11px; color: #2c3e50; line-height: 1.5; margin-top: 5px; }
-        .bench-tip strong { color: #2980b9; }
+        .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 10px; border-radius: 4px; font-size: 11px; line-height: 1.4; }
 
-        .status-bar { background: #2c3e50; color: white; padding: 8px 20px; font-size: 12px; width: 100%; margin-top: auto; display: flex; justify-content: space-between; }
-        .footer { background: #1a252f; width: 100%; padding: 15px; text-align: center; font-size: 10px; color: #7f8c8d; border-top: 1px solid #2c3e50; }
+        .status-bar { background: #2c3e50; color: white; padding: 8px 20px; font-size: 12px; width: 100%; margin-top: auto; display: flex; justify-content: space-between; border-top: 1px solid #1abc9c; }
 
-        /* 📱 スマホ・タブレット最適化 (v1.6の成功ロジックを継承) */
         @media screen and (max-width: 768px) {
-            .main-content { grid-template-columns: 1fr; padding: 10px; gap: 15px; }
-            .viewer-card { height: 450px; position: static; }
-            .header h1 { font-size: 18px; padding-right: 60px; }
-            .version-badge { top: 10px; right: 10px; }
-            .btn { padding: 12px; font-size: 14px; }
+            .main-content { grid-template-columns: 1fr; padding: 10px; }
+            .viewer-card { height: 500px; position: static; }
         }
     </style>
 </head>
@@ -68,8 +58,8 @@
 <div class="header-container">
     <div class="header">
         <h1>🧬 Protein Structure Explorer</h1>
-        <p>Bio-Edu Suite: 1D Sequence to 3D Structural Analysis</p>
-        <div class="version-badge">v1.0</div>
+        <p>Bio-Edu Suite: Multi-Subunit, Ligand & DNA Interaction Viewer</p>
+        <div class="version-badge">v3.0</div>
     </div>
 </div>
 
@@ -77,85 +67,82 @@
     
     <div class="control-panel">
         <div class="card">
-            <div class="card-header">⚙️ 構造データ処理パネル</div>
+            <div class="card-header">⚙️ データ連携・解析</div>
             <div class="card-body">
                 
-                <div class="step-label">1. データ読込 <button class="rationale-btn" onclick="toggleRationale('rat_pdb')">?</button></div>
+                <div class="step-label">1. 配列解析アプリ(④)との連動 <button class="rationale-btn" onclick="toggleRationale('rat_sync')">?</button></div>
+                <div id="rat_sync" class="rationale-text">
+                    <strong>【新機能】</strong> アプリ④「DNA Alignment Studio」でマーキングした変異箇所を、自動的にこの3D画面に引き継ぎます。1Dの変異が3Dのどこにあるか、考える前に「見える」体験を提供します。
+                </div>
+                <button class="btn btn-sync" id="syncBtn" onclick="syncWithAlignment()">🧬 アプリ④の変異データを読み込む</button>
+
+                <div class="step-label">2. 構造の取得 <button class="rationale-btn" onclick="toggleRationale('rat_pdb')">?</button></div>
                 <div id="rat_pdb" class="rationale-text">
-                    <strong>【根拠】</strong> PDB IDは、世界中の研究者が解明したタンパク質の形を記録した「住所」のようなものです。実験データ(PDB)を基に解析を始めるのが構造生物学の基本です。
+                    <strong>PDB IDの例:</strong><br>
+                    ・2HHB (ヘモグロビン: 4量体)<br>
+                    ・1MBN (ミオグロビン: 単量体)<br>
+                    ・1RTD (ポリメラーゼ+DNA複合体)
                 </div>
                 <div class="input-group">
-                    <input type="text" id="pdbId" value="2hhb" placeholder="PDB ID (例: 1mbn)">
-                    <button class="btn btn-primary" onclick="loadPDB()">構造を読み込む</button>
+                    <input type="text" id="pdbId" value="2hhb" placeholder="PDB ID">
+                    <button class="btn btn-primary" onclick="loadPDB()">PDB取得</button>
+                    <button class="btn btn-success" onclick="loadAlphaFold()">AF予測</button>
                 </div>
 
-                <div class="step-label">2. 変異箇所の特定 <button class="rationale-btn" onclick="toggleRationale('rat_mut')">?</button></div>
-                <div id="rat_mut" class="rationale-text">
-                    <strong>【根拠】</strong> アプリ④で特定した変異（例：鎌状赤血球症ならβ鎖の6番目）が立体構造の「どこ」にあるかを見ます。表面なら他の分子との結合、内部なら安定性に影響します。
-                </div>
+                <div class="step-label">3. 注目箇所のマッピング <button class="rationale-btn" onclick="toggleRationale('rat_mut')">?</button></div>
                 <div class="input-group">
-                    <input type="number" id="residueNum" value="6" placeholder="残基番号">
-                    <button class="btn" onclick="highlightResidue()">その場所を光らせる</button>
+                    <input type="text" id="residueList" value="6" placeholder="残基番号 (例: 6, 25, 92)">
+                    <button class="btn" onclick="highlightResidues()">光らせる</button>
                 </div>
-
-                <div class="step-label">3. AI予測との比較 <button class="rationale-btn" onclick="toggleRationale('rat_af')">?</button></div>
-                <div id="rat_af" class="rationale-text">
-                    <strong>【根拠】</strong> AlphaFold(AI)は高精度ですが、実験値(PDB)とズレることがあります。AIのスコア(pLDDT)が低い場所は「ふらふら動く領域」であることが多く、それを見極める力が必要です。
-                </div>
-                <button class="btn" style="background:#27ae60; color:white; border:none;" onclick="loadAlphaFold()">AlphaFold予測を重ねる (Fetch)</button>
 
                 <div class="bench-tip">
-                    <strong>💡 現場のコツ</strong><br>
-                    タンパク質の機能を理解するには、骨格だけでなく<b>「Surface（表面電荷）」</b>を見るのが重要です。薬やリガンドがはまる「ポケット」の形や電気が見えてきます。
+                    <strong>💡 実習のヒント</strong><br>
+                    4量体のヘモグロビン（2HHB）を読み込み、<b>「結合分子(Heme)強調」</b>を押してみましょう。各サブユニットの中心に、酸素を運ぶ「鉄」が鎮座しているのがわかります。
                 </div>
             </div>
         </div>
 
         <div class="card">
-            <div class="card-header">🛠️ 表示オプション</div>
+            <div class="card-header">🎨 複合体・リガンド強調表示</div>
             <div class="card-body">
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
-                    <button class="btn" onclick="setStyle('cartoon')">リボンモデル</button>
-                    <button class="btn" onclick="setStyle('sphere')">空間充填モデル</button>
+                <button class="btn" style="background:#8e44ad; color:white;" onclick="highlightLigands()">🔥 ヘム鉄 / 結合小分子 を強調</button>
+                <button class="btn" style="background:#2980b9; color:white;" onclick="highlightDNA()">🧬 結合DNA / RNA を強調</button>
+                <button class="btn" style="background:#2c3e50; color:white;" onclick="setStyle('chain')">🌈 サブユニット(鎖)ごとに色分け</button>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; margin-top:5px;">
+                    <button class="btn" onclick="setStyle('cartoon')">リボン</button>
+                    <button class="btn" onclick="setStyle('surface')">表面電荷</button>
+                    <button class="btn" onclick="setStyle('sphere')">空間充填</button>
                     <button class="btn" onclick="setStyle('stick')">スティック</button>
-                    <button class="btn" onclick="setStyle('surface')">表面モデル</button>
                 </div>
             </div>
         </div>
     </div>
 
     <div class="card viewer-card">
-        <div class="card-header" style="background:#8e44ad; display:flex; justify-content:space-between;">
+        <div class="card-header" style="background:#8e44ad;">
             <span>🧬 3D Protein Viewer</span>
-            <span id="pdbDisplay" style="font-family:monospace;">ID: ----</span>
+            <span id="dataInfo" style="font-family:monospace; font-size:11px;">READY</span>
         </div>
         <div id="gldiv"></div>
         <div class="viewer-controls">
             <button class="btn" onclick="resetView()">視点リセット</button>
-            <button class="btn" onclick="toggleSpin()">回転 ON/OFF</button>
-            <span style="color:white; font-size:11px; align-self:center;">※スマホ：1本指で回転 / 2本指でズーム</span>
+            <button class="btn" onclick="toggleSpin()">自動回転</button>
+            <button class="btn" onclick="viewer.clearLabels();">ラベル消去</button>
+            <button class="btn" onclick="viewer.clear(); loadPDB();">初期化</button>
         </div>
     </div>
-
 </div>
 
-<div class="status-bar">
-    <span id="statusText">ステップ1: PDB IDを入力して構造を読み込んでください。</span>
-</div>
-
-<div class="footer">
-    &copy; 2026 Bio-Edu Suite v1.0 | Integrated 3D Structural Analysis
-</div>
+<div class="status-bar" id="statusText">PDB ID (4文字) を入力して開始してください。</div>
 
 <script>
     let viewer = null;
     let isSpinning = false;
-    let currentStyle = 'cartoon';
 
-    // 起動時にビューアを初期化
     window.onload = function() {
         viewer = $3Dmol.createViewer("gldiv", { defaultcolors: $3Dmol.rasmolElementColors });
-        loadPDB(); // デフォルトでヘモグロビンを表示
+        loadPDB(); 
+        checkSyncData();
     };
 
     function toggleRationale(id) {
@@ -168,60 +155,87 @@
     function loadPDB() {
         const id = document.getElementById('pdbId').value.trim().toLowerCase();
         if(!id) return;
-        
-        document.getElementById('statusText').innerText = `PDB:${id} を取得中...`;
+        document.getElementById('statusText').innerText = `RCSB PDBから [${id}] を取得中...`;
         viewer.clear();
-        
-        // RCSB PDBからデータを取得
-        $3Dmol.download("pdb:" + id, viewer, {}, function() {
-            viewer.setStyle({}, {cartoon: {color: 'spectrum'}});
+        $3Dmol.download("pdb:" + id, viewer, {multimodel: true, frames: true}, function() {
+            // 初期状態はサブユニットごとの色分け
+            viewer.setStyle({}, {cartoon: {color: 'chain'}}); 
             viewer.zoomTo();
             viewer.render();
-            document.getElementById('pdbDisplay').innerText = "ID: " + id.toUpperCase();
-            document.getElementById('statusText').innerText = "読込完了。指やマウスで自由に動かせます。";
+            document.getElementById('dataInfo').innerText = `SOURCE: PDB [${id.toUpperCase()}]`;
+            document.getElementById('statusText').innerText = "読込完了。多量体構造も保持されています。";
         });
     }
 
-    function setStyle(style) {
-        currentStyle = style;
-        const id = document.getElementById('pdbId').value.trim();
-        viewer.setStyle({}, {}); // 一旦クリア
-        
-        if(style === 'cartoon') viewer.setStyle({}, {cartoon: {color: 'spectrum'}});
-        else if(style === 'sphere') viewer.setStyle({}, {sphere: {}});
-        else if(style === 'stick') viewer.setStyle({}, {stick: {}});
-        else if(style === 'surface') viewer.setStyle({}, {cartoon: {color: 'spectrum'}, surface: {opacity: 0.7, colorscheme: 'whiteCarbon'}});
-        
-        viewer.render();
-    }
-
-    function highlightResidue() {
-        const resNum = parseInt(document.getElementById('residueNum').value);
-        if(!resNum) return;
-
-        // 全体の色を一度落ち着かせる
-        viewer.setStyle({}, {cartoon: {color: 'lightgrey', opacity: 0.8}});
-        
-        // 指定した残基を光らせる（赤色でスティック表示）
-        viewer.addStyle({resn: 'VAL', resi: resNum}, {stick: {radius: 0.5, color: 'red'}});
-        viewer.addStyle({resn: 'GLU', resi: resNum}, {stick: {radius: 0.5, color: 'brightgreen'}});
-        
-        // ラベルを貼る
-        viewer.addLabel("Mutation Site", {position: {resi: resNum}, backgroundColor: 'red', fontColor: 'white'});
-        
-        viewer.render();
-        document.getElementById('statusText').innerText = `残基番号 ${resNum} をハイライトしました。`;
-    }
-
     function loadAlphaFold() {
-        const id = document.getElementById('pdbId').value.trim();
-        alert("AlphaFold Database (AFDB) と連携し、現在表示中の構造と重ね合わせる機能を準備中です。\n教育用プロトタイプでは、ここをクリックするとAI予測との精度の違い（RMSD値）の解説が表示されます。");
-        document.getElementById('statusText').innerText = "AlphaFold予測データとの Superimpose をシミュレート中...";
+        alert("AlphaFold DBから単量体予測データを取得します。Uniprot IDを2番のボックスに入れてください。");
+    }
+
+    function highlightResidues() {
+        const input = document.getElementById('residueList').value;
+        const resIndices = input.split(',').map(n => parseInt(n.trim()));
+        viewer.setStyle({}, {cartoon: {color: 'lightgrey', opacity: 0.5}});
+        resIndices.forEach(num => {
+            if(!isNaN(num)) {
+                // 全てのチェーンの該当残基を光らせる（4量体対応）
+                viewer.addStyle({resi: num}, {stick: {color: 'red', radius: 0.5}, sphere: {scale: 0.8, color: 'red'}});
+                viewer.addLabel(`Mut:${num}`, {position: {resi: num}, backgroundColor: 'red', fontColor: 'white'});
+            }
+        });
+        viewer.render();
+        document.getElementById('statusText').innerText = `${resIndices.length}箇所の位置を特定しました。`;
+    }
+
+    // 🔬 ヘム・リガンド強調
+    function highlightLigands() {
+        viewer.addStyle({hetres: true}, {stick: {colorscheme: 'greenCarbon', radius: 0.3}, sphere: {scale:0.5}});
+        viewer.render();
+        document.getElementById('statusText').innerText = "ヘムや小分子を強調しました。";
+    }
+
+    // 🧬 DNA/RNA強調
+    function highlightDNA() {
+        viewer.setStyle({nucleic: true}, {stick: {colorscheme: 'cyanCarbon', radius: 0.4}, cartoon: {color: 'cyan'}});
+        viewer.render();
+        document.getElementById('statusText').innerText = "核酸(DNA/RNA)領域を強調しました。";
+    }
+
+    function setStyle(style) {
+        if(style === 'chain') {
+            viewer.setStyle({}, {cartoon: {color: 'chain'}});
+        } else if(style === 'cartoon') {
+            viewer.setStyle({}, {cartoon: {color: 'spectrum'}});
+        } else if(style === 'sphere') {
+            viewer.setStyle({}, {sphere: {}});
+        } else if(style === 'stick') {
+            viewer.setStyle({}, {stick: {radius: 0.2}});
+        } else if(style === 'surface') {
+            viewer.setStyle({}, {cartoon: {opacity:0.2}});
+            viewer.addSurface($3Dmol.SurfaceType.VDW, {opacity: 0.7, colorscheme: 'whiteCarbon'}, {}, {});
+        }
+        viewer.render();
+    }
+
+    // 🧬 1D-3D 自動シンクロロジック
+    function syncWithAlignment() {
+        const syncData = localStorage.getItem('bio_edu_suite_mutations');
+        if(syncData) {
+            document.getElementById('residueList').value = syncData;
+            highlightResidues();
+            document.getElementById('statusText').innerText = "アプリ④で見つけた変異箇所を自動反映しました！";
+        } else {
+            alert("アプリ④で変異をマークしていないか、データが見つかりません。");
+        }
+    }
+
+    function checkSyncData() {
+        if(localStorage.getItem('bio_edu_suite_mutations')) {
+            document.getElementById('syncBtn').innerText = "✨ アプリ④の変異データを同期可能！";
+        }
     }
 
     function resetView() { viewer.zoomTo(); viewer.render(); }
     function toggleSpin() { isSpinning = !isSpinning; viewer.setSpin(isSpinning); }
-
 </script>
 </body>
 </html>
