@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Protein Structure Explorer v14.0 | Bio-Edu Suite</title>
+    <title>Protein Structure Explorer v15.0 | Bio-Edu Suite</title>
     <script src="https://3Dmol.org/build/3Dmol-min.js"></script>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
-        /* 🚨 ステータスバーの高さ分だけbodyの下に余白を設ける */
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; padding-bottom: 45px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
         
-        .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; z-index: 10; }
-        .header { width: 100%; max-width: 1200px; padding: 15px 20px; color: white; position: relative; }
+        .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 10; }
+        .header { width: 100%; max-width: 1200px; padding: 15px 20px; color: white; position: relative; display: flex; flex-direction: column; }
         .header h1 { margin: 0; font-size: 22px; font-weight: 700; color: #fff; }
         .header p { margin: 5px 0 0 0; font-size: 12px; color: #1abc9c; font-weight: bold; }
         .version-badge { position: absolute; right: 20px; top: 15px; background: #34495e; color: #1abc9c; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid #1abc9c; }
@@ -32,7 +31,6 @@
         .btn-primary { background: #3498db; color: white; border: none; box-shadow: 0 3px 0 #2980b9; }
         .btn-success { background: #27ae60; color: white; border: none; box-shadow: 0 3px 0 #1e8449; }
         
-        /* 🚨 ボタンの枠線を完全に消去し、美しい影だけを残す */
         .btn-toggle { background: #8e44ad; color: white; border: none !important; box-shadow: 0 3px 0 #732d91 !important; transition: 0.1s;}
         .btn-toggle.active { background: #e74c3c !important; box-shadow: inset 0 3px 5px rgba(0,0,0,0.3) !important; transform: translateY(3px); }
 
@@ -41,14 +39,17 @@
         .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px; border-radius: 6px; font-size: 11px; color: #2c3e50; line-height: 1.5; }
 
         .right-panel { display: flex; flex-direction: column; gap: 15px; position: sticky; top: 20px; }
-        .viewer-card { border-top-color: #9b59b6; height: 450px; display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
-        /* 🚨 致命的だった「position: relative;」を復元！これで3Dがはみ出さない */
-        #gldiv { width: 100%; flex: 1; background: #0b0b0b; position: relative; }
+        /* 🚨 3Dビューアのサイズと表示を確実に保証する修正 */
+        .viewer-card { border-top-color: #9b59b6; display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.1); height: 500px; }
+        #gldiv { width: 100%; flex: 1; min-height: 350px; background: #0b0b0b; position: relative; }
         
         .viewer-controls { background: #2c3e50; padding: 10px; display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; }
         .viewer-controls .btn { background: #34495e; color: white; border: none; box-shadow: 0 3px 0 #1a252f; }
         .viewer-controls .btn:active { transform: translateY(3px); box-shadow: none; }
+        
+        /* 🚨 ラベルボタンを他の紺色ボタンと完全に統一 */
+        #btnLabel.active { background: #e74c3c !important; box-shadow: inset 0 3px 5px rgba(0,0,0,0.3) !important; transform: translateY(3px); }
 
         .sequence-card { border-top-color: #e67e22; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .sequence-header { background: #d35400; color: white; padding: 10px 15px; font-size: 13px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
@@ -61,11 +62,8 @@
         .chain-selector-area { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ddd; }
         .chain-checkbox { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: bold; cursor: pointer; background: #f8f9fa; padding: 4px 8px; border-radius: 4px; border: 1px solid #dee2e6;}
 
-        /* 🚨 ステータスバーとフッターのレイアウト修正 */
-        .status-bar { position: fixed; bottom: 0; left: 0; width: 100%; height: 45px; background: #2c3e50; color: white; padding: 0 20px; font-size: 13px; font-weight: bold; display: flex; align-items: center; justify-content: space-between; z-index: 1000; box-shadow: 0 -2px 10px rgba(0,0,0,0.3); }
-        
-        /* 🚨 太すぎたフッターを元のスリムなサイズに！ */
-        .footer { background: #1a252f; width: 100%; padding: 15px; text-align: center; font-size: 11px; color: #7f8c8d; }
+        /* 🚨 フッターを元のサイズに戻し、邪魔なステータス帯を撤去 */
+        .footer { background: #1a252f; width: 100%; padding: 20px; text-align: center; font-size: 11px; color: #7f8c8d; margin-top: auto; }
 
         @media screen and (max-width: 768px) {
             .main-content { grid-template-columns: 1fr; padding: 10px; }
@@ -79,7 +77,7 @@
     <div class="header">
         <h1>🧬 Protein Structure Explorer</h1>
         <p>Bio-Edu Suite: Subunit Control & Multi-scale Interaction</p>
-        <div class="version-badge">v14.0</div>
+        <div class="version-badge">v15.0</div>
     </div>
 </div>
 
@@ -121,7 +119,7 @@
                     <strong>【根拠】</strong> タンパク質は単体では働きません。中心の「ヘム」や、結合した「DNA」を表示して初めて役割が見えます。
                 </div>
                 <button id="btnLigand" class="btn btn-toggle" onclick="toggleLigands()">💊 結合小分子(Ligands): OFF</button>
-                <button id="btnDNA" class="btn btn-toggle" style="background:#2980b9; box-shadow:0 3px 0 #1a5276;" onclick="toggleDNA()">🧬 核酸(DNA/RNA): OFF</button>
+                <button id="btnDNA" class="btn btn-toggle" style="background:#2980b9; box-shadow:0 3px 0 #1a5276 !important;" onclick="toggleDNA()">🧬 核酸(DNA/RNA): OFF</button>
             </div>
         </div>
 
@@ -145,15 +143,15 @@
 
     <div class="right-panel">
         <div class="card viewer-card">
-            <div class="card-header" style="background:#8e44ad; display:flex; justify-content:space-between;">
+            <div class="card-header" style="background:#8e44ad; display:flex; justify-content:space-between; align-items:center;">
                 <span>🧬 3D Protein Viewer</span>
-                <span id="dataInfo" style="font-family:monospace; font-size:12px;">READY</span>
+                <span id="statusText" style="font-size:11px; font-weight:normal;">READY: データを読み込んでください</span>
             </div>
             <div id="gldiv"></div>
             <div class="viewer-controls">
                 <button class="btn" onclick="resetView()">🔄 視点リセット</button>
                 <button class="btn" id="spinBtn" onclick="toggleSpin()">🔄 自動回転 ON</button>
-                <button id="btnLabel" class="btn btn-toggle" onclick="toggleLabels()">🏷️ ラベル表示: OFF</button>
+                <button id="btnLabel" class="btn" onclick="toggleLabels()">🏷️ ラベル表示: OFF</button>
             </div>
         </div>
 
@@ -175,8 +173,7 @@
     </div>
 </div>
 
-<div class="footer">&copy; 2026 Bio-Edu Suite v14.0 | Structural & Educational Mastery</div>
-<div class="status-bar"><span id="statusText">READY: PDB IDを入力して開始してください。</span></div>
+<div class="footer">&copy; 2026 Bio-Edu Suite v15.0 | Structural & Educational Mastery</div>
 
 <script>
     let viewer = null;
@@ -202,12 +199,17 @@
         el.style.display = (el.style.display === 'block') ? 'none' : 'block';
     }
 
+    // 🚨 ステータス表示の更新関数（紫ヘッダー内）
+    function setStatus(msg) {
+        document.getElementById('statusText').innerText = msg;
+    }
+
     function loadPDB() {
         let id = document.getElementById('pdbId').value.trim().toLowerCase();
         if(!id) return;
         viewer.clear();
         clearHighlights();
-        document.getElementById('statusText').innerText = `PDB:${id.toUpperCase()} を読込中...`;
+        setStatus(`PDB:${id.toUpperCase()} を読込中...`);
         $3Dmol.download("pdb:" + id, viewer, {multimodel: false, frames: true}, function() {
             finishLoad(`PDB:${id.toUpperCase()}`, 'chain');
         });
@@ -220,6 +222,8 @@
         const reader = new FileReader();
         viewer.clear();
         clearHighlights();
+        setStatus(`ファイル [${file.name}] を読込中...`);
+
         reader.onload = function(e) {
             const isAF = file.name.includes("af-") || file.name.includes("alphafold");
             viewer.addModel(e.target.result, file.name.endsWith(".cif") ? "cif" : "pdb");
@@ -234,8 +238,7 @@
         updateVisuals(); 
         viewer.zoomTo();
         initialView = viewer.getView();
-        document.getElementById('dataInfo').innerText = name;
-        document.getElementById('statusText').innerText = `${name} 読込完了。`;
+        setStatus(`${name} 読込完了。`);
         extractSequenceAndChains();
 
         viewer.setClickable({}, true, function(atom) {
@@ -321,7 +324,16 @@
     }
 
     function setStyleMode(s) { currentStyleMode = s; updateVisuals(); }
-    function toggleLabels() { showLabels = !showLabels; document.getElementById('btnLabel').classList.toggle('active'); document.getElementById('btnLabel').innerText = showLabels ? "🏷️ ラベル表示: ON" : "🏷️ ラベル表示: OFF"; updateVisuals(); }
+    
+    // 🚨 ラベルボタンのトグル切り替え（色は他のボタンと同じ紺色ベース）
+    function toggleLabels() { 
+        showLabels = !showLabels; 
+        const btn = document.getElementById('btnLabel');
+        btn.classList.toggle('active', showLabels);
+        btn.innerText = showLabels ? "🏷️ ラベル表示: ON" : "🏷️ ラベル表示: OFF";
+        updateVisuals(); 
+    }
+    
     function toggleLigands() { showLigands = !showLigands; document.getElementById('btnLigand').classList.toggle('active'); document.getElementById('btnLigand').innerText = showLigands ? "💊 結合小分子(Ligands): ON" : "💊 結合小分子(Ligands): OFF"; updateVisuals(); }
     function toggleDNA() { showDNA = !showDNA; document.getElementById('btnDNA').classList.toggle('active'); document.getElementById('btnDNA').innerText = showDNA ? "🧬 核酸(DNA/RNA): ON" : "🧬 核酸(DNA/RNA): OFF"; updateVisuals(); }
 
