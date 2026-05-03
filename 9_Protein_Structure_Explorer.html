@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Protein Structure Explorer v10.0 | Bio-Edu Suite</title>
+    <title>Protein Structure Explorer v11.0 | Bio-Edu Suite</title>
     <script src="https://3Dmol.org/build/3Dmol-min.js"></script>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
+        /* 🚨 ステータスバー固定のため、bodyにpadding-bottomを追加 */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; padding-bottom: 50px; }
         
         /* 共通ヘッダー */
         .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 10; }
@@ -39,7 +40,7 @@
         .btn-toggle.active { background: #e74c3c !important; box-shadow: inset 0 3px 5px rgba(0,0,0,0.3) !important; transform: translateY(3px); }
         .btn-toggle:active { transform: translateY(3px); box-shadow: none; }
 
-        /* 🚨 アプリ②準拠の教育パネルUI */
+        /* 教育パネルUI */
         .rationale-btn { background: #1abc9c; color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s;}
         .rationale-btn:hover { background: #16a085; transform: scale(1.1); }
         .rationale-text { display: none; background: #fef9e7; border: 1px solid #f39c12; padding: 10px; border-radius: 6px; font-size: 11px; color: #7e5109; margin-top: 4px; margin-bottom: 8px; line-height: 1.5; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); font-weight: normal; }
@@ -65,8 +66,9 @@
         .aa-letter.selected { background: #e74c3c; color: white; font-weight: bold; box-shadow: 0 0 5px rgba(231,76,60,0.8); }
         .chain-label { color: #e67e22; font-weight: bold; font-size: 12px; margin-right: 5px; background: #fdf2e9; padding: 2px 6px; border-radius: 4px; border: 1px solid #fad7a1;}
 
-        .status-bar { background: #2c3e50; color: white; padding: 10px 20px; font-size: 12px; width: 100%; margin-top: auto; border-top: 1px solid #1abc9c; display: flex; justify-content: space-between; font-weight: bold;}
-        .footer { background: #1a252f; width: 100%; padding: 15px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px;}
+        /* 🚨 ステータスバーを画面下部に完全固定 */
+        .status-bar { position: fixed; bottom: 0; left: 0; width: 100%; z-index: 1000; background: #2c3e50; color: white; padding: 12px 20px; font-size: 13px; font-weight: bold; display: flex; justify-content: space-between; box-shadow: 0 -2px 10px rgba(0,0,0,0.3); }
+        .footer { background: #1a252f; width: 100%; padding: 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; margin-bottom: 40px; }
 
         @media screen and (max-width: 768px) {
             .main-content { grid-template-columns: 1fr; padding: 10px; }
@@ -80,7 +82,7 @@
     <div class="header">
         <h1>🧬 Protein Structure Explorer</h1>
         <p>Bio-Edu Suite: 1D-3D Drag-Sync & Educational Viewer</p>
-        <div class="version-badge">v10.0</div>
+        <div class="version-badge">v11.0</div>
     </div>
 </div>
 
@@ -133,7 +135,7 @@
                     <strong>【根拠】</strong> タンパク質は単体では働きません。中心にある「ヘム」や基質といった結合小分子（リガンド）や、結合した「DNA」を表示することで、そのタンパク質の真の役割が見えてきます。
                 </div>
                 <button id="btnLigand" class="btn btn-toggle" onclick="toggleLigands()">💊 結合小分子(Ligands) 強調: OFF</button>
-                <button id="btnDNA" class="btn btn-toggle" style="background:#2980b9; box-shadow: 0 3px 0 #1f618d;" onclick="toggleDNA()">🧬 核酸(DNA/RNA) 強調: OFF</button>
+                <button id="btnDNA" class="btn btn-toggle" onclick="toggleDNA()">🧬 核酸(DNA/RNA) 強調: OFF</button>
             </div>
         </div>
 
@@ -165,14 +167,14 @@
             <div class="viewer-controls">
                 <button class="btn" onclick="resetView()">🔄 視点リセット</button>
                 <button class="btn" id="spinBtn" onclick="toggleSpin()">🔄 自動回転 ON</button>
-                <button id="btnLabel" class="btn btn-toggle" style="background:#e67e22; box-shadow:0 3px 0 #d35400;" onclick="toggleLabels()">🏷️ ラベル表示: OFF</button>
+                <button id="btnLabel" class="btn btn-toggle" onclick="toggleLabels()">🏷️ ラベル表示: OFF</button>
             </div>
         </div>
 
         <div class="card sequence-card">
             <div class="sequence-header">
                 <span>📝 1D Sequence Viewer (マウスでなぞって連続選択)</span>
-                <button class="btn" style="background:#e74c3c; color:white; border:none; padding:5px 10px; font-size:11px; box-shadow:0 2px 0 #c0392b;" onclick="clearHighlights()">🧹 選択を一括クリア</button>
+                <button class="btn" style="background:#fff; color:#c0392b; border:1px solid #c0392b; padding:4px 10px; font-size:11px; font-weight:bold; box-shadow:0 2px 0 #c0392b;" onclick="clearHighlights()">🧹 選択を一括クリア</button>
             </div>
             <div class="sequence-body" id="sequenceViewer">
                 <div style="color:#7f8c8d; font-size:13px; text-align:center; margin-top:20px;">
@@ -189,8 +191,11 @@
     </div>
 </div>
 
-<div class="status-bar"><span id="statusText">READY: PDB IDを入力して開始してください。</span></div>
-<div class="footer">&copy; 2026 Bio-Edu Suite v10.0 | Advanced 1D-3D Interactive Synchronization</div>
+<div class="status-bar">
+    <span id="statusText">READY: PDB IDを入力して開始してください。</span>
+</div>
+
+<div class="footer">&copy; 2026 Bio-Edu Suite v11.0 | Advanced 1D-3D Interactive Synchronization</div>
 
 <script>
     let viewer = null;
@@ -201,7 +206,7 @@
     let currentStyleMode = 'chain';
     let showLigands = false;
     let showDNA = false;
-    let showLabels = false; // 🚨 デフォルトはラベル非表示
+    let showLabels = false; // デフォルトはラベル非表示
     let selectedResidues = []; 
 
     const aaMap = {
@@ -245,21 +250,21 @@
             sourceName = "AF:" + id;
             document.getElementById('statusText').innerText = `${sourceName} を取得中...`;
             
-            // 🚨 AFの通信バグ完全修正：確実にテキストを取得してパースする
-            fetch(`https://alphafold.ebi.ac.uk/files/AF-${id}-F1-model_v4.pdb`)
+            // 🚨 AFの通信バグ完全修正：最新の CIF フォーマットを明示的に取得する
+            fetch(`https://alphafold.ebi.ac.uk/files/AF-${id}-F1-model_v4.cif`)
             .then(res => {
                 if(!res.ok) throw new Error("HTTP error " + res.status);
                 return res.text();
             })
             .then(data => {
-                // HTMLエラーページを弾く安全装置
                 if(data.trim().startsWith("<") || data.includes("<html")) throw new Error("Invalid format");
-                viewer.addModel(data, "pdb");
+                // CIFフォーマットとしてパース
+                viewer.addModel(data, "cif");
                 finishLoad(sourceName, 'plddt');
             })
             .catch(err => {
                 alert("AlphaFoldデータの取得に失敗しました。Uniprot IDが正しいか確認してください。");
-                document.getElementById('statusText').innerText = "取得失敗：データが存在しないか、通信エラーです。";
+                document.getElementById('statusText').innerText = "取得失敗：データが存在しないか、AlphaFold DBがブロックされています。";
                 document.getElementById('sequenceViewer').innerHTML = "<div style='color:#e74c3c;'>エラーが発生しました。</div>";
             });
         }
@@ -339,20 +344,18 @@
             viewer.addStyle({nucleic: true}, {stick: {colorscheme: 'cyanCarbon', radius: 0.4}, cartoon: {color: 'cyan'}});
         }
 
-        // 🚨 選択残基のハイライト処理（ラベルの表示制御を実装）
         selectedResidues.forEach(sel => {
             let target = {resi: sel.resi};
             if(sel.chain && sel.chain !== "undefined") target.chain = sel.chain;
             
             viewer.addStyle(target, {stick: {color: 'red', radius: 0.5}, sphere: {scale: 0.8, color: 'red'}});
             
-            // ラベル表示がONの時だけ、CA原子に紐づけて文字を描画する
+            // ラベル表示がONの時だけ文字を描画する
             if(showLabels) {
                 viewer.addLabel(`Res:${sel.resi}`, {backgroundColor: 'red', fontColor: 'white', backgroundOpacity: 0.8}, Object.assign({}, target, {atom: "CA"}));
             }
         });
 
-        // 1D配列のCSS更新
         document.querySelectorAll('.aa-letter').forEach(el => {
             el.classList.remove('selected');
             const r = parseInt(el.dataset.resi);
@@ -370,13 +373,13 @@
         updateVisuals();
     }
 
-    // 🚨 ラベル表示のトグル機能
+    // ラベル表示のトグル
     function toggleLabels() {
         showLabels = !showLabels;
         const btn = document.getElementById('btnLabel');
         btn.innerText = showLabels ? "🏷️ ラベル表示: ON" : "🏷️ ラベル表示: OFF";
         btn.classList.toggle('active', showLabels);
-        updateVisuals(); // 再描画してラベルの有無を切り替え
+        updateVisuals();
     }
 
     function toggleLigands() {
@@ -417,7 +420,7 @@
         document.getElementById('sequenceViewer').innerHTML = seqHtml;
     }
 
-    // 🚀 ドラッグ（ズルズル）選択の実装
+    // ドラッグ選択
     let isDragging = false;
     let dragAddMode = true;
 
