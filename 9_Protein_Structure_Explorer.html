@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Protein Structure Explorer v13.0 | Bio-Edu Suite</title>
+    <title>Protein Structure Explorer v14.0 | Bio-Edu Suite</title>
     <script src="https://3Dmol.org/build/3Dmol-min.js"></script>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; padding-bottom: 60px; }
+        /* 🚨 ステータスバーの高さ分だけbodyの下に余白を設ける */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; padding-bottom: 45px; }
         
         .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; z-index: 10; }
         .header { width: 100%; max-width: 1200px; padding: 15px 20px; color: white; position: relative; }
@@ -24,29 +25,32 @@
 
         .step-label { font-size: 12px; font-weight: 800; color: #e67e22; display: flex; align-items: center; gap: 5px; }
         .input-group { background: #fdfefe; padding: 10px; border-radius: 6px; border: 1px solid #d5dbdb; display: flex; gap: 5px; align-items: center; }
-        input[type="text"] { flex: 1; padding: 8px; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 13px; font-family: monospace; outline: none; }
+        input[type="text"], input[type="file"] { flex: 1; padding: 8px; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 13px; font-family: monospace; outline: none; }
 
         .btn { background: #fdfefe; border: 1px solid #bdc3c7; padding: 8px 12px; cursor: pointer; font-size: 11px; border-radius: 4px; font-weight: bold; color: #2c3e50; transition: 0.2s; }
         .btn:hover { background: #eaf2f8; border-color: #3498db; }
         .btn-primary { background: #3498db; color: white; border: none; box-shadow: 0 3px 0 #2980b9; }
         .btn-success { background: #27ae60; color: white; border: none; box-shadow: 0 3px 0 #1e8449; }
         
-        /* 🚨 ボタンデザインの統一修正 */
-        .btn-toggle { background: #8e44ad; color: white; border: none; box-shadow: 0 3px 0 #732d91; transition: 0.1s;}
-        .btn-toggle.active { background: #e74c3c !important; box-shadow: inset 0 3px 5px rgba(0,0,0,0.3) !important; transform: translateY(2px); }
+        /* 🚨 ボタンの枠線を完全に消去し、美しい影だけを残す */
+        .btn-toggle { background: #8e44ad; color: white; border: none !important; box-shadow: 0 3px 0 #732d91 !important; transition: 0.1s;}
+        .btn-toggle.active { background: #e74c3c !important; box-shadow: inset 0 3px 5px rgba(0,0,0,0.3) !important; transform: translateY(3px); }
 
         .rationale-btn { background: #1abc9c; color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; border: none; font-weight: bold; }
         .rationale-text { display: none; background: #fef9e7; border: 1px solid #f39c12; padding: 10px; border-radius: 6px; font-size: 11px; color: #7e5109; margin-top: 5px; line-height: 1.5; }
-        
         .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px; border-radius: 6px; font-size: 11px; color: #2c3e50; line-height: 1.5; }
 
         .right-panel { display: flex; flex-direction: column; gap: 15px; position: sticky; top: 20px; }
-        .viewer-card { border-top-color: #9b59b6; height: 450px; display: flex; flex-direction: column; }
-        #gldiv { width: 100%; flex: 1; background: #0b0b0b; }
+        .viewer-card { border-top-color: #9b59b6; height: 450px; display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        
+        /* 🚨 致命的だった「position: relative;」を復元！これで3Dがはみ出さない */
+        #gldiv { width: 100%; flex: 1; background: #0b0b0b; position: relative; }
+        
         .viewer-controls { background: #2c3e50; padding: 10px; display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; }
-        .viewer-controls .btn { background: #34495e; color: white; border: 1px solid #1abc9c; }
+        .viewer-controls .btn { background: #34495e; color: white; border: none; box-shadow: 0 3px 0 #1a252f; }
+        .viewer-controls .btn:active { transform: translateY(3px); box-shadow: none; }
 
-        .sequence-card { border-top-color: #e67e22; }
+        .sequence-card { border-top-color: #e67e22; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .sequence-header { background: #d35400; color: white; padding: 10px 15px; font-size: 13px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
         .sequence-body { padding: 15px; max-height: 220px; overflow-y: auto; background: #fff; font-family: 'Courier New', Courier, monospace; font-size: 15px; line-height: 1.8; word-wrap: break-word; user-select: none; }
         
@@ -54,12 +58,14 @@
         .aa-letter.selected { background: #e74c3c; color: white; font-weight: bold; }
         .chain-label { color: #e67e22; font-weight: bold; font-size: 12px; background: #fdf2e9; padding: 2px 6px; border-radius: 4px; border: 1px solid #fad7a1; margin-right: 5px;}
 
-        /* 🚨 新規：鎖の選択表示エリア */
         .chain-selector-area { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ddd; }
         .chain-checkbox { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: bold; cursor: pointer; background: #f8f9fa; padding: 4px 8px; border-radius: 4px; border: 1px solid #dee2e6;}
 
-        .status-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #2c3e50; color: white; padding: 12px 20px; font-size: 13px; font-weight: bold; display: flex; justify-content: space-between; z-index: 1000; box-shadow: 0 -2px 10px rgba(0,0,0,0.3); }
-        .footer { background: #1a252f; width: 100%; padding: 20px 20px 80px; text-align: center; font-size: 11px; color: #7f8c8d; }
+        /* 🚨 ステータスバーとフッターのレイアウト修正 */
+        .status-bar { position: fixed; bottom: 0; left: 0; width: 100%; height: 45px; background: #2c3e50; color: white; padding: 0 20px; font-size: 13px; font-weight: bold; display: flex; align-items: center; justify-content: space-between; z-index: 1000; box-shadow: 0 -2px 10px rgba(0,0,0,0.3); }
+        
+        /* 🚨 太すぎたフッターを元のスリムなサイズに！ */
+        .footer { background: #1a252f; width: 100%; padding: 15px; text-align: center; font-size: 11px; color: #7f8c8d; }
 
         @media screen and (max-width: 768px) {
             .main-content { grid-template-columns: 1fr; padding: 10px; }
@@ -73,7 +79,7 @@
     <div class="header">
         <h1>🧬 Protein Structure Explorer</h1>
         <p>Bio-Edu Suite: Subunit Control & Multi-scale Interaction</p>
-        <div class="version-badge">v13.0</div>
+        <div class="version-badge">v14.0</div>
     </div>
 </div>
 
@@ -115,7 +121,7 @@
                     <strong>【根拠】</strong> タンパク質は単体では働きません。中心の「ヘム」や、結合した「DNA」を表示して初めて役割が見えます。
                 </div>
                 <button id="btnLigand" class="btn btn-toggle" onclick="toggleLigands()">💊 結合小分子(Ligands): OFF</button>
-                <button id="btnDNA" class="btn btn-toggle" style="background:#2980b9;" onclick="toggleDNA()">🧬 核酸(DNA/RNA): OFF</button>
+                <button id="btnDNA" class="btn btn-toggle" style="background:#2980b9; box-shadow:0 3px 0 #1a5276;" onclick="toggleDNA()">🧬 核酸(DNA/RNA): OFF</button>
             </div>
         </div>
 
@@ -169,21 +175,20 @@
     </div>
 </div>
 
+<div class="footer">&copy; 2026 Bio-Edu Suite v14.0 | Structural & Educational Mastery</div>
 <div class="status-bar"><span id="statusText">READY: PDB IDを入力して開始してください。</span></div>
-<div class="footer">&copy; 2026 Bio-Edu Suite v13.0 | Structural & Educational Mastery</div>
 
 <script>
     let viewer = null;
     let isSpinning = false;
     let initialView = null;
     
-    // 状態管理
     let currentStyleMode = 'chain';
     let showLigands = false;
     let showDNA = false;
     let showLabels = false; 
     let selectedResidues = []; 
-    let hiddenChains = new Set(); // 非表示にする鎖のID
+    let hiddenChains = new Set(); 
 
     const aaMap = {"ALA":"A","ARG":"R","ASN":"N","ASP":"D","CYS":"C","GLN":"Q","GLU":"E","GLY":"G","HIS":"H","ILE":"I","LEU":"L","LYS":"K","MET":"M","PHE":"F","PRO":"P","SER":"S","THR":"T","TRP":"W","TYR":"Y","VAL":"V"};
 
@@ -245,12 +250,10 @@
     function updateVisuals() {
         viewer.removeAllSurfaces();
         viewer.removeAllLabels();
-        viewer.setStyle({}, {hide: true}); // 全体を一度隠す
+        viewer.setStyle({}, {hide: true}); 
 
-        // 表示する鎖の選択
         let visibleSelector = { chain: { $nin: Array.from(hiddenChains) } };
 
-        // ベーススタイル
         let style = {};
         if(currentStyleMode === 'chain') style = {cartoon: {colorscheme: 'chain'}};
         else if(currentStyleMode === 'cartoon') style = {cartoon: {color: 'spectrum'}};
@@ -265,15 +268,12 @@
         }
         viewer.setStyle(visibleSelector, style);
 
-        // 特殊分子 (1RTD対応：セレクタを強化)
         if(showLigands) viewer.addStyle({hetflag: true}, {stick: {colorscheme: 'greenCarbon', radius: 0.3}, sphere: {scale: 0.4}});
         if(showDNA) {
-            // 🚨 1RTD等の核酸を確実に青く染める
             viewer.setStyle({nucleic: true}, {stick: {color: 'cyan', radius: 0.4}, cartoon: {color: 'cyan'}});
         }
         viewer.setStyle({resn: ["HOH", "WAT"]}, {hide: true});
 
-        // 選択残基
         selectedResidues.forEach(sel => {
             let s = {resi: sel.resi};
             if(sel.chain && sel.chain !== "undefined") s.chain = sel.chain;
@@ -289,7 +289,6 @@
         viewer.render();
     }
 
-    // 🚨 鎖の抽出とチェックボックス生成
     function extractSequenceAndChains() {
         const model = viewer.getModel(0);
         const atoms = model.selectedAtoms({atom: "CA"}); 
@@ -322,9 +321,9 @@
     }
 
     function setStyleMode(s) { currentStyleMode = s; updateVisuals(); }
-    function toggleLabels() { showLabels = !showLabels; document.getElementById('btnLabel').classList.toggle('active'); updateVisuals(); }
-    function toggleLigands() { showLigands = !showLigands; document.getElementById('btnLigand').classList.toggle('active'); updateVisuals(); }
-    function toggleDNA() { showDNA = !showDNA; document.getElementById('btnDNA').classList.toggle('active'); updateVisuals(); }
+    function toggleLabels() { showLabels = !showLabels; document.getElementById('btnLabel').classList.toggle('active'); document.getElementById('btnLabel').innerText = showLabels ? "🏷️ ラベル表示: ON" : "🏷️ ラベル表示: OFF"; updateVisuals(); }
+    function toggleLigands() { showLigands = !showLigands; document.getElementById('btnLigand').classList.toggle('active'); document.getElementById('btnLigand').innerText = showLigands ? "💊 結合小分子(Ligands): ON" : "💊 結合小分子(Ligands): OFF"; updateVisuals(); }
+    function toggleDNA() { showDNA = !showDNA; document.getElementById('btnDNA').classList.toggle('active'); document.getElementById('btnDNA').innerText = showDNA ? "🧬 核酸(DNA/RNA): ON" : "🧬 核酸(DNA/RNA): OFF"; updateVisuals(); }
 
     function initSequenceDrag() {
         const c = document.getElementById('sequenceViewer');
