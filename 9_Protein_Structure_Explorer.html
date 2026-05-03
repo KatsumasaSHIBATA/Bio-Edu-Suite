@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Protein Structure Explorer v5.1 | Bio-Edu Suite</title>
+    <title>Protein Structure Explorer v5.2 | Bio-Edu Suite</title>
     <script src="https://3Dmol.org/build/3Dmol-min.js"></script>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
@@ -40,7 +40,6 @@
 
         .status-bar { background: #2c3e50; color: white; padding: 8px 20px; font-size: 12px; width: 100%; margin-top: auto; border-top: 1px solid #1abc9c; display: flex; justify-content: space-between; }
 
-        /* スマホ・タブレット用レイアウト */
         @media screen and (max-width: 768px) {
             .main-content { grid-template-columns: 1fr; padding: 10px; }
             .viewer-card { height: 500px; position: static; }
@@ -53,7 +52,7 @@
     <div class="header">
         <h1>🧬 Protein Structure Explorer</h1>
         <p>Bio-Edu Suite: High-Resolution Structural Mapping</p>
-        <div class="version-badge">v5.1</div>
+        <div class="version-badge">v5.2</div>
     </div>
 </div>
 
@@ -122,6 +121,7 @@
 <script>
     let viewer = null;
     let isSpinning = false;
+    let initialView = null; // 🚨 初期視点（角度）を記憶する変数
 
     document.addEventListener("DOMContentLoaded", function() {
         viewer = $3Dmol.createViewer("gldiv", { defaultcolors: $3Dmol.rasmolElementColors });
@@ -137,6 +137,7 @@
         $3Dmol.download("pdb:" + id, viewer, {multimodel: true, frames: true}, function() {
             viewer.setStyle({}, {cartoon: {colorscheme: 'chain'}}); 
             viewer.zoomTo();
+            initialView = viewer.getView(); // 🚨 読み込み直後のカメラの角度を保存！
             viewer.render();
             document.getElementById('dataInfo').innerText = `LOADED: ${id.toUpperCase()}`;
             document.getElementById('statusText').innerText = append ? "構造を追加しました。" : "構造を新規読込しました。";
@@ -147,13 +148,28 @@
         const id = document.getElementById('uniprotId').value.trim().toUpperCase();
         if(!id) return;
         viewer.clear();
+        document.getElementById('statusText').innerText = `AlphaFold DB [${id}] を取得中...`;
         const url = `https://alphafold.ebi.ac.uk/files/AF-${id}-F1-model_v4.pdb`;
         fetch(url).then(res => res.text()).then(data => {
             viewer.addModel(data, "pdb");
-            viewer.setStyle({}, {cartoon: {colorscheme: 'plddt'}}); 
+            // 🚨 修正: AlphaFoldの確信度（B-factor）による公式カラーリングを完全再現！
+            viewer.setStyle({}, {
+                cartoon: {
+                    colorfunc: function(atom) {
+                        if (atom.b > 90) return '#0053d6'; // 青: 非常に高い
+                        if (atom.b > 70) return '#65cbfa'; // 水色: 高い
+                        if (atom.b > 50) return '#ffd111'; // 黄色: 低い
+                        return '#ff7d45'; // オレンジ: 非常に低い（天然変性）
+                    }
+                }
+            }); 
             viewer.zoomTo();
+            initialView = viewer.getView(); // AFでも初期角度を保存
             viewer.render();
-            document.getElementById('statusText').innerText = "AlphaFold予測データを読み込みました。";
+            document.getElementById('dataInfo').innerText = `AlphaFold [${id}]`;
+            document.getElementById('statusText').innerText = "AI予測データを読み込みました。色は予測確信度を示します。";
+        }).catch(err => {
+            alert("データの取得に失敗しました。Uniprot IDを確認してください。");
         });
     }
 
@@ -185,38 +201,46 @@
         viewer.render();
     }
 
+    // 🚨 修正: 確実にヘムなどの小分子だけを強調するセレクタ (hetflag) に変更
     function highlightLigands() {
-        viewer.addStyle({hetres: true}, {stick: {colorscheme: 'greenCarbon', radius: 0.3}, sphere: {scale:0.5}});
+        viewer.addStyle({hetflag: true}, {stick: {colorscheme: 'greenCarbon', radius: 0.3}, sphere: {scale: 0.4}});
+        viewer.setStyle({resn: ["HOH", "WAT"]}, {}); // 水分子はノイズになるので隠す
         viewer.render();
+        document.getElementById('statusText').innerText = "ヘム等の結合小分子（水を除く）を強調しました。";
     }
 
     function highlightDNA() {
         viewer.setStyle({nucleic: true}, {stick: {colorscheme: 'cyanCarbon', radius: 0.4}, cartoon: {color: 'cyan'}});
         viewer.render();
+        document.getElementById('statusText').innerText = "核酸（DNA/RNA）領域を強調しました。";
     }
 
-    // 🚨 修正: 確実に動作するリセットと回転
+    // 🚨 修正: 初期角度（initialView）を呼び出して回転方向を完全リセット
     function resetView() { 
+        if (initialView) {
+            viewer.setView(initialView); 
+        }
         viewer.zoomTo(); 
         viewer.render(); 
+        document.getElementById('statusText').innerText = "視点と角度を初期状態にリセットしました。";
     }
     
+    // 🚨 修正: 最新の自動回転コマンド
     function toggleSpin() {
         isSpinning = !isSpinning;
         if(isSpinning) {
-            viewer.spin("y", 1); // Y軸方向に確実にスピンさせる
+            viewer.spin("y", 1); // Y軸方向にスピン
             document.getElementById('spinBtn').innerText = "🔄 自動回転 OFF";
         } else {
-            viewer.spin(false); // スピンを停止する
+            viewer.spin(false); // スピン停止
             document.getElementById('spinBtn').innerText = "🔄 自動回転 ON";
         }
     }
 
-    // 🚨 修正: スマホでも確実に保存できるプレビュー方式
+    // 🚨 修正: 無駄な文章を削ぎ落とし、保存ボタンだけを強調したUI
     function exportImageModal() {
-        const dataUrl = viewer.pngURI(); // その瞬間の画像を生成
+        const dataUrl = viewer.pngURI(); // ボタンを押した瞬間の角度でキャプチャ
         
-        // モーダル画面の作成
         const modal = document.createElement('div');
         modal.style.position = 'fixed';
         modal.style.top = '0'; modal.style.left = '0'; modal.style.width = '100%'; modal.style.height = '100%';
@@ -226,14 +250,11 @@
         modal.style.padding = '20px';
 
         modal.innerHTML = `
-            <div style="background:#fff; padding:20px; border-radius:8px; max-width:600px; width:100%; text-align:center;">
+            <div style="background:#fff; padding:20px; border-radius:8px; max-width:500px; width:100%; text-align:center;">
                 <h3 style="margin-top:0; color:#2c3e50;">📸 画像の保存</h3>
-                <p style="font-size:13px; color:#34495e; line-height:1.5;">
-                    📱 スマホ・タブレットの場合：下の画像を<b>長押し</b>して「写真に追加」や「画像を保存」を選んでください。<br>
-                    💻 PCの場合：右クリックして保存するか、<a href="${dataUrl}" download="protein_structure.png" style="color:#3498db; font-weight:bold;">こちらをクリック</a>して保存してください。
-                </p>
                 <img src="${dataUrl}" style="width:100%; border:1px solid #bdc3c7; border-radius:4px; margin-bottom:15px;">
-                <button onclick="document.body.removeChild(this.parentNode.parentNode)" style="padding:10px 20px; background:#e74c3c; color:#fff; border:none; border-radius:4px; font-weight:bold; cursor:pointer; font-size:14px;">閉じる</button>
+                <a href="${dataUrl}" download="protein_structure.png" style="display:inline-block; width:100%; padding:12px 0; background:#3498db; color:#fff; text-decoration:none; border-radius:4px; font-weight:bold; font-size:16px; margin-bottom:10px; box-shadow:0 3px 0 #2980b9;">📥 ここをクリックして画像を保存</a>
+                <button onclick="document.body.removeChild(this.parentNode.parentNode)" style="padding:10px 20px; background:#e74c3c; color:#fff; border:none; border-radius:4px; font-weight:bold; cursor:pointer;">閉じる</button>
             </div>
         `;
         document.body.appendChild(modal);
