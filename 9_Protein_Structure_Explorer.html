@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Protein Structure Explorer v5.2 | Bio-Edu Suite</title>
+    <title>Protein Structure Explorer v7.0 | Bio-Edu Suite</title>
     <script src="https://3Dmol.org/build/3Dmol-min.js"></script>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
@@ -15,14 +15,14 @@
         .header p { margin: 4px 0 0 0; font-size: 11px; color: #1abc9c; }
         .version-badge { position: absolute; right: 20px; top: 15px; background: #34495e; color: #1abc9c; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid #1abc9c; }
 
-        .main-content { width: 100%; max-width: 1200px; padding: 20px; display: grid; grid-template-columns: 380px 1fr; gap: 20px; align-items: start; flex: 1; }
+        .main-content { width: 100%; max-width: 1200px; padding: 20px; display: grid; grid-template-columns: 360px 1fr; gap: 20px; align-items: start; flex: 1; }
 
-        .control-panel { display: flex; flex-direction: column; gap: 12px; }
+        .control-panel { display: flex; flex-direction: column; gap: 15px; }
         .card { background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; border-top: 4px solid #3498db; }
         .card-header { background: #34495e; color: white; padding: 10px 15px; font-size: 13px; font-weight: bold; }
-        .card-body { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+        .card-body { padding: 15px; display: flex; flex-direction: column; gap: 10px; }
 
-        .step-label { font-size: 11px; font-weight: 800; color: #e67e22; margin-bottom: 2px; }
+        .step-label { font-size: 11px; font-weight: 800; color: #e67e22; margin-bottom: 2px; display: flex; align-items: center; gap: 5px;}
         .input-group { display: flex; gap: 5px; }
         input { flex: 1; padding: 8px; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 13px; font-family: monospace; font-weight: bold; outline: none; }
 
@@ -30,19 +30,34 @@
         .btn:hover { background: #eaf2f8; border-color: #3498db; }
         .btn-primary { background: #3498db; color: white; border: none; }
         .btn-success { background: #27ae60; color: white; border: none; }
-        .btn-sync { background: #f39c12; color: white; border: none; }
 
-        .viewer-card { border-top-color: #9b59b6; height: 650px; display: flex; flex-direction: column; position: sticky; top: 20px; }
-        #gldiv { width: 100%; flex: 1; background: #0b0b0b; position: relative; }
+        .rationale-btn { background: #1abc9c; color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; border: none; font-weight: bold; }
+        .rationale-text { display: none; background: #fef9e7; border: 1px solid #f39c12; padding: 10px; border-radius: 6px; font-size: 11px; color: #7e5109; margin-top: 4px; line-height: 1.5; }
+
+        /* 右パネル構成：3Dビューア ＋ シーケンスビューア */
+        .right-panel { display: flex; flex-direction: column; gap: 15px; position: sticky; top: 20px; }
         
+        .viewer-card { border-top-color: #9b59b6; height: 500px; display: flex; flex-direction: column; }
+        #gldiv { width: 100%; flex: 1; background: #0b0b0b; position: relative; }
         .viewer-controls { background: #2c3e50; padding: 10px; display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
         .viewer-controls .btn { background: #34495e; color: white; border: 1px solid #1abc9c; }
 
+        /* 新設：インタラクティブ・シーケンスビューア */
+        .sequence-card { border-top-color: #e67e22; max-height: 200px; display: flex; flex-direction: column; }
+        .sequence-header { background: #d35400; color: white; padding: 8px 15px; font-size: 12px; font-weight: bold; display: flex; justify-content: space-between; align-items: center;}
+        .sequence-body { padding: 10px; overflow-y: auto; background: #fff; font-family: 'Courier New', Courier, monospace; font-size: 14px; line-height: 1.8; word-wrap: break-word;}
+        
+        .aa-letter { display: inline-block; width: 16px; text-align: center; cursor: pointer; transition: 0.1s; border-radius: 2px; }
+        .aa-letter:hover { background: #e74c3c; color: white; transform: scale(1.2); font-weight: bold; }
+        .chain-label { color: #e67e22; font-weight: bold; font-size: 12px; margin-right: 5px; background: #fdf2e9; padding: 2px 6px; border-radius: 4px;}
+
         .status-bar { background: #2c3e50; color: white; padding: 8px 20px; font-size: 12px; width: 100%; margin-top: auto; border-top: 1px solid #1abc9c; display: flex; justify-content: space-between; }
+        .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px; border-radius: 4px; font-size: 11px; line-height: 1.5; }
 
         @media screen and (max-width: 768px) {
             .main-content { grid-template-columns: 1fr; padding: 10px; }
-            .viewer-card { height: 500px; position: static; }
+            .right-panel { position: static; }
+            .viewer-card { height: 400px; }
         }
     </style>
 </head>
@@ -51,37 +66,43 @@
 <div class="header-container">
     <div class="header">
         <h1>🧬 Protein Structure Explorer</h1>
-        <p>Bio-Edu Suite: High-Resolution Structural Mapping</p>
-        <div class="version-badge">v5.2</div>
+        <p>Bio-Edu Suite: 1D Sequence & 3D Structure Interactive Viewer</p>
+        <div class="version-badge">v7.0</div>
     </div>
 </div>
 
 <div class="main-content">
     <div class="control-panel">
         <div class="card">
-            <div class="card-header">⚙️ 1. データ取得・複合体作成</div>
+            <div class="card-header">⚙️ 1. 構造データの取得</div>
             <div class="card-body">
-                <button class="btn btn-sync" onclick="syncWithAlignment()">🧬 アプリ④から変異を同期</button>
-                <div class="step-label" style="margin-top:5px;">PDB構造の読込</div>
+                <div class="step-label">実験データ (PDB) <button class="rationale-btn" onclick="toggleRationale('rat_pdb')">?</button></div>
+                <div id="rat_pdb" class="rationale-text">
+                    <strong>【PDBとは？】</strong> 実際に観測された「本物」の形です。多量体(2HHBなど)や、結合している小分子もそのまま記録されています。
+                </div>
                 <div class="input-group">
                     <input type="text" id="pdbId" value="2hhb" placeholder="PDB ID (例: 2HHB)">
-                    <button class="btn btn-primary" onclick="loadPDB(false)">新規読込</button>
-                    <button class="btn" style="background:#f1c40f;" onclick="loadPDB(true)">追加(結合)</button>
+                    <button class="btn btn-primary" onclick="loadData('pdb')">構造を読込</button>
                 </div>
-                <div class="step-label" style="margin-top:5px;">AlphaFold予測の取得</div>
+
+                <div class="step-label" style="margin-top:10px;">AI予測データ (AlphaFold) <button class="rationale-btn" onclick="toggleRationale('rat_af')">?</button></div>
+                <div id="rat_af" class="rationale-text">
+                    <strong>【AlphaFoldとは？】</strong> AIがアミノ酸配列から予測した形です。青は「自信あり」、オレンジは「フニャフニャで形が決まらない」ことを示します。
+                </div>
                 <div class="input-group">
-                    <input type="text" id="uniprotId" value="P68871" placeholder="Uniprot ID">
-                    <button class="btn btn-success" onclick="loadAlphaFold()">AF取得</button>
+                    <input type="text" id="uniprotId" value="P68871" placeholder="Uniprot ID (例: P68871)">
+                    <button class="btn btn-success" onclick="loadData('af')">AI予測を取得</button>
                 </div>
             </div>
         </div>
 
         <div class="card">
-            <div class="card-header">📍 2. 部位ハイライト</div>
+            <div class="card-header">📍 2. 部位のハイライト</div>
             <div class="card-body">
-                <div class="input-group">
-                    <input type="text" id="residueList" value="6" placeholder="残基番号: 6, 25...">
-                    <button class="btn" onclick="highlightResidues()">光らせる</button>
+                <button class="btn" style="background:#f39c12; color:white; border:none;" onclick="syncWithAlignment()">🧬 アプリ④から変異データを同期</button>
+                <div class="input-group" style="margin-top:5px;">
+                    <input type="text" id="residueList" placeholder="残基番号: 6, 25...">
+                    <button class="btn" onclick="highlightFromInput()">光らせる</button>
                 </div>
                 <button class="btn" style="background:#8e44ad; color:white; margin-top:5px;" onclick="highlightLigands()">💊 結合小分子(Ligands) を強調</button>
                 <button class="btn" style="background:#2980b9; color:white;" onclick="highlightDNA()">🧬 核酸(Nucleic Acids) を強調</button>
@@ -100,18 +121,37 @@
                 <button class="btn" style="margin-top:5px; background:#ecf0f1; border-color:#bdc3c7;" onclick="exportImageModal()">📸 PNG画像を保存</button>
             </div>
         </div>
+
+        <div class="bench-tip">
+            <strong>💡 究極の連動（1D ➡ 3D）</strong><br>
+            右下の「アミノ酸配列」の文字をどれでも一つクリックしてみてください。DNAの1文字の変異が、タンパク質の<b>「立体構造のどこに」</b>影響を与えるか、直感的に結びつきます！
+        </div>
     </div>
 
-    <div class="card viewer-card">
-        <div class="card-header" style="background:#8e44ad; display:flex; justify-content:space-between;">
-            <span>🧬 3D Protein Viewer</span>
-            <span id="dataInfo" style="font-family:monospace; font-size:11px;">READY</span>
+    <div class="right-panel">
+        <div class="card viewer-card">
+            <div class="card-header" style="background:#8e44ad; display:flex; justify-content:space-between;">
+                <span>🧬 3D Protein Viewer</span>
+                <span id="dataInfo" style="font-family:monospace; font-size:11px;">READY</span>
+            </div>
+            <div id="gldiv"></div>
+            <div class="viewer-controls">
+                <button class="btn" onclick="resetView()">🔄 視点リセット</button>
+                <button class="btn" id="spinBtn" onclick="toggleSpin()">🔄 自動回転 ON</button>
+                <button class="btn" onclick="viewer.clearLabels(); viewer.render();">🏷️ ラベル消去</button>
+            </div>
         </div>
-        <div id="gldiv"></div>
-        <div class="viewer-controls">
-            <button class="btn" onclick="resetView()">🔄 視点リセット</button>
-            <button class="btn" id="spinBtn" onclick="toggleSpin()">🔄 自動回転 ON</button>
-            <button class="btn" onclick="viewer.clearLabels(); viewer.render();">🏷️ ラベル消去</button>
+
+        <div class="card sequence-card">
+            <div class="sequence-header">
+                <span>📝 1D Sequence Viewer (アミノ酸配列)</span>
+                <span style="font-size:10px; font-weight:normal;">文字をクリックで3Dをズーム</span>
+            </div>
+            <div class="sequence-body" id="sequenceViewer">
+                <div style="color:#7f8c8d; font-size:12px; text-align:center; margin-top:20px;">
+                    構造データを読み込むと、ここにアミノ酸配列が自動抽出されます。
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -121,77 +161,147 @@
 <script>
     let viewer = null;
     let isSpinning = false;
-    let initialView = null; // 🚨 初期視点（角度）を記憶する変数
+    let initialView = null;
+    let currentStyleMode = 'chain'; // 現在の表示スタイルを記憶
+
+    // アミノ酸3文字➡1文字変換辞書
+    const aaMap = {
+        "ALA": "A", "ARG": "R", "ASN": "N", "ASP": "D", "CYS": "C",
+        "GLN": "Q", "GLU": "E", "GLY": "G", "HIS": "H", "ILE": "I",
+        "LEU": "L", "LYS": "K", "MET": "M", "PHE": "F", "PRO": "P",
+        "SER": "S", "THR": "T", "TRP": "W", "TYR": "Y", "VAL": "V"
+    };
 
     document.addEventListener("DOMContentLoaded", function() {
         viewer = $3Dmol.createViewer("gldiv", { defaultcolors: $3Dmol.rasmolElementColors });
-        loadPDB(false); 
+        loadData('pdb'); 
     });
 
-    function loadPDB(append) {
-        const id = document.getElementById('pdbId').value.trim().toLowerCase();
-        if(!id) return;
-        if(!append) viewer.clear();
-        
-        document.getElementById('statusText').innerText = `PDB [${id}] を読込中...`;
-        $3Dmol.download("pdb:" + id, viewer, {multimodel: true, frames: true}, function() {
-            viewer.setStyle({}, {cartoon: {colorscheme: 'chain'}}); 
-            viewer.zoomTo();
-            initialView = viewer.getView(); // 🚨 読み込み直後のカメラの角度を保存！
-            viewer.render();
-            document.getElementById('dataInfo').innerText = `LOADED: ${id.toUpperCase()}`;
-            document.getElementById('statusText').innerText = append ? "構造を追加しました。" : "構造を新規読込しました。";
-        });
+    function toggleRationale(id) {
+        const el = document.getElementById(id);
+        const isVisible = el.style.display === 'block';
+        document.querySelectorAll('.rationale-text').forEach(e => e.style.display = 'none');
+        el.style.display = isVisible ? 'none' : 'block';
     }
 
-    function loadAlphaFold() {
-        const id = document.getElementById('uniprotId').value.trim().toUpperCase();
-        if(!id) return;
+    function loadData(type) {
+        let id, uri, sourceName;
         viewer.clear();
-        document.getElementById('statusText').innerText = `AlphaFold DB [${id}] を取得中...`;
-        const url = `https://alphafold.ebi.ac.uk/files/AF-${id}-F1-model_v4.pdb`;
-        fetch(url).then(res => res.text()).then(data => {
-            viewer.addModel(data, "pdb");
-            // 🚨 修正: AlphaFoldの確信度（B-factor）による公式カラーリングを完全再現！
-            viewer.setStyle({}, {
-                cartoon: {
-                    colorfunc: function(atom) {
-                        if (atom.b > 90) return '#0053d6'; // 青: 非常に高い
-                        if (atom.b > 70) return '#65cbfa'; // 水色: 高い
-                        if (atom.b > 50) return '#ffd111'; // 黄色: 低い
-                        return '#ff7d45'; // オレンジ: 非常に低い（天然変性）
-                    }
-                }
-            }); 
-            viewer.zoomTo();
-            initialView = viewer.getView(); // AFでも初期角度を保存
-            viewer.render();
-            document.getElementById('dataInfo').innerText = `AlphaFold [${id}]`;
-            document.getElementById('statusText').innerText = "AI予測データを読み込みました。色は予測確信度を示します。";
-        }).catch(err => {
-            alert("データの取得に失敗しました。Uniprot IDを確認してください。");
-        });
+        document.getElementById('sequenceViewer').innerHTML = "抽出中...";
+
+        if (type === 'pdb') {
+            id = document.getElementById('pdbId').value.trim().toLowerCase();
+            if(!id) return;
+            uri = "pdb:" + id;
+            sourceName = "PDB:" + id.toUpperCase();
+            document.getElementById('statusText').innerText = `${sourceName} を読込中...`;
+            $3Dmol.download(uri, viewer, {multimodel: false, frames: true}, function() {
+                finishLoad(sourceName, 'chain');
+            });
+        } else {
+            id = document.getElementById('uniprotId').value.trim().toUpperCase();
+            if(!id) return;
+            uri = `https://alphafold.ebi.ac.uk/files/AF-${id}-F1-model_v4.pdb`;
+            sourceName = "AF:" + id;
+            document.getElementById('statusText').innerText = `${sourceName} を読込中...`;
+            fetch(uri).then(res => res.text()).then(data => {
+                viewer.addModel(data, "pdb");
+                finishLoad(sourceName, 'plddt');
+            }).catch(err => {
+                alert("データの取得に失敗しました。IDを確認してください。");
+                document.getElementById('sequenceViewer').innerHTML = "取得失敗";
+            });
+        }
     }
 
-    function setStyle(style) {
-        viewer.removeAllSurfaces(); 
-        viewer.setStyle({}, {}); 
+    function finishLoad(name, colorStyle) {
+        currentStyleMode = colorStyle;
+        applyCurrentStyle();
+        
+        viewer.zoomTo();
+        initialView = viewer.getView();
+        viewer.render();
+        
+        document.getElementById('dataInfo').innerText = name;
+        document.getElementById('statusText').innerText = `${name} の読込完了。下の配列をクリックしてみてください。`;
 
-        if(style === 'chain') viewer.setStyle({}, {cartoon: {colorscheme: 'chain'}});
-        else if(style === 'cartoon') viewer.setStyle({}, {cartoon: {color: 'spectrum'}});
-        else if(style === 'sphere') viewer.setStyle({}, {sphere: {}});
-        else if(style === 'stick') viewer.setStyle({}, {stick: {radius: 0.2}});
-        else if(style === 'surface') {
+        // 🚀 アミノ酸配列の抽出とレンダリング
+        extractSequence();
+    }
+
+    function applyCurrentStyle() {
+        viewer.removeAllSurfaces();
+        viewer.setStyle({}, {});
+        if(currentStyleMode === 'chain') viewer.setStyle({}, {cartoon: {colorscheme: 'chain'}});
+        else if(currentStyleMode === 'cartoon') viewer.setStyle({}, {cartoon: {color: 'spectrum'}});
+        else if(currentStyleMode === 'sphere') viewer.setStyle({}, {sphere: {}});
+        else if(currentStyleMode === 'stick') viewer.setStyle({}, {stick: {radius: 0.2}});
+        else if(currentStyleMode === 'surface') {
             viewer.setStyle({}, {cartoon: {opacity:0.2}});
             viewer.addSurface($3Dmol.SurfaceType.VDW, {opacity: 0.8, colorscheme: 'whiteCarbon'}, {}, {});
         }
+        else if(currentStyleMode === 'plddt') {
+            viewer.setStyle({}, {
+                cartoon: {
+                    colorfunc: function(atom) {
+                        if (atom.b > 90) return '#0053d6';
+                        if (atom.b > 70) return '#65cbfa';
+                        if (atom.b > 50) return '#ffd111';
+                        return '#ff7d45';
+                    }
+                }
+            });
+        }
+    }
+
+    function setStyle(style) {
+        currentStyleMode = style;
+        applyCurrentStyle();
         viewer.render();
     }
 
-    function highlightResidues() {
+    // 🚀 新機能：PDBデータからアミノ酸配列を抽出し、HTMLに描画する
+    function extractSequence() {
+        const model = viewer.getModel(0);
+        if (!model) return;
+        
+        // タンパク質を構成するCα原子（各アミノ酸に1つだけ存在）を抽出
+        const atoms = model.selectedAtoms({atom: "CA"}); 
+        let seqHtml = "";
+        let currentChain = "";
+        
+        atoms.forEach(atom => {
+            if(atom.chain !== currentChain) {
+                if(currentChain !== "") seqHtml += "<br><br>";
+                seqHtml += `<span class="chain-label">Chain ${atom.chain || 'A'}</span><br>`;
+                currentChain = atom.chain;
+            }
+            let aa1 = aaMap[atom.resn] || "X"; // 辞書にない場合はX
+            // クリックイベントを埋め込む
+            seqHtml += `<span class="aa-letter" onclick="highlightFromSeq(${atom.resi}, '${atom.chain}')" title="${atom.resn} ${atom.resi}">${aa1}</span>`;
+        });
+        
+        document.getElementById('sequenceViewer').innerHTML = seqHtml;
+    }
+
+    // 🚀 配列をクリックした時の連動アクション
+    function highlightFromSeq(resi, chain) {
+        // 現在のスタイルを維持しつつ、該当箇所を赤く光らせてズームする
+        applyCurrentStyle();
+        viewer.setStyle({resi: resi, chain: chain}, {stick: {color: 'red', radius: 0.5}, sphere: {scale: 1.0, color: 'red'}});
+        viewer.removeAllLabels();
+        viewer.addLabel(`${aaMap[viewer.getModel(0).selectedAtoms({resi:resi, chain:chain, atom:"CA"})[0].resn] || ''}${resi}`, {position: {resi: resi, chain: chain}, backgroundColor: 'red', fontColor: 'white'});
+        
+        viewer.zoomTo({resi: resi, chain: chain}); // 該当箇所にズームイン！
+        viewer.render();
+        document.getElementById('statusText').innerText = `Chain ${chain || 'A'} の ${resi} 番残基にズームしました。`;
+    }
+
+    // テキストボックスから光らせる機能（カンマ区切り対応）
+    function highlightFromInput() {
         const input = document.getElementById('residueList').value;
         const resIndices = input.split(',').map(n => parseInt(n.trim()));
-        viewer.setStyle({}, {cartoon: {color: 'lightgrey', opacity: 0.3}});
+        applyCurrentStyle(); // 一旦リセット
         resIndices.forEach(num => {
             if(!isNaN(num)) {
                 viewer.addStyle({resi: num}, {stick: {color: 'red', radius: 0.5}, sphere: {scale: 0.8, color: 'red'}});
@@ -201,46 +311,36 @@
         viewer.render();
     }
 
-    // 🚨 修正: 確実にヘムなどの小分子だけを強調するセレクタ (hetflag) に変更
     function highlightLigands() {
         viewer.addStyle({hetflag: true}, {stick: {colorscheme: 'greenCarbon', radius: 0.3}, sphere: {scale: 0.4}});
-        viewer.setStyle({resn: ["HOH", "WAT"]}, {}); // 水分子はノイズになるので隠す
+        viewer.setStyle({resn: ["HOH", "WAT"]}, {}); 
         viewer.render();
-        document.getElementById('statusText').innerText = "ヘム等の結合小分子（水を除く）を強調しました。";
     }
 
     function highlightDNA() {
         viewer.setStyle({nucleic: true}, {stick: {colorscheme: 'cyanCarbon', radius: 0.4}, cartoon: {color: 'cyan'}});
         viewer.render();
-        document.getElementById('statusText').innerText = "核酸（DNA/RNA）領域を強調しました。";
     }
 
-    // 🚨 修正: 初期角度（initialView）を呼び出して回転方向を完全リセット
     function resetView() { 
-        if (initialView) {
-            viewer.setView(initialView); 
-        }
+        if (initialView) viewer.setView(initialView); 
         viewer.zoomTo(); 
         viewer.render(); 
-        document.getElementById('statusText').innerText = "視点と角度を初期状態にリセットしました。";
     }
     
-    // 🚨 修正: 最新の自動回転コマンド
     function toggleSpin() {
         isSpinning = !isSpinning;
         if(isSpinning) {
-            viewer.spin("y", 1); // Y軸方向にスピン
+            viewer.spin("y", 1);
             document.getElementById('spinBtn').innerText = "🔄 自動回転 OFF";
         } else {
-            viewer.spin(false); // スピン停止
+            viewer.spin(false);
             document.getElementById('spinBtn').innerText = "🔄 自動回転 ON";
         }
     }
 
-    // 🚨 修正: 無駄な文章を削ぎ落とし、保存ボタンだけを強調したUI
     function exportImageModal() {
-        const dataUrl = viewer.pngURI(); // ボタンを押した瞬間の角度でキャプチャ
-        
+        const dataUrl = viewer.pngURI(); 
         const modal = document.createElement('div');
         modal.style.position = 'fixed';
         modal.style.top = '0'; modal.style.left = '0'; modal.style.width = '100%'; modal.style.height = '100%';
@@ -264,8 +364,10 @@
         const syncData = localStorage.getItem('bio_edu_suite_mutations');
         if(syncData) {
             document.getElementById('residueList').value = syncData;
-            highlightResidues();
-        } else alert("同期データがありません。");
+            highlightFromInput();
+        } else {
+            alert("同期データがありません。配列解析アプリからデータを持ち込んでください。");
+        }
     }
 </script>
 </body>
