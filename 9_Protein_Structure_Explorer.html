@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Protein Structure Explorer v16.0 | Bio-Edu Suite</title>
+    <title>Protein Structure Explorer v17.0 | Bio-Edu Suite</title>
     <script src="https://3Dmol.org/build/3Dmol-min.js"></script>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
@@ -11,38 +11,43 @@
         
         /* 共通ヘッダー */
         .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 10; }
-        .header { width: 100%; max-width: 1200px; padding: 15px 20px; color: white; position: relative; display: flex; flex-direction: column; }
+        .header { width: 100%; max-width: 1400px; padding: 15px 20px; color: white; position: relative; display: flex; flex-direction: column; }
         .header h1 { margin: 0; font-size: 22px; font-weight: 700; color: #fff; }
-        .header p { margin: 5px 0 0 0; font-size: 12px; color: #1abc9c; font-weight: bold; }
+        .header p { margin: 5px 0 0 0; font-size: 12px; color: #1abc9c; font-weight: bold; letter-spacing: 0.5px; }
         .version-badge { position: absolute; right: 20px; top: 15px; background: #34495e; color: #1abc9c; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid #1abc9c; }
 
-        .main-content { width: 100%; max-width: 1200px; padding: 25px 20px; display: grid; grid-template-columns: 380px 1fr; gap: 20px; align-items: start; flex: 1; }
+        .main-content { width: 100%; max-width: 1400px; padding: 20px; display: grid; grid-template-columns: 380px 1fr; gap: 20px; align-items: start; flex: 1; }
 
         .control-panel { display: flex; flex-direction: column; gap: 15px; }
         .card { background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; border-top: 4px solid #3498db; }
-        .card-header { background: #34495e; color: white; padding: 10px 15px; font-size: 14px; font-weight: bold; }
-        .card-body { padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .card-header { background: #34495e; color: white; padding: 10px 15px; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: space-between; }
+        .card-body { padding: 15px; display: flex; flex-direction: column; gap: 12px; }
 
-        .step-label { font-size: 12px; font-weight: 800; color: #e67e22; display: flex; align-items: center; gap: 5px; margin-bottom: 4px;}
-        .input-group { background: #fdfefe; padding: 10px; border-radius: 6px; border: 1px solid #d5dbdb; display: flex; gap: 5px; align-items: center; }
-        input[type="text"] { flex: 1; padding: 8px; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 13px; font-family: monospace; outline: none; transition: 0.2s;}
-        input[type="text"]:focus { border-color: #3498db; box-shadow: 0 0 0 2px rgba(52,152,219,0.2); }
+        /* 🚨 アプリ④準拠：ツールバー形式のUI */
+        .toolbar-row { display: flex; width: 100%; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
+        .step-label { font-size: 13px; font-weight: bold; color: #e67e22; min-width: 100px; display: flex; align-items: center; padding-top: 5px; }
+        
+        .primer-input { padding: 8px 10px; font-family: monospace; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 13px; background: #fafafa; flex: 1; outline: none; transition: 0.2s; font-weight: bold; }
+        .primer-input:focus { border-color: #3498db; box-shadow: 0 0 3px rgba(52,152,219,0.3); background: #fff; }
 
-        .btn { background: #fdfefe; border: 1px solid #bdc3c7; padding: 8px 12px; cursor: pointer; font-size: 11px; border-radius: 4px; font-weight: bold; color: #2c3e50; transition: 0.2s; text-align: center; }
+        .btn { background: #fdfefe; border: 1px solid #bdc3c7; padding: 8px 15px; cursor: pointer; font-size: 12px; border-radius: 4px; font-weight: bold; color: #2c3e50; transition: 0.2s; text-align: center; white-space: nowrap; }
         .btn:hover { background: #eaf2f8; border-color: #3498db; }
         .btn-primary { background: #3498db; color: white; border: none; box-shadow: 0 3px 0 #2980b9; }
         .btn-primary:active { transform: translateY(3px); box-shadow: none; }
+        .btn-sync { background: #f39c12; color: white; border: none; box-shadow: 0 3px 0 #d35400; width: 100%; }
+        .btn-sync:active { transform: translateY(3px); box-shadow: none; }
         
         .btn-toggle { background: #8e44ad; color: white; border: none !important; box-shadow: 0 3px 0 #732d91 !important; transition: 0.1s;}
         .btn-toggle.active { background: #e74c3c !important; box-shadow: inset 0 3px 5px rgba(0,0,0,0.3) !important; transform: translateY(3px); }
 
-        /* 🚨 Suite共通：ドラッグ＆ドロップエリア */
-        .drop-zone { border: 2px dashed #bdc3c7; border-radius: 6px; padding: 20px 10px; text-align: center; background: #fdfefe; cursor: pointer; transition: 0.2s; color: #7f8c8d; font-size: 11px; font-weight: bold; line-height: 1.6; }
-        .drop-zone:hover, .drop-zone.dragover { background: #eaf2f8; border-color: #3498db; color: #2980b9; }
-        .drop-zone-icon { font-size: 24px; margin-bottom: 5px; display: block; }
+        /* 🚨 アプリ④準拠：ドラッグ＆ドロップエリア */
+        .drop-zone { border: 2px dashed #bdc3c7; border-radius: 6px; padding: 15px; text-align: center; background: #fafbfc; cursor: pointer; transition: 0.2s; color: #7f8c8d; font-size: 11px; font-weight: bold; line-height: 1.5; flex: 1; }
+        .drop-zone:hover, .drop-zone.dragover { background: #e8f8f5; border-color: #1abc9c; color: #16a085; }
+        .drop-zone-icon { font-size: 20px; margin-bottom: 5px; display: block; }
 
         /* 教育パネルUI */
-        .rationale-btn { background: #1abc9c; color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; border: none; font-weight: bold; }
+        .rationale-btn { background: #1abc9c; color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; }
+        .rationale-btn:hover { background: #16a085; transform: scale(1.1); }
         .rationale-text { display: none; background: #fef9e7; border: 1px solid #f39c12; padding: 10px; border-radius: 6px; font-size: 11px; color: #7e5109; margin-top: 5px; line-height: 1.5; }
         .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px; border-radius: 6px; font-size: 11px; color: #2c3e50; line-height: 1.5; }
 
@@ -75,6 +80,8 @@
         @media screen and (max-width: 768px) {
             .main-content { grid-template-columns: 1fr; padding: 10px; }
             .right-panel { position: static; }
+            .toolbar-row { flex-direction: column; align-items: stretch; }
+            .step-label { padding-top: 0; margin-bottom: 5px; }
         }
     </style>
 </head>
@@ -84,52 +91,65 @@
     <div class="header">
         <h1>🧬 Protein Structure Explorer</h1>
         <p>Bio-Edu Suite: Integrated 1D-3D Structural Analysis</p>
-        <div class="version-badge">v16.0</div>
+        <div class="version-badge">v17.0</div>
     </div>
 </div>
 
 <div class="main-content">
     <div class="control-panel">
         <div class="card">
-            <div class="card-header">⚙️ 1. 構造データの取得</div>
+            <div class="card-header">⚙️ 1. 構造データの読込</div>
             <div class="card-body">
-                <div class="step-label">RCSB PDB (オンライン取得) <button class="rationale-btn" onclick="toggleRationale('rat_pdb')">?</button></div>
-                <div id="rat_pdb" class="rationale-text">
-                    <strong>【PDBとは】</strong> X線などで撮影されたタンパク質の「実物」のデータです。多量体や薬との結合状態もそのまま観察できます。<br>例：<b>2HHB</b> (ヘモグロビン), <b>1RTD</b> (逆転写酵素)
+                
+                <div class="toolbar-row">
+                    <span class="step-label">オンライン取得 <button class="rationale-btn" onclick="toggleRationale('rat_pdb')" title="なぜPDBを使うの？">?</button></span>
+                    <div style="display:flex; flex:1; gap:5px;">
+                        <input type="text" id="pdbId" class="primer-input" placeholder="PDB ID (例: 2HHB)" onkeypress="if(event.keyCode===13) loadPDB()">
+                        <button class="btn btn-primary" onclick="loadPDB()">取得</button>
+                    </div>
                 </div>
-                <div class="input-group">
-                    <input type="text" id="pdbId" value="2hhb" placeholder="PDB IDを入力">
-                    <button class="btn btn-primary" onclick="loadPDB()">読込</button>
+                <div id="rat_pdb" class="rationale-text" style="margin-top:0; margin-bottom:10px;">
+                    <strong>【根拠】</strong> PDBにはX線等で実際に撮影された「本物」の形が登録されています。複数のサブユニット(鎖)が合体した姿や、結合している薬も実測値として観察できます。
                 </div>
 
-                <div class="step-label" style="margin-top:10px;">カスタム / AI予測データ (ファイル・テキスト) <button class="rationale-btn" onclick="toggleRationale('rat_af')">?</button></div>
-                <div id="rat_af" class="rationale-text">
-                    <strong>【AlphaFold等の使い方】</strong> AlphaFold DB等からPCにダウンロードしたPDB/CIFファイルを、下の枠内にドラッグ＆ドロップしてください。テキストの直接貼り付けにも対応しています。
+                <div class="toolbar-row">
+                    <span class="step-label">ファイル読込 <button class="rationale-btn" onclick="toggleRationale('rat_af')" title="AlphaFold等を使うには？">?</button></span>
+                    <div id="dropZone" class="drop-zone" tabindex="0">
+                        <span class="drop-zone-icon">📥</span>
+                        クリック or ファイルをドラッグ＆ドロップ<br>
+                        <span style="font-size:10px; font-weight:normal; color:#95a5a6;">(AlphaFoldのPDB/CIFやテキストのコピペ [Ctrl+V] にも対応)</span>
+                        <input type="file" id="localFile" accept=".pdb,.cif,.txt" style="display:none;">
+                    </div>
                 </div>
-                
-                <div id="dropZone" class="drop-zone" tabindex="0">
-                    <span class="drop-zone-icon">📥</span>
-                    クリックしてファイルを選択<br>または、ファイルをドラッグ＆ドロップ<br>
-                    <span style="font-size:10px; font-weight:normal; color:#bdc3c7;">(PDBテキストの直接貼り付け [Ctrl+V] も可能)</span>
-                    <input type="file" id="localFile" accept=".pdb,.cif,.txt" style="display:none;">
+                <div id="rat_af" class="rationale-text" style="margin-top:0;">
+                    <strong>【AlphaFold予測を見る方法】</strong> AlphaFold DB等からPCにダウンロードした予測データを、上の枠内にドラッグ＆ドロップしてください。
                 </div>
+
             </div>
         </div>
 
         <div class="card">
-            <div class="card-header">📍 2. 部位のハイライト（トグル）</div>
+            <div class="card-header">📍 2. 部位のハイライト（機能部位の強調）</div>
             <div class="card-body">
-                <button class="btn" style="background:#f39c12; color:white; border:none; box-shadow:0 3px 0 #d35400;" onclick="syncWithAlignment()">🧬 アプリ④から変異データを同期</button>
-                <div class="input-group" style="margin-top:5px;">
-                    <input type="text" id="residueList" placeholder="残基番号: 6, 25...">
-                    <button class="btn" onclick="highlightFromInput()">追加表示</button>
+                <button class="btn btn-sync" onclick="syncWithAlignment()">🧬 アプリ④から変異データを同期 (1D➡3D)</button>
+                
+                <div class="toolbar-row" style="margin-top:5px;">
+                    <span class="step-label" style="min-width: 60px;">残基指定:</span>
+                    <div style="display:flex; flex:1; gap:5px;">
+                        <input type="text" id="residueList" class="primer-input" placeholder="番号: 6, 25..." onkeypress="if(event.keyCode===13) highlightFromInput()">
+                        <button class="btn" onclick="highlightFromInput()">追加表示</button>
+                    </div>
                 </div>
-                <div class="step-label" style="margin-top:10px;">機能部位の強調 <button class="rationale-btn" onclick="toggleRationale('rat_mol')">?</button></div>
+
+                <div class="step-label" style="margin-top:10px;">分子の強調表示 <button class="rationale-btn" onclick="toggleRationale('rat_mol')">?</button></div>
                 <div id="rat_mol" class="rationale-text">
-                    <strong>【根拠】</strong> タンパク質は単体では働きません。中心の「ヘム」や、結合した「DNA」を表示して初めてその分子の役割が見えてきます。
+                    <strong>【根拠】</strong> タンパク質は単体では働きません。中心にある「ヘム」や基質といった結合小分子、または結合した「DNA」を表示して初めてその分子の真の役割が見えてきます。
                 </div>
-                <button id="btnLigand" class="btn btn-toggle" onclick="toggleLigands()">💊 結合小分子(Ligands): OFF</button>
-                <button id="btnDNA" class="btn btn-toggle" style="background:#2980b9; box-shadow:0 3px 0 #1a5276 !important;" onclick="toggleDNA()">🧬 核酸(DNA/RNA): OFF</button>
+                
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+                    <button id="btnLigand" class="btn btn-toggle" onclick="toggleLigands()">💊 結合小分子: OFF</button>
+                    <button id="btnDNA" class="btn btn-toggle" style="background:#2980b9; box-shadow:0 3px 0 #1a5276 !important;" onclick="toggleDNA()">🧬 核酸(DNA/RNA): OFF</button>
+                </div>
             </div>
         </div>
 
@@ -141,12 +161,12 @@
                     <strong>【リボン】</strong> 全体の骨格やαヘリックスを見るため。<br><strong>【表面電荷】</strong> 分子の凹凸や電気が、薬とどう合うか(ポケット)を見るため。
                 </div>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
-                    <button class="btn" onclick="setStyleMode('chain')">ユニット別</button>
-                    <button class="btn" onclick="setStyleMode('cartoon')">リボン</button>
-                    <button class="btn" onclick="setStyleMode('surface')">表面電荷</button>
-                    <button class="btn" onclick="setStyleMode('sphere')">空間充填</button>
+                    <button class="btn" onclick="setStyleMode('chain')">サブユニット別に色分け</button>
+                    <button class="btn" onclick="setStyleMode('cartoon')">リボンモデル</button>
+                    <button class="btn" onclick="setStyleMode('surface')">表面電荷モデル</button>
+                    <button class="btn" onclick="setStyleMode('sphere')">空間充填モデル</button>
                 </div>
-                <button class="btn" style="margin-top:10px; background:#ecf0f1; border-color:#bdc3c7;" onclick="exportImageModal()">📸 画面をPNG保存</button>
+                <button class="btn" style="margin-top:10px; background:#ecf0f1; border-color:#bdc3c7;" onclick="exportImageModal()">📸 3D画面をPNG画像で保存</button>
             </div>
         </div>
     </div>
@@ -167,8 +187,8 @@
 
         <div class="card sequence-card">
             <div class="sequence-header">
-                <span>📝 1D Sequence Viewer / Subunit Select</span>
-                <button class="btn" style="background:#fff; color:#c0392b; border:1px solid #c0392b; padding:4px 8px; font-size:10px;" onclick="clearHighlights()">🧹 全クリア</button>
+                <span>📝 1D アミノ酸配列ビューア / 鎖(Chain)の表示切替</span>
+                <button class="btn" style="background:#fff; color:#c0392b; border:1px solid #c0392b; padding:4px 8px; font-size:10px; border-radius:3px;" onclick="clearHighlights()">🧹 全クリア</button>
             </div>
             <div class="sequence-body">
                 <div id="chainSelector" class="chain-selector-area"></div>
@@ -177,13 +197,13 @@
         </div>
         
         <div class="bench-tip">
-            <strong>💡 現場のコツ</strong><br>
+            <strong>💡 現場のコツ（双方向の解析）</strong><br>
             上の3Dモデルをクリックすると、右下の配列が自動で光ります。逆に、配列の文字をなぞると3Dの場所が特定できます。
         </div>
     </div>
 </div>
 
-<div class="footer">&copy; 2026 Bio-Edu Suite v16.0 | Structural & Educational Mastery</div>
+<div class="footer">&copy; 2026 Bio-Edu Suite v17.0 | Structural & Educational Mastery</div>
 
 <div class="status-bar">
     <span id="statusText">ステータス: 待機中</span>
@@ -207,7 +227,7 @@
     document.addEventListener("DOMContentLoaded", function() {
         viewer = $3Dmol.createViewer("gldiv", { defaultcolors: $3Dmol.rasmolElementColors });
         initSequenceDrag(); 
-        initDropZone(); // 🚀 新機能：ドロップゾーンの初期化
+        initDropZone(); 
     });
 
     function toggleRationale(id) {
@@ -230,15 +250,13 @@
         });
     }
 
-    // 🚀 Suite共通仕様：ドラッグ＆ドロップ＆コピペ処理
+    // ドロップゾーン＆コピペ対応
     function initDropZone() {
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('localFile');
 
-        // クリックでファイル選択
         dropZone.addEventListener('click', () => fileInput.click());
 
-        // ドラッグ＆ドロップ
         dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
         dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
         dropZone.addEventListener('drop', (e) => {
@@ -247,7 +265,6 @@
             if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
         });
 
-        // テキストのコピペ（クリップボード）
         dropZone.addEventListener('paste', (e) => {
             e.preventDefault();
             const text = (e.clipboardData || window.clipboardData).getData('text');
@@ -258,10 +275,9 @@
             }
         });
 
-        // ファイル入力の変更
         fileInput.addEventListener('change', (e) => {
             if (e.target.files.length) handleFile(e.target.files[0]);
-            fileInput.value = ""; // 連続読込のためリセット
+            fileInput.value = ""; 
         });
     }
 
@@ -302,19 +318,19 @@
         });
     }
 
-    // 🚨 致命的バグの完全修正：タンパク質本体が確実に表示される安全なロジック
+    // 🚨 ビジュアル更新コア（核酸が青くならないバグを完全修正）
     function updateVisuals() {
         viewer.removeAllSurfaces();
         viewer.removeAllLabels();
 
-        // 1. まず「すべてのモデル」に対してベースのスタイルを適用する（白化・消失バグ防止）
+        // 1. 全体へのベーススタイル適用（白化防止）
         let baseStyle = {};
         if(currentStyleMode === 'chain') baseStyle = {cartoon: {colorscheme: 'chain'}};
         else if(currentStyleMode === 'cartoon') baseStyle = {cartoon: {color: 'spectrum'}};
         else if(currentStyleMode === 'sphere') baseStyle = {sphere: {colorscheme: 'chain'}};
         else if(currentStyleMode === 'stick') baseStyle = {stick: {colorscheme: 'chain'}};
         else if(currentStyleMode === 'surface') {
-            baseStyle = {cartoon: {opacity:0.2, colorscheme: 'chain'}};
+            baseStyle = {cartoon: {opacity: 0.2, colorscheme: 'chain'}};
         }
         else if(currentStyleMode === 'plddt') {
             baseStyle = {cartoon: {colorfunc: atom => atom.b > 90 ? '#0053d6' : atom.b > 70 ? '#65cbfa' : atom.b > 50 ? '#ffd111' : '#ff7d45'}};
@@ -322,32 +338,34 @@
         
         viewer.setStyle({}, baseStyle);
 
-        // 表面モデルの描画（表示対象の鎖のみ）
         if(currentStyleMode === 'surface') {
             let visibleSelector = hiddenChains.size > 0 ? { chain: { $nin: Array.from(hiddenChains) } } : {};
             viewer.addSurface($3Dmol.SurfaceType.VDW, {opacity: 0.8, colorscheme: 'whiteCarbon'}, visibleSelector, visibleSelector);
         }
 
-        // 2. 特殊分子の強調
-        if(showLigands) viewer.addStyle({hetflag: true}, {stick: {colorscheme: 'greenCarbon', radius: 0.3}, sphere: {scale: 0.4}});
-        if(showDNA) viewer.setStyle({nucleic: true}, {stick: {color: 'cyan', radius: 0.4}, cartoon: {color: 'cyan'}});
-        viewer.setStyle({resn: ["HOH", "WAT"]}, {hide: true}); // 水は消す
+        // 2. 特殊分子の「追加・上書き」(addStyleで確実に追加)
+        if(showLigands) {
+            viewer.addStyle({hetflag: true}, {stick: {colorscheme: 'greenCarbon', radius: 0.3}, sphere: {scale: 0.4, colorscheme: 'greenCarbon'}});
+        }
+        if(showDNA) {
+            // 🚨 1RTD等の核酸を確実にシアン（水色）にするための強い指定
+            viewer.addStyle({nucleic: true}, {stick: {color: 'cyan', radius: 0.4}, cartoon: {color: 'cyan'}, sphere: {color: 'cyan', scale: 0.3}});
+        }
+        viewer.setStyle({resn: ["HOH", "WAT"]}, {hide: true}); 
 
-        // 3. 🚨 非表示指定された鎖（Chain）を後から「上書きして隠す」
+        // 3. 非表示指定された鎖（Chain）を隠す
         hiddenChains.forEach(c => {
             viewer.setStyle({chain: c}, {hide: true});
         });
 
         // 4. 選択残基のハイライト処理
         selectedResidues.forEach(sel => {
-            // もしその鎖が非表示なら、ハイライトもスキップする
             if (sel.chain && hiddenChains.has(sel.chain)) return;
 
             let s = {resi: sel.resi};
             if(sel.chain && sel.chain !== "undefined") s.chain = sel.chain;
             
-            // リボンや球体を確実に赤く上書きする
-            viewer.addStyle(s, {cartoon: {color: 'red'}, stick: {color: 'red', radius: 0.5}, sphere: {scale: 0.8, color: 'red'}});
+            viewer.addStyle(s, {cartoon: {color: 'red'}, stick: {color: 'red', radius: 0.5}, sphere: {scale: 1.0, color: 'red'}});
             
             if(showLabels) {
                 viewer.addLabel(`Res:${sel.resi}`, {backgroundColor: 'red', fontColor: 'white'}, Object.assign({}, s, {atom: "CA"}));
@@ -376,7 +394,7 @@
         atoms.forEach(atom => {
             if(!chains.has(atom.chain)) {
                 chains.add(atom.chain);
-                chainHtml += `<label class="chain-checkbox"><input type="checkbox" checked onchange="toggleChain('${atom.chain}')"> Chain ${atom.chain}</label>`;
+                chainHtml += `<label class="chain-checkbox"><input type="checkbox" checked onchange="toggleChain('${atom.chain}')"> サブユニット ${atom.chain}</label>`;
             }
             if(atom.chain !== currentChain) {
                 if(currentChain !== "") seqHtml += "<br><br>";
@@ -387,7 +405,7 @@
             seqHtml += `<span class="aa-letter" data-resi="${atom.resi}" data-chain="${atom.chain}" title="${atom.resn} ${atom.resi}">${aa1}</span>`;
         });
         document.getElementById('chainSelector').innerHTML = chainHtml;
-        document.getElementById('sequenceViewer').innerHTML = seqHtml || "<div style='color:#e74c3c;'>配列を抽出できませんでした。</div>";
+        document.getElementById('sequenceViewer').innerHTML = seqHtml || "<div style='color:#e74c3c;'>アミノ酸配列を抽出できませんでした。</div>";
     }
 
     function toggleChain(chainId) {
@@ -406,7 +424,7 @@
         updateVisuals(); 
     }
     
-    function toggleLigands() { showLigands = !showLigands; document.getElementById('btnLigand').classList.toggle('active'); document.getElementById('btnLigand').innerText = showLigands ? "💊 結合小分子(Ligands): ON" : "💊 結合小分子(Ligands): OFF"; updateVisuals(); }
+    function toggleLigands() { showLigands = !showLigands; document.getElementById('btnLigand').classList.toggle('active'); document.getElementById('btnLigand').innerText = showLigands ? "💊 結合小分子: ON" : "💊 結合小分子: OFF"; updateVisuals(); }
     function toggleDNA() { showDNA = !showDNA; document.getElementById('btnDNA').classList.toggle('active'); document.getElementById('btnDNA').innerText = showDNA ? "🧬 核酸(DNA/RNA): ON" : "🧬 核酸(DNA/RNA): OFF"; updateVisuals(); }
 
     function initSequenceDrag() {
