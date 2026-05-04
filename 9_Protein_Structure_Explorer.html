@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Protein Structure Explorer v24.0 | Bio-Edu Suite</title>
+    <title>Protein Structure Explorer | Bio-Edu Suite</title>
     <script src="https://3Dmol.org/build/3Dmol-min.js"></script>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; padding-bottom: 40px; }
         
         /* 共通ヘッダー */
         .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 10; }
@@ -40,12 +40,6 @@
         
         .btn-toggle { background: #8e44ad; color: white; border: none !important; box-shadow: 0 3px 0 #732d91 !important; transition: 0.1s;}
         .btn-toggle.active { background: #e74c3c !important; box-shadow: inset 0 3px 5px rgba(0,0,0,0.3) !important; transform: translateY(3px); }
-
-        /* 🚨 アプリ④準拠：美しいドロップゾーン */
-        .drop-zone { border: 2px dashed #bdc3c7; border-radius: 6px; padding: 15px; text-align: center; background: #fafbfc; transition: 0.2s; cursor: pointer; width: 100%; }
-        .drop-zone:hover, .drop-zone.dragover { background: #e8f8f5; border-color: #1abc9c; }
-        .drop-zone p { margin: 0; font-size: 12px; color: #2c3e50; font-weight: bold; pointer-events: none;}
-        .drop-zone span { font-size: 10px; color: #7f8c8d; font-weight: normal; margin-top: 5px; display: block; pointer-events: none;}
 
         /* 教育パネルUI */
         .rationale-btn { background: #1abc9c; color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; }
@@ -94,7 +88,7 @@
     <div class="header">
         <h1>🧬 Protein Structure Explorer</h1>
         <p>Bio-Edu Suite: Integrated 1D-3D Structural Analysis</p>
-        <div class="version-badge">v24.0</div>
+        <div class="version-badge">v24.1</div>
     </div>
 </div>
 
@@ -104,7 +98,7 @@
             <div class="card-header">⚙️ 1. 構造データの読込（オンライン/ローカル）</div>
             <div class="card-body">
                 
-                <div class="toolbar-row" style="align-items: center;">
+                <div class="toolbar-row">
                     <span class="step-label">RCSB PDB <button class="rationale-btn" onclick="toggleRationale('rat_pdb')" title="PDBとは？">?</button></span>
                     <div style="display:flex; flex:1; gap:8px; width:100%;">
                         <input type="text" id="pdbId" class="primer-input" style="flex:2;" placeholder="ID (例: 2HHB, 1RTD)" onkeypress="if(event.keyCode===13) loadOnlinePDB()">
@@ -117,13 +111,14 @@
 
                 <div class="step-label" style="margin-top:10px;">カスタム / AlphaFold データの入力 <button class="rationale-btn" onclick="toggleRationale('rat_af')" title="AlphaFoldとは？">?</button></div>
                 <div id="rat_af" class="rationale-text">
-                    <strong>【AlphaFold等の使い方】</strong> AlphaFold DB等からPCにダウンロードしたPDB/CIFファイルを、下の枠内にドラッグ＆ドロップしてください。
+                    <strong>【AlphaFold等の使い方】</strong> AlphaFold DB等からダウンロードしたPDB/CIFファイルのテキストを下の枠内に貼り付けるか、ファイルを直接ドラッグ＆ドロップしてください。
                 </div>
                 
-                <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-                    <p>📂 ここをクリック、または PDB/CIFデータ をドラッグ＆ドロップ</p>
-                    <span>※コピーしたテキストデータの直接貼り付け (Ctrl+V) にも対応</span>
-                    <input type="file" id="fileInput" accept=".pdb,.cif,.txt" style="display:none;" onchange="handleFileSelect(event)">
+                <div style="display:flex; flex-direction:column; gap:5px;">
+                    <textarea id="dataInput" class="primer-input" placeholder="ここにPDB/CIFのテキストデータを貼り付けるか、ファイルをドラッグ＆ドロップしてください..." style="height: 100px; resize: vertical;"></textarea>
+                    <input type="file" id="fileInput" accept=".pdb,.cif,.txt" style="display: none;">
+                    
+                    <button class="btn btn-success" onclick="loadFromTextarea()" style="width:100%; padding:10px; font-size:13px;">📁 ファイルを選択 / 📝 テキストを読込</button>
                 </div>
 
             </div>
@@ -209,7 +204,7 @@
     ・<b>PyMOL</b>：世界中の論文で最もよく使われる構造描画ツール。複雑なアニメーションや、ミリ単位での水素結合の距離測定が可能です。
 </div>
 
-<div class="footer">&copy; 2026 Bio-Edu Suite v24.0 | Structural & Educational Mastery</div>
+<div class="footer">&copy; 2026 Bio-Edu Suite | Structural & Educational Mastery</div>
 
 <script>
     let viewer = null;
@@ -253,46 +248,41 @@
         });
     }
 
-    // 🚨 統合されたドラッグ＆ドロップ ＋ グローバルペースト機能
     function initDragAndDrop() {
-        const dropZone = document.getElementById('dropZone');
+        const textarea = document.getElementById('dataInput');
+        const fileInput = document.getElementById('fileInput');
 
-        // ドラッグ＆ドロップイベント
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); }, false);
-        });
-        dropZone.addEventListener('dragover', () => dropZone.classList.add('dragover'));
-        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-        dropZone.addEventListener('drop', (e) => {
-            dropZone.classList.remove('dragover');
-            if (e.dataTransfer.files.length) handleFileObj(e.dataTransfer.files[0]);
+        textarea.addEventListener('dragover', (e) => { e.preventDefault(); textarea.style.borderColor = "#1abc9c"; textarea.style.backgroundColor = "#e8f8f5"; });
+        textarea.addEventListener('dragleave', (e) => { textarea.style.borderColor = "#bdc3c7"; textarea.style.backgroundColor = "#fafafa"; });
+        textarea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            textarea.style.borderColor = "#bdc3c7"; textarea.style.backgroundColor = "#fafafa";
+            if(e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
         });
 
-        // どこにいてもCtrl+Vで貼り付け可能にする
-        document.addEventListener('paste', (e) => {
-            const text = (e.clipboardData || window.clipboardData).getData('text');
-            if(text && text.length > 50) {
-                processTextData(text, "Pasted_Data");
-            }
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) handleFile(e.target.files[0]);
+            fileInput.value = ""; 
         });
     }
 
-    // ファイル選択（クリック時）
-    function handleFileSelect(e) {
-        if(e.target.files.length) handleFileObj(e.target.files[0]);
-        e.target.value = ''; // 連続読み込み可能にするリセット
-    }
-
-    function handleFileObj(file) {
+    function handleFile(file) {
         const reader = new FileReader();
         setStatus(`ファイル解析中: ${file.name}...`);
         reader.onload = function(e) {
-            processTextData(e.target.result, file.name);
+            document.getElementById('dataInput').value = e.target.result;
+            loadFromTextarea(file.name);
         };
         reader.readAsText(file);
     }
 
-    function processTextData(text, filename) {
+    function loadFromTextarea(filename = "Custom_Data") {
+        const text = document.getElementById('dataInput').value.trim();
+        if(!text) { 
+            document.getElementById('fileInput').click();
+            return; 
+        }
+
         viewer.clear();
         clearHighlights();
         setStatus(`描画中: ${filename}...`);
