@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Protein Structure Explorer v22.0 | Bio-Edu Suite</title>
+    <title>Protein Structure Explorer v23.0 | Bio-Edu Suite</title>
     <script src="https://3Dmol.org/build/3Dmol-min.js"></script>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; padding-bottom: 40px; }
+        /* 🚨 フッター下の白い余白（padding-bottom）を完全に削除してピタッと下につける */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
         
         /* 共通ヘッダー */
         .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 10; }
@@ -65,19 +66,17 @@
         .chain-selector-area { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ddd; }
         .chain-checkbox { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: bold; cursor: pointer; background: #f8f9fa; padding: 4px 8px; border-radius: 4px; border: 1px solid #dee2e6;}
 
-        /* 🚨 アプリ④準拠：プロ向けツール案内（完全復元） */
+        /* プロ向けツール案内 */
         .mega-invite { background: #fff8e1; border: 1px solid #f5b041; padding: 12px 15px; font-size: 12px; color: #7e5109; line-height: 1.6; border-radius: 4px; margin-top: 20px; width: 100%; max-width: 1400px; display: block; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .mega-invite strong { color: #d35400; font-size: 13px; display: block; margin-bottom: 5px; }
 
-        .footer { background: #1a252f; width: 100%; padding: 20px; text-align: center; font-size: 11px; color: #7f8c8d; margin-top: 20px; }
+        .footer { background: #1a252f; width: 100%; padding: 20px; text-align: center; font-size: 11px; color: #7f8c8d; margin-top: auto; }
 
-        /* 🚨 スマホ用レスポンシブ対応（はみ出し完全防止） */
+        /* スマホ用レスポンシブ対応 */
         @media screen and (max-width: 768px) {
             .main-content { grid-template-columns: 1fr; padding: 10px; }
             .right-panel { position: static; }
             .toolbar-row { flex-direction: column; align-items: stretch; }
-            
-            /* スマホ時のみ3Dビューアのボタンを強制3等分＆はみ出し防止 */
             .viewer-controls { grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 8px 5px; }
             .viewer-controls .btn { font-size: 10px; padding: 8px 2px; letter-spacing: -0.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         }
@@ -89,7 +88,7 @@
     <div class="header">
         <h1>🧬 Protein Structure Explorer</h1>
         <p>Bio-Edu Suite: Integrated 1D-3D Structural Analysis</p>
-        <div class="version-badge">v22.0</div>
+        <div class="version-badge">v23.0</div>
     </div>
 </div>
 
@@ -121,7 +120,6 @@
                     
                     <button class="btn btn-success" onclick="loadFromTextarea()" style="width:100%; padding:10px; font-size:13px;">📁 ファイルを選択 / 📝 テキストを読込</button>
                 </div>
-
             </div>
         </div>
 
@@ -155,7 +153,10 @@
             <div class="card-body">
                 <div class="step-label">スタイルの使い分け <button class="rationale-btn" onclick="toggleRationale('rat_style')">?</button></div>
                 <div id="rat_style" class="rationale-text">
-                    <strong>【リボン】</strong> 全体の骨格を見るため。<br><strong>【表面電荷】</strong> 分子の凹凸や電気が、薬とどう合うか(ポケット)を見るため。
+                    <strong>【サブユニット別】</strong> 複数の鎖（部品）がどう組み合わさっているか（多量体）を確認します。<br>
+                    <strong>【リボン】</strong> αヘリックスやβシートなどの「骨格（二次構造）」の全体像を直感的に把握します。<br>
+                    <strong>【表面電荷】</strong> タンパク質の「皮膚」を表示します。薬やDNAがピッタリはまる「ポケット(くぼみ)」を探すのに使います。<br>
+                    <strong>【空間充填】</strong> すべての原子を球で描き、分子の実際の「体積・密度感」をリアルに表現します。
                 </div>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
                     <button class="btn" onclick="setStyleMode('chain')">サブユニット別に色分け</button>
@@ -184,8 +185,14 @@
 
         <div class="card sequence-card">
             <div class="sequence-header">
-                <span>📝 1D アミノ酸配列 / サブユニット(鎖)の選択</span>
+                <span style="display:flex; align-items:center;">
+                    📝 1D アミノ酸配列 / 鎖の選択
+                    <button class="rationale-btn" style="background:#f39c12; margin-left:8px;" onclick="toggleRationale('rat_seq')" title="アミノ酸の1文字表記とは？">?</button>
+                </span>
                 <button class="btn" style="background:#fff; color:#c0392b; border:1px solid #c0392b; padding:4px 8px; font-size:10px; border-radius:3px;" onclick="clearHighlights()">🧹 選択を全クリア</button>
+            </div>
+            <div id="rat_seq" class="rationale-text" style="margin: 0; border-radius: 0; border-left: none; border-right: none; background: #fdf2e9; border-top: 1px solid #e67e22; border-bottom: 1px solid #e67e22;">
+                <strong>【アミノ酸の1文字表記】</strong> タンパク質を構成する20種類のアミノ酸は、世界共通のアルファベット1文字（例：A=アラニン, V=バリン）で表されます。DNAの暗号（コドン）が翻訳されると、このアミノ酸が数珠つなぎになり（1D配列）、独自の立体構造（3D）へと折りたたまれます。
             </div>
             <div class="sequence-body">
                 <div id="chainSelector" class="chain-selector-area"></div>
@@ -202,7 +209,7 @@
     ・<b>PyMOL</b>：世界中の論文で最もよく使われる構造描画ツール。複雑なアニメーションや、ミリ単位での水素結合の距離測定が可能です。
 </div>
 
-<div class="footer">&copy; 2026 Bio-Edu Suite v22.0 | Structural & Educational Mastery</div>
+<div class="footer">&copy; 2026 Bio-Edu Suite v23.0 | Structural & Educational Mastery</div>
 
 <script>
     let viewer = null;
