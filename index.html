@@ -3,167 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bio-Edu Suite v1.1 | Portal</title>
+    <title>Bio-Edu Suite v1.4 | Portal</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; padding: 0; display: flex; flex-direction: column; min-height: 100vh; }
         
         /* ヒーローヘッダー */
         .hero { background: linear-gradient(135deg, #1a252f 0%, #2c3e50 100%); color: white; padding: 60px 20px; text-align: center; border-bottom: 5px solid #1abc9c; position: relative; overflow: hidden; }
-        .hero::before { content: '🧬'; position: absolute; font-size: 200px; opacity: 0.05; top: -50px; left: -50px; transform: rotate(15deg); }
-        .hero::after { content: '🔬'; position: absolute; font-size: 150px; opacity: 0.05; bottom: -30px; right: -20px; transform: rotate(-15deg); }
-        .hero h1 { margin: 0; font-size: 36px; font-weight: 800; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); z-index: 2; position: relative;}
-        .hero p { margin: 15px auto 0; font-size: 16px; color: #1abc9c; font-weight: 600; max-width: 600px; line-height: 1.6; z-index: 2; position: relative;}
-        .version-badge { display: inline-block; background: transparent; color: #1abc9c; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; border: 1px solid #1abc9c; margin-top: 15px; z-index: 2; position: relative;}
-
-        .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; flex: 1; }
+        .hero::before { content: '🧬'; position: absolute; font-size: 200px; opacity: 0.05; top: -50px; left: -50px; transform: rotate(15deg); pointer-events: none;}
+        .hero::after { content: '🔬'; position: absolute; font-size: 150px; opacity: 0.05; bottom: -30px; right: -20px; transform: rotate(-15deg); pointer-events: none;}
+        .hero h1 { margin: 0; font-size: 36px; font-weight: 800; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .hero p { margin: 15px 0 0 0; font-size: 16px; color: #1abc9c; font-weight: bold; letter-spacing: 1px; }
+        
+        /* コンテンツ幅 */
+        .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 40px 20px; flex: 1; }
 
         /* フェーズセクション */
-        .phase-section { margin-bottom: 50px; }
-        .phase-title { font-size: 22px; color: #2c3e50; border-bottom: 3px solid #bdc3c7; padding-bottom: 10px; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; }
-        .phase-title span { background: #34495e; color: white; padding: 4px 12px; border-radius: 4px; font-size: 14px; font-weight: bold; }
+        .phase-section { margin-bottom: 50px; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+        .phase-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin-bottom: 20px; display: flex; align-items: center; border-bottom: 2px solid #ecf0f1; padding-bottom: 15px; }
+        .phase-title span { display: inline-block; color: white; padding: 4px 12px; border-radius: 4px; font-size: 14px; margin-right: 12px; font-weight: bold; }
 
-        /* アプリカードグリッド */
-        .app-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; }
+        /* アプリグリッド */
+        .app-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
 
-        .app-card { background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; border-top: 4px solid #3498db; }
-        .app-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        /* カード */
+        .app-card { background: #fafbfc; border-radius: 8px; border: 1px solid #ecf0f1; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; border-top: 4px solid; height: 100%;}
+        .app-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); background: #fff;}
+        .card-header { padding: 15px 20px; background: rgba(0,0,0,0.02); border-bottom: 1px solid #f0f3f4; }
+        .card-title { margin: 0; font-size: 16px; color: #2c3e50; font-weight: 700; }
+        .card-body { padding: 20px; display: flex; flex-direction: column; flex: 1; gap: 15px; }
+        .app-desc { margin: 0; font-size: 13px; color: #5d6d7e; line-height: 1.6; flex: 1; }
         
-        .card-header { padding: 15px 20px; border-bottom: 1px solid #ecf0f1; background: #fdfefe;}
-        .card-title { margin: 0; font-size: 18px; color: #2980b9; font-weight: bold; display: flex; align-items: center; gap: 8px; }
-        
-        .card-body { padding: 20px; flex: 1; display: flex; flex-direction: column; }
-        .app-desc { font-size: 13px; color: #5d6d7e; margin: 0 0 15px 0; line-height: 1.6; }
-        
-        .rationale-box { background: #fef9e7; border-left: 3px solid #f39c12; padding: 12px; font-size: 11px; color: #7e5109; margin-bottom: 20px; line-height: 1.5; }
+        /* 教育用ワンポイント */
+        .rationale-box { background: #fef9e7; border: 1px solid #f39c12; padding: 10px 12px; border-radius: 4px; font-size: 11px; color: #7e5109; line-height: 1.5; }
         .rationale-box strong { color: #d35400; display: block; margin-bottom: 4px; }
 
-        .launch-btn { text-decoration: none; background: #1abc9c; color: white; text-align: center; padding: 12px; border-radius: 6px; font-weight: bold; font-size: 14px; transition: 0.2s; box-shadow: 0 4px 0 #16a085; display: block; margin-top: auto; }
-        .launch-btn:hover { background: #16a085; }
-        .launch-btn:active { transform: translateY(4px); box-shadow: none; }
+        /* 起動ボタン */
+        .launch-btn { display: block; width: 100%; text-align: center; padding: 12px; border-radius: 4px; color: white; font-weight: bold; text-decoration: none; font-size: 14px; transition: 0.2s; border: none; cursor: pointer; }
+        .launch-btn:hover { filter: brightness(1.1); }
+        .launch-btn:active { transform: translateY(2px); box-shadow: none !important; }
 
         .footer { background: #1a252f; padding: 20px; text-align: center; font-size: 12px; color: #7f8c8d; letter-spacing: 1px; }
-        
-        /* --- 📱 スマホ最適化（レスポンシブ・デザイン） --- */
+
+        /* 📱 スマホ最適化 */
         @media screen and (max-width: 768px) {
             .hero { padding: 40px 15px; }
-            .hero h1 { font-size: 28px; }
-            .phase-title { font-size: 18px; flex-wrap: wrap; }
-            .container { padding: 20px 15px; }
+            .hero h1 { font-size: 24px; }
+            .phase-section { padding: 15px; }
+            .phase-title { font-size: 16px; }
         }
     </style>
 </head>
 <body>
 
 <div class="hero">
-    <h1>Bio-Edu Suite</h1>
-    <p>ウェットな分子生物学実験から、最先端のバイオインフォマティクスまでをシームレスに繋ぐ、教育用インシリコ・プラットフォーム。</p>
-    <div class="version-badge">Version 1.1</div>
+    <h1>🧬 Bio-Edu Suite</h1>
+    <p>Bioinformatics & Wet-Lab Education Platform</p>
 </div>
 
 <div class="container">
-    
+    <div style="text-align: center; margin-bottom: 40px; color: #7f8c8d; font-size: 14px; line-height: 1.6;">
+        Bio-Edu Suiteは、DNA配列の増幅からタンパク質の立体構造解析まで、<br>
+        バイオサイエンスのパイプラインをブラウザ上で直感的に学べる教育用アプリケーション群です。
+    </div>
+
+    <!-- ================= Phase 1 ================= -->
     <div class="phase-section">
-        <div class="phase-title"><span>Phase 1</span> ウェット実験の設計と準備 (Wet Lab Prep)</div>
+        <div class="phase-title"><span style="background:#3498db;">Phase 1</span> 遺伝子増幅と確認 (PCR & RFLP)</div>
         <div class="app-grid">
             <div class="app-card" style="border-top-color: #3498db;">
-                <div class="card-header"><h3 class="card-title">① Master Mix Studio</h3></div>
+                <div class="card-header"><h3 class="card-title">① PCR Master Mix Studio</h3></div>
                 <div class="card-body">
-                    <p class="app-desc">PCR反応に必要なDNAの希釈率と、マスターミックスの分注量を自動計算します。</p>
-                    <div class="rationale-box"><strong>👨‍🏫 なぜ学ぶのか？</strong>ピペッティング誤差を防ぐ「N+1」の概念や、粗抽出液の阻害物質を薄める根拠など「プロの実験作法」を身につけます。</div>
+                    <p class="app-desc">実験の第一歩。Taqポリメラーゼやプライマーなど、PCRに必要な試薬の最適な混合比率（マスターミックス）を計算します。</p>
+                    <div class="rationale-box"><strong>👨‍🏫 なぜ学ぶのか？</strong>酵素の入れすぎによる阻害など、現場でよく起きる「手技と濃度のミス」を事前に防ぐ感覚を養います。</div>
                     <a href="1_Master_Mix_Studio.html" target="_blank" class="launch-btn" style="background:#3498db; box-shadow:0 4px 0 #2980b9;">アプリを起動 🚀</a>
                 </div>
             </div>
 
-            <div class="app-card" style="border-top-color: #e74c3c;">
+            <div class="app-card" style="border-top-color: #3498db;">
                 <div class="card-header"><h3 class="card-title">② Thermal Cycler Simulator</h3></div>
                 <div class="card-body">
-                    <p class="app-desc">酵素の特性やターゲット長、プライマーのTm値に基づき、最適なPCRプログラムを構築します。</p>
-                    <div class="rationale-box"><strong>👨‍🏫 なぜ学ぶのか？</strong>サーマルサイクラーの設定は勘ではありません。生物学的・物理的根拠に基づいて機械を制御する論理的思考を養います。</div>
-                    <a href="2_Thermal_Cycler_Simulator.html" target="_blank" class="launch-btn" style="background:#e74c3c; box-shadow:0 4px 0 #c0392b;">アプリを起動 🚀</a>
+                    <p class="app-desc">サーマルサイクラーの温度と時間を設定し、DNAが変性・アニーリング・伸長していく過程をシミュレートします。</p>
+                    <div class="rationale-box"><strong>👨‍🏫 なぜ学ぶのか？</strong>「なぜこの温度にするのか？」という熱力学的な根拠（Tm値など）を理解し、トラブルシューティング力を鍛えます。</div>
+                    <a href="2_Thermal_Cycler_Simulator.html" target="_blank" class="launch-btn" style="background:#3498db; box-shadow:0 4px 0 #2980b9;">アプリを起動 🚀</a>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <div class="phase-section">
-        <div class="phase-title"><span style="background:#9b59b6;">Phase 2</span> 仮想実験による検証 (In Silico Validation)</div>
-        <div class="app-grid">
-            <div class="app-card" style="border-top-color: #9b59b6;">
+            <div class="app-card" style="border-top-color: #3498db;">
                 <div class="card-header"><h3 class="card-title">③ Virtual PCR & RFLP</h3></div>
                 <div class="card-body">
-                    <p class="app-desc">FASTAデータを読み込み、PCR増幅と制限酵素による切断（RFLP）をシミュレートし、バーチャルゲルに描画します。</p>
-                    <div class="rationale-box"><strong>👨‍🏫 なぜ学ぶのか？</strong>プライマーのミスマッチ許容や、制限酵素が「どこを・なぜ切るか」を視覚化し、対数スケールの実際の電気泳動を読む目を養います。</div>
-                    <a href="3_Virtual_PCR_RFLP.html" target="_blank" class="launch-btn" style="background:#9b59b6; box-shadow:0 4px 0 #8e44ad;">アプリを起動 🚀</a>
+                    <p class="app-desc">仮想のPCR増幅と制限酵素による消化を行い、アガロースゲル電気泳動のバンドパターンを予測・確認します。</p>
+                    <div class="rationale-box"><strong>👨‍🏫 なぜ学ぶのか？</strong>1塩基の変異（SNP）が制限酵素の認識部位を変化させ、バンドの数と長さを変える原理（RFLP法）を視覚的に理解します。</div>
+                    <a href="3_Virtual_PCR_RFLP.html" target="_blank" class="launch-btn" style="background:#3498db; box-shadow:0 4px 0 #2980b9;">アプリを起動 🚀</a>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- ================= Phase 2 ================= -->
     <div class="phase-section">
-        <div class="phase-title"><span style="background:#f39c12;">Phase 3</span> 波形解析と配列の整形 (Sequence Curation)</div>
+        <div class="phase-title"><span style="background:#27ae60;">Phase 2</span> シーケンス解析とアライメント (Sequence Analysis)</div>
         <div class="app-grid">
-            <div class="app-card" style="border-top-color: #f39c12;">
-                <div class="card-header"><h3 class="card-title">④ DNA Alignment Studio</h3></div>
+            <div class="app-card" style="border-top-color: #27ae60;">
+                <div class="card-header"><h3 class="card-title">④ Sanger Trace Editor</h3></div>
                 <div class="card-body">
-                    <p class="app-desc">FASTAを整列させ、ノイズ除去、簡易MSA（多重整列）、そして新しいプライマーの設計（Tm計算）を行います。</p>
-                    <div class="rationale-box"><strong>👨‍🏫 なぜ学ぶのか？</strong>DNAの共通領域や特異的な変異（SNP）を見つけ出し、「ユニバーサル」または「種特異的」なプライマーを自らデザインする視点を持ちます。</div>
-                    <a href="4_DNA_Alignment_Studio.html" target="_blank" class="launch-btn" style="background:#f39c12; box-shadow:0 4px 0 #d35400;">アプリを起動 🚀</a>
+                    <p class="app-desc">サンガーシーケンシングの生データ（.ab1波形ファイル）を読み込み、波形の乱れ（ノイズ）を目視で確認して手動で修正・カットします。</p>
+                    <div class="rationale-box"><strong>👨‍🏫 なぜ学ぶのか？</strong>機械が出したA/T/G/Cの文字列を鵜呑みにせず、生の波形データに戻って真偽を確かめる「研究者の目」を養います。</div>
+                    <a href="4_Sanger_Trace_Editor.html" target="_blank" class="launch-btn" style="background:#2ecc71; box-shadow:0 4px 0 #27ae60;">アプリを起動 🚀</a>
                 </div>
             </div>
 
             <div class="app-card" style="border-top-color: #27ae60;">
-                <div class="card-header"><h3 class="card-title">⑤ Alignment Print Studio</h3></div>
+                <div class="card-header"><h3 class="card-title">⑤ DNA Alignment Studio</h3></div>
                 <div class="card-body">
-                    <p class="app-desc">アライメント結果（CLUSTAL形式）を、ページまたぎによる分断を防ぎながら、論文・レポート用に美しくPDF出力します。</p>
-                    <div class="rationale-box"><strong>👨‍🏫 なぜ学ぶのか？</strong>等幅フォントの使用や、配列ブロックの分断防止など、科学論文において厳格に定められた「データ提示の世界標準ルール」を守らせます。</div>
-                    <a href="5_Alignment_Print_Studio.html" target="_blank" class="launch-btn" style="background:#27ae60; box-shadow:0 4px 0 #1e8449;">アプリを起動 🚀</a>
+                    <p class="app-desc"><strong>【パイプライン・ハブ】</strong> 生配列のノイズ領域をプライマー検索で特定・カットし、複数配列のアライメント（位置合わせ）を行います。</p>
+                    <div class="rationale-box"><strong>👨‍🏫 なぜ学ぶのか？</strong>解析前にデータの開始位置を揃える（キュレーションする）ことの重要性と、アプリ⑨へデータを渡すパイプラインの概念を学びます。</div>
+                    <a href="5_DNA_Alignment_Studio.html" target="_blank" class="launch-btn" style="background:#2ecc71; box-shadow:0 4px 0 #27ae60;">アプリを起動 🚀</a>
                 </div>
             </div>
 
-            <div class="app-card" style="border-top-color: #34495e;">
-                <div class="card-header"><h3 class="card-title">⑥ Sanger Trace Editor</h3></div>
+            <div class="app-card" style="border-top-color: #27ae60;">
+                <div class="card-header"><h3 class="card-title">⑥ Alignment Print Studio</h3></div>
                 <div class="card-body">
-                    <p class="app-desc">シーケンサーの生データ（.ab1）を解読して波形を表示し、手動で塩基の修正を行いFASTAを出力します。</p>
-                    <div class="rationale-box"><strong>👨‍🏫 なぜ学ぶのか？</strong>機械の自動判定を盲信せず、波形の乱れやノイズを人間の目で確認して品質を担保する「バイオインフォマティクスの第一歩」を体験します。</div>
-                    <a href="6_Sanger_Trace_Editor.html" target="_blank" class="launch-btn" style="background:#34495e; box-shadow:0 4px 0 #2c3e50;">アプリを起動 🚀</a>
+                    <p class="app-desc">アプリ⑤で作成したアライメント結果（Clustal形式）を読み込み、論文やレポートに添付できる美しいPDF形式で出力します。</p>
+                    <div class="rationale-box"><strong>👨‍🏫 なぜ学ぶのか？</strong>解析結果を「他人に分かりやすく共有する」という、研究発表において不可欠なプレゼンテーション技術をサポートします。</div>
+                    <a href="6_Alignment_Print_Studio.html" target="_blank" class="launch-btn" style="background:#2ecc71; box-shadow:0 4px 0 #27ae60;">アプリを起動 🚀</a>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- ================= Phase 3 ================= -->
     <div class="phase-section">
-        <div class="phase-title"><span style="background:#1abc9c;">Phase 4</span> 高度な情報解析の裏側 (Advanced Bioinformatics)</div>
+        <div class="phase-title"><span style="background:#8e44ad;">Phase 3</span> データベース検索と系統分類 (Bioinformatics)</div>
         <div class="app-grid">
-            <div class="app-card" style="border-top-color: #1abc9c;">
+            <div class="app-card" style="border-top-color: #8e44ad;">
                 <div class="card-header"><h3 class="card-title">⑦ Virtual BLAST Explorer</h3></div>
                 <div class="card-body">
-                    <p class="app-desc">未知の配列とデータベースを比較し、種同定のための「スコアリング」と「E-value」の計算を体験します。</p>
-                    <div class="rationale-box"><strong>👨‍🏫 なぜ学ぶのか？</strong>BLASTをブラックボックスにせず、「E-value（偶然一致する確率）」の重要性や、配列が短すぎる際のバーコーディングの限界を学びます。</div>
-                    <a href="7_Virtual_BLAST_Explorer.html" target="_blank" class="launch-btn" style="background:#1abc9c; box-shadow:0 4px 0 #16a085;">アプリを起動 🚀</a>
+                    <p class="app-desc">未知のDNA配列を入力し、データベースから類似する配列を検索する「BLAST」のアルゴリズムをシミュレートします。</p>
+                    <div class="rationale-box"><strong>👨‍🏫 なぜ学ぶのか？</strong>スコアやE-valueの意味を理解し、手元の配列がどの生物の何の遺伝子であるかを特定するバイオインフォマティクスの基本を学びます。</div>
+                    <a href="7_Virtual_BLAST_Explorer.html" target="_blank" class="launch-btn" style="background:#9b59b6; box-shadow:0 4px 0 #8e44ad;">アプリを起動 🚀</a>
                 </div>
             </div>
 
-            <div class="app-card" style="border-top-color: #2ecc71;">
-                <div class="card-header"><h3 class="card-title">⑧ Phylogeny Builder</h3></div>
+            <div class="app-card" style="border-top-color: #8e44ad;">
+                <div class="card-header"><h3 class="card-title">⑧ Phylogenetic Tree Builder</h3></div>
                 <div class="card-body">
-                    <p class="app-desc">アライメントから「距離行列」を作成し、UPGMA法やNJ法で系統樹の枝を1つずつ結合していく過程をエミュレートします。</p>
-                    <div class="rationale-box"><strong>👨‍🏫 なぜ学ぶのか？</strong>MEGAなどのソフトが裏側で行っている「一番似ているもの同士をくっつけて表を更新する」という計算プロセスを視覚的に理解します。</div>
-                    <a href="8_Phylogenetic_Tree_Builder.html" target="_blank" class="launch-btn" style="background:#2ecc71; box-shadow:0 4px 0 #27ae60;">アプリを起動 🚀</a>
+                    <p class="app-desc">アライメント結果から距離行列を作成し、UPGMA法やNJ法を用いて生物間の進化的な近さを示す「系統樹」を構築します。</p>
+                    <div class="rationale-box"><strong>👨‍🏫 なぜ学ぶのか？</strong>「配列が似ている＝進化的に近い」という概念を、計算アルゴリズムの視覚化を通じて直感的に理解します。</div>
+                    <a href="8_Phylogenetic_Tree_Builder.html" target="_blank" class="launch-btn" style="background:#9b59b6; box-shadow:0 4px 0 #8e44ad;">アプリを起動 🚀</a>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- ================= Phase 4 ================= -->
     <div class="phase-section">
-        <div class="phase-title"><span style="background:#e67e22;">Phase 5</span> タンパク質の立体構造と機能 (Structural Biology)</div>
+        <div class="phase-title"><span style="background:#e67e22;">Phase 4</span> セントラルドグマと構造生物学 (Central Dogma & Structure)</div>
         <div class="app-grid">
             <div class="app-card" style="border-top-color: #e67e22;">
-                <div class="card-header"><h3 class="card-title">⑨ Protein Structure Explorer</h3></div>
+                <div class="card-header"><h3 class="card-title">⑨ Central Dogma Simulator</h3></div>
                 <div class="card-body">
-                    <p class="app-desc">PDBデータやAlphaFold予測を用いてタンパク質の3D構造を観察し、DNAの変異が立体構造に与える影響を視覚化します。</p>
-                    <div class="rationale-box"><strong>👨‍🏫 なぜ学ぶのか？</strong>「配列の変異」が「構造と機能の異常」に直結する様子を3Dで体感し、AI予測と実験値の違いを見極める構造リテラシーを養います。</div>
-                    <a href="9_Protein_Structure_Explorer.html" target="_blank" class="launch-btn" style="background:#e67e22; box-shadow:0 4px 0 #d35400;">アプリを起動 🚀</a>
+                    <p class="app-desc">DNAからmRNAへの転写、そしてタンパク質への翻訳プロセスをシミュレートし、ミスセンス変異によるアミノ酸の性質変化を検出します。</p>
+                    <div class="rationale-box"><strong>👨‍🏫 なぜ学ぶのか？</strong>「DNAの変異」が「アミノ酸の性質変化」を引き起こすという、生命の基本原理（セントラルドグマ）を実データで追体験します。</div>
+                    <a href="9_Central_Dogma_Simulator.html" target="_blank" class="launch-btn" style="background:#e67e22; box-shadow:0 4px 0 #d35400;">アプリを起動 🚀</a>
+                </div>
+            </div>
+
+            <div class="app-card" style="border-top-color: #e67e22;">
+                <div class="card-header"><h3 class="card-title">⑩ Protein Structure Explorer</h3></div>
+                <div class="card-body">
+                    <p class="app-desc">PDBデータを用いてタンパク質の3D構造を観察し、アプリ⑨で検出した変異が立体構造のどこに位置するかを視覚化します。</p>
+                    <div class="rationale-box"><strong>👨‍🏫 なぜ学ぶのか？</strong>「アミノ酸の性質変化」が最終的に「タンパク質の機能異常（立体構造の崩壊）」に繋がる因果関係を3D空間で推論します。</div>
+                    <a href="10_Protein_Structure_Explorer.html" target="_blank" class="launch-btn" style="background:#e67e22; box-shadow:0 4px 0 #d35400;">アプリを起動 🚀</a>
                 </div>
             </div>
         </div>
@@ -172,7 +184,7 @@
 </div>
 
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v1.1 | Developed for Bioinformatics & Wet-Lab Education
+    &copy; 2026 Bio-Edu Suite | All Apps Integrated & Ready for Education.
 </div>
 
 </body>
