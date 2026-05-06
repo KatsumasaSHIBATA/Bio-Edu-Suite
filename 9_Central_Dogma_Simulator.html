@@ -17,7 +17,6 @@
 
         /* 2カラムレイアウト */
         .main-content { width: 100%; max-width: 1400px; margin: 0 auto; padding: 15px; display: grid; grid-template-columns: 380px 1fr; gap: 15px; align-items: start; flex: 1; }
-        @media screen and (max-width: 900px) { .main-content { grid-template-columns: 1fr; } }
         
         /* 左側コントロールパネル */
         .control-panel { display: flex; flex-direction: column; gap: 15px; position: sticky; top: 15px; }
@@ -110,6 +109,17 @@
         
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; width: 12px; height: 12px; animation: spin 1s linear infinite; display: none; margin-left: 5px; vertical-align: middle;}
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* 💡 修正ポイント: スマホ向けレイアウトの修正 (パネルが隠れる問題を解決) */
+        @media screen and (max-width: 900px) { 
+            .main-content { grid-template-columns: 1fr; padding: 10px; } 
+            
+            /* スマホ時にはstickyを解除し、自然に下までスクロール可能にする */
+            .control-panel { position: static; } 
+            
+            /* スマホでは内部スクロールではなく、ページ全体のスクロールを利用するため高さを解放 */
+            .codon-container { max-height: none; min-height: 200px; padding-bottom: 10px; }
+        }
     </style>
 </head>
 <body>
@@ -132,7 +142,6 @@
             <div class="card-header">⚙️ 1. データ読込 (Input DNA)</div>
             <div class="card-body">
                 
-                <!-- 💡 修正ポイント：入力配列数に応じて動的に切り替わるパネル -->
                 <div id="inputHintDefault" class="bench-tip" style="background:#eafaf1; border-left-color:#27ae60;">
                     <strong>💡 現場のコツ（比較モード）</strong><br>
                     <strong>2つの配列（野生型と変異型）</strong>を同時入力すると、自動で比較モードになり、翻訳時に変異箇所を検出してアプリ⑩へ同期します。
@@ -315,7 +324,6 @@
         return seqs;
     }
 
-    // 💡 修正ポイント: 入力配列数に応じて動的にパネルを切り替える
     function updateLength() {
         let seqs = parseFasta();
         document.getElementById('posText').innerText = `Sequences: ${seqs.length}`;
@@ -345,7 +353,7 @@
             
             let val = document.getElementById('dnaInput').value;
             document.getElementById('dnaInput').value = val ? val + '\n' + data : data;
-            updateLength(); // ここでパネル切り替えが発動
+            updateLength();
             document.getElementById('statusText').innerText = "データを取得・追加しました。";
         } catch (error) {
             alert("取得エラー:\n" + error.message);
@@ -363,16 +371,13 @@
         
         currentMRNAs = seqs.map(s => ({ name: s.name, mrna: s.seq.replace(/T/g, 'U') }));
         
-        // 💡 修正ポイント: 複数の配列を上下に並べ、横スクロールでズレを確認できるようにする
         let htmlOutput = '';
         if (currentMRNAs.length > 1) {
-            // 長さが全て同じかどうかで、未アライメントのアラートを出す
             let isAligned = currentMRNAs.every(s => s.mrna.length === currentMRNAs[0].mrna.length);
             let warnMsg = isAligned ? "" : `<span style="color:#e74c3c; margin-left:10px;">⚠️ 未アライメント (配列の長さが異なります)</span>`;
             htmlOutput += `<div style="color:#e67e22; font-weight:bold; margin-bottom:10px;">🔍 比較モード: ${currentMRNAs.length}配列を並行表示しています。${warnMsg}</div>`;
         }
         
-        // 横スクロール用のコンテナ
         htmlOutput += `<div style="overflow-x: auto; padding-bottom: 10px;">`;
         
         currentMRNAs.forEach((seqObj) => {
@@ -384,7 +389,6 @@
                 isTruncated = true;
             }
             
-            // 安全なタグ構築
             let coloredRNA = '';
             for (let i = 0; i < displayRNA.length; i++) {
                 let b = displayRNA[i];
@@ -398,7 +402,6 @@
                 
             if(isTruncated) coloredRNA += "<span style='color:#7f8c8d;'> ... (省略)</span>";
             
-            // 各配列の行（名前 + 5' - 配列 - 3' + 長さ）
             htmlOutput += `<div style="display: flex; align-items: center; margin-bottom: 6px; white-space: nowrap;">`;
             htmlOutput += `<div style="font-size: 11px; color: #f1c40f; width: 120px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; padding-right: 10px; text-align: right;" title="${seqObj.name}">${seqObj.name}</div>`;
             htmlOutput += `<div style="background: #0b0b0b; padding: 4px 8px; border-radius: 4px; display: inline-block;">`;
@@ -411,7 +414,6 @@
         
         htmlOutput += `</div>`;
         
-        // CSSの折り返し指定を上書きして、横並び表示を有効にする
         let resultBox = document.getElementById('mrnaResult');
         resultBox.style.whiteSpace = "normal"; 
         resultBox.style.wordWrap = "normal";
@@ -450,7 +452,13 @@
     function runTranslation() {
         if(currentMRNAs.length === 0) return;
 
-        // 💡 修正ポイント：迷惑な alert() を撤廃。警告は入力時の赤パネルに委ねる
+        if (currentMRNAs.length > 1) {
+            let len0 = currentMRNAs[0].mrna.length;
+            let len1 = currentMRNAs[1].mrna.length;
+            if (len0 !== len1) {
+                alert("⚠️ 警告: 比較する配列の長さが異なります。\n\nアライメント（位置合わせ）されていないため、翻訳フレームがずれて不当に多くの変異（真っ赤）が検出される可能性があります。\n\n正確な比較を行うには、先に「アプリ⑤」でアライメントと開始位置のトリミングを行ってください。");
+            }
+        }
 
         let rnaWT = currentMRNAs[0].mrna;
         let rnaMut = currentMRNAs.length > 1 ? currentMRNAs[1].mrna : rnaWT;
