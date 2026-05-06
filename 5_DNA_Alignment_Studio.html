@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNA Alignment & Editing Studio v2.8 | Bio-Edu Suite</title>
+    <title>DNA Alignment & Editing Studio v3.0 | Bio-Edu Suite</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         /* 画面の固定を解除し、下まで自然にスクロールできるように変更 */
@@ -32,7 +32,7 @@
         .toolbar-row { display: flex; width: 100%; gap: 12px; align-items: center; flex-wrap: wrap; }
         .step-label { font-size: 13px; font-weight: bold; color: #e67e22; min-width: 80px; display: flex; align-items: center; }
 
-        .btn { background: #fdfefe; border: 1px solid #bdc3c7; padding: 6px 12px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 5px; border-radius: 4px; font-weight: bold; transition: all 0.2s; color: #2c3e50; white-space: nowrap; }
+        .btn { background: #fdfefe; border: 1px solid #bdc3c7; padding: 6px 12px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 5px; border-radius: 4px; font-weight: bold; transition: all 0.2s; color: #2c3e50; white-space: nowrap; justify-content: center; }
         .btn:hover:not(:disabled) { background: #eaf2f8; border-color: #3498db; color: #2980b9; }
         .btn:disabled { color: #a0a0a0; cursor: not-allowed; background: #f4f6f6; border-color: #dcdde1; opacity: 0.7; }
         
@@ -44,7 +44,7 @@
         .btn-option:hover:not(:disabled) { background: #732d91; color: white; box-shadow: 0 2px 5px rgba(142,68,173,0.4); }
 
         /* ドラッグ＆ドロップエリア */
-        .drop-zone { border: 2px dashed #bdc3c7; border-radius: 6px; padding: 12px 20px; text-align: center; background: #fafbfc; transition: 0.2s; cursor: pointer; flex: 1; max-width: 450px; }
+        .drop-zone { border: 2px dashed #bdc3c7; border-radius: 6px; padding: 12px 20px; text-align: center; background: #fafbfc; transition: 0.2s; cursor: pointer; flex: 1; max-width: 450px; display: flex; flex-direction: column; justify-content: center; }
         .drop-zone:hover, .drop-zone.dragover { background: #e8f8f5; border-color: #1abc9c; }
         .drop-zone p { margin: 0; font-size: 12px; color: #7f8c8d; font-weight: bold; pointer-events: none;}
         input[type="file"] { display: none; }
@@ -117,13 +117,16 @@
         .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 10px 15px; font-size: 11px; color: #2c3e50; line-height: 1.5; border-bottom: 1px solid #dcdde1; }
         .bench-tip strong { color: #2980b9; font-size: 11px; }
         
-        /* 🚨 PC側のメガインバイト（ここは先生のコードを一文字も変えず維持） */
         .mega-invite { background: #fff8e1; border: 1px solid #f5b041; padding: 8px 15px; font-size: 11px; color: #7e5109; line-height: 1.5; display: flex; align-items: center; gap: 10px; margin-bottom: 10px;}
 
         .status-bar { background: #2c3e50; color: white; padding: 8px 20px; font-size: 12px; display: flex; justify-content: space-between; font-weight: 600; letter-spacing: 0.5px; z-index: 30; flex-shrink: 0; margin-top: auto;}
         .footer { background: #1a252f; padding: 10px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; flex-shrink: 0; }
         
-        /* 📱 スマホ・タブレット最適化（ここだけを修正） */
+        /* 💡追加機能用CSS: 脈動アニメーション、ローダー */
+        @keyframes pulseMSA { 0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); } 70% { box-shadow: 0 0 0 8px rgba(46, 204, 113, 0); } 100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); } }
+        .pulse-anim { animation: pulseMSA 1.5s infinite; background: #2ecc71 !important; border-color: #27ae60 !important; color: white !important; box-shadow: 0 3px 0 #27ae60 !important; }
+        .loader { border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid #fff; border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite; display: inline-block; margin-left: 5px; vertical-align: middle; }
+
         @media screen and (max-width: 768px) {
             .main-content { padding: 10px; flex-direction: column !important; }
             .card { min-width: 100% !important; margin-bottom: 10px; }
@@ -133,19 +136,8 @@
             .header h1 { font-size: 16px; margin-right: 40px; }
             .version-badge { top: 10px; right: 10px; padding: 2px 6px; }
             
-            /* 🚨修正ポイント①: プライマー設計ナビの余白を消滅させ、横に詰め込む */
             .editor-card .card-header { flex-direction: column; align-items: flex-start; gap: 8px; padding: 10px; }
-            .header-primer-stats { 
-                flex-direction: row; /* 縦積みをやめて横並びにする */
-                flex-wrap: wrap;     /* はみ出た分だけ折り返す */
-                align-items: center; 
-                gap: 4px 8px;        /* 隙間を極限まで小さく */
-                padding: 6px 10px; 
-                width: 100%; 
-                margin-top: 0;       /* 上の余白を消去 */
-            }
-
-            /* 🚨修正ポイント②: MAFFTの案内をスマホではブロック表示にして綺麗に改行させる */
+            .header-primer-stats { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 6px 10px; width: 100%; margin-top: 0; }
             .mega-invite { display: block; padding: 12px; line-height: 1.6; }
             .mega-invite strong { display: block; margin-bottom: 6px; font-size: 12px; }
 
@@ -161,96 +153,109 @@
 
 <div class="header-container">
     <div class="header">
-        <h1>🧬 DNA Alignment & Editing Studio</h1>
-        <p>Bio-Edu Suite: Sequence Processing & Primer Design Environment</p>
-        <div class="version-badge">v2.8</div>
+        <h1>🧬 DNA Alignment Studio</h1>
+        <p>Bio-Edu Suite: Sequence Curation & Pipeline Hub</p>
+        <div class="version-badge">v3.0</div>
     </div>
 </div>
 
 <div class="main-content">
     
-    <div class="card">
-        <div class="card-header" style="justify-content: flex-start; padding: 10px 18px;">
-            <span>⚙️ in silico データ処理パネル</span>
-        </div>
-        <div class="card-body">
-            
-            <div id="rat_step2" class="rationale-text">
-                <strong>【根拠：なぜプライマーで検索するのか？】</strong><br>
-                サンガーシーケンスで得られた生のDNAデータには、機械の読み取りノイズや不要な配列が両端に大量に含まれています。自分が使った「Primer F/R」をアンカーとして検索し、ノイズを省いた「本当に必要な領域」だけを特定します。
+    <!-- 上部コントロールパネル群 -->
+    <div class="control-grid">
+        
+        <!-- 1. データ入力 -->
+        <div class="card">
+            <div class="card-header" style="justify-content: flex-start; padding: 10px 18px;">
+                <span>⚙️ in silico データ処理パネル</span>
             </div>
-            <div id="rat_step3" class="rationale-text">
-                <strong>【根拠：なぜ手動でカットするのか？】</strong><br>
-                端がガタガタになっている部分を残したまま次の解析に進むと、システムがそれを「存在しない未知の突然変異」として誤認識してしまいます。綺麗にトリミングするのがインシリコ解析の鉄則です。
-            </div>
-            <div id="rat_msa" class="rationale-text">
-                <strong>【根拠：MSA(多重整列)とは？】</strong><br>
-                進化の過程で生じた「塩基の欠失や挿入」を補正するため、配列の間に「ギャップ(-)」を挿入しながら、すべてのサンプルの相同な位置を縦にピタリと合わせる高度なアルゴリズムです。これにより、真の変異（SNP等）が浮かび上がります。
-            </div>
-            <div id="rat_design" class="rationale-text">
-                <strong>【根拠：プライマー設計の適正パラメータ】</strong><br>
-                ・<strong>長さ (18〜25bp):</strong> 短すぎると特異性が下がり（他の場所にくっつく）、長すぎると結合効率が落ちます。<br>
-                ・<strong>GC含量 (40〜60%):</strong> GとCは水素結合が3本あり強く結合するため、極端な偏りを防ぎます。<br>
-                ・<strong>Tm値 (55〜65℃):</strong> DNAの二重らせんが半分ほどける温度です。FとRでTm値の差を「5℃以内」に揃えるのがPCR成功の鉄則です。
-            </div>
-            <div id="rat_export" class="rationale-text">
-                <strong>【根拠：FASTAとCLUSTALの違い】</strong><br>
-                ・<strong>FASTA:</strong> BLASTや系統樹作成など、コンピューター（プログラム）に読み込ませるためのデータです。<br>
-                ・<strong>CLUSTAL:</strong> 変異が視覚的にわかりやすい、人間（論文の読者）が読むための表示形式です。次のアプリ「Alignment Print Studio」で美しく印刷できます。
-            </div>
-
-            <div class="toolbar-row">
-                <span class="step-label">1. データ読込</span>
-                <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-                    <p>📂 ここをクリック、または <b>FASTAデータ (.txt, .fas)</b> をドラッグ＆ドロップ (複数ファイル可)</p>
-                    <input type="file" id="fileInput" accept=".fasta,.fas,.txt,.seq" multiple onchange="handleFiles(event)">
+            <div class="card-body">
+                
+                <div id="rat_step2" class="rationale-text">
+                    <strong>【根拠：なぜプライマーで検索するのか？】</strong><br>
+                    サンガーシーケンスで得られた生のDNAデータには、機械の読み取りノイズや不要な配列が両端に大量に含まれています。自分が使った「Primer F/R」をアンカーとして検索し、ノイズを省いた「本当に必要な領域」だけを特定します。
                 </div>
-            </div>
-            
-            <div class="toolbar-row">
-                <span class="step-label">2. 検索 <button class="rationale-btn" onclick="toggleRationale('rat_step2')" title="なぜ検索するの？">?</button></span>
-                <div class="primer-label"><span class="color-box-f"></span> Primer F: <input type="text" id="pF" class="primer-input" value="CCATCCAACATCTCAGCATGATGAAA"></div>
-                <div class="primer-label"><span class="color-box-r"></span> Primer R: <input type="text" id="pR" class="primer-input" value="CCCCTCAGAATGATATTTGTCCTCA"></div>
-                <div class="slider-container">許容率: 
-                    <input type="range" id="mismatchSlider" min="0" max="50" value="20" oninput="updateMismatchVal(this.value)">
-                    <span id="mismatchVal" style="width: 25px; color: #e74c3c;">20%</span>
+                <div id="rat_step3" class="rationale-text">
+                    <strong>【根拠：なぜ手動でカットするのか？】</strong><br>
+                    端がガタガタになっている部分を残したまま次の解析に進むと、システムがそれを「存在しない未知の突然変異」として誤認識してしまいます。綺麗にトリミングするのがインシリコ解析の鉄則です。
+                </div>
+                <div id="rat_msa" class="rationale-text">
+                    <strong>【根拠：MSA(多重整列)とは？】</strong><br>
+                    進化の過程で生じた「塩基の欠失や挿入」を補正するため、配列の間に「ギャップ(-)」を挿入しながら、すべてのサンプルの相同な位置を縦にピタリと合わせる高度なアルゴリズムです。これにより、真の変異（SNP等）が浮かび上がります。
+                </div>
+                <div id="rat_design" class="rationale-text">
+                    <strong>【根拠：プライマー設計の適正パラメータ】</strong><br>
+                    ・<strong>長さ (18〜25bp):</strong> 短すぎると特異性が下がり（他の場所にくっつく）、長すぎると結合効率が落ちます。<br>
+                    ・<strong>GC含量 (40〜60%):</strong> GとCは水素結合が3本あり強く結合するため、極端な偏りを防ぎます。<br>
+                    ・<strong>Tm値 (55〜65℃):</strong> DNAの二重らせんが半分ほどける温度です。FとRでTm値の差を「5℃以内」に揃えるのがPCR成功の鉄則です。
+                </div>
+                <div id="rat_export" class="rationale-text">
+                    <strong>【根拠：FASTAとCLUSTALの違い】</strong><br>
+                    ・<strong>FASTA:</strong> BLASTや系統樹作成など、コンピューター（プログラム）に読み込ませるためのデータです。<br>
+                    ・<strong>CLUSTAL:</strong> 変異が視覚的にわかりやすい、人間（論文の読者）が読むための表示形式です。次のアプリ「Alignment Print Studio」で美しく印刷できます。
                 </div>
 
-                <button class="btn btn-primary" id="btnStep2" onclick="alignByDualPrimers()" disabled>🧲 プライマー検索＆整列</button>
-            </div>
-
-            <div class="toolbar-row">
-                <span class="step-label">3. 手動カット <button class="rationale-btn" onclick="toggleRationale('rat_step3')" title="なぜカットするの？">?</button></span>
-                <button class="btn" id="btnTrimLeft" onclick="trimLeft()" disabled>✂️ 選択位置より左側を一括削除</button>
-                <button class="btn" id="btnTrimRight" onclick="trimRight()" disabled>✂️ 選択位置より右側を一括削除</button>
-                
-                <div class="divider"></div>
-                
-                <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
-                    <div style="display:flex; gap:5px; align-items:center;">
-                        <button class="btn btn-option" id="btnOptionMSA" onclick="runMSA()" disabled>✨ 簡易MSA実行</button>
-                        <button class="rationale-btn" style="width:14px;height:14px;font-size:9px;background:#732d91;margin-left:0;" onclick="event.stopPropagation(); toggleRationale('rat_msa')" title="MSAとは？">?</button>
+                <!-- 💡 データ読込: NCBIとドロップ窓を横並びに配置し、NCBI窓とボタンも横並びに -->
+                <div class="toolbar-row" style="align-items: stretch; margin-top: 8px;">
+                    <span class="step-label" style="display: flex; align-items: center;">1. データ読込</span>
+                    <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px; flex: 1;">
+                        <div style="display: flex; flex-direction: row; gap: 8px; flex: 0 0 auto;">
+                            <input type="text" id="ncbiId" class="primer-input" placeholder="NCBI ID" onkeypress="if(event.keyCode===13) fetchNCBI()" style="width: 120px;">
+                            <button class="btn btn-primary" onclick="fetchNCBI()" style="padding: 6px 12px; white-space: nowrap; height: 100%; margin: 0;">🌐 取得 <span id="apiLoader" class="loader" style="display:none;"></span></button>
+                        </div>
+                        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" style="margin: 0; min-width: 180px; padding: 8px 15px;">
+                            <p>📂 生データ(FASTA) をドラッグ＆ドロップ</p>
+                            <input type="file" id="fileInput" accept=".fasta,.fas,.txt,.seq" multiple onchange="handleFiles(event)">
+                        </div>
                     </div>
-                    <span style="font-size:9px; color:#c0392b; font-weight:bold;">※学習用の簡易機能です。長い配列はフリーズします。</span>
                 </div>
-            </div>
-            
-            <div class="toolbar-row">
-                <span class="step-label">4. 保存 <button class="rationale-btn" onclick="toggleRationale('rat_export')" title="FASTAとCLUSTALの違いは？">?</button></span>
-                <button class="btn btn-success" id="btnExportFasta" onclick="exportFastaAll()" disabled>💾 FASTA出力</button>
-                <button class="btn btn-success" id="btnExportClustal" onclick="exportClustalAll()" disabled>💾 CLUSTAL出力 (.txt)</button>
+                
+                <div class="toolbar-row" id="step2Row" style="transition: opacity 0.3s;">
+                    <span class="step-label">2. 検索 <button class="rationale-btn" onclick="toggleRationale('rat_step2')" title="なぜ検索するの？">?</button></span>
+                    <div class="primer-label"><span class="color-box-f"></span> Primer F: <input type="text" id="pF" class="primer-input" value="CCATCCAACATCTCAGCATGATGAAA"></div>
+                    <div class="primer-label"><span class="color-box-r"></span> Primer R: <input type="text" id="pR" class="primer-input" value="CCCCTCAGAATGATATTTGTCCTCA"></div>
+                    <div class="slider-container">許容率: 
+                        <input type="range" id="mismatchSlider" min="0" max="50" value="20" oninput="updateMismatchVal(this.value)">
+                        <span id="mismatchVal" style="width: 25px; color: #e74c3c;">20%</span>
+                    </div>
 
-                <div class="divider"></div>
+                    <button class="btn btn-primary" id="btnStep2" onclick="alignByDualPrimers()" disabled>🧲 プライマー検索＆整列</button>
+                </div>
+
+                <div class="toolbar-row">
+                    <span class="step-label">3. 手動カット <button class="rationale-btn" onclick="toggleRationale('rat_step3')" title="なぜカットするの？">?</button></span>
+                    <button class="btn" id="btnTrimLeft" onclick="trimLeft()" disabled>✂️ 選択位置より左側を一括削除</button>
+                    <button class="btn" id="btnTrimRight" onclick="trimRight()" disabled>✂️ 選択位置より右側を一括削除</button>
+                    
+                    <div class="divider"></div>
+                    
+                    <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
+                        <div style="display:flex; gap:5px; align-items:center;">
+                            <button class="btn btn-option" id="btnOptionMSA" onclick="runMSA()" disabled>✨ 簡易MSA実行</button>
+                            <button class="rationale-btn" style="width:14px;height:14px;font-size:9px;background:#732d91;margin-left:0;" onclick="event.stopPropagation(); toggleRationale('rat_msa')" title="MSAとは？">?</button>
+                        </div>
+                        <span style="font-size:9px; color:#c0392b; font-weight:bold;">※学習用の簡易機能です。長い配列はフリーズします。</span>
+                    </div>
+                </div>
                 
-                <span class="step-label">5. Primer設計 <button class="rationale-btn" onclick="toggleRationale('rat_design')" title="設計の適正値の根拠は？">?</button></span>
-                <button class="btn btn-success" id="btnConserved" onclick="toggleConservedRegions()" disabled>🟢 保存領域の可視化</button>
-                <span style="font-size:11px; font-weight:bold; color:#8e44ad; margin-left:5px;">※配列をドラッグ(長押し選択)で設計ナビが起動します。</span>
-                
-                <div style="flex-grow: 1;"></div> 
+                <div class="toolbar-row">
+                    <span class="step-label">4. 保存 <button class="rationale-btn" onclick="toggleRationale('rat_export')" title="FASTAとCLUSTALの違いは？">?</button></span>
+                    <div class="toolbar-row" style="flex:1;">
+                        <button class="btn btn-success" id="btnExportFasta" onclick="exportFastaAll()" disabled>💾 FASTA出力</button>
+                        <button class="btn btn-success" id="btnExportClustal" onclick="exportClustalAll()" disabled>💾 CLUSTAL出力 (.txt)</button>
+                    </div>
+
+                    <div class="divider"></div>
+                    
+                    <span class="step-label">5. Primer設計 <button class="rationale-btn" onclick="toggleRationale('rat_design')" title="設計の適正値の根拠は？">?</button></span>
+                    <button class="btn btn-success" id="btnConserved" onclick="toggleConservedRegions()" disabled>🟢 保存領域の可視化</button>
+                    <span style="font-size:11px; font-weight:bold; color:#8e44ad; margin-left:5px;">※配列をドラッグ(長押し選択)で設計ナビが起動します。</span>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- エディタ領域 -->
     <div class="card editor-card">
         <div class="card-header">
             <span>🧬 シークエンスエディタ (Sequence Editor)</span>
@@ -264,14 +269,14 @@
             </div>
         </div>
         
-        <div class="bench-tip">
+        <div class="bench-tip" style="border-radius: 0; border-left: none;">
             <strong>💡 現場のコツ（一括カットと 🎯設計ミッション）</strong><br>
-            ・検索で見つけたPrimerの端をクリックし「一括削除」を押すとノイズが一気に消えます。<br>
-            ・<strong>ミッション：</strong> 配列をドラッグして、右上の「設計ナビ」の数値が<strong>すべて緑色（適正値）</strong>になる理想のプライマー領域を探し出しましょう！
+            ・検索で見つけたPrimerの端をクリックし「左/右カット」を押すとノイズが一気に消えます。<br>
+            ・<strong>ミッション：</strong> 配列をドラッグして、右上の「設計ナビ」の数値が<strong>すべて緑色（適正値）</strong>になる理想の領域を探し出しましょう！
         </div>
 
-        <div class="keyboard-hints">
-            <span>【手動キュレーション】 セルをクリックしてキーボード操作: [←][→][↑][↓] 移動 ｜ [Space] / [-] ギャップ挿入(右へシフト) ｜ [Backspace] 削除(左へ詰める) ｜ [A][T][G][C] 上書き</span>
+        <div class="keyboard-hints" style="border-radius: 0; border-left: none; border-right: none;">
+            <span>【手動編集】 セルを選択してキーボード操作: [←][→][↑][↓] 移動 ｜ [Space] / [-] ギャップ挿入 ｜ [Backspace] 削除 ｜ [A][T][G][C] 上書き</span>
         </div>
 
         <div class="editor-container" id="editorWrap">
@@ -292,12 +297,12 @@
 </div>
 
 <div class="status-bar">
-    <span id="statusText">ステップ1: 左上の点線枠にFASTAデータをドラッグ＆ドロップしてください。</span>
+    <span id="statusText">ステップ1: NCBIから自動取得するか、生データをドロップしてください。</span>
     <span id="posText">Row: - | Pos: -</span>
 </div>
 
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v2.8 | Developed for Bioinformatics & Wet-Lab Education
+    &copy; 2026 Bio-Edu Suite v3.0 | Sequence Curation Hub
 </div>
 
 <script>
@@ -319,6 +324,65 @@
     let dragEndCol = -1;
 
     let isConservedVisible = false;
+
+    // --- スマートUI自動分岐 ---
+    function setRoute(route) {
+        const pF = document.getElementById('pF');
+        const pR = document.getElementById('pR');
+        const mismatchSlider = document.getElementById('mismatchSlider');
+        const btnStep2 = document.getElementById('btnStep2');
+        const msaBtn = document.getElementById('btnOptionMSA');
+        const st = document.getElementById('statusText');
+        const step2Row = document.getElementById('step2Row');
+        
+        if(route === 'B') {
+            // NCBIルート
+            pF.disabled = true; pR.disabled = true; mismatchSlider.disabled = true;
+            btnStep2.disabled = true; 
+            if(step2Row) step2Row.style.opacity = "0.4";
+            
+            msaBtn.disabled = false; msaBtn.classList.add('pulse-anim');
+            document.getElementById('btnExportFasta').disabled = false; 
+            document.getElementById('btnExportClustal').disabled = false; 
+            document.getElementById('btnConserved').disabled = false;
+            
+            st.innerText = "NCBIから登録済みの配列を取得しました。プライマー検索をスキップし、直接MSA（アライメント）が可能です。";
+        } else {
+            // Localルート
+            pF.disabled = false; pR.disabled = false; mismatchSlider.disabled = false;
+            btnStep2.disabled = false; 
+            if(step2Row) step2Row.style.opacity = "1";
+            
+            msaBtn.disabled = true; msaBtn.classList.remove('pulse-anim');
+            st.innerText = "生データを読み込みました。Primer F/Rを入力してノイズ領域を特定・カットしてください。";
+        }
+    }
+
+    // --- NCBI APIから自動取得 ---
+    async function fetchNCBI() {
+        const idInput = document.getElementById('ncbiId').value.trim();
+        if(!idInput) return;
+        
+        const loader = document.getElementById('apiLoader');
+        if(loader) loader.style.display = 'inline-block';
+        document.getElementById('statusText').innerText = `NCBIから [${idInput}] を取得中...`;
+
+        try {
+            const response = await fetch(`https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=${idInput}&rettype=fasta&retmode=text`);
+            if (!response.ok) throw new Error("HTTP " + response.status);
+            const data = await response.text();
+            if (!data || data.includes('Error')) throw new Error("データが見つかりませんでした。");
+            
+            parseFasta(data, "NCBI_" + idInput);
+            renderEditorSync();
+            setRoute('B'); // 取得成功時にルートBを適用
+        } catch (error) {
+            alert("取得エラー:\n" + error.message);
+            document.getElementById('statusText').innerText = "エラー";
+        } finally {
+            if(loader) loader.style.display = 'none';
+        }
+    }
 
     function toggleRationale(id) {
         const el = document.getElementById(id);
@@ -395,7 +459,7 @@
                     renderEditorAsync(); 
                     if(fileInput) fileInput.value = ''; 
                     unlockStep(2);
-                    statusText.innerText = "読込完了。FとRのプライマー(5'➡3')を入力し、「2. 検索」を実行してください。";
+                    setRoute('A'); // ファイル読込時にルートAを適用
                 }
             };
             reader.readAsText(file);
@@ -635,7 +699,6 @@
         }
     }
 
-    // --- キーボードによる手動エディット機能 ---
     document.addEventListener('keydown', function(e) {
         if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
         if(selectedRow === -1 || selectedCol === -1) return;
@@ -821,6 +884,8 @@
             });
 
             updateMutationsAndRender();
+            const msaBtn = document.getElementById('btnOptionMSA');
+            if(msaBtn) msaBtn.classList.remove('pulse-anim');
             document.getElementById('statusText').innerText = "簡易MSA完了！変異（赤）や保存領域（薄緑）を確認し、ドラッグしてプライマーを設計してみましょう。";
         }, 50);
     }
@@ -832,11 +897,16 @@
         const header = document.getElementById('gridHeader');
         const container = document.getElementById('rowsContainer');
 
+        if (!namesCol || !header || !container) return;
+
         namesCol.innerHTML = '<div class="name-header">配列名 (Sequence Name)</div>';
         header.innerHTML = ''; 
         container.innerHTML = '';
 
-        if (sequences.length === 0) return;
+        if (sequences.length === 0) {
+            container.innerHTML = '<div style="color:#7f8c8d; text-align:center; padding-top:150px; font-size:16px;">データを読み込んでください。</div>';
+            return;
+        }
 
         const maxLen = Math.max(...sequences.map(s => s.data.length));
 
@@ -924,7 +994,6 @@
             dragStartRow = row;
             dragStartCol = col;
             dragEndCol = col;
-            
             selectCell(row, col);
             updateDragSelection();
         }
@@ -997,10 +1066,7 @@
                 cell.classList.add('drag-selected');
                 if (c === start) cell.classList.add('drag-left');
                 if (c === end) cell.classList.add('drag-right');
-                
-                if (seqObj.data[c] !== '-') {
-                    selectedSeq += seqObj.data[c];
-                }
+                if (seqObj.data[c] !== '-') selectedSeq += seqObj.data[c];
             }
         }
         
@@ -1013,8 +1079,12 @@
     }
 
     function exportFastaAll() {
+        if(sequences.length === 0) return;
         let output = "";
-        sequences.forEach(s => { output += `>${s.name}\n${s.data.join('').replace(/-/g, '')}\n`; });
+        sequences.forEach(s => { 
+            if(s.isFPrimerFasta || s.isRPrimerFasta) return;
+            output += `>${s.name}\n${s.data.join('').replace(/-/g, '')}\n`; 
+        });
         const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([output], { type: 'text/plain' }));
         a.download = "aligned_samples.fasta"; a.click();
     }
