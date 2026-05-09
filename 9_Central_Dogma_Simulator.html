@@ -120,6 +120,19 @@
             /* スマホでは内部スクロールではなく、ページ全体のスクロールを利用するため高さを解放 */
             .codon-container { max-height: none; min-height: 200px; padding-bottom: 10px; }
         }
+
+        /* 💡 修正ポイント: ツールチップ見切れ防止パッチ */
+        .codon-box[data-tooltip]:hover::after,
+        .codon-box[data-tooltip]:hover::before { display: none !important; }
+        #global-tooltip {
+            position: fixed; background: #2c3e50; color: #ecf0f1; padding: 6px 10px; border-radius: 4px; font-size: 11px; white-space: pre; z-index: 99999; text-align: left; pointer-events: none; box-shadow: 0 4px 10px rgba(0,0,0,0.3); line-height: 1.4; border: 1px solid #34495e; display: none; opacity: 0; transition: opacity 0.1s;
+        }
+        #global-tooltip.show-top::before {
+            content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); border-width: 5px; border-style: solid; border-color: #2c3e50 transparent transparent transparent;
+        }
+        #global-tooltip.show-bottom::before {
+            content: ''; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); border-width: 5px; border-style: solid; border-color: transparent transparent #2c3e50 transparent;
+        }
     </style>
 </head>
 <body>
@@ -536,6 +549,72 @@
 
         document.getElementById('statusText').innerText = "翻訳完了。マウスを乗せてアミノ酸の性質を確認してください。";
     }
+
+    // --- 💡 修正ポイント: ツールチップ見切れ防止（グローバル表示パッチ） ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // グローバルなツールチップ要素を生成してBody直下に追加
+        const tooltip = document.createElement('div');
+        tooltip.id = 'global-tooltip';
+        document.body.appendChild(tooltip);
+
+        // イベント委譲によりホバーを監視
+        document.body.addEventListener('mouseover', (e) => {
+            const box = e.target.closest('.codon-box[data-tooltip]');
+            if (box) {
+                tooltip.innerText = box.getAttribute('data-tooltip');
+                tooltip.style.display = 'block';
+                tooltip.className = ''; 
+                
+                // 初期の座標計算
+                const rect = box.getBoundingClientRect();
+                tooltip.style.top = (rect.bottom + 5) + 'px';
+                tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+                tooltip.style.transform = 'translateX(-50%)';
+                
+                // 描画後にサイズを取得して画面外へのはみ出しを調整
+                requestAnimationFrame(() => {
+                    const ttRect = tooltip.getBoundingClientRect();
+                    let topPos = rect.bottom + 5;
+                    let leftPos = rect.left + rect.width / 2;
+                    let arrowClass = 'show-bottom'; 
+
+                    // 画面下にはみ出る場合は上側に表示を切り替え
+                    if (topPos + ttRect.height > window.innerHeight) {
+                        topPos = rect.top - ttRect.height - 5;
+                        arrowClass = 'show-top'; 
+                    }
+                    
+                    // 左右のはみ出し調整
+                    if (leftPos - ttRect.width / 2 < 5) {
+                        leftPos = 5 + ttRect.width / 2;
+                    } else if (leftPos + ttRect.width / 2 > window.innerWidth - 5) {
+                        leftPos = window.innerWidth - ttRect.width / 2 - 5;
+                    }
+
+                    tooltip.style.top = topPos + 'px';
+                    tooltip.style.left = leftPos + 'px';
+                    tooltip.style.transform = `translateX(-50%)`;
+                    tooltip.classList.add(arrowClass);
+                    tooltip.style.opacity = '1';
+                });
+            }
+        });
+
+        // ホバーアウトで非表示
+        document.body.addEventListener('mouseout', (e) => {
+            const box = e.target.closest('.codon-box[data-tooltip]');
+            if (box) {
+                tooltip.style.opacity = '0';
+                tooltip.style.display = 'none';
+            }
+        });
+        
+        // パネル内のスクロール時にツールチップが置き去りになるのを防ぐ
+        document.addEventListener('scroll', () => {
+            tooltip.style.opacity = '0';
+            tooltip.style.display = 'none';
+        }, true);
+    });
 
 </script>
 </body>
