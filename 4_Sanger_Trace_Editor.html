@@ -33,7 +33,8 @@
         .toolbar-row { display: flex; width: 100%; gap: 15px; align-items: center; flex-wrap: wrap; }
         .step-label { font-size: 13px; font-weight: bold; color: #e67e22; min-width: 80px; display: flex; align-items: center; }
 
-        .btn { background: #fdfefe; border: 1px solid #bdc3c7; padding: 6px 12px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 5px; border-radius: 4px; font-weight: bold; transition: all 0.2s; color: #2c3e50; white-space: nowrap; }
+        /* 追記: justify-content: center; を追加しモバイル時のボタンテキスト左寄りを防止 */
+        .btn { background: #fdfefe; border: 1px solid #bdc3c7; padding: 6px 12px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 5px; border-radius: 4px; font-weight: bold; transition: all 0.2s; color: #2c3e50; white-space: nowrap; }
         .btn:hover:not(:disabled) { background: #eaf2f8; border-color: #3498db; color: #2980b9; }
         .btn:disabled { color: #a0a0a0; cursor: not-allowed; background: #f4f6f6; border-color: #dcdde1; opacity: 0.7; }
         
@@ -60,6 +61,9 @@
         .bench-tip strong { color: #2980b9; font-size: 11px; }
         .keyboard-hints { background: #fff8e1; padding: 6px 15px; font-size: 11px; color: #d35400; border: 1px solid #f5b041; border-radius: 4px; font-weight: 500; margin-bottom: 5px; }
 
+        /* 追記: アプリ⑤共通のMega Inviteパネル用CSS */
+        .mega-invite { background: #fff8e1; border: 1px solid #f5b041; padding: 8px 15px; font-size: 11px; color: #7e5109; line-height: 1.5; display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;}
+
         /* 波形ビュアー (Trace Viewer) */
         /* 🚨修正3: スクロール時にキャンバスが潰れないよう min-height を厳密に設定 */
         .trace-card { flex: 1; display: flex; flex-direction: column; min-height: 500px; border-top-color: #9b59b6; }
@@ -85,6 +89,17 @@
         .footer { background: #1a252f; padding: 10px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; flex-shrink: 0; }
         
         input[type="file"] { display: none; }
+
+        /* 追記: スマホ最適化 (Mobile Optimization) */
+        @media screen and (max-width: 900px) {
+            .main-content { padding: 10px; }
+            .toolbar-row { flex-direction: column; align-items: stretch; gap: 8px; }
+            .btn, .search-input { width: 100% !important; justify-content: center; }
+            .header h1 { font-size: 16px; margin-right: 40px; }
+            .version-badge { top: 10px; right: 10px; padding: 2px 6px; }
+            .mega-invite { display: block; padding: 12px; line-height: 1.6; }
+            .mega-invite strong { display: block; margin-bottom: 6px; font-size: 12px; }
+        }
     </style>
 </head>
 <body>
@@ -105,7 +120,8 @@
             
             <div id="rat_ab1" class="rationale-text">
                 <strong>【根拠：なぜ波形（.ab1）を直接見るのか？】</strong><br>
-                シーケンサーはDNAの末端に付いた「4色の蛍光色素」をカメラで読み取り、波形(Trace)として出力します。機械が自動で波形から塩基（A,T,G,C）を判定しますが、波形が乱れた場所では間違えたり「N（判読不能）」と判定したりします。<br>
+                <!-- 修正: DNA -> 核酸 (DNA/RNA) -->
+                シーケンサーは核酸 (DNA/RNA)の末端に付いた「4色の蛍光色素」をカメラで読み取り、波形(Trace)として出力します。機械が自動で波形から塩基（A,T,G,C）を判定しますが、波形が乱れた場所では間違えたり「N（判読不能）」と判定したりします。<br>
                 <strong>「機械を100%信用せず、生データ（波形）を人間の目で確認して手動で修正(キュレーション)する」</strong>のが、論文を書くための絶対条件です。
             </div>
             <div id="rat_trim" class="rationale-text">
@@ -175,6 +191,12 @@
                 <canvas class="canvas-layer" id="traceCanvas"></canvas>
             </div>
         </div>
+    </div>
+
+    <!-- 追記: プロツールへの誘導（Mega Invite パネル） -->
+    <div class="mega-invite">
+        <strong style="white-space: nowrap; flex-shrink: 0;">🔗 Step up to professional tools:</strong>
+        <span>本当の研究で大量の波形データを扱う場合や、より高度な波形解析（ヘテロ接合の自動判定など）を行うには、このアプリの簡易機能ではなく、<b>「SnapGene」</b>や<b>「FinchTV」</b>などのプロフェッショナル向け波形ビューアソフトウェアを使いましょう。</span>
     </div>
 </div>
 
