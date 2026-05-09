@@ -78,6 +78,8 @@
         .base-char.highlight { background: #f1c40f; color: #2c3e50 !important; }
 
         .c-A { color: #27ae60; } .c-T { color: #e74c3c; } .c-G { color: #2c3e50; } .c-C { color: #2980b9; }
+        /* 追記: IUPAC あいまい塩基用のカラー設定（アクセントパープル） */
+        .c-N, .c-Y, .c-R, .c-W, .c-S, .c-M, .c-K, .c-B, .c-V, .c-D, .c-H, .c-U { color: #8e44ad; }
 
         .status-bar { background: #2c3e50; color: white; padding: 8px 20px; font-size: 12px; display: flex; justify-content: space-between; font-weight: 600; letter-spacing: 0.5px; z-index: 30; flex-shrink: 0; margin-top: auto;}
         .footer { background: #1a252f; padding: 10px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; flex-shrink: 0; }
@@ -159,6 +161,12 @@
 
         <div class="keyboard-hints">
             <span>【手動キュレーション】 塩基をクリックして選択 ➡ 波形の青い縦線を確認 ➡ <b>[A/T/G/C/N]キー</b>で修正 ｜ <b>[Backspace]</b>で削除 ｜ <b>[←][→]</b>で移動</span>
+        </div>
+        <!-- 追記: IUPAC あいまい塩基の説明パネル（UIのトーン＆マナーに準拠） -->
+        <div class="bench-tip" style="border-radius: 0; border-left: none; border-top: none; background: #fdfefe; margin-top: -2px;">
+            <strong>💡 あいまい塩基（IUPACコード）の表示・編集対応</strong><br>
+            波形が重なった場合に現れる「あいまい塩基」も、紫色の文字として正確に表示・入力可能です。<br>
+            <span style="color:#7f8c8d; font-size:10px;">代表的なコード: <strong>Y</strong> (ピリミジン: CかT), <strong>R</strong> (プリン: AかG), <strong>N</strong> (不明な塩基), <strong>W</strong> (AかT), <strong>S</strong> (CかG), <strong>M</strong> (AかC), <strong>K</strong> (GかT)</span>
         </div>
 
         <div class="trace-outer-container" id="traceContainer">
@@ -466,7 +474,8 @@
             baseObj.isDeleted = !baseObj.isDeleted; 
             if(baseObj.isDeleted) selectedBaseIndex = Math.min(ab1Data.bases.length - 1, selectedBaseIndex + 1);
             prevent = true;
-        } else if (['A','T','G','C','N'].includes(key)) {
+        /* 追記: IUPAC あいまい塩基のキー入力受付を追加 */
+        } else if (['A','T','G','C','U','N','Y','R','W','S','M','K','B','V','D','H'].includes(key)) {
             baseObj.char = key;
             baseObj.isEdited = true;
             baseObj.isDeleted = false;
@@ -483,7 +492,8 @@
     // --- 検索機能 ---
     function searchSequence() {
         if(!ab1Data) return;
-        let query = document.getElementById('searchInput').value.toUpperCase().replace(/[^ATGC]/g, '');
+        /* 追記: 検索時の正規表現バリデーションを IUPAC あいまい塩基コードに対応 */
+        let query = document.getElementById('searchInput').value.toUpperCase().replace(/[^ATGCUNYRWSMKBVDH]/g, '');
         if(!query) return;
 
         ab1Data.bases.forEach(b => b.isHighlight = false);
