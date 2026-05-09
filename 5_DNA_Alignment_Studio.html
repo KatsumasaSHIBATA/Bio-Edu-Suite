@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>核酸 (DNA/RNA) Alignment & Editing Studio v3.0 | Bio-Edu Suite</title>
+    <title>DNA Alignment & Editing Studio v3.0 | Bio-Edu Suite</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         /* 画面の固定を解除し、下まで自然にスクロールできるように変更 */
@@ -105,11 +105,10 @@
         .primer-f { border-bottom: 3px solid #3498db; } 
         .primer-r { border-bottom: 3px solid #e74c3c; } 
         .mutation-bg { background-color: #e74c3c !important; color: white !important; font-weight: 900; z-index: 1; }
-        /* 🟣 A, T, G, Cの色と被らないように保存領域を紫系に変更 */
-        .conserved-bg { background-color: #f5eef8 !important; color: #8e44ad !important; font-weight: 900; z-index: 1; }
+        .conserved-bg { background-color: #a2d9ce !important; color: #0e6251 !important; font-weight: 900; z-index: 1; }
 
         /* ヘッダー埋め込み型 プライマー設計ナビ */
-        .header-primer-stats { display: flex; gap: 15px; font-size: 12px; background: #1a252f; padding: 6px 15px; border-radius: 4px; border-left: 4px solid #8e44ad; transition: opacity 0.2s; align-items: center; box-shadow: inset 0 1px 3px rgba(0,0,0,0.3); opacity: 0; flex-wrap: wrap;}
+        .header-primer-stats { display: flex; gap: 15px; font-size: 12px; background: #1a252f; padding: 6px 15px; border-radius: 4px; border-left: 4px solid #8e44ad; transition: opacity 0.2s; align-items: center; box-shadow: inset 0 1px 3px rgba(0,0,0,0.3); opacity: 0; pointer-events: none; flex-wrap: wrap;}
         .h-stat { display: flex; align-items: baseline; gap: 4px; color: #ecf0f1; font-weight: bold; }
         .val-seq { font-family: 'Courier New', Courier, monospace; color: #f1c40f; font-weight: bold; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px; letter-spacing: 1px;}
         .val-display { font-weight: bold; font-size: 14px; text-shadow: 0 0 2px rgba(0,0,0,0.8); transition: color 0.2s;}
@@ -118,9 +117,7 @@
         .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 10px 15px; font-size: 11px; color: #2c3e50; line-height: 1.5; border-bottom: 1px solid #dcdde1; }
         .bench-tip strong { color: #2980b9; font-size: 11px; }
         
-        /* 🔗 メガインバイト (ガタガタ解消のためFlexを外しBlock化) */
-        .mega-invite { background: #fff8e1; border: 1px solid #f5b041; padding: 12px 15px; font-size: 12px; color: #7e5109; line-height: 1.6; border-radius: 4px; margin-bottom: 10px; display: block; }
-        .mega-invite strong { color: #d35400; font-size: 13px; display: block; margin-bottom: 4px; }
+        .mega-invite { background: #fff8e1; border: 1px solid #f5b041; padding: 8px 15px; font-size: 11px; color: #7e5109; line-height: 1.5; display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;}
 
         .status-bar { background: #2c3e50; color: white; padding: 8px 20px; font-size: 12px; display: flex; justify-content: space-between; font-weight: 600; letter-spacing: 0.5px; z-index: 30; flex-shrink: 0; margin-top: auto;}
         .footer { background: #1a252f; padding: 10px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; flex-shrink: 0; }
@@ -156,7 +153,7 @@
 
 <div class="header-container">
     <div class="header">
-        <h1>🧬 核酸 (DNA/RNA) Alignment Studio</h1>
+        <h1>🧬 DNA Alignment Studio</h1>
         <p>Bio-Edu Suite: Sequence Curation & Pipeline Hub</p>
         <div class="version-badge">v3.0</div>
     </div>
@@ -176,7 +173,7 @@
                 
                 <div id="rat_step2" class="rationale-text">
                     <strong>【根拠：なぜプライマーで検索するのか？】</strong><br>
-                    サンガーシーケンスで得られた生の核酸 (DNA/RNA)データには、機械の読み取りノイズや不要な配列が両端に大量に含まれています。自分が使った「Primer F/R」をアン鎖（アンカー）として検索し、ノイズを省いた「本当に必要な領域」だけを特定します。
+                    サンガーシーケンスで得られた生の核酸 (DNA/RNA)データには、機械の読み取りノイズや不要な配列が両端に大量に含まれています。自分が使った「Primer F/R」をアンカーとして検索し、ノイズを省いた「本当に必要な領域」だけを特定します。
                 </div>
                 <div id="rat_step3" class="rationale-text">
                     <strong>【根拠：なぜ手動でカットするのか？】</strong><br>
@@ -234,8 +231,7 @@
                     
                     <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
                         <div style="display:flex; gap:5px; align-items:center;">
-                            <!-- ✨ 簡易MSA実行を常時作動できるように disabled を削除 -->
-                            <button class="btn btn-option" id="btnOptionMSA" onclick="runMSA()">✨ 簡易MSA実行</button>
+                            <button class="btn btn-option" id="btnOptionMSA" onclick="runMSA()" disabled>✨ 簡易MSA実行</button>
                             <button class="rationale-btn" style="width:14px;height:14px;font-size:9px;background:#732d91;margin-left:0;" onclick="event.stopPropagation(); toggleRationale('rat_msa')" title="MSAとは？">?</button>
                         </div>
                         <span style="font-size:9px; color:#c0392b; font-weight:bold;">※学習用の簡易機能です。長い配列はフリーズします。</span>
@@ -246,14 +242,13 @@
                     <span class="step-label">4. 保存 <button class="rationale-btn" onclick="toggleRationale('rat_export')" title="FASTAとCLUSTALの違いは？">?</button></span>
                     <div class="toolbar-row" style="flex:1;">
                         <button class="btn btn-success" id="btnExportFasta" onclick="exportFastaAll()" disabled>💾 FASTA出力</button>
-                        <button class="btn btn-success" id="btnExportClustal" onclick="exportClustalAll()" disabled>💾 CLUSTAL出力 (.txt)</button>
+                        <button class="btn btn-success" id="btnExportClustal" onclick="exportClustalAll()" disabled>💾 CLUSTAL出力</button>
                     </div>
 
                     <div class="divider"></div>
                     
                     <span class="step-label">5. Primer設計 <button class="rationale-btn" onclick="toggleRationale('rat_design')" title="設計の適正値の根拠は？">?</button></span>
-                    <!-- 🟣 保存領域の可視化を常時作動できるように disabled を削除 -->
-                    <button class="btn btn-success" id="btnConserved" onclick="toggleConservedRegions()">🟣 保存領域の可視化</button>
+                    <button class="btn btn-success" id="btnConserved" onclick="toggleConservedRegions()" disabled>🟢 保存領域の可視化</button>
                     <span style="font-size:11px; font-weight:bold; color:#8e44ad; margin-left:5px;">※配列をドラッグ(長押し選択)で設計ナビが起動します。</span>
                 </div>
             </div>
@@ -262,12 +257,10 @@
 
     <!-- エディタ領域 -->
     <div class="card editor-card">
-        <!-- 💡文字の下に紺色の帯が余らないよう padding と min-height で調整し、子要素を密着させる -->
-        <div class="card-header" style="padding: 6px 15px; min-height: 40px; align-items: center;">
-            <span style="line-height: 1.2;">🧬 1D アミノ酸配列 Editor</span>
+        <div class="card-header">
+            <span>🧬 シークエンスエディタ</span>
             
-            <!-- 初期状態では display: none にし、パネルの余分な高さ占有を完全に防止 -->
-            <div id="primerStatsPanel" class="header-primer-stats" style="display: none;">
+            <div id="primerStatsPanel" class="header-primer-stats">
                 <span style="color: #f1c40f; font-weight: bold; margin-right: 5px;">🎯 プライマー設計ナビ:</span>
                 <span class="h-stat">配列: <span id="psSeq" class="val-seq">-</span></span>
                 <span class="h-stat">長さ: <span id="psLen" class="val-display">-</span><span class="val-target">bp (適正:18-25)</span></span>
@@ -298,8 +291,8 @@
     </div>
     
     <div class="mega-invite">
-        <strong>🔗 Step up to professional tools:</strong>
-        本当の研究で「多数の配列」「長い配列」を正確にアライメント(MSA)するには、このアプリの簡易機能ではなく、世界標準の解析アルゴリズム<b>「MAFFT」</b>や<b>「Clustal Omega」</b>を使いましょう。
+        <strong style="white-space: nowrap; flex-shrink: 0;">🔗 Step up to professional tools:</strong>
+        <span>本当の研究で「多数の配列」「長い配列」を正確にアライメント(MSA)するには、このアプリの簡易機能ではなく、世界標準の解析アルゴリズム<b>「MAFFT」</b>や<b>「Clustal Omega」</b>を使いましょう。</span>
     </div>
 </div>
 
@@ -309,7 +302,7 @@
 </div>
 
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v3.0 | Sequence Curation Hub
+    &copy; 2026 Bio-Edu Suite v3.0 | 1D アミノ酸配列 Curation Hub
 </div>
 
 <script>
@@ -332,16 +325,6 @@
 
     let isConservedVisible = false;
 
-    // --- 帯の太さを解消するためのパネル隠蔽関数 ---
-    function hidePrimerStats() {
-        let panel = document.getElementById('primerStatsPanel');
-        if(panel) {
-            panel.style.opacity = '0';
-            // transition完了後に完全に要素を消し、無駄な空間を詰める
-            setTimeout(() => { if(panel.style.opacity === '0') panel.style.display = 'none'; }, 200);
-        }
-    }
-
     // --- スマートUI自動分岐 ---
     function setRoute(route) {
         const pF = document.getElementById('pF');
@@ -361,6 +344,7 @@
             msaBtn.disabled = false; msaBtn.classList.add('pulse-anim');
             document.getElementById('btnExportFasta').disabled = false; 
             document.getElementById('btnExportClustal').disabled = false; 
+            document.getElementById('btnConserved').disabled = false;
             
             st.innerText = "NCBIから登録済みの配列を取得しました。プライマー検索をスキップし、直接MSA（アライメント）が可能です。";
         } else {
@@ -369,8 +353,10 @@
             btnStep2.disabled = false; 
             if(step2Row) step2Row.style.opacity = "1";
             
-            msaBtn.disabled = false; // 常時有効化のため false に変更
-            msaBtn.classList.remove('pulse-anim');
+            msaBtn.disabled = sequences.length < 2; 
+            if (!msaBtn.disabled) msaBtn.classList.add('pulse-anim');
+            else msaBtn.classList.remove('pulse-anim');
+            
             st.innerText = "生データを読み込みました。Primer F/Rを入力してノイズ領域を特定・カットしてください。";
         }
     }
@@ -418,6 +404,7 @@
             document.getElementById('btnTrimRight').disabled = false;
             document.getElementById('btnExportFasta').disabled = false; 
             document.getElementById('btnExportClustal').disabled = false; 
+            document.getElementById('btnConserved').disabled = false;
         }
     }
 
@@ -425,11 +412,11 @@
         isConservedVisible = !isConservedVisible;
         let btn = document.getElementById('btnConserved');
         if (isConservedVisible) {
-            btn.innerHTML = "🟣 保存領域を隠す";
-            btn.style.backgroundColor = "#8e44ad"; // 紫に変更
-            btn.style.borderColor = "#732d91";
+            btn.innerHTML = "🟢 保存領域を隠す";
+            btn.style.backgroundColor = "#1e8449";
+            btn.style.borderColor = "#196f3d";
         } else {
-            btn.innerHTML = "🟣 保存領域の可視化";
+            btn.innerHTML = "🟢 保存領域の可視化";
             btn.style.backgroundColor = "";
             btn.style.borderColor = "";
         }
@@ -459,7 +446,7 @@
         isTrimLeftDone = false;
         isTrimRightDone = false;
         
-        hidePrimerStats();
+        document.getElementById('primerStatsPanel').style.opacity = '0';
 
         let loadedCount = 0;
         let fileInput = document.getElementById('fileInput');
@@ -476,6 +463,10 @@
                     if(fileInput) fileInput.value = ''; 
                     unlockStep(2);
                     setRoute('A'); // ファイル読込時にルートAを適用
+                    
+                    if (sequences.length >= 2) {
+                        document.getElementById('btnOptionMSA').disabled = false;
+                    }
                 }
             };
             reader.readAsText(file);
@@ -565,7 +556,7 @@
 
         mutationCols.clear();
         conservedCols.clear();
-        hidePrimerStats();
+        document.getElementById('primerStatsPanel').style.opacity = '0';
 
         let rPrimerRC = reverseComplement(rPrimer); 
         let tolerancePercent = parseInt(document.getElementById('mismatchSlider').value) / 100;
@@ -676,7 +667,7 @@
             if(s.rStart !== undefined && s.rStart !== -1) { s.rStart -= selectedCol; s.rEnd -= selectedCol; }
         });
         selectedCol = -1; selectedRow = -1; 
-        hidePrimerStats();
+        document.getElementById('primerStatsPanel').style.opacity = '0';
 
         alignedPosF = Math.max(0, alignedPosF - selectedCol); alignedPosR = Math.max(0, alignedPosR - selectedCol);
         
@@ -692,7 +683,7 @@
         }
         sequences.forEach(s => { s.data.splice(selectedCol + 1); });
         selectedCol = -1; selectedRow = -1;
-        hidePrimerStats();
+        document.getElementById('primerStatsPanel').style.opacity = '0';
         
         isTrimRightDone = true;
         updateMutationsAndRender();
@@ -703,6 +694,7 @@
         const maxLen = Math.max(...sequences.map(s => s.data.length));
         if (isTrimLeftDone && isTrimRightDone) {
             if (maxLen <= 2000) {
+                document.getElementById('btnOptionMSA').disabled = false;
                 document.getElementById('statusText').innerText = "カット完了。ダウンロード、またはオプションの簡易MSAを実行可能です。";
             } else {
                 document.getElementById('statusText').innerText = "配列がまだ長すぎます。MSAを実行する場合はさらに内側をカットしてください。";
@@ -769,6 +761,11 @@
     });
 
     function updateMutationsAndRender() {
+        const msaBtn = document.getElementById('btnOptionMSA');
+        if (msaBtn) {
+            msaBtn.disabled = sequences.length < 2;
+        }
+
         if(sequences.length < 2) { renderEditorSync(); return; }
 
         let finalAlignLen = Math.max(...sequences.map(s => s.data.length));
@@ -901,7 +898,11 @@
             updateMutationsAndRender();
             const msaBtn = document.getElementById('btnOptionMSA');
             if(msaBtn) msaBtn.classList.remove('pulse-anim');
-            document.getElementById('statusText').innerText = "簡易MSA完了！変異（赤）や保存領域（薄紫）を確認し、ドラッグしてプライマーを設計してみましょう。";
+            document.getElementById('statusText').innerText = "簡易MSA完了！変異（赤）や保存領域（薄緑）を確認し、ドラッグしてプライマーを設計してみましょう。";
+            
+            document.getElementById('btnExportFasta').disabled = false; 
+            document.getElementById('btnExportClustal').disabled = false; 
+            document.getElementById('btnConserved').disabled = false;
         }, 50);
     }
 
@@ -1063,7 +1064,7 @@
         document.querySelectorAll('.drag-selected').forEach(e => e.classList.remove('drag-selected', 'drag-left', 'drag-right'));
         
         if (dragStartRow === -1 || dragStartCol === -1 || dragEndCol === -1) {
-            hidePrimerStats();
+            document.getElementById('primerStatsPanel').style.opacity = '0';
             return;
         }
 
@@ -1087,11 +1088,9 @@
         
         if (selectedSeq.length > 0 && start !== end) {
             calculatePrimerStats(selectedSeq);
-            let panel = document.getElementById('primerStatsPanel');
-            panel.style.display = 'flex';
-            setTimeout(() => { panel.style.opacity = '1'; }, 10);
+            document.getElementById('primerStatsPanel').style.opacity = '1';
         } else {
-            hidePrimerStats();
+            document.getElementById('primerStatsPanel').style.opacity = '0';
         }
     }
 
