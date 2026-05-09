@@ -93,6 +93,9 @@
         .base-C { background-color: #d4e6f1; color: #2980b9; }
         .base-- { background-color: #fdfefe; color: #bdc3c7; font-weight: normal; } 
         
+        /* あいまい塩基(IUPAC)用スタイル */
+        .base-Y, .base-R, .base-N, .base-W, .base-S, .base-M, .base-K, .base-B, .base-V, .base-D, .base-H { background-color: #f2f4f4; color: #7f8c8d; }
+        
         /* 選択状態のUI */
         .selected-column { background-color: rgba(52, 152, 219, 0.15) !important; border-left: 1px solid rgba(52,152,219,0.3); border-right: 1px solid rgba(52,152,219,0.3); }
         .selected-cell { box-shadow: inset 0 0 0 2px #e74c3c !important; background-color: rgba(231, 76, 60, 0.2) !important; z-index: 2; position: relative; }
@@ -276,7 +279,13 @@
         </div>
 
         <div class="keyboard-hints" style="border-radius: 0; border-left: none; border-right: none;">
-            <span>【手動編集】 セルを選択してキーボード操作: [←][→][↑][↓] 移動 ｜ [Space] / [-] ギャップ挿入 ｜ [Backspace] 削除 ｜ [A][T][G][C] 上書き</span>
+            <span>【手動編集】 セルを選択してキーボード操作: [←][→][↑][↓] 移動 ｜ [Space] / [-] ギャップ挿入 ｜ [Backspace] 削除 ｜ [A][T][G][C][Y][R][N]等 上書き</span>
+        </div>
+        
+        <div class="bench-tip" style="border-radius: 0; border-left: none; border-top: none; background: #fdfefe;">
+            <strong>💡 あいまい塩基（IUPACコード）の表示・編集対応</strong><br>
+            波形が重なった場合に現れる「あいまい塩基」も、灰色のセルとして正確に表示・入力可能です。<br>
+            <span style="color:#7f8c8d; font-size:10px;">代表的なコード: <strong>Y</strong> (ピリミジン: CかT), <strong>R</strong> (プリン: AかG), <strong>N</strong> (不明な塩基), <strong>W</strong> (AかT), <strong>S</strong> (CかG), <strong>M</strong> (AかC), <strong>K</strong> (GかT)</span>
         </div>
 
         <div class="editor-container" id="editorWrap">
@@ -483,7 +492,7 @@
                 currentName = line.substring(1).split(' ')[0];
                 currentSeq = "";
             } else {
-                currentSeq += line.toUpperCase().replace(/[^ATGC-]/g, '');
+                currentSeq += line.toUpperCase().replace(/[^A-Z-]/g, '');
             }
         });
         if (currentName) sequences.push({ name: currentName, data: currentSeq.split(''), isFPrimerFasta: false, isRPrimerFasta: false });
@@ -546,8 +555,8 @@
     function alignByDualPrimers() {
         if(sequences.length === 0) return;
         
-        let fPrimer = document.getElementById('pF').value.toUpperCase().replace(/[^ATGC]/g, '');
-        let rPrimer = document.getElementById('pR').value.toUpperCase().replace(/[^ATGC]/g, '');
+        let fPrimer = document.getElementById('pF').value.toUpperCase().replace(/[^A-Z]/g, '');
+        let rPrimer = document.getElementById('pR').value.toUpperCase().replace(/[^A-Z]/g, '');
         
         if(!fPrimer || !rPrimer) { 
             alert("エラー: 検索を実行するには、FとRの両方のプライマー配列（5'➡3'）を入力してください。"); 
@@ -739,7 +748,7 @@
             selectedCol++; 
             prevent = true;
             updateMutationsAndRender();
-        } else if (['A','T','G','C','U','N'].includes(key)) {
+        } else if (['A','T','G','C','U','N','Y','R','W','S','M','K','B','V','D','H'].includes(key)) {
             if(selectedCol < seq.data.length) {
                 seq.data[selectedCol] = key;
             } else {
@@ -879,8 +888,8 @@
             }
 
             let finalAlignLen = alignedSeqs[0].length;
-            let fPrimer = document.getElementById('pF').value.toUpperCase().replace(/[^ATGC]/g, '');
-            let rPrimer = document.getElementById('pR').value.toUpperCase().replace(/[^ATGC]/g, '');
+            let fPrimer = document.getElementById('pF').value.toUpperCase().replace(/[^A-Z]/g, '');
+            let rPrimer = document.getElementById('pR').value.toUpperCase().replace(/[^A-Z]/g, '');
             let rPrimerRC = reverseComplement(rPrimer);
 
             sequences.forEach(s => {
