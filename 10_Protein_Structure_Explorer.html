@@ -127,7 +127,6 @@
             <div class="card-header">⚙️ 1. 構造データの読込（オンライン/ローカル）</div>
             <div class="card-body">
                 
-                <!-- 💡 パッチ適用箇所: 入力窓を大きく(flex:4)、ボタンを小さく(flex:1)して「取得」に変更 -->
                 <div class="toolbar-row">
                     <span class="step-label" style="min-width: 120px;">PDB / AlphaFold <button class="rationale-btn" onclick="toggleRationale('rat_pdb')" title="オンライン取得とは？">?</button></span>
                     <div style="display:flex; flex:1; gap:8px; width:100%;">
@@ -135,7 +134,6 @@
                         <button class="btn btn-primary" onclick="loadOnlinePDB()" style="flex:1; font-size: 13px; padding: 8px; min-width: 80px;">🌐 取得</button>
                     </div>
                 </div>
-                <!-- 💡 パッチ適用箇所: オンラインとローカルの違いを明確化し、全体的な説明を整理 -->
                 <div id="rat_pdb" class="rationale-text" style="margin-top:0;">
                     <strong>【オンラインデータベースからの自動取得】</strong><br>
                     ・<strong>PDB (Protein Data Bank)</strong>: X線等で実際に撮影された「本物」の実測構造です（例: <code>2HHB</code>）。<br>
@@ -150,7 +148,6 @@
                     </span>
                 </div>
 
-                <!-- 💡 パッチ適用箇所: 一般的なPDBファイルも含むことを明記し、整理 -->
                 <div class="step-label" style="margin-top:10px;">ローカルデータの入力 (PDB / AlphaFold 等) <button class="rationale-btn" onclick="toggleRationale('rat_af')" title="データの読み込みについて">?</button></div>
                 <div id="rat_af" class="rationale-text">
                     <strong>【お手元のデータを直接読み込む場合】</strong><br>
@@ -202,6 +199,7 @@
         <div class="card">
             <div class="card-header">🎨 3. 表示スタイル・出力</div>
             <div class="card-body">
+                
                 <div class="step-label">スタイルの使い分け <button class="rationale-btn" onclick="toggleRationale('rat_style')">?</button></div>
                 <div id="rat_style" class="rationale-text">
                     <strong>【サブユニット別】</strong> 複数の鎖（部品）がどう組み合わさっているか（多量体）を確認します。<br>
@@ -209,12 +207,20 @@
                     <strong>【表面電荷】</strong> タンパク質の「皮膚」を表示します。薬やDNAがピッタリはまる「ポケット(くぼみ)」を探すのに使います。<br>
                     <strong>【空間充填】</strong> すべての原子を球で描き、分子の実際の「体積・密度感」をリアルに表現します。
                 </div>
+                
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
                     <button class="btn" onclick="setStyleMode('chain')">サブユニット別に色分け</button>
                     <button class="btn" onclick="setStyleMode('cartoon')">リボンモデル</button>
                     <button class="btn" onclick="setStyleMode('surface')">表面電荷モデル</button>
                     <button class="btn" onclick="setStyleMode('sphere')">空間充填モデル</button>
                 </div>
+                
+                <!-- 💡 パッチ適用箇所: AlphaFold読み込み時に動的に表示される案内と本家リンク -->
+                <div id="af_info_panel" style="display:none; margin-top:10px; padding:10px; background:#f4ecf7; border:1px solid #9b59b6; border-radius:4px; font-size:12px; color:#512e5f; line-height:1.5;">
+                    ⚠️ より高度な <strong>CATH分類 (ドメイン)</strong> や <strong>AlphaMissense (病原性予測)</strong> 等を確認したい場合は、本家の AlphaFold Database をご参照ください。<br>
+                    <button class="btn" onclick="openAFDB()" style="margin-top:8px; width:100%; background:#fff; border-color:#9b59b6; color:#8e44ad; font-weight:bold;">↗️ 本家 AlphaFold DB を開く</button>
+                </div>
+
                 <button class="btn" style="margin-top:10px; background:#ecf0f1; border-color:#bdc3c7;" onclick="exportImageModal()">📸 3D画面をPNG画像で保存</button>
             </div>
         </div>
@@ -231,7 +237,6 @@
                 <button class="btn" onclick="resetView()">🔄 視点リセット</button>
                 <button class="btn" id="spinBtn" onclick="toggleSpin()">🔄 自動回転 ON</button>
                 <button id="btnLabel" class="btn btn-toggle" style="background:#34495e; box-shadow:0 3px 0 #1a252f !important;" onclick="toggleLabels()">🏷️ ラベル表示: OFF</button>
-                <!-- 追加パッチ: 全画面表示ボタン -->
                 <button class="btn" id="btnFullscreen" onclick="toggleFullScreen()" title="ショートカット: Fキー">⛶ 全画面表示</button>
             </div>
         </div>
@@ -269,6 +274,7 @@
     let showLabels = false; 
     let selectedResidues = []; 
     let hiddenChains = new Set(); 
+    let currentLoadedAfId = ""; 
 
     const nucleicResidues = ["A", "C", "G", "T", "U", "DA", "DC", "DG", "DT", "ADE", "CYT", "GUA", "THY", "URA"];
     const aaMap = {"ALA":"A","ARG":"R","ASN":"N","ASP":"D","CYS":"C","GLN":"Q","GLU":"E","GLY":"G","HIS":"H","ILE":"I","LEU":"L","LYS":"K","MET":"M","PHE":"F","PRO":"P","SER":"S","THR":"T","TRP":"W","TYR":"Y","VAL":"V"};
@@ -288,7 +294,14 @@
         document.getElementById('dataInfo').innerText = msg;
     }
 
-    /* 💡 パッチ適用箇所: AlphaFold取得APIのアップデートとエラーハンドリングの修正 */
+    function openAFDB() {
+        if (currentLoadedAfId) {
+            window.open(`https://alphafold.ebi.ac.uk/entry/${currentLoadedAfId}`, '_blank');
+        } else {
+            window.open('https://alphafold.ebi.ac.uk/', '_blank');
+        }
+    }
+
     function loadOnlinePDB() {
         let id = document.getElementById('pdbId').value.trim().toUpperCase();
         if(!id) return;
@@ -297,14 +310,16 @@
         
         // 文字数が4文字の場合はPDB、それ以上（例: P68871）はAlphaFoldと判断
         if (id.length === 4) {
+            currentLoadedAfId = "";
             setStatus(`読込中: PDB [${id}] ...`);
             $3Dmol.download("pdb:" + id.toLowerCase(), viewer, {multimodel: false, frames: true}, function() {
-                finishLoad(`PDB: ${id}`, 'chain');
+                finishLoad(`PDB: ${id}`, 'chain', false);
             });
         } else {
+            currentLoadedAfId = id;
             setStatus(`読込中: AlphaFold [${id}] ...`);
             
-            // EBI AlphaFold API経由で正確なCIF URLを取得する (CORSやバージョン変更に強いアプローチ)
+            // EBI AlphaFold API経由で正確なCIF URLを取得する
             const apiUrl = `https://alphafold.ebi.ac.uk/api/prediction/${id}`;
             
             fetch(apiUrl)
@@ -314,7 +329,6 @@
                 })
                 .then(data => {
                     if (data && data.length > 0 && data[0].cifUrl) {
-                        // HTTPリクエストで取得したcifUrlをフェッチ
                         return fetch(data[0].cifUrl);
                     } else {
                         throw new Error("AlphaFoldデータのURLが見つかりませんでした。");
@@ -326,12 +340,11 @@
                 })
                 .then(text => {
                     viewer.addModel(text, "cif");
-                    // AlphaFoldは信頼度スコア(plddt)カラースキームを適用して表示
-                    finishLoad(`AlphaFold: ${id}`, 'plddt');
+                    // AlphaFoldデータはpLDDTカラーをデフォルトにする
+                    finishLoad(`AlphaFold: ${id}`, 'plddt', true);
                 })
                 .catch(error => {
                     console.error("AlphaFold load error:", error);
-                    // alert()はiframe環境でブロックされるため使用せず、UI上でエレガントに通知
                     setStatus(`❌ エラー: AlphaFoldデータが見つかりません [${id}]`);
                     
                     const inputField = document.getElementById('pdbId');
@@ -391,13 +404,22 @@
         const isAF = text.includes("ALPHAFOLD") || filename.toLowerCase().includes("af-");
         const format = (filename.toLowerCase().endsWith(".cif") || text.includes("_entry.id")) ? "cif" : "pdb";
         
+        currentLoadedAfId = ""; 
         viewer.addModel(text, format);
-        finishLoad(isAF ? `AlphaFold: ${filename}` : `Local: ${filename}`, isAF ? 'plddt' : 'chain');
+        finishLoad(isAF ? `AlphaFold: ${filename}` : `Local: ${filename}`, isAF ? 'plddt' : 'chain', isAF);
     }
 
-    function finishLoad(name, colorStyle) {
+    function finishLoad(name, colorStyle, isAF) {
         currentStyleMode = colorStyle;
         hiddenChains.clear();
+
+        // 💡 パッチ適用箇所: AFデータの場合のみ、本家への誘導案内パネルを表示
+        if (isAF) {
+            document.getElementById('af_info_panel').style.display = 'block';
+        } else {
+            document.getElementById('af_info_panel').style.display = 'none';
+        }
+
         updateVisuals(); 
         viewer.zoomTo();
         initialView = viewer.getView();
@@ -431,7 +453,6 @@
         
         viewer.setStyle({}, baseStyle);
 
-        /* 💡 パッチ適用箇所: 表面電荷モデルの鎖選択表示対応 ($ninではなく配列を直接渡す方式で正確に反映) */
         if(currentStyleMode === 'surface') {
             let visibleSelector = {};
             if (window.allAvailableChains && hiddenChains.size > 0) {
@@ -460,7 +481,6 @@
             viewer.setStyle({chain: c}, {hide: true});
         });
 
-        /* 💡 パッチ適用箇所: 空間充填(sphere)モードでも残基が必ず赤く表示されるように、setStyleを用いて上書き描画を強制する */
         selectedResidues.forEach(sel => {
             if (sel.chain && hiddenChains.has(sel.chain)) return;
             let s = {resi: sel.resi};
@@ -468,7 +488,7 @@
             
             let highlightStyle = {cartoon: {color: 'red'}, stick: {color: 'red', radius: 0.5}, sphere: {scale: 1.1, color: 'red'}};
             if (currentStyleMode === 'sphere') {
-                highlightStyle = {sphere: {color: 'red'}}; // 空間充填時は球体として赤く上書き
+                highlightStyle = {sphere: {color: 'red'}}; 
             }
             viewer.setStyle(s, highlightStyle);
             
@@ -528,7 +548,6 @@
         document.getElementById('chainSelector').innerHTML = chainHtml;
         document.getElementById('sequenceViewer').innerHTML = seqHtml || "<div style='color:#e74c3c;'>アミノ酸配列を抽出できませんでした。</div>";
         
-        /* 💡 追加パッチ: 表面電荷の非表示ロジック用に全鎖のリストを保存 */
         window.allAvailableChains = Array.from(chains); 
     }
 
@@ -624,7 +643,6 @@
         else alert("同期する変異データが見つかりません。先に「アプリ⑤」または「アプリ⑨」で配列を解析し、変異を検出してください。");
     }
 
-    /* 💡 追加パッチ: 全画面表示とショートカットキー (Fキー / ESCキー) のロジック */
     function toggleFullScreen() {
         const card = document.querySelector('.viewer-card');
         card.classList.toggle('fullscreen-mode');
@@ -634,12 +652,10 @@
         } else {
             btn.innerText = "⛶ 全画面表示";
         }
-        // 3Dmol.jsのCanvasサイズを再計算させるため、ウィンドウのresizeイベントを強制発火
         setTimeout(() => window.dispatchEvent(new Event('resize')), 100);
     }
 
     document.addEventListener('keydown', function(e) {
-        // 入力フォームでの文字入力中はショートカットを無効化
         const tagName = e.target.tagName.toLowerCase();
         if (tagName === 'input' || tagName === 'textarea') return;
 
