@@ -81,12 +81,19 @@
         .gap-char { color: #95a5a6; }
         .aln-pipe { color: #bdc3c7; }
 
+        /* 外部連携パネル用スタイル (追記) */
+        .external-link-panel { background: #f5eef8; border: 1px solid #8e44ad; padding: 15px; border-radius: 4px; margin-top: 15px; }
+        .external-link-panel p { margin: 0 0 12px 0; font-size: 12px; color: #5b2c6f; line-height: 1.5; }
+        .btn-external { background: #ffffff; border: 1px solid #8e44ad; color: #8e44ad; padding: 10px; width: 100%; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 5px; font-size: 12px; text-decoration: none;}
+        .btn-external:hover { background: #ebdef0; box-shadow: 0 2px 5px rgba(142,68,173,0.2); }
+
         .ncbi-invite { background: #fff8e1; border: 1px solid #f5b041; padding: 10px; border-radius: 4px; margin-top: auto; }
         .ncbi-invite h4 { margin: 0 0 4px 0; font-size: 11px; color: #d35400; display: flex; align-items: center; gap: 4px; }
         .ncbi-invite p { margin: 0; font-size: 10px; color: #7e5109; line-height: 1.4; }
 
         /* 共通フッター */
-        .footer { background: #1a252f; padding: 12px; text-align: center; font-size: 10px; color: #7f8c8d; margin-top: auto; border-top: 1px solid #2c3e50; }
+        .footer { width: 100%; background: #1a252f; padding: 12px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; flex-shrink: 0; margin-top: auto; border-top: 1px solid #2c3e50; }
+
         /* --- 📱 スマホ最適化（レスポンシブ・デザイン） --- */
         @media screen and (max-width: 768px) {
             /* 画面の余白を減らして広く使う */
@@ -155,11 +162,11 @@
 
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <label style="font-size:12px; font-weight:bold; color:#2c3e50;">2. スコアリング・パラメータ 
-                    <button class="rationale-btn" style="background:#e67e22;" onclick="toggleRationale('rat_scoring')" title="数値をいじるとどうなる？">?</button>
+                    <button class="rationale-btn" onclick="toggleRationale('rat_scoring')" title="数値をいじるとどうなる？">?</button>
                 </label>
             </div>
 
-            <div id="rat_scoring" class="rationale-text" style="border-color:#e67e22; background:#fdf2e9; color:#935116;">
+            <div id="rat_scoring" class="rationale-text">
                 <strong>【実験：ペナルティの重さを変えてみよう】</strong><br>
                 重要なのは「Matchと減点の比率」です。<br>
                 ・<strong>Match（一致）の加点だけを大きくした場合：</strong> 少し似ているだけの配列でもスコアが爆発的に高くなり、遠縁の生物も無理やり「似ている」と誤判定（偽陽性）してしまいます。<br>
@@ -177,11 +184,11 @@
 
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <label style="font-size:12px; font-weight:bold; color:#2c3e50;">3. 検索対象データベース (Local DB) 
-                    <button class="rationale-btn" style="background:#8e44ad;" onclick="toggleRationale('rat_db')" title="ローカルDBとは？">?</button>
+                    <button class="rationale-btn" onclick="toggleRationale('rat_db')" title="ローカルDBとは？">?</button>
                 </label>
             </div>
 
-            <div id="rat_db" class="rationale-text" style="border-color:#8e44ad; background:#f5eef8; color:#5b2c6f;">
+            <div id="rat_db" class="rationale-text">
                 <strong>【根拠：データベースのカスタマイズ】</strong><br>
                 このアプリには初期状態で「豚、牛、鶏、マグロ」の4種のデータが入っています。<br>
                 もし昆虫のCOI遺伝子や細菌の16S rRNAなどを調べたい場合は、<strong>複数の配列が入ったFASTAファイル</strong>を下の紫の枠にドロップしてください。自分だけのオリジナルデータベースを作って検索実験ができます！
@@ -203,10 +210,10 @@
             
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
                 <button class="btn btn-danger btn-sm" onclick="loadShortSequence()">【体験】わざと短い配列で検索</button>
-                <button class="rationale-btn" style="background:#e74c3c;" onclick="toggleRationale('rat_evalue')" title="短いとどうなる？(E-value)">?</button>
+                <button class="rationale-btn" onclick="toggleRationale('rat_evalue')" title="短いとどうなる？(E-value)">?</button>
             </div>
 
-            <div id="rat_evalue" class="rationale-text" style="border-color:#e74c3c; background:#fadbd8; color:#78281f;">
+            <div id="rat_evalue" class="rationale-text">
                 <strong>【根拠：E-value（期待値）の罠とは？】</strong><br>
                 E-valueとは<strong>偶然その配列がデータベース内で一致してしまう確率</strong>です。<br>
                 「ATG」のような短い配列は、どんな生物にも偶然存在します。検索する配列が短すぎるとE-valueが跳ね上がり、「同率1位」ばかりになって種同定が不可能になります（DNAバーコーディングの限界）。
@@ -244,6 +251,9 @@
 
             <div id="alignmentPanel" class="alignment-detail">
                 </div>
+
+            <!-- 追加: NCBIダイレクトリンクパネル -->
+            <div id="ncbiLinkPanel" style="display:none;"></div>
 
             <div class="ncbi-invite">
                 <h4>🔗 Step up to professional tools (NCBI BLAST)</h4>
@@ -452,7 +462,7 @@
         currentResults = [];
         localDB.forEach(dbSeq => {
             let res = smithWaterman(query, dbSeq.seq, pMatch, pMismatch, pGap);
-            currentResults.push({ name: dbSeq.name, ...res });
+            currentResults.push({ name: dbSeq.name, id: dbSeq.id, ...res });
         });
 
         // スコア降順、同点ならE-value昇順でソート
@@ -463,6 +473,7 @@
 
         renderHitsTable();
         document.getElementById('alignmentPanel').style.display = 'none'; 
+        document.getElementById('ncbiLinkPanel').style.display = 'none'; // 検索実行時にリセット
     }
 
     function renderHitsTable() {
@@ -494,10 +505,12 @@
 
         let res = currentResults[idx];
         let panel = document.getElementById('alignmentPanel');
+        let linkPanel = document.getElementById('ncbiLinkPanel'); // 追加: リンクパネルの取得
         panel.style.display = 'block';
 
         if(res.score === 0) {
             panel.innerHTML = "<div style='color:#e74c3c; padding:10px;'>一致する領域が見つかりませんでした。ペナルティの設定が厳しすぎる可能性があります。</div>";
+            linkPanel.style.display = 'none'; // エラー時は非表示
             return;
         }
 
@@ -536,6 +549,37 @@
         }
 
         panel.innerHTML = html;
+
+        // --- 追加: 信頼性が高い場合 (E-value < 0.01) かつ Top Hit (1位) に NCBI ダイレクトリンクを表示 ---
+        if (res.evalueNum < 0.01 && idx === 0) {
+            linkPanel.innerHTML = `
+            <div class="external-link-panel">
+                <p>
+                    ✅ 相同性が非常に高く、この配列は <strong>${res.name}</strong> であるとほぼ確定できます。<br>
+                    より高度な <strong>種の詳細情報 (Taxonomy)</strong> や <strong>遺伝子データ</strong> 等を確認したい場合は、本家の NCBI Database をご参照ください。
+                </p>
+                <a href="https://www.ncbi.nlm.nih.gov/search/all/?term=${encodeURIComponent(res.id)}" target="_blank" style="text-decoration:none;">
+                    <button class="btn-external">
+                        ↗️ 本家 NCBI Database を開く
+                    </button>
+                </a>
+            </div>
+            `;
+            linkPanel.style.display = 'block';
+        } else if (res.evalueNum < 0.01 && idx > 0) {
+            // 2位以下で相同性が認められる場合の教育的メッセージ
+            linkPanel.innerHTML = `
+            <div class="external-link-panel" style="background: #fdfefe; border-color: #bdc3c7;">
+                <p style="color: #7f8c8d;">
+                    ℹ️ <strong>${res.name}</strong> とも部分的な相同性（E-value: ${res.evalue}）が認められますが、スコアが最も高い種が他に存在します。<br>
+                    ※種を同定（特定）する場合は、リストの一番上にある「Top Hit」の生物を確認してください。
+                </p>
+            </div>
+            `;
+            linkPanel.style.display = 'block';
+        } else {
+            linkPanel.style.display = 'none';
+        }
     }
 </script>
 
