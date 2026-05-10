@@ -127,20 +127,34 @@
             <div class="card-header">⚙️ 1. 構造データの読込（オンライン/ローカル）</div>
             <div class="card-body">
                 
+                <!-- 💡 パッチ適用箇所: 入力窓を大きく(flex:4)、ボタンを小さく(flex:1)して「取得」に変更 -->
                 <div class="toolbar-row">
-                    <span class="step-label">RCSB PDB <button class="rationale-btn" onclick="toggleRationale('rat_pdb')" title="PDBとは？">?</button></span>
+                    <span class="step-label" style="min-width: 120px;">PDB / AlphaFold <button class="rationale-btn" onclick="toggleRationale('rat_pdb')" title="オンライン取得とは？">?</button></span>
                     <div style="display:flex; flex:1; gap:8px; width:100%;">
-                        <input type="text" id="pdbId" class="primer-input" style="flex:2;" placeholder="ID (例: 2HHB, 1RTD)" onkeypress="if(event.keyCode===13) loadOnlinePDB()">
-                        <button class="btn btn-primary" onclick="loadOnlinePDB()" style="flex:3; font-size: 13px; padding: 8px;">🌐 オンライン自動取得</button>
+                        <input type="text" id="pdbId" class="primer-input" style="flex:4;" placeholder="ID (例: 2HHB, P68871)" onkeypress="if(event.keyCode===13) loadOnlinePDB()">
+                        <button class="btn btn-primary" onclick="loadOnlinePDB()" style="flex:1; font-size: 13px; padding: 8px; min-width: 80px;">🌐 取得</button>
                     </div>
                 </div>
+                <!-- 💡 パッチ適用箇所: オンラインとローカルの違いを明確化し、全体的な説明を整理 -->
                 <div id="rat_pdb" class="rationale-text" style="margin-top:0;">
-                    <strong>【根拠】</strong> PDBにはX線等で実際に撮影された「本物」の形が登録されています。複数のサブユニット(鎖)が合体した姿や、結合している薬も実測値として観察できます。
+                    <strong>【オンラインデータベースからの自動取得】</strong><br>
+                    ・<strong>PDB (Protein Data Bank)</strong>: X線等で実際に撮影された「本物」の実測構造です（例: <code>2HHB</code>）。<br>
+                    ・<strong>AlphaFold</strong>: AIが高精度に予測した構造です。UniProt IDを入力します（例: <code>P68871</code>）。<br>
+                    ※文字数（4文字ならPDB、それ以上ならAlphaFold）からシステムが自動で判断します。<br>
+                    <span style="display:inline-block; margin-top:6px; padding:6px 10px; background:#fff; border:1px solid #f39c12; border-radius:4px; width:100%;">
+                        💡 <strong>AlphaFold 予測信頼度（pLDDT）の色分け</strong><br>
+                        <span style="color:#0053d6; font-weight:bold;">■ 青（高い）</span> 〜 
+                        <span style="color:#65cbfa; font-weight:bold;">■ 水</span> 〜 
+                        <span style="color:#ffd111; font-weight:bold;">■ 黄</span> 〜 
+                        <span style="color:#ff7d45; font-weight:bold;">■ 赤（低い）</span>
+                    </span>
                 </div>
 
-                <div class="step-label" style="margin-top:10px;">カスタム / AlphaFold データの入力 <button class="rationale-btn" onclick="toggleRationale('rat_af')" title="AlphaFoldとは？">?</button></div>
+                <!-- 💡 パッチ適用箇所: 一般的なPDBファイルも含むことを明記し、整理 -->
+                <div class="step-label" style="margin-top:10px;">ローカルデータの入力 (PDB / AlphaFold 等) <button class="rationale-btn" onclick="toggleRationale('rat_af')" title="データの読み込みについて">?</button></div>
                 <div id="rat_af" class="rationale-text">
-                    <strong>【AlphaFold等の使い方】</strong> AlphaFold DB等からダウンロードしたPDB/CIFファイルを、下の枠内にドラッグ＆ドロップしてください。
+                    <strong>【お手元のデータを直接読み込む場合】</strong><br>
+                    ご自身のPCに保存されている通常の <strong>PDBファイル</strong> や、AlphaFold等からダウンロードした <strong>CIFファイル</strong>、オンラインデータベースにはない独自のモデリング構造などを、下の枠内に直接ドラッグ＆ドロップして表示することができます。
                 </div>
                 
                 <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
@@ -274,16 +288,61 @@
         document.getElementById('dataInfo').innerText = msg;
     }
 
+    /* 💡 パッチ適用箇所: AlphaFold取得APIのアップデートとエラーハンドリングの修正 */
     function loadOnlinePDB() {
-        let id = document.getElementById('pdbId').value.trim().toLowerCase();
+        let id = document.getElementById('pdbId').value.trim().toUpperCase();
         if(!id) return;
         viewer.clear();
         clearHighlights();
-        setStatus(`読込中: PDB [${id.toUpperCase()}] ...`);
         
-        $3Dmol.download("pdb:" + id, viewer, {multimodel: false, frames: true}, function() {
-            finishLoad(`PDB: ${id.toUpperCase()}`, 'chain');
-        });
+        // 文字数が4文字の場合はPDB、それ以上（例: P68871）はAlphaFoldと判断
+        if (id.length === 4) {
+            setStatus(`読込中: PDB [${id}] ...`);
+            $3Dmol.download("pdb:" + id.toLowerCase(), viewer, {multimodel: false, frames: true}, function() {
+                finishLoad(`PDB: ${id}`, 'chain');
+            });
+        } else {
+            setStatus(`読込中: AlphaFold [${id}] ...`);
+            
+            // EBI AlphaFold API経由で正確なCIF URLを取得する (CORSやバージョン変更に強いアプローチ)
+            const apiUrl = `https://alphafold.ebi.ac.uk/api/prediction/${id}`;
+            
+            fetch(apiUrl)
+                .then(response => {
+                    if (!response.ok) throw new Error("AlphaFoldにIDが存在しないか、アクセスできません。");
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.length > 0 && data[0].cifUrl) {
+                        // HTTPリクエストで取得したcifUrlをフェッチ
+                        return fetch(data[0].cifUrl);
+                    } else {
+                        throw new Error("AlphaFoldデータのURLが見つかりませんでした。");
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error("CIFファイルのダウンロードに失敗しました。");
+                    return response.text();
+                })
+                .then(text => {
+                    viewer.addModel(text, "cif");
+                    // AlphaFoldは信頼度スコア(plddt)カラースキームを適用して表示
+                    finishLoad(`AlphaFold: ${id}`, 'plddt');
+                })
+                .catch(error => {
+                    console.error("AlphaFold load error:", error);
+                    // alert()はiframe環境でブロックされるため使用せず、UI上でエレガントに通知
+                    setStatus(`❌ エラー: AlphaFoldデータが見つかりません [${id}]`);
+                    
+                    const inputField = document.getElementById('pdbId');
+                    inputField.style.borderColor = '#e74c3c';
+                    inputField.style.backgroundColor = '#fadbd8';
+                    setTimeout(() => {
+                        inputField.style.borderColor = '';
+                        inputField.style.backgroundColor = '';
+                    }, 3000);
+                });
+        }
     }
 
     function initDragAndDrop() {
