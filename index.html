@@ -52,6 +52,26 @@
             .phase-section { padding: 15px; }
             .phase-title { font-size: 16px; }
         }
+
+        /* =========================================
+           追加パッチ (スマホ表示の最適化)
+           ========================================= */
+        /* Phaseバッジ内の文字折り返しと押し潰しを防止 */
+        .phase-title span { 
+            white-space: nowrap; 
+            flex-shrink: 0; 
+        }
+        
+        @media screen and (max-width: 768px) {
+            /* スマホ時のみ、説明文の改行を非表示にする（HTML構造を変更せずに解決） */
+            .container > div:first-child br { 
+                display: none; 
+            }
+            /* タイトルが長くなり改行された際、Phaseバッジが中央ではなく上揃えになるよう微調整 */
+            .phase-title { 
+                align-items: flex-start; 
+            }
+        }
     </style>
 </head>
 <body>
