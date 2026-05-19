@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alignment Print Studio v1.5 | Bio-Edu Suite</title>
+    <title>Alignment Print Studio v1.6 | Bio-Edu Suite</title>
     <style>
         /* 全体のボックスサイズとリセット */
         *, *::before, *::after { box-sizing: border-box; }
@@ -19,7 +19,7 @@
 
         .main-content { width: 100%; max-width: 1000px; padding: 25px 20px; display: flex; flex-direction: column; gap: 20px; flex: 1; }
 
-        /* 💡 UI修正: コントロールパネルを他のアプリと統一された「カード型」にアップグレード */
+        /* コントロールパネル */
         .control-panel { background: #fff; width: 100%; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 4px solid #3498db; padding: 0; display: flex; flex-direction: column; overflow: hidden; }
         .control-panel h2 { background: #34495e; color: white; padding: 10px 18px; font-size: 14px; font-weight: bold; margin: 0; display: flex; align-items: center; gap: 10px; }
         .control-panel-body { padding: 20px 25px; display: flex; flex-direction: column; gap: 15px; }
@@ -31,17 +31,19 @@
         .rationale-btn:hover { background: #16a085; transform: scale(1.1); }
         .rationale-text { display: none; background: #fef9e7; border: 1px solid #f39c12; padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; margin-bottom: 5px; line-height: 1.5; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
 
-        /* 共通 UI コンポーネント (v1.1) */
+        /* 共通 UI コンポーネント */
         .drop-zone { border: 2px dashed #bdc3c7; border-radius: 6px; padding: 20px; text-align: center; background: #fafbfc; color: #7f8c8d; cursor: pointer; transition: all 0.2s; font-size: 13px; }
         .drop-zone.dragover { border-color: #3498db; background: #ebf5fb; color: #3498db; }
         .drop-zone:hover { border-color: #3498db; }
-        .status-bar { background: #34495e; color: white; padding: 6px 15px; font-size: 12px; text-align: center; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: auto; }
+        
+        /* 💡 UI修正: ステータスバーを画面下部に固定し、影をつけてフロート感を出す */
+        .status-bar { background: #34495e; color: white; padding: 6px 15px; font-size: 12px; flex-shrink: 0; display: flex; align-items: center; width: 100%; margin-top: auto; position: sticky; bottom: 0; z-index: 20; box-shadow: 0 -2px 10px rgba(0,0,0,0.15); }
 
-        /* トースト通知 (v1.2 追記) */
-        #toast { visibility: hidden; min-width: 250px; background-color: #27ae60; color: #fff; text-align: center; border-radius: 4px; padding: 12px 20px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); transform: translateX(-50%); opacity: 0; transition: opacity 0.3s, bottom 0.3s; }
-        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+        /* トースト通知 */
+        #toast { visibility: hidden; min-width: 250px; background-color: #27ae60; color: #fff; text-align: center; border-radius: 4px; padding: 12px 20px; position: fixed; z-index: 1000; left: 50%; bottom: 40px; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); transform: translateX(-50%); opacity: 0; transition: opacity 0.3s, bottom 0.3s; }
+        #toast.show { visibility: visible; opacity: 1; bottom: 60px; }
 
-        /* テキストエリア（アプリ⑧に準拠した実線スタイル） */
+        /* テキストエリア */
         textarea { width: 100%; height: 120px; font-family: 'Courier New', Consolas, monospace; font-size: 12px; padding: 15px; border: 1px solid #bdc3c7; border-radius: 4px; box-sizing: border-box; resize: vertical; outline: none; background: #fdfefe; color: #2c3e50; line-height: 1.4; transition: 0.2s; white-space: pre; overflow-x: auto;}
         textarea:focus { border-color: #3498db; box-shadow: 0 0 0 3px rgba(52,152,219,0.2); }
 
@@ -69,8 +71,7 @@
         .bench-tip strong { color: #2980b9; font-size: 12px;}
 
         /* プレビューパネル（仮想の紙） */
-        .preview-panel { display: flex; flex-direction: column; align-items: center; width: 100%;}
-        /* 💡 UI修正: プレビューのヘッダーもシリーズの統一感に合わせる */
+        .preview-panel { display: flex; flex-direction: column; align-items: center; width: 100%; margin-bottom: 20px;}
         .preview-title { font-size: 14px; font-weight: bold; color: #34495e; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; width: 100%; padding: 0 5px;}
         
         .paper-preview { width: 100%; max-width: 1000px; background: white; padding: 40px; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #bdc3c7; overflow-x: auto; min-height: 300px; }
@@ -85,14 +86,15 @@
             margin-bottom: 1.5em; /* ブロック間の余白 */
         }
 
-        /* 共通フッター (v1.1でStatusBarに統合) */
-        .footer { width: 100%; background: #1a252f; padding: 15px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; margin-top: auto; border-top: 1px solid #2c3e50; }
+        /* 共通フッター */
+        .footer { width: 100%; background: #1a252f; padding: 15px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; border-top: 1px solid #2c3e50; }
 
-        /* 🖨️ 印刷時専用のスタイル（UIを完全に消し、紙面だけを残す） */
+        /* 🖨️ 印刷時専用のスタイル */
         @media print {
             body { background: white; padding: 0; margin: 0; }
             .no-print { display: none !important; }
             .main-content { padding: 0; gap: 0; display: block; max-width: none; }
+            .preview-panel { margin-bottom: 0; }
             .paper-preview { max-width: none; box-shadow: none; padding: 0; border: none; overflow: visible; min-height: auto; }
             
             /* ページまたぎ防止の魔法のCSS */
@@ -109,14 +111,13 @@
     <div class="header">
         <h1>🧬 Alignment Print Studio</h1>
         <p>Bio-Edu Suite: Smart Paging & Formatting for CLUSTAL Data</p>
-        <div class="version-badge">v1.5</div>
+        <div class="version-badge">v1.6</div>
     </div>
 </div>
 
 <div class="main-content">
     
     <div class="control-panel no-print">
-        <!-- 💡 UI修正: 濃い紺色のカードヘッダーに変更 -->
         <h2>⚙️ 1. アライメントデータの入力と書式設定
             <button class="rationale-btn" onclick="toggleRationale('rat_print')" title="なぜこのツールが必要？">?</button>
         </h2>
@@ -142,7 +143,6 @@
                 </p>
             </div>
 
-            <!-- 💡 UI修正: アプリ⑧(Phylogenetic Tree Builder)を踏襲した入力UI -->
             <div style="display: flex; flex-direction: column; gap: 5px;">
                 <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" style="padding: 12px; font-size: 12px;">
                     📂 ここをクリック、または FASTA/CLUSTALデータ をドラッグ＆ドロップ
@@ -196,15 +196,14 @@
 <!-- トースト通知 -->
 <div id="toast">メッセージ</div>
 
-<!-- UI統一規格に準拠したステータスバー -->
+<!-- 💡 UI修正: スクロールしても常に画面下部に固定されるステータスバー -->
 <div class="status-bar no-print">
     <span id="statusText">Status: Standby</span>
-    <span>Bio-Edu Suite &copy; 2026</span>
 </div>
 
-<!-- 共通フッターの復活 -->
+<!-- 共通フッター -->
 <div class="footer no-print">
-    &copy; 2026 Bio-Edu Suite v1.5 | Developed for Bioinformatics & Wet-Lab Education
+    &copy; 2026 Bio-Edu Suite v1.6 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
 <script>
@@ -213,7 +212,6 @@
         el.style.display = (el.style.display === 'block') ? 'none' : 'block';
     }
 
-    // --- 💡 追記: トースト通知の汎用関数 ---
     function showToast(msg) {
         const toast = document.getElementById("toast");
         if (!toast) return;
@@ -222,14 +220,12 @@
         setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
     }
 
-    // --- 💡 追記: 印刷ダイアログの起動とフォールバック ---
     function triggerPrint() {
         try {
             window.print();
         } catch(e) {
             console.error("Print blocked:", e);
         }
-        // iFrame等の制限で印刷ダイアログが開かない環境への対策メッセージ
         setTimeout(() => {
             showToast("※反応がない場合はキーボードの Ctrl+P (Macは Cmd+P) を押してください");
         }, 800);
@@ -243,7 +239,6 @@
 
     inputText.addEventListener('input', renderText);
 
-    // --- 💡 追記: 画面全体のどこでも Ctrl+V (ペースト) を検知して自動読み込み ---
     document.addEventListener('paste', (e) => {
         const tagName = e.target.tagName.toLowerCase();
         if(tagName === 'input' || tagName === 'textarea') return;
@@ -257,7 +252,6 @@
         }
     });
 
-    // --- ドラッグ＆ドロップとファイル入力の処理 ---
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileInput');
 
@@ -305,7 +299,6 @@
             reader.readAsText(file);
         }
     }
-    // ----------------------------------------------------
 
     function escapeHTML(str) {
         return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -323,9 +316,7 @@
             for (let i = 0; i < lines.length; i++) {
                 currentBlock += escapeHTML(lines[i]) + '\n';
                 
-                // キーワードの行を見つけたら、そこをブロックの底とする
                 if (lines[i].includes(keyword)) {
-                    // 保存性記号（*）や空白行も一緒にブロックに含める
                     while (i + 1 < lines.length && (lines[i + 1].trim() === '' || lines[i+1].startsWith(' '))) {
                         i++;
                         currentBlock += escapeHTML(lines[i]) + '\n';
@@ -338,7 +329,6 @@
                 html += `<div class="alignment-block" style="font-size: ${currentFontSize};">${currentBlock}</div>`;
             }
         } else {
-            // キーワードが空の場合は単純に空白行で分割
             const blocks = text.split(/\n\s*\n/);
             blocks.forEach(block => {
                 if (block.trim().length > 0) {
