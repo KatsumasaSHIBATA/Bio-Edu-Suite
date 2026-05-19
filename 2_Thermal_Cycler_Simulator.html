@@ -23,8 +23,8 @@
         .scenario-panel h2 { margin: 0 0 15px 0; font-size: 16px; background: #34495e; color: #fff; padding: 12px 25px; display: flex; align-items: center; }
         .scenario-desc { font-size: 13px; color: #5d6d7e; margin-bottom: 15px; line-height: 1.6; padding: 0 25px; }
         
-        /* 🚨修正ポイント: PC幅で3(プライマー)を左に拡張するため、5カラム固定に変更 */
-        .scenario-inputs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; font-size: 12px; padding: 0 25px; }
+        /* 🚨修正ポイント: ボックス幅のバランスを整えるため6カラム固定に変更 */
+        .scenario-inputs { display: grid; grid-template-columns: repeat(6, 1fr); gap: 15px; font-size: 12px; padding: 0 25px; }
         
         .rationale-btn { background: #1abc9c; color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s;}
         .rationale-btn:hover { background: #16a085; transform: scale(1.1); }
@@ -182,7 +182,8 @@
         
         <div class="scenario-inputs">
             
-            <div class="input-group" style="grid-column: span 1;">
+            <!-- 🚨修正ポイント: 酵素項目を span 2 (全体の33%) に調整 -->
+            <div class="input-group" style="grid-column: span 2;">
                 <label>1. 使用酵素 (添付文書) <button class="rationale-btn" onclick="toggleRationale('rat_enz')" title="なぜ酵素を選ぶの？">?</button></label>
                 <div id="rat_enz" class="rationale-text">
                     <strong>【根拠】</strong> 酵素によって「耐熱性(DENAT)」や「合成速度(EXTEND)」が異なります。KOD Oneは超高速、Taqは標準的など、それぞれの特性に合わせたプログラムを組む必要があります。
@@ -195,6 +196,7 @@
                 <div class="input-help">変性・伸長温度と合成速度が決定。</div>
             </div>
             
+            <!-- 🚨修正ポイント: 増幅長項目は span 1 (全体の16%) のまま維持 -->
             <div class="input-group" style="grid-column: span 1;">
                 <label>2. 目的の増幅長 (bp) <button class="rationale-btn" onclick="toggleRationale('rat_len')" title="なぜ長さを入れるの？">?</button></label>
                 <div id="rat_len" class="rationale-text">
@@ -206,7 +208,7 @@
                 <div class="input-help">酵素速度と掛け合わせて伸長時間が決定。(1kb = 1000bp)</div>
             </div>
 
-            <!-- 🚨修正ポイント: プライマー項目を span 3 (全体の60%) に拡張 -->
+            <!-- 🚨修正ポイント: プライマー項目を縮小し span 3 (全体の50%) に設定 -->
             <div class="input-group" style="grid-column: span 3;">
                 <label>3. プライマーの塩基配列 (アニーリング) <button class="rationale-btn" onclick="toggleRationale('rat_pri')" title="なぜ配列を入れるの？">?</button></label>
                 <div id="rat_pri" class="rationale-text">
@@ -228,7 +230,7 @@
                 <div style="font-size:10px; color:#7f8c8d; margin-top:6px; text-align:right;">※ Tm値は塩基配列よりWallace法で算出</div>
             </div>
 
-            <!-- 🚨修正ポイント: バランスを取るため span 2 (全体の40%) に設定 -->
+            <!-- 🚨修正ポイント: バランスを取るため span 2 (全体の33%) に設定 -->
             <div class="input-group" style="grid-column: span 2;">
                 <label>4. 抽出サンプル (サイクル数) <button class="rationale-btn" onclick="toggleRationale('rat_sam')" title="なぜサンプルを選ぶの？">?</button></label>
                 <div id="rat_sam" class="rationale-text">
@@ -244,7 +246,7 @@
                 </div>
             </div>
 
-            <!-- 🚨修正ポイント: バランスを取るため span 2 (全体の40%) に設定 -->
+            <!-- 🚨修正ポイント: バランスを取るため縮小し span 2 (全体の33%) に設定 -->
             <div class="input-group" style="grid-column: span 2;">
                 <label>5. 試薬組成 (VOL液量) <button class="rationale-btn" onclick="toggleRationale('rat_vol')" title="なぜVOLを入れるの？">?</button></label>
                 <div id="rat_vol" class="rationale-text">
@@ -255,9 +257,9 @@
                     </div>
             </div>
 
-            <!-- 🚨修正ポイント: Tmコンテナは span 1 (全体の20%) に設定 -->
-            <div class="tm-container" style="grid-column: span 1;">
-                <span class="tm-label">算出された個別のTm値</span>
+            <!-- 🚨修正ポイント: Tmコンテナは span 2 (全体の33%) に設定し、テキストを親切化 -->
+            <div class="tm-container" style="grid-column: span 2;">
+                <span class="tm-label">算出された個別のプライマーTm値</span>
                 <div class="tm-display" id="tmValueDisplay">F: --.-℃ / R: --.-℃</div>
                 <span class="tm-label" style="color:#1abc9c; margin-top:4px;">★ アニーリング基準値 (Tm平均)</span>
                 <div class="tm-avg" id="tmAvgDisplay">--.- ℃</div>
