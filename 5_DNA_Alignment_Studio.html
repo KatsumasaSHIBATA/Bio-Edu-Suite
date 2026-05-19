@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNA Alignment & Editing Studio v3.9 | Bio-Edu Suite</title>
+    <title>DNA Alignment & Editing Studio v3.11 | Bio-Edu Suite</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         /* 画面の固定を解除し、下まで自然にスクロールできるように変更 */
@@ -173,7 +173,7 @@
     <div class="header">
         <h1>🧬 DNA Alignment Studio</h1>
         <p>Bio-Edu Suite: Sequence Curation & Pipeline Hub</p>
-        <div class="version-badge">v3.9</div>
+        <div class="version-badge">v3.11</div>
     </div>
 </div>
 
@@ -219,7 +219,7 @@
                             <button class="btn btn-primary" onclick="fetchNCBI()" style="padding: 6px 12px; white-space: nowrap; height: 100%; margin: 0;">🌐 取得 <span id="apiLoader" class="loader" style="display:none;"></span></button>
                         </div>
                         <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" style="margin: 0; min-width: 180px; padding: 8px 15px;">
-                            <p>📂 生データ(FASTA) をドラッグ＆ドロップ</p>
+                            <p>📂 ここをクリック、または 生データ(FASTA) をドラッグ＆ドロップ</p>
                             <input type="file" id="fileInput" accept=".fasta,.fas,.txt,.seq" multiple onchange="handleFiles(event)">
                         </div>
                     </div>
@@ -293,8 +293,8 @@
                         🔍 モチーフ・コドン検索
                         <button class="rationale-btn" onclick="toggleRationale('rat_motif')" title="モチーフ検索とは？" style="margin-right: 5px;">?</button>
                     </span>
-                    <input type="text" id="searchInput" class="primer-input" placeholder="例: ATG または TAA" style="width: 140px; text-transform: uppercase;" onkeypress="if(event.keyCode===13) highlightSearch()">
-                    <button class="btn btn-option" style="padding: 4px 8px; font-size: 11px;" onclick="highlightSearch()">✨ ハイライト</button>
+                    <input type="text" id="searchInput" class="primer-input" placeholder="例: ATG または TAA" style="width: 140px; text-transform: uppercase;" oninput="toggleHighlightBtn()" onkeypress="if(event.keyCode===13 && !document.getElementById('btnHighlight').disabled) highlightSearch()">
+                    <button class="btn btn-option" id="btnHighlight" style="padding: 4px 8px; font-size: 11px;" onclick="highlightSearch()" disabled>✨ ハイライト</button>
                     <button class="btn" style="padding: 4px 8px; font-size: 11px;" onclick="clearSearch()">❌ クリア</button>
                 </div>
                 <span style="font-size: 10px; color: #7f8c8d; line-height: 1.4;">※開始コドン(ATG)や終止コドン(TAA等)、制限酵素部位を検索できます。ギャップ(-)は無視されます。</span>
@@ -367,7 +367,7 @@
 </div>
 
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v3.9 | Sequence Curation & Pipeline Hub
+    &copy; 2026 Bio-Edu Suite v3.11 | Sequence Curation & Pipeline Hub
 </div>
 
 <!-- トースト通知 -->
@@ -484,6 +484,12 @@
             btn.style.background = '#fef9e7';
             btn.style.color = '#d35400';
         }
+    }
+
+    // --- 💡 検索ボタンの活性化ロジック ---
+    function toggleHighlightBtn() {
+        const val = document.getElementById('searchInput').value.trim();
+        document.getElementById('btnHighlight').disabled = (val.length === 0);
     }
 
     function updateMismatchVal(val) { document.getElementById('mismatchVal').innerText = val + '%'; }
@@ -1157,6 +1163,7 @@
 
     function clearSearch() {
         document.getElementById('searchInput').value = '';
+        toggleHighlightBtn();
         reapplySearch();
         renderEditorSync();
     }
