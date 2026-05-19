@@ -104,7 +104,7 @@
         .mega-invite { background: #fff8e1; border: 1px solid #f5b041; padding: 12px 15px; font-size: 12px; color: #7e5109; line-height: 1.5; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
         .mega-invite strong { color: #d35400; font-size: 13px; display: block; margin-bottom: 4px;}
 
-        .status-bar { background: #2c3e50; color: white; padding: 8px 20px; font-size: 12px; display: flex; justify-content: space-between; font-weight: 600; letter-spacing: 0.5px; z-index: 30; flex-shrink: 0; margin-top: auto;}
+        .status-bar { background: #2c3e50; color: white; padding: 8px 20px; font-size: 12px; display: flex; justify-content: space-between; font-weight: 600; letter-spacing: 0.5px; z-index: 100; flex-shrink: 0; margin-top: auto; position: sticky; bottom: 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.15);}
         .footer { background: #1a252f; padding: 10px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; flex-shrink: 0; }
         
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; width: 12px; height: 12px; animation: spin 1s linear infinite; display: none; margin-left: 5px; vertical-align: middle;}
@@ -162,7 +162,7 @@
         
         <!-- 1. データ入力 -->
         <div class="card">
-            <div class="card-header">⚙️ 1. データ読込 (Input DNA)</div>
+            <div class="card-header">⚙️ 1. データの読み込み</div>
             <div class="card-body">
                 
                 <div id="inputHintDefault" class="bench-tip" style="background:#eafaf1; border-left-color:#27ae60;">
@@ -193,14 +193,14 @@
                     </div>
                 </div>
 
-                <textarea id="dnaInput" placeholder=">WildType_DNA&#10;ATGCGT...&#10;>Mutant_DNA&#10;ATGCCT... (複数入力で比較モードになります)"></textarea>
+                <textarea id="dnaInput" placeholder=">野生型_DNA&#10;ATGCGT...&#10;>変異型_DNA&#10;ATGCCT... (複数入力で比較モードになります)"></textarea>
             </div>
         </div>
 
         <!-- 2. 転写コントロール -->
         <div class="card" style="border-top-color: #e67e22;">
             <div class="card-header" style="background:#34495e;">
-                <span>🧬 2. 転写 (Transcription)</span>
+                <span>🧬 2. 転写</span>
                 <button class="rationale-btn" onclick="toggleRationale('rat_transcription')">?</button>
             </div>
             <div class="card-body">
@@ -218,7 +218,7 @@
         <!-- 3. 翻訳コントロール＆凡例 -->
         <div class="card" style="border-top-color: #e84393;">
             <div class="card-header" style="background:#34495e;">
-                <span>🥩 3. 翻訳 & 変異検出 (Translation)</span>
+                <span>🥩 3. 翻訳と変異の検出</span>
                 <button class="rationale-btn" onclick="toggleRationale('rat_translation')">?</button>
             </div>
             <div class="card-body">
@@ -226,7 +226,7 @@
                     <strong>【DNAの変異がもたらす意味】</strong><br>アミノ酸が「親水性」から「疎水性」などの全く異なる性質に変わると、タンパク質全体の立体構造や機能が崩壊し、疾患の原因となります。
                 </div>
                 
-                <button class="btn btn-action-translation" onclick="runTranslation()" id="btnTranslate" style="width:100%;" disabled>⏬ 翻訳を実行 (mRNA ➡ Protein)</button>
+                <button class="btn btn-action-translation" onclick="runTranslation()" id="btnTranslate" style="width:100%;" disabled>⏬ 翻訳を実行 (mRNA ➡ タンパク質)</button>
 
                 <div class="legend-panel">
                     <span style="grid-column: span 2; font-weight: bold; color: #7f8c8d; border-bottom: 1px solid #bdc3c7; padding-bottom: 2px;">🎨 アミノ酸の化学的性質 (性質急変に注意)</span>
@@ -246,7 +246,7 @@
         <!-- mRNA ビューア -->
         <div class="card" style="border-top-color: #f39c12;">
             <div class="card-header" style="background:#34495e; color:#fff;">
-                <span>🧬 転写結果 (mRNA Sequence)</span>
+                <span>🧬 転写結果 (mRNA)</span>
             </div>
             <div class="card-body" style="padding:0;">
                 <div class="result-box" id="mrnaResult" style="border-radius:0 0 8px 8px;">
@@ -258,7 +258,7 @@
         <!-- Protein ビューア -->
         <div class="card" style="border-top-color: #27ae60;">
             <div class="card-header" style="background:#34495e; color:#fff;">
-                <span>🥩 翻訳結果 (Protein Sequence)</span>
+                <span>🥩 翻訳結果 (アミノ酸配列)</span>
             </div>
             <div class="card-body" style="padding:0;">
                 <div class="codon-container" id="proteinResult" style="border:none; border-bottom: 1px solid #bdc3c7; border-radius:0;">
@@ -269,7 +269,7 @@
         </div>
 
         <div class="mega-invite">
-            <strong>🔗 Step up to professional tools (より高度な解析へ)</strong>
+            <strong>🔗 より高度な解析へ (プロツールへの招待)</strong><br>
             実際の疾患遺伝子の配列を翻訳してみましょう。<br>
             本物の遺伝子領域（ORF）を探すためには <b>『ExPASy Translate Tool』</b> を、翻訳されたアミノ酸が立体的にどう影響するかを確認するためには、アプリ⑩（Protein Structure Explorer）や <b>PyMOL</b> を使ってみましょう。
         </div>
