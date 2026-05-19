@@ -44,11 +44,11 @@
         .file-status { font-size: 11px; color: #7f8c8d; font-weight: bold; }
         
         /* ドロップゾーンUIの追加 */
-        .drop-zone { border: 2px dashed #bdc3c7; border-radius: 6px; padding: 20px; text-align: center; background: #fafbfc; color: #7f8c8d; cursor: pointer; transition: all 0.2s; font-size: 13px; margin-bottom: 10px; }
+        .drop-zone { border: 2px dashed #bdc3c7; border-radius: 6px; padding: 10px; text-align: center; background: #fafbfc; color: #7f8c8d; cursor: pointer; transition: all 0.2s; font-size: 13px; margin-bottom: 10px; }
         .drop-zone.dragover { border-color: #3498db; background: #ebf5fb; color: #3498db; }
         .drop-zone:hover { border-color: #3498db; }
 
-        textarea { width: 100%; box-sizing: border-box; border: 2px dashed #bdc3c7; border-radius: 4px; padding: 10px; font-family: monospace; font-size: 11px; height: 100px; background: #fafbfc; transition: 0.3s; margin-bottom: 5px; resize: vertical;}
+        textarea { width: 100%; box-sizing: border-box; border: 1px solid #bdc3c7; border-radius: 4px; padding: 10px; font-family: monospace; font-size: 11px; height: 100px; background: #fafbfc; transition: 0.3s; margin-bottom: 5px; resize: vertical;}
         textarea.dragover { background-color: #e8f8f5; border-color: #1abc9c; }
         
         /* 酵素編集UI */
@@ -118,7 +118,7 @@
             /* キャンバス（系統樹など）が画面を突き破らないように制限 */
             canvas { max-width: 100% !important; height: auto !important; }
             
-            /* アプリ④：名前列の幅を狭くして、配列を見やすくする */
+            /* アプリ④：名前列の幅を狭くして、塩基配列を見やすくする */
             .names-column { width: 100px !important; }
             .name-header { font-size: 9px; padding-left: 5px; }
             .seq-name-input { font-size: 10px; }
@@ -144,7 +144,7 @@
             <div class="settings-group">
                 <h4>1. 鋳型DNA（FASTA）の入力 <button class="rationale-btn" onclick="toggleRationale('rat_fasta')" title="DNAデータとは？">?</button></h4>
                 <div id="rat_fasta" class="rationale-text">
-                    <strong>【根拠】</strong> ここには、抽出液の中に含まれているはずの「元のDNA配列（ターゲット領域周辺）」を入力します。NCBI等のデータベースから取得したFASTA形式のテキストデータを貼り付けます。
+                    <strong>【根拠】</strong> ここには、抽出液の中に含まれているはずの「元のDNAの塩基配列（ターゲット領域周辺）」を入力します。NCBI等のデータベースから取得したFASTA形式のテキストデータを貼り付けます。
                 </div>
                 
                 <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
@@ -180,7 +180,7 @@
             <div class="settings-group">
                 <h4>3. RFLP (制限酵素) 設定 <button class="rationale-btn" onclick="toggleRationale('rat_re')" title="なぜ制限酵素で切るの？">?</button></h4>
                 <div id="rat_re" class="rationale-text">
-                    <strong>【根拠：RFLP法の原理】</strong> PCRで増やしたDNAの長さが同じでも、生物種によって「中の配列（塩基の並び）」は異なります。特定の配列（例: GGATCC）だけを認識して切る「ハサミ（制限酵素）」を使うことで、配列の違いを「切れた長さの違い」として可視化できます。
+                    <strong>【根拠：RFLP法の原理】</strong> PCRで増やしたDNAの長さが同じでも、生物種によって「中の塩基配列」は異なります。特定の塩基配列（例: GGATCC）だけを認識して切る「ハサミ（制限酵素）」を使うことで、塩基配列の違いを「切れた長さの違い」として可視化できます。
                 </div>
                 
                 <div style="display: flex; gap: 8px; margin-bottom: 10px;">
@@ -192,7 +192,7 @@
                     <span class="enzyme-editor-title">✏️ 酵素の追加・編集 (選択して上書き)</span>
                     <div class="input-row">
                         <input type="text" id="customName" placeholder="名前 (例: BamHI)" style="flex: 1.5;">
-                        <input type="text" id="customSeq" placeholder="配列 (例: GGATCC)" class="mono-input" style="flex: 2; padding:6px;">
+                        <input type="text" id="customSeq" placeholder="塩基配列 (例: GGATCC)" class="mono-input" style="flex: 2; padding:6px;">
                         <input type="number" id="customCut" placeholder="位置 (例:1)" style="flex: 1;" min="0">
                         <button onclick="saveEnzyme()" class="add-btn">💾 保存</button>
                     </div>
@@ -254,7 +254,7 @@
         </h4>
         <p style="margin: 0; font-size: 12px; color: #7e5109; line-height: 1.5;">
             Bio-Edu Suiteで「PCRとRFLPの原理」を学んだら、次は実際の研究現場で使われているプロフェッショナル向けソフトウェアに挑戦してみましょう。<br>
-            ・<strong>MEGA / ClustalW</strong>： 複数配列の正確なアライメントと、進化系統樹の構築が可能です。<br>
+            ・<strong>MEGA / ClustalW</strong>： 複数の塩基配列の正確なアライメントと、進化系統樹の構築が可能です。<br>
             ・<strong>SnapGene (Viewer)</strong>： 実際のプラスミドマップの作成や、より詳細なIn Silicoクローニングのシミュレーションが可能です。
         </p>
     </div>
@@ -372,7 +372,7 @@
         let cut = parseInt(document.getElementById('customCut').value);
         
         if(!name || !seq || isNaN(cut) || cut < 0 || cut > seq.length) {
-            alert("正しい名前、配列（A,T,G,C）、切断位置（数字）を入力してください。");
+            alert("正しい名前、塩基配列（A,T,G,C）、切断位置（数字）を入力してください。");
             return;
         }
         if(name === "NoCut") {
@@ -492,7 +492,7 @@
         if(!enzymeName) { alert("使用する制限酵素を選んでください！"); return; }
 
         let samples = parseFasta(text);
-        if(samples.length === 0) { alert("DNA配列が正しくありません。"); return; }
+        if(samples.length === 0) { alert("DNAの塩基配列が正しくありません。"); return; }
 
         let tbodyHtml = "", gelHtml = "";
         const ladderSizes = [2000, 1500, 1000, 750, 500, 400, 300, 200, 100];
@@ -508,7 +508,7 @@
             let pcrStatus = "", fragStr = "", fragments = [];
 
             if (amplicon) {
-                let isFull = (!pF && !pR) ? " (全配列)" : " bp";
+                let isFull = (!pF && !pR) ? " (全塩基配列)" : " bp";
                 pcrStatus = `<span class="success">増幅 (${amplicon.length}${isFull})</span>`;
                 let result = calculateDigestion(amplicon, enzymeName);
                 fragments = result.fragments;
