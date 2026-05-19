@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sanger Trace Editor v1.7 | Bio-Edu Suite</title>
+    <title>Sanger Trace Editor v1.8 | Bio-Edu Suite</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         
@@ -31,7 +31,8 @@
 
         /* ツールバー */
         .toolbar-row { display: flex; width: 100%; gap: 15px; align-items: center; flex-wrap: wrap; }
-        .step-label { font-size: 13px; font-weight: bold; color: #e67e22; min-width: 80px; display: flex; align-items: center; }
+        /* 💡変更: ステップラベルの文字色をスクリーンショットに合わせて濃い灰色に統一 */
+        .step-label { font-size: 13px; font-weight: bold; color: #34495e; min-width: 80px; display: flex; align-items: center; }
 
         /* justify-content: center; を追加しモバイル時のボタンテキスト左寄りを防止 */
         .btn { background: #fdfefe; border: 1px solid #bdc3c7; padding: 6px 12px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 5px; border-radius: 4px; font-weight: bold; transition: all 0.2s; color: #2c3e50; white-space: nowrap; }
@@ -120,7 +121,7 @@
     <div class="header">
         <h1>🧬 Sanger Trace Editor</h1>
         <p>Bio-Edu Suite: AB1 Binary Parsing, Trace Visualization & Curation</p>
-        <div class="version-badge">v1.7</div>
+        <div class="version-badge">v1.8</div>
     </div>
 </div>
 
@@ -259,7 +260,7 @@
 </div>
 
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v1.7 | Developed for Bioinformatics & Wet-Lab Education
+    &copy; 2026 Bio-Edu Suite v1.8 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
 <!-- 💡追加: アプリ⑤共通のトースト通知 -->
