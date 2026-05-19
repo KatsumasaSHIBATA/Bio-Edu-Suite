@@ -110,6 +110,16 @@
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; width: 12px; height: 12px; animation: spin 1s linear infinite; display: none; margin-left: 5px; vertical-align: middle;}
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        /* UI/UX共通規格の追記 (v1.5) */
+        .form-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 5px; }
+        .form-group label { font-size: 12px; font-weight: 600; color: #7f8c8d; }
+        .input-row { display: flex; gap: 10px; align-items: stretch; width: 100%; }
+        .input-row > input { flex: 1; }
+        .input-row .btn-secondary { flex: 0 0 auto; white-space: nowrap; background-color: #ecf0f1; color: #34495e; border: 1px solid #bdc3c7; padding: 6px 12px; font-size: 12px; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s;}
+        .input-row .btn-secondary:hover:not(:disabled) { background-color: #e0e6ed; }
+        .rna-N { color: #95a5a6; } /* IUPACコード用 */
+        .aa-unknown .amino-acid { background: #e0e0e0; color: #7f8c8d; }
+
         /* 💡 修正ポイント: スマホ向けレイアウトの修正 (パネルが隠れる問題を解決) */
         @media screen and (max-width: 900px) { 
             .main-content { grid-template-columns: 1fr; padding: 10px; } 
@@ -166,18 +176,19 @@
                     正確に比較するには、必ず<strong>アプリ⑤（DNA Alignment Studio）</strong>でアライメントとトリミングを行ってから、データをここにペーストしてください。
                 </div>
 
-                <div class="toolbar-row">
-                    <span class="step-label">RCSB NCBI</span>
-                    <input type="text" id="ncbiId" class="primer-input" style="flex:2;" placeholder="ID (例: NM_000518)" onkeypress="if(event.keyCode===13) fetchNCBI()">
-                    <button class="btn btn-primary" onclick="fetchNCBI()" style="flex:1; padding: 6px;">🌐 取得 <span id="apiLoader" class="loader"></span></button>
+                <!-- Template_Reference_App 準拠のUIにパッチ適用 -->
+                <div class="form-group">
+                    <label>オンラインから取得 (NCBI)</label>
+                    <div class="input-row">
+                        <input type="text" id="ncbiId" class="primer-input" placeholder="ID (例: NM_000518)" onkeypress="if(event.keyCode===13) fetchNCBI()">
+                        <button class="btn btn-primary" style="flex: 0 0 auto; white-space: nowrap; padding: 6px 12px; font-size: 12px; border-radius: 4px;" onclick="fetchNCBI()">🌐 取得 <span id="apiLoader" class="loader"></span></button>
+                    </div>
                 </div>
 
-                <div style="border-top: 1px dashed #bdc3c7; margin: 2px 0;"></div>
-
-                <div class="toolbar-row">
-                    <span class="step-label">Local File</span>
+                <div class="form-group">
+                    <label>生データ (塩基配列 / アミノ酸配列)</label>
                     <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-                        <p>📂 FASTAデータをドロップ</p>
+                        <p>📁 ここをクリック、または FASTAデータ (.txt, .fas) をドラッグ＆ドロップ</p>
                         <input type="file" id="fileInput" accept=".fasta,.fas,.txt,.seq" onchange="handleFileSelect(event)" multiple>
                     </div>
                 </div>
@@ -188,9 +199,9 @@
 
         <!-- 2. 転写コントロール -->
         <div class="card" style="border-top-color: #e67e22;">
-            <div class="card-header" style="background:#d35400;">
+            <div class="card-header" style="background:#34495e;">
                 <span>🧬 2. 転写 (Transcription)</span>
-                <button class="rationale-btn" style="background:#e67e22;" onclick="toggleRationale('rat_transcription')">?</button>
+                <button class="rationale-btn" onclick="toggleRationale('rat_transcription')">?</button>
             </div>
             <div class="card-body">
                 <div id="rat_transcription" class="rationale-text" style="border-color:#e67e22;">
@@ -206,9 +217,9 @@
 
         <!-- 3. 翻訳コントロール＆凡例 -->
         <div class="card" style="border-top-color: #e84393;">
-            <div class="card-header" style="background:#d63031;">
+            <div class="card-header" style="background:#34495e;">
                 <span>🥩 3. 翻訳 & 変異検出 (Translation)</span>
-                <button class="rationale-btn" style="background:#e84393;" onclick="toggleRationale('rat_translation')">?</button>
+                <button class="rationale-btn" onclick="toggleRationale('rat_translation')">?</button>
             </div>
             <div class="card-body">
                 <div id="rat_translation" class="rationale-text" style="border-color:#e84393;">
@@ -234,7 +245,7 @@
         
         <!-- mRNA ビューア -->
         <div class="card" style="border-top-color: #f39c12;">
-            <div class="card-header" style="background:#f39c12; color:#fff;">
+            <div class="card-header" style="background:#34495e; color:#fff;">
                 <span>🧬 転写結果 (mRNA Sequence)</span>
             </div>
             <div class="card-body" style="padding:0;">
@@ -246,7 +257,7 @@
 
         <!-- Protein ビューア -->
         <div class="card" style="border-top-color: #27ae60;">
-            <div class="card-header" style="background:#27ae60; color:#fff;">
+            <div class="card-header" style="background:#34495e; color:#fff;">
                 <span>🥩 翻訳結果 (Protein Sequence)</span>
             </div>
             <div class="card-body" style="padding:0;">
@@ -329,7 +340,8 @@
                 if(currentSeq) { seqs.push({name: currentName, seq: currentSeq}); currentSeq = ""; }
                 currentName = line.substring(1);
             } else {
-                currentSeq += line.toUpperCase().replace(/[^ATGCU-]/g, '');
+                // NおよびIUPAC核酸コードも許容するように拡張
+                currentSeq += line.toUpperCase().replace(/[^ATGCURYMKWSBDHVN-]/g, '');
             }
         }
         if(currentSeq) seqs.push({name: currentName, seq: currentSeq});
@@ -410,6 +422,8 @@
                 else if (b === 'G') coloredRNA += '<span class="rna-base rna-G">G</span>';
                 else if (b === 'C') coloredRNA += '<span class="rna-base rna-C">C</span>';
                 else if (b === '-') coloredRNA += '<span class="rna-base rna-gap">-</span>';
+                // IUPACコード（Nなど）の処理を追加
+                else if ('RYMKWSBDHVN'.includes(b)) coloredRNA += `<span class="rna-base rna-N">${b}</span>`;
                 else coloredRNA += b;
             }
                 
@@ -457,7 +471,8 @@
         'W': { code3: 'Trp', name: 'Tryptophan', property: '疎水性 (Non-polar)', groupClass: 'aa-nonpolar' },
         'Y': { code3: 'Tyr', name: 'Tyrosine', property: '親水性 (Polar)', groupClass: 'aa-polar' },
         'V': { code3: 'Val', name: 'Valine', property: '疎水性 (Non-polar)', groupClass: 'aa-nonpolar' },
-        '*': { code3: 'Ter', name: 'Stop codon', property: '翻訳終了', groupClass: 'aa-stop' }
+        '*': { code3: 'Ter', name: 'Stop codon', property: '翻訳終了', groupClass: 'aa-stop' },
+        'X': { code3: 'Unk', name: 'Unknown', property: '不明', groupClass: 'aa-unknown' } // IUPAC等不明コード対応
     };
 
     const codonTable = { 'UUU': 'F', 'UUC': 'F', 'UUA': 'L', 'UUG': 'L', 'CUU': 'L', 'CUC': 'L', 'CUA': 'L', 'CUG': 'L', 'AUU': 'I', 'AUC': 'I', 'AUA': 'I', 'AUG': 'M', 'GUU': 'V', 'GUC': 'V', 'GUA': 'V', 'GUG': 'V', 'UCU': 'S', 'UCC': 'S', 'UCA': 'S', 'UCG': 'S', 'CCU': 'P', 'CCC': 'P', 'CCA': 'P', 'CCG': 'P', 'ACU': 'T', 'ACC': 'T', 'ACA': 'T', 'ACG': 'T', 'GCU': 'A', 'GCC': 'A', 'GCA': 'A', 'GCG': 'A', 'UAU': 'Y', 'UAC': 'Y', 'UAA': '*', 'UAG': '*', 'CAU': 'H', 'CAC': 'H', 'CAA': 'Q', 'CAG': 'Q', 'AAU': 'N', 'AAC': 'N', 'AAA': 'K', 'AAG': 'K', 'GAU': 'D', 'GAC': 'D', 'GAA': 'E', 'GAG': 'E', 'UGU': 'C', 'UGC': 'C', 'UGA': '*', 'UGG': 'W', 'CGU': 'R', 'CGC': 'R', 'CGA': 'R', 'CGG': 'R', 'AGU': 'S', 'AGC': 'S', 'AGA': 'R', 'AGG': 'R', 'GGU': 'G', 'GGC': 'G', 'GGA': 'G', 'GGG': 'G' };
@@ -489,15 +504,16 @@
             
             if(codMut.includes('-')) continue; 
 
-            let aaMut = codonTable[codMut] || '?';
-            let aaWT = codonTable[codWT] || '?';
+            // NなどIUPACコードが含まれる場合はUnknownとして処理
+            let aaMut = codonTable[codMut] || 'X';
+            let aaWT = codonTable[codWT] || 'X';
             
             let pos = Math.floor(i/3) + 1;
             let isMutated = (currentMRNAs.length > 1 && aaMut !== aaWT);
             
             if (isMutated) mutPositions.push(pos);
 
-            let aaData = aminoAcids[aaMut] || { code3: '???', name: 'Unknown', property: '不明', groupClass: '' };
+            let aaData = aminoAcids[aaMut] || { code3: 'Unk', name: 'Unknown', property: '不明', groupClass: 'aa-unknown' };
 
             let div = document.createElement('div');
             let className = `codon-box ${aaData.groupClass}`;
@@ -510,7 +526,7 @@
             
             let tooltipText = `残基番号: ${pos}\n${aaData.code3} (${aaData.name})\n${aaData.property}`;
             if(isMutated) {
-                let dWT = aminoAcids[aaWT] || { code3: '???', property: '不明' };
+                let dWT = aminoAcids[aaWT] || { code3: 'Unk', property: '不明' };
                 tooltipText = `⚠️ 変異箇所 (残基 ${pos})\n[野生型] ${dWT.code3} (${dWT.property})\n   ↓\n[変異型] ${aaData.code3} (${aaData.property})`;
             }
             if(aaMut !== '?') div.setAttribute('data-tooltip', tooltipText);
