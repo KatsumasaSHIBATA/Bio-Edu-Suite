@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Step-by-Step Phylogeny Builder v2.3 | Bio-Edu Suite</title>
+    <title>Step-by-Step Phylogeny Builder v2.5 | Bio-Edu Suite</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
@@ -124,7 +124,7 @@
     <div class="header">
         <h1>🧬 Step-by-Step Phylogeny Builder</h1>
         <p>Bio-Edu Suite: Matrix Calculation & UPGMA/NJ Clustering Emulator</p>
-        <div class="version-badge">v2.3</div>
+        <div class="version-badge">v2.5</div>
     </div>
 </div>
 
@@ -143,29 +143,35 @@
                 <label for="algo_nj">NJ法 (進化速度の違いを考慮)</label>
             </div>
 
+            <!-- UI修正: 密集していた「?」を各コンテキストへ分散 -->
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px; margin-bottom:5px;">
-                <label style="font-size:12px; font-weight:bold; color:#2c3e50;">1. アライメント済みFASTAを入力 
-                    <button class="rationale-btn" onclick="toggleRationale('rat_matrix')" title="距離行列って何？">?</button>
+                <label style="font-size:12px; font-weight:bold; color:#2c3e50;">1. アライメント済みFASTA (塩基配列 / アミノ酸配列) を入力 
+                    <button class="rationale-btn" style="background:#e67e22;" onclick="toggleRationale('rat_seq_type')" title="アミノ酸とDNAの使い分け">?</button>
                 </label>
-                <button class="rationale-btn" style="background:#8e44ad;" onclick="toggleRationale('rat_advanced')" title="ML法やブートストラップは？">?</button>
             </div>
             
+            <!-- 文言修正: 用途に合わせて正確な表現に -->
             <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-                <p>📂 FASTAデータ (.txt, .fas) をドラッグ＆ドロップ</p>
+                <p>📂 ここをクリック、または アライメント済みFASTAデータ (.txt, .fas) をドラッグ＆ドロップ</p>
                 <input type="file" id="fileInput" accept=".fasta,.fas,.txt,.seq" onchange="handleFiles(event)">
             </div>
             <textarea id="fastaInput" placeholder="ここにアライメント済みのFASTAデータが表示されます。"></textarea>
             
-            <div id="rat_matrix" class="rationale-text">
-                <strong>【根拠：距離行列とは？】</strong><br>
-                MEGA等のソフトは、まず「AとBは何文字違うか？」という総当たり戦を行い、違いの割合を表にした<strong>「距離行列」</strong>を作ります。進化にかかった時間が長いほど、DNAのミスマッチ（距離）は大きくなるという前提です。
-            </div>
-            <div id="rat_advanced" class="rationale-text" style="border-color:#8e44ad; background:#f5eef8; color:#5b2c6f;">
-                <strong>【根拠：ML法やブートストラップはこのアプリにはありません】</strong><br>
-                最尤法(ML法)やブートストラップは、膨大な確率計算を何万回も繰り返して「最もありそうな木」を探すため、手動でステップを確認するこのツールには不向きです。これらはプロ用ソフト(MEGA)の仕事です。
+            <div id="rat_seq_type" class="rationale-text" style="border-color:#e67e22; background:#fef5e7; color:#d35400;">
+                <strong>💡 なぜこの操作が必要か？（アミノ酸とDNAの使い分け）</strong><br>
+                比較する生物同士の進化的な距離（何億年前に枝分かれしたか）によって、適切な配列データは異なります。もし作成した系統樹が「現在の分類学（教科書の知識）」と大きく矛盾する場合、DNAの変異スピードが早すぎて「多重置換（ノイズ）」が起きている可能性があります。その場合は、より変化の遅い「アミノ酸配列」を使って再度計算してみましょう。
             </div>
 
-            <button class="btn btn-primary" id="btnInit" onclick="initMatrix()">🧮 配列比較 ➡ 距離行列を作成</button>
+            <!-- UI修正: 距離行列の「?」ボタンを計算実行ボタンの横へ移動 -->
+            <div style="display:flex; align-items:center; gap:10px; margin-top:5px;">
+                <button class="btn btn-primary" id="btnInit" onclick="initMatrix()" style="flex: 1;">🧮 配列比較 ➡ 距離行列を作成</button>
+                <button class="rationale-btn" onclick="toggleRationale('rat_matrix')" title="距離行列って何？" style="flex-shrink: 0; margin-left: 0;">?</button>
+            </div>
+
+            <div id="rat_matrix" class="rationale-text">
+                <strong>【根拠：距離行列とは？】</strong><br>
+                MEGA等のソフトは、まず「AとBは何文字違うか？」という総当たり戦を行い、違いの割合を表にした<strong>「距離行列」</strong>を作ります。進化にかかった時間が長いほど、DNA塩基やアミノ酸のミスマッチ（距離）は大きくなるという前提です。
+            </div>
 
             <div style="border-top: 1px dashed #bdc3c7; margin: 10px 0;"></div>
 
@@ -197,7 +203,14 @@
             </div>
 
             <div class="mega-invite">
-                <h4>🔗 Step up to professional tools</h4>
+                <!-- UI修正: ML法やブートストラップの「?」ボタンをプロツール案内パネルのヘッダーへ移動 -->
+                <h4>🔗 Step up to professional tools 
+                    <button class="rationale-btn" style="background:#8e44ad; margin-left: auto;" onclick="toggleRationale('rat_advanced')" title="ML法やブートストラップは？">?</button>
+                </h4>
+                <div id="rat_advanced" class="rationale-text" style="border-color:#8e44ad; background:#f5eef8; color:#5b2c6f; margin-top:0; margin-bottom:5px;">
+                    <strong>【根拠：ML法やブートストラップはこのアプリにはありません】</strong><br>
+                    最尤法(ML法)やブートストラップは、膨大な確率計算を何万回も繰り返して「最もありそうな木」を探すため、手動でステップを確認するこのツールには不向きです。これらはプロ用ソフト(MEGA)の仕事です。
+                </div>
                 <p>より高度な解析（進化モデルを考慮したML法、信頼性を担保するブートストラップ等）が必要になったら、世界標準の解析ソフト<b>「MEGA」</b>を使いましょう。ここで学んだ基礎が役立ちます。</p>
             </div>
         </div>
@@ -227,7 +240,7 @@
 
 </div>
 
-<div class="footer">&copy; 2026 Bio-Edu Suite v2.3 | For Professional Bioinformatics Education</div>
+<div class="footer">&copy; 2026 Bio-Edu Suite v2.5 | For Professional Bioinformatics Education</div>
 
 <script>
     function toggleRationale(id) {
@@ -261,9 +274,9 @@
         
         panel.style.display = 'block';
         if (algo === 'UPGMA') {
-            text.innerHTML = `<strong>UPGMA法:</strong> すべての生物が「同じスピードで進化した」と仮定しています。そのため、分岐点（ノード）から現在の生物（葉）までの<strong>枝の長さ（横方向の距離）がすべて同じ</strong>になります。左下のスケールバー（10 Mismatch = 10%の塩基の違い）と横幅を比較することで、分岐したのがどれくらい昔かを直感的に読み取れます。`;
+            text.innerHTML = `<strong>UPGMA法:</strong> すべての生物が「同じスピードで進化した」と仮定しています。そのため、分岐点（ノード）から現在の生物（葉）までの<strong>枝の長さ（横方向の距離）がすべて同じ</strong>になります。左下のスケールバー（10 Mismatch = 10%の塩基・アミノ酸の違い）と横幅を比較することで、分岐したのがどれくらい昔かを直感的に読み取れます。`;
         } else {
-            text.innerHTML = `<strong>NJ法:</strong> 生物ごとに「進化のスピードが異なる」ことを考慮して計算しています。そのため、UPGMA法とは異なり、<strong>現在の生物（葉）の右端が揃わず、枝の長さがバラバラ</strong>になります。横に長く伸びている枝ほど、その生物系統で多くの突然変異（塩基置換）が蓄積したことを示しています。`;
+            text.innerHTML = `<strong>NJ法:</strong> 生物ごとに「進化のスピードが異なる」ことを考慮して計算しています。そのため、UPGMA法とは異なり、<strong>現在の生物（葉）の右端が揃わず、枝の長さがバラバラ</strong>になります。横に長く伸びている枝ほど、その生物系統で多くの突然変異（塩基置換やアミノ酸置換）が蓄積したことを示しています。`;
         }
     }
 
@@ -293,7 +306,7 @@
         let seqs = []; let name = "", seq = "";
         lines.forEach(l => {
             if(l.startsWith('>')) { if(name) seqs.push({name, seq}); name = l.substring(1).trim(); seq = ""; }
-            else seq += l.toUpperCase().replace(/[^ATGC-]/g, '');
+            else seq += l.toUpperCase().replace(/[^A-Z-]/g, '');
         });
         if(name) seqs.push({name, seq});
 
