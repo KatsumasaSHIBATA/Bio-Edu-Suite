@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNA Alignment & Editing Studio v3.13 | Bio-Edu Suite</title>
+    <title>DNA Alignment & Editing Studio v3.14 | Bio-Edu Suite</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         /* 画面の固定を解除し、下まで自然にスクロールできるように変更 */
@@ -159,7 +159,7 @@
         }
 
         /* トースト通知 */
-        #toast { visibility: hidden; min-width: 250px; background-color: #27ae60; color: #fff; text-align: center; border-radius: 4px; padding: 12px 20px; position: fixed; z-index: 1000; left: 50%; bottom: 50px; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); transform: translateX(-50%); opacity: 0; transition: opacity 0.3s, bottom 0.3s; }
+        #toast { visibility: hidden; min-width: 250px; background-color: #27ae60; color: #fff; text-align: center; border-radius: 4px; padding: 12px 20px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); transform: translateX(-50%); opacity: 0; transition: opacity 0.3s, bottom 0.3s; }
         #toast.show { visibility: visible; opacity: 1; bottom: 70px; /* ステータスバーを避けるために少し高く表示 */ }
         
         /* 💡追加機能用CSS: ドラッグ＆ドロップとチェックボックス */
@@ -175,7 +175,7 @@
     <div class="header">
         <h1>🧬 DNA Alignment Studio</h1>
         <p>Bio-Edu Suite: Sequence Curation & Pipeline Hub</p>
-        <div class="version-badge">v3.13</div>
+        <div class="version-badge">v3.14</div>
     </div>
 </div>
 
@@ -229,8 +229,8 @@
                 
                 <div class="toolbar-row" id="step2Row" style="transition: opacity 0.3s;">
                     <span class="step-label">2. 両端特定 <button class="rationale-btn" onclick="toggleRationale('rat_step2')" title="なぜPrimerで特定するの？">?</button></span>
-                    <div class="primer-label"><span class="color-box-f"></span> Primer F: <input type="text" id="pF" class="primer-input" value="CCATCCAACATCTCAGCATGATGAAA"></div>
-                    <div class="primer-label"><span class="color-box-r"></span> Primer R: <input type="text" id="pR" class="primer-input" value="CCCCTCAGAATGATATTTGTCCTCA"></div>
+                    <div class="primer-label"><span class="color-box-f"></span> Primer F (5' ➡ 3'): <input type="text" id="pF" class="primer-input" value="CCATCCAACATCTCAGCATGATGAAA"></div>
+                    <div class="primer-label"><span class="color-box-r"></span> Primer R (5' ➡ 3'): <input type="text" id="pR" class="primer-input" value="CCCCTCAGAATGATATTTGTCCTCA"></div>
                     <div class="slider-container">許容率: 
                         <input type="range" id="mismatchSlider" min="0" max="50" value="20" oninput="updateMismatchVal(this.value)">
                         <span id="mismatchVal" style="width: 25px; color: #e74c3c;">20%</span>
@@ -297,7 +297,7 @@
                     </span>
                     <input type="text" id="searchInput" class="primer-input" placeholder="例: ATG または TAA" style="width: 140px; text-transform: uppercase;" oninput="toggleHighlightBtn()" onkeypress="if(event.keyCode===13 && !document.getElementById('btnHighlight').disabled) highlightSearch()">
                     <button class="btn btn-option" id="btnHighlight" style="padding: 4px 8px; font-size: 11px;" onclick="highlightSearch()" disabled>✨ ハイライト</button>
-                    <button class="btn" style="padding: 4px 8px; font-size: 11px;" onclick="clearSearch()">❌ クリア</button>
+                    <button class="btn" id="btnClear" style="padding: 4px 8px; font-size: 11px;" onclick="clearSearch()" disabled>❌ クリア</button>
                 </div>
                 <span style="font-size: 10px; color: #7f8c8d; line-height: 1.4;">※開始コドン(ATG)や終止コドン(TAA等)、制限酵素部位を検索できます。ギャップ(-)は無視されます。</span>
             </div>
@@ -369,7 +369,7 @@
 </div>
 
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v3.13 | Sequence Curation & Pipeline Hub
+    &copy; 2026 Bio-Edu Suite v3.14 | Sequence Curation & Pipeline Hub
 </div>
 
 <!-- トースト通知 -->
@@ -491,7 +491,9 @@
     // --- 💡 検索ボタンの活性化ロジック ---
     function toggleHighlightBtn() {
         const val = document.getElementById('searchInput').value.trim();
-        document.getElementById('btnHighlight').disabled = (val.length === 0);
+        const isDisabled = (val.length === 0);
+        document.getElementById('btnHighlight').disabled = isDisabled;
+        document.getElementById('btnClear').disabled = isDisabled;
     }
 
     function updateMismatchVal(val) { document.getElementById('mismatchVal').innerText = val + '%'; }
