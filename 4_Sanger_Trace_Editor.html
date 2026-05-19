@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sanger Trace Editor v1.0 | Bio-Edu Suite</title>
+    <title>Sanger Trace Editor v1.6 | Bio-Edu Suite</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         
@@ -33,7 +33,7 @@
         .toolbar-row { display: flex; width: 100%; gap: 15px; align-items: center; flex-wrap: wrap; }
         .step-label { font-size: 13px; font-weight: bold; color: #e67e22; min-width: 80px; display: flex; align-items: center; }
 
-        /* 追記: justify-content: center; を追加しモバイル時のボタンテキスト左寄りを防止 */
+        /* justify-content: center; を追加しモバイル時のボタンテキスト左寄りを防止 */
         .btn { background: #fdfefe; border: 1px solid #bdc3c7; padding: 6px 12px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 5px; border-radius: 4px; font-weight: bold; transition: all 0.2s; color: #2c3e50; white-space: nowrap; }
         .btn:hover:not(:disabled) { background: #eaf2f8; border-color: #3498db; color: #2980b9; }
         .btn:disabled { color: #a0a0a0; cursor: not-allowed; background: #f4f6f6; border-color: #dcdde1; opacity: 0.7; }
@@ -43,31 +43,35 @@
         .btn-success { background: #27ae60; color: white; border-color: #1e8449; }
         .btn-success:hover:not(:disabled) { background: #219150; color: white; }
         
+        /* 追記: アプリ⑤共通UI (btn-option, primer-input) */
+        .btn-option { background: #8e44ad; color: white; border-color: #732d91; font-size: 11px; padding: 6px 12px; }
+        .btn-option:hover:not(:disabled) { background: #732d91; color: white; box-shadow: 0 2px 5px rgba(142,68,173,0.4); }
+        .primer-input { padding: 5px 8px; font-family: monospace; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 12px; width: 140px; background: #fafafa; }
+        .primer-input:focus { outline: none; border-color: #3498db; background: #fff; box-shadow: 0 0 3px rgba(52,152,219,0.3); }
+
         .divider { width: 1px; height: 24px; background: #dcdde1; margin: 0 5px; }
 
         .slider-group { display: flex; align-items: center; gap: 8px; background: #f8f9f9; padding: 6px 12px; border-radius: 4px; border: 1px solid #dcdde1; font-size: 11px; font-weight: bold; color: #34495e; }
         input[type=range] { width: 80px; cursor: pointer; }
-        
-        .search-input { padding: 6px 10px; font-family: monospace; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 12px; width: 180px; text-transform: uppercase;}
-        .search-input:focus { outline: none; border-color: #3498db; box-shadow: 0 0 3px rgba(52,152,219,0.3); }
 
         /* ドラッグ＆ドロップエリア */
-        .drop-zone { border: 2px dashed #bdc3c7; border-radius: 6px; padding: 20px; text-align: center; background: #fafbfc; transition: 0.2s; cursor: pointer; }
+        /* 💡変更: アプリ⑤に合わせて高さをコンパクトにし、文言やフォントサイズを統一 */
+        .drop-zone { border: 2px dashed #bdc3c7; border-radius: 6px; padding: 12px 20px; text-align: center; background: #fafbfc; transition: 0.2s; cursor: pointer; flex: 1; max-width: 450px; display: flex; flex-direction: column; justify-content: center; }
         .drop-zone:hover, .drop-zone.dragover { background: #e8f8f5; border-color: #1abc9c; }
-        .drop-zone p { margin: 0; font-size: 13px; color: #7f8c8d; font-weight: bold; pointer-events: none; }
+        .drop-zone p { margin: 0; font-size: 12px; color: #7f8c8d; font-weight: bold; pointer-events: none;}
 
         /* 現場のコツパネル */
         .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 10px 15px; font-size: 11px; color: #2c3e50; line-height: 1.5; }
         .bench-tip strong { color: #2980b9; font-size: 11px; }
-        .keyboard-hints { background: #fff8e1; padding: 6px 15px; font-size: 11px; color: #d35400; border: 1px solid #f5b041; border-radius: 4px; font-weight: 500; margin-bottom: 5px; }
+        .keyboard-hints { background: #fff8e1; padding: 6px 15px; font-size: 11px; color: #d35400; border: 1px solid #f5b041; border-radius: 4px; font-weight: 500; margin-bottom: 5px; display: flex; justify-content: space-between;}
 
-        /* 追記: アプリ⑤共通のMega Inviteパネル用CSS */
+        /* アプリ⑤共通のMega Inviteパネル用CSS */
         .mega-invite { background: #fff8e1; border: 1px solid #f5b041; padding: 8px 15px; font-size: 11px; color: #7e5109; line-height: 1.5; display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;}
 
         /* 波形ビュアー (Trace Viewer) */
         /* 🚨修正3: スクロール時にキャンバスが潰れないよう min-height を厳密に設定 */
         .trace-card { flex: 1; display: flex; flex-direction: column; min-height: 500px; border-top-color: #9b59b6; }
-        .trace-outer-container { flex: 1; overflow-x: auto; overflow-y: hidden; background: white; border: 1px solid #bdc3c7; position: relative; display: flex; flex-direction: column; min-height: 400px; }
+        .trace-outer-container { flex: 1; overflow-x: auto; overflow-y: hidden; background: white; position: relative; display: flex; flex-direction: column; min-height: 400px; }
         .trace-inner { position: relative; min-height: 100%; min-width: 100%; flex: 1; display: flex; flex-direction: column;}
         
         .bases-layer { position: absolute; top: 0; left: 0; height: 30px; background: rgba(236, 240, 241, 0.8); border-bottom: 1px solid #bdc3c7; width: 100%; z-index: 10; display: flex; }
@@ -79,26 +83,34 @@
         .base-char.selected { background: #3498db; color: #fff !important; box-shadow: 0 0 0 2px #2980b9; z-index: 20;}
         .base-char.deleted { text-decoration: line-through; color: #95a5a6 !important; opacity: 0.5; }
         .base-char.edited { border-bottom: 3px solid #e74c3c; background: #fadbd8; }
-        .base-char.highlight { background: #f1c40f; color: #2c3e50 !important; }
+        /* 💡検索ハイライト色をアプリ⑤（黄色）に統一 */
+        .base-char.highlight { background: #f1c40f !important; color: #34495e !important; box-shadow: inset 0 0 0 2px #f39c12;}
 
         .c-A { color: #27ae60; } .c-T { color: #e74c3c; } .c-G { color: #2c3e50; } .c-C { color: #2980b9; }
-        /* 追記: IUPAC あいまい塩基用のカラー設定（アクセントパープル） */
+        /* IUPAC あいまい塩基用のカラー設定（アクセントパープル） */
         .c-N, .c-Y, .c-R, .c-W, .c-S, .c-M, .c-K, .c-B, .c-V, .c-D, .c-H, .c-U { color: #8e44ad; }
+
+        /* 💡追記: アプリ⑤共通のトースト通知UI */
+        #toast { visibility: hidden; min-width: 250px; background-color: #27ae60; color: #fff; text-align: center; border-radius: 4px; padding: 12px 20px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); transform: translateX(-50%); opacity: 0; transition: opacity 0.3s, bottom 0.3s; }
+        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
 
         .status-bar { background: #2c3e50; color: white; padding: 8px 20px; font-size: 12px; display: flex; justify-content: space-between; font-weight: 600; letter-spacing: 0.5px; z-index: 30; flex-shrink: 0; margin-top: auto;}
         .footer { background: #1a252f; padding: 10px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; flex-shrink: 0; }
         
         input[type="file"] { display: none; }
 
-        /* 追記: スマホ最適化 (Mobile Optimization) */
+        /* スマホ最適化 (Mobile Optimization) */
         @media screen and (max-width: 900px) {
             .main-content { padding: 10px; }
             .toolbar-row { flex-direction: column; align-items: stretch; gap: 8px; }
-            .btn, .search-input { width: 100% !important; justify-content: center; }
+            .btn, .primer-input { width: 100% !important; justify-content: center; }
             .header h1 { font-size: 16px; margin-right: 40px; }
             .version-badge { top: 10px; right: 10px; padding: 2px 6px; }
             .mega-invite { display: block; padding: 12px; line-height: 1.6; }
             .mega-invite strong { display: block; margin-bottom: 6px; font-size: 12px; }
+            /* アプリ⑤風エディタツールバーの分割 */
+            .editor-toolbar { padding: 10px !important; }
+            .editor-toolbar > div:nth-child(2) { border-left: none !important; padding-left: 0 !important; border-top: 1px dashed #bdc3c7; padding-top: 8px; margin-top: 5px; width: 100%; }
         }
     </style>
 </head>
@@ -108,7 +120,7 @@
     <div class="header">
         <h1>🧬 Sanger Trace Editor</h1>
         <p>Bio-Edu Suite: AB1 Binary Parsing, Trace Visualization & Curation</p>
-        <div class="version-badge">v1.0</div>
+        <div class="version-badge">v1.6</div>
     </div>
 </div>
 
@@ -120,21 +132,24 @@
             
             <div id="rat_ab1" class="rationale-text">
                 <strong>【根拠：なぜ波形（.ab1）を直接見るのか？】</strong><br>
-                <!-- 修正: DNA -> 核酸 (DNA/RNA) -->
                 シーケンサーは核酸 (DNA/RNA)の末端に付いた「4色の蛍光色素」をカメラで読み取り、波形(Trace)として出力します。機械が自動で波形から塩基（A,T,G,C）を判定しますが、波形が乱れた場所では間違えたり「N（判読不能）」と判定したりします。<br>
                 <strong>「機械を100%信用せず、生データ（波形）を人間の目で確認して手動で修正(キュレーション)する」</strong>のが、論文を書くための絶対条件です。
             </div>
-            <div id="rat_trim" class="rationale-text">
-                <strong>【根拠：なぜノイズカットが必要か？】</strong><br>
-                サンガーシーケンスの原理上、反応の最初（0〜50塩基付近）と最後（800塩基以降）は必ず波形が乱れ、ノイズだらけになります。自分がPCRで使った「プライマー配列」を検索して見つけ出し、<strong>プライマーより外側のノイズ領域は全て削除する（トリミング）</strong>のが鉄則です。
+            <!-- 💡追記: FASTA出力の根拠を追加 -->
+            <div id="rat_export" class="rationale-text">
+                <strong>【根拠：なぜFASTA形式で保存するのか？】</strong><br>
+                FASTA形式は、配列データをコンピューターで扱うための世界標準フォーマットです。多重整列（MSA）やBLAST検索など、次のステップの解析ソフト（アプリ⑤等）へデータを引き継ぐために使用します。
             </div>
 
-            <div class="toolbar-row">
-                <span class="step-label">1. データ読込 <button class="rationale-btn" onclick="toggleRationale('rat_ab1')" title="波形を見る意味は？">?</button></span>
+            <!-- 💡変更: アプリ⑤と同じツールバーの構造・レイアウトを採用 -->
+            <div class="toolbar-row" style="align-items: stretch;">
+                <span class="step-label" style="display: flex; align-items: center;">1. データ読込 <button class="rationale-btn" onclick="toggleRationale('rat_ab1')" title="波形を見る意味は？">?</button></span>
                 
-                <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-                    <p>📂 ここをクリック、または <b>.ab1 ファイル</b> をドラッグ＆ドロップ</p>
-                    <input type="file" id="fileInput" accept=".ab1" onchange="handleFileSelect(event)">
+                <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px; flex: 1;">
+                    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" style="margin: 0; min-width: 180px; padding: 8px 15px;">
+                        <p>📂 生データ(.ab1) をドラッグ＆ドロップ</p>
+                        <input type="file" id="fileInput" accept=".ab1" onchange="handleFileSelect(event)">
+                    </div>
                 </div>
             </div>
 
@@ -148,20 +163,13 @@
                 </div>
             </div>
             
+            <!-- 💡変更: 保存機能のUIをアプリ⑤ライクに進化（間延び防止とRationale追加） -->
             <div class="toolbar-row">
-                <span class="step-label">3. 検索＆カット <button class="rationale-btn" onclick="toggleRationale('rat_trim')" title="なぜカットするの？">?</button></span>
-                <input type="text" id="searchInput" class="search-input" placeholder="プライマー配列等を入力..." disabled>
-                <button class="btn" id="btnSearch" onclick="searchSequence()" disabled>🔍 検索 (黄色ハイライト)</button>
-                
-                <div class="divider"></div>
-                
-                <button class="btn" id="btnTrimLeft" onclick="trimLeft()" disabled>✂️ 選択位置より左側を一括削除</button>
-                <button class="btn" id="btnTrimRight" onclick="trimRight()" disabled>✂️ 選択位置より右側を一括削除</button>
-            </div>
-            
-            <div class="toolbar-row">
-                <span class="step-label">4. FASTA出力</span>
-                <button class="btn btn-success" id="btnExport" onclick="exportFasta()" disabled>💾 手動補正後の配列をFASTAで保存</button>
+                <span class="step-label">3. 保存 <button class="rationale-btn" onclick="toggleRationale('rat_export')" title="FASTA出力の理由は？">?</button></span>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; flex: 1; max-width: 450px;">
+                    <button class="btn btn-success" id="btnExport" onclick="exportFasta()" disabled style="flex: 1; min-width: 160px;">💾 FASTA形式で出力</button>
+                    <button class="btn" id="btnCopyFasta" onclick="copyFasta()" disabled style="flex: 1; min-width: 160px;">📋 FASTA形式でコピー</button>
+                </div>
             </div>
         </div>
     </div>
@@ -169,20 +177,65 @@
     <div class="card trace-card">
         <div class="card-header">📊 波形ビュアー (Trace Curation)</div>
         
-        <div class="bench-tip">
-            <strong>💡 現場のコツ（一括カットの使い方）</strong><br>
-            ・検索で見つけたPrimer Fの先頭をクリックし、「✂️ 左側を一括削除」を押すと、それより前のノイズがすべて消えます。<br>
-            ・同様に、Primer Rの末尾をクリックし、「✂️ 右側を一括削除」を押すと、それ以降のノイズがすべて消えます。
+        <!-- アプリ⑤のエディタツールバーを導入（検索＆手動カットを統合） -->
+        <div class="editor-toolbar" style="padding: 8px 15px; background: #ecf0f1; border-bottom: 1px solid #bdc3c7; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+            
+            <!-- 左側：検索機能 -->
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+                <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
+                    <span style="font-size: 12px; font-weight: bold; color: #34495e; display: flex; align-items: center;">
+                        🔍 配列・モチーフ検索
+                        <button class="rationale-btn" onclick="toggleRationale('rat_motif')" title="配列検索とは？" style="margin-right: 5px;">?</button>
+                    </span>
+                    <input type="text" id="searchInput" class="primer-input" placeholder="例: ATG または TAA" style="width: 140px; text-transform: uppercase;" onkeypress="if(event.keyCode===13) searchSequence()" disabled>
+                    <button class="btn btn-option" id="btnSearch" style="padding: 4px 8px; font-size: 11px;" onclick="searchSequence()" disabled>✨ ハイライト</button>
+                    <button class="btn" id="btnClearSearch" style="padding: 4px 8px; font-size: 11px;" onclick="clearSearch()" disabled>❌ クリア</button>
+                </div>
+                <span style="font-size: 10px; color: #7f8c8d; line-height: 1.4;">※プライマー配列等を検索し、黄色くハイライトします。</span>
+            </div>
+
+            <!-- 右側：手動カットとヒントトグル -->
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; border-left: 2px solid #bdc3c7; padding-left: 10px;">
+                <span style="font-size: 12px; font-weight: bold; color: #c0392b; display: flex; align-items: center;">
+                    ✂️ 手動カット
+                    <button class="rationale-btn" onclick="toggleRationale('rat_step3')" title="なぜカットするの？" style="background: #e74c3c; margin-right: 5px;">?</button>
+                </span>
+                <button class="btn" id="btnTrimLeft" onclick="trimLeft()" disabled style="color: #c0392b; border-color: #e6b0aa;">◀ 選択位置より左を削除</button>
+                <button class="btn" id="btnTrimRight" onclick="trimRight()" disabled style="color: #c0392b; border-color: #e6b0aa;">選択位置より右を削除 ▶</button>
+                
+                <div style="width: 1px; height: 24px; background: #bdc3c7; margin: 0 5px;"></div>
+                <!-- スッキリ化のためのヒント展開ボタン -->
+                <button class="btn" id="btnToggleHints" onclick="toggleHints()" style="font-size: 11px; background: #fef9e7; border-color: #f39c12; color: #d35400;">💡 操作ヒントを開く</button>
+            </div>
         </div>
 
-        <div class="keyboard-hints">
-            <span>【手動キュレーション】 塩基をクリックして選択 ➡ 波形の青い縦線を確認 ➡ <b>[A/T/G/C/N]キー</b>で修正 ｜ <b>[Backspace]</b>で削除 ｜ <b>[←][→]</b>で移動</span>
+        <!-- ツールバー用のRationaleパネル -->
+        <div id="rat_motif" class="rationale-text" style="margin: 0; border-radius: 0; border-left: none; border-right: none; background: #fef9e7; border-bottom: 1px solid #f39c12;">
+            <strong>【根拠：なぜ波形の中で配列を検索するのか？】</strong><br>
+            自分がPCRで使った「プライマー配列」を検索して見つけ出し、そこから外側がノイズであることを特定するためです。また、開始コドンや制限酵素部位など、特定の配列が正しく読まれているか確認する際にも役立ちます。
         </div>
-        <!-- 追記: IUPAC あいまい塩基の説明パネル（UIのトーン＆マナーに準拠） -->
-        <div class="bench-tip" style="border-radius: 0; border-left: none; border-top: none; background: #fdfefe; margin-top: -2px;">
-            <strong>💡 あいまい塩基（IUPACコード）の表示・編集対応</strong><br>
-            波形が重なった場合に現れる「あいまい塩基」も、紫色の文字として正確に表示・入力可能です。<br>
-            <span style="color:#7f8c8d; font-size:10px;">代表的なコード: <strong>Y</strong> (ピリミジン: CかT), <strong>R</strong> (プリン: AかG), <strong>N</strong> (不明な塩基), <strong>W</strong> (AかT), <strong>S</strong> (CかG), <strong>M</strong> (AかC), <strong>K</strong> (GかT)</span>
+        <div id="rat_step3" class="rationale-text" style="margin: 0; border-radius: 0; border-left: none; border-right: none; background: #fef9e7; border-bottom: 1px solid #f39c12;">
+            <strong>【根拠：なぜノイズカットが必要か？】</strong><br>
+            サンガーシーケンスの原理上、反応の最初（0〜50塩基付近）と最後（800塩基以降）は必ず波形が乱れ、ノイズだらけになります。検索で見つけたプライマー等の位置を基準に、<strong>外側のノイズ領域は全て削除する（トリミング）</strong>のが鉄則です。
+        </div>
+
+        <!-- 情報過多を防ぐためのアコーディオン（開閉式）エリア -->
+        <div id="editorHintsArea" style="display: none;">
+            <div class="bench-tip" style="border-radius: 0; border-left: none; border-top: none; border-bottom: 1px solid #dcdde1; margin: 0;">
+                <strong>💡 現場のコツ（一括カットの使い方）</strong><br>
+                ・検索で見つけた配列の先頭をクリックし、「✂️ 左を削除」を押すと、それより前のノイズがすべて消えます。<br>
+                ・同様に、配列の末尾をクリックし、「✂️ 右を削除」を押すと、それ以降のノイズがすべて消えます。
+            </div>
+
+            <div class="keyboard-hints" style="border-radius: 0; border-left: none; border-right: none; margin: 0; border-bottom: 1px solid #f5b041;">
+                <span>【手動編集】 塩基をクリックして選択 ➡ 波形の縦線を確認 ➡ <b>[A/T/G/C/N]等</b>で修正 ｜ <b>[Backspace]</b>で削除 ｜ <b>[←][→]</b>で移動</span>
+            </div>
+            
+            <div class="bench-tip" style="border-radius: 0; border-left: none; border-top: none; background: #fdfefe; margin: 0; border-bottom: 1px solid #dcdde1;">
+                <strong>💡 あいまい塩基（IUPACコード）の表示・編集対応</strong><br>
+                波形が重なった場合に現れる「あいまい塩基」も、紫色の文字として正確に表示・入力可能です。<br>
+                <span style="color:#7f8c8d; font-size:10px;">代表的なコード: <strong>Y</strong> (ピリミジン: CかT), <strong>R</strong> (プリン: AかG), <strong>N</strong> (不明な塩基), <strong>W</strong> (AかT), <strong>S</strong> (CかG), <strong>M</strong> (AかC), <strong>K</strong> (GかT)</span>
+            </div>
         </div>
 
         <div class="trace-outer-container" id="traceContainer">
@@ -193,7 +246,7 @@
         </div>
     </div>
 
-    <!-- 追記: プロツールへの誘導（Mega Invite パネル） -->
+    <!-- プロツールへの誘導（Mega Invite パネル） -->
     <div class="mega-invite">
         <strong style="white-space: nowrap; flex-shrink: 0;">🔗 Step up to professional tools:</strong>
         <span>本当の研究で大量の波形データを扱う場合や、より高度な波形解析（ヘテロ接合の自動判定など）を行うには、このアプリの簡易機能ではなく、<b>「SnapGene」</b>や<b>「FinchTV」</b>などのプロフェッショナル向け波形ビューアソフトウェアを使いましょう。</span>
@@ -206,8 +259,11 @@
 </div>
 
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v1.0 | Developed for Bioinformatics & Wet-Lab Education
+    &copy; 2026 Bio-Edu Suite v1.6 | Developed for Bioinformatics & Wet-Lab Education
 </div>
+
+<!-- 💡追加: アプリ⑤共通のトースト通知 -->
+<div id="toast">メッセージ</div>
 
 <script>
     function toggleRationale(id) {
@@ -217,6 +273,23 @@
         } else {
             document.querySelectorAll('.rationale-text').forEach(e => e.style.display = 'none');
             el.style.display = 'block';
+        }
+    }
+    
+    // 💡 ヒントの開閉ロジック
+    function toggleHints() {
+        const el = document.getElementById('editorHintsArea');
+        const btn = document.getElementById('btnToggleHints');
+        if (el.style.display === 'none') {
+            el.style.display = 'block';
+            btn.innerHTML = '💡 操作ヒントを閉じる';
+            btn.style.background = '#f39c12';
+            btn.style.color = '#fff';
+        } else {
+            el.style.display = 'none';
+            btn.innerHTML = '💡 操作ヒントを開く';
+            btn.style.background = '#fef9e7';
+            btn.style.color = '#d35400';
         }
     }
 
@@ -262,14 +335,17 @@
                 document.getElementById('statusText').innerText = "解析完了。波形を確認し、[A/T/G/C]や[Backspace]キーでキュレーションを行ってください。";
                 document.getElementById('fileInfoText').innerText = `File: ${currentFileName}`;
                 
-                // UIアンロック
+                // UIアンロック (アプリ⑤統一のボタン追加)
                 document.getElementById('scaleX').disabled = false;
                 document.getElementById('scaleY').disabled = false;
                 document.getElementById('searchInput').disabled = false;
                 document.getElementById('btnSearch').disabled = false;
+                document.getElementById('btnClearSearch').disabled = false;
                 document.getElementById('btnTrimLeft').disabled = false;
                 document.getElementById('btnTrimRight').disabled = false;
                 document.getElementById('btnExport').disabled = false;
+                // 💡追記: コピーボタンのアンロック
+                document.getElementById('btnCopyFasta').disabled = false;
 
                 selectedBaseIndex = -1;
                 redrawAll();
@@ -496,7 +572,6 @@
             baseObj.isDeleted = !baseObj.isDeleted; 
             if(baseObj.isDeleted) selectedBaseIndex = Math.min(ab1Data.bases.length - 1, selectedBaseIndex + 1);
             prevent = true;
-        /* 追記: IUPAC あいまい塩基のキー入力受付を追加 */
         } else if (['A','T','G','C','U','N','Y','R','W','S','M','K','B','V','D','H'].includes(key)) {
             baseObj.char = key;
             baseObj.isEdited = true;
@@ -511,12 +586,14 @@
         }
     });
 
-    // --- 検索機能 ---
+    // --- 💡検索機能 (ハイライト) ---
     function searchSequence() {
         if(!ab1Data) return;
-        /* 追記: 検索時の正規表現バリデーションを IUPAC あいまい塩基コードに対応 */
         let query = document.getElementById('searchInput').value.toUpperCase().replace(/[^ATGCUNYRWSMKBVDH]/g, '');
-        if(!query) return;
+        if(!query) {
+            clearSearch();
+            return;
+        }
 
         ab1Data.bases.forEach(b => b.isHighlight = false);
 
@@ -540,6 +617,15 @@
         } else {
             alert("指定された配列が見つかりません。");
         }
+        redrawAll();
+    }
+    
+    function clearSearch() {
+        document.getElementById('searchInput').value = '';
+        if(!ab1Data) return;
+        ab1Data.bases.forEach(b => b.isHighlight = false);
+        redrawAll();
+        document.getElementById('statusText').innerText = "検索ハイライトをクリアしました。";
     }
 
     // --- 一括カット機能 ---
@@ -567,7 +653,33 @@
         document.getElementById('statusText').innerText = "選択位置より右側の領域を一括削除しました。";
     }
 
-    // --- FASTA出力 ---
+    // --- 💡FASTA出力・コピー・トースト機能の統合 ---
+    function showToast(msg) {
+        const toast = document.getElementById("toast");
+        toast.innerText = msg;
+        toast.className = "show";
+        setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+    }
+
+    function copyToClipboardFallback(text, successMessage) {
+        if(text === "") { alert("対象が選択されていません"); return; }
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            showToast(successMessage);
+        } catch (err) {
+            console.error('Fallback: Oops, unable to copy', err);
+            alert("コピーに失敗しました。");
+        }
+        document.body.removeChild(textArea);
+    }
+
     function exportFasta() {
         if(!ab1Data) return;
         let seqStr = "";
@@ -584,6 +696,22 @@
         a.click();
         
         document.getElementById('statusText').innerText = `FASTAファイルを保存しました！このデータを Alignment Studio に入れて解析を進めましょう。`;
+        showToast("FASTAファイルを保存しました");
+    }
+
+    function copyFasta() {
+        if(!ab1Data) return;
+        let seqStr = "";
+        ab1Data.bases.forEach(b => {
+            if(!b.isDeleted) seqStr += b.char;
+        });
+        
+        let headerName = currentFileName.replace(/\.ab1$/i, '_curated');
+        let output = `>${headerName}\n${seqStr}\n`;
+        
+        document.getElementById('statusText').innerText = `クリップボードにコピーしました！このデータを Alignment Studio に貼り付けて解析を進めましょう。`;
+        // 💡修正: 「一括」という言葉を削除
+        copyToClipboardFallback(output.trim(), "FASTA形式でコピーしました");
     }
 </script>
 
