@@ -28,7 +28,9 @@
         .card-body { padding: 15px; display: flex; flex-direction: column; gap: 12px; }
 
         .toolbar-row { display: flex; width: 100%; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
-        .step-label { font-size: 13px; font-weight: bold; color: #e67e22; min-width: 100px; display: flex; align-items: center; padding-top: 5px; }
+        
+        /* 💡 パッチ適用箇所: 見出しの色をスクショに合わせて落ち着いたグレー(#2c3e50)に変更 */
+        .step-label { font-size: 13px; font-weight: bold; color: #2c3e50; min-width: 100px; display: flex; align-items: center; padding-top: 5px; }
         
         .primer-input { padding: 8px 10px; font-family: monospace; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 13px; background: #fafafa; outline: none; transition: 0.2s; font-weight: bold; width: 100%; }
         .primer-input:focus { border-color: #3498db; box-shadow: 0 0 3px rgba(52,152,219,0.3); background: #fff; }
@@ -65,7 +67,9 @@
         .viewer-controls .btn:active { transform: translateY(3px); box-shadow: none; }
 
         .sequence-card { border-top-color: #e67e22; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .sequence-header { background: #d35400; color: white; padding: 10px 15px; font-size: 13px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        
+        /* 💡 パッチ適用箇所: 1D配列パネルのヘッダー背景色を紺色に統一 */
+        .sequence-header { background: #34495e; color: white; padding: 10px 15px; font-size: 13px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
         .sequence-body { padding: 15px; max-height: 220px; overflow-y: auto; background: #fff; font-family: 'Courier New', Courier, monospace; font-size: 15px; line-height: 1.8; word-wrap: break-word; user-select: none; }
         
         .aa-letter { display: inline-block; width: 16px; text-align: center; cursor: pointer; border-radius: 2px; }
@@ -156,9 +160,10 @@
                 
                 <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
                     <p>📂 ここをクリック、または PDB/CIFデータ をドラッグ＆ドロップ</p>
-                    <span>※コピーしたテキストデータの直接貼り付け (Ctrl+V) にも対応</span>
                     <input type="file" id="fileInput" accept=".pdb,.cif,.txt" style="display:none;" onchange="handleFileSelect(event)">
                 </div>
+                
+                <textarea id="pasteArea" class="primer-input" style="width: 100%; height: 80px; resize: vertical; font-size: 11px; font-family: monospace; background: #fafbfc; border: 1px dashed #bdc3c7;" placeholder="※コピーしたテキストデータ (PDB/CIF 等) をここに直接貼り付け (Ctrl+V) てください"></textarea>
 
             </div>
         </div>
@@ -215,7 +220,6 @@
                     <button class="btn" onclick="setStyleMode('sphere')">空間充填モデル</button>
                 </div>
                 
-                <!-- 💡 パッチ適用箇所: AlphaFold読み込み時に動的に表示される案内と本家リンク -->
                 <div id="af_info_panel" style="display:none; margin-top:10px; padding:10px; background:#f4ecf7; border:1px solid #9b59b6; border-radius:4px; font-size:12px; color:#512e5f; line-height:1.5;">
                     ⚠️ より高度な <strong>CATH分類 (ドメイン)</strong> や <strong>AlphaMissense (病原性予測)</strong> 等を確認したい場合は、本家の AlphaFold Database をご参照ください。<br>
                     <button class="btn" onclick="openAFDB()" style="margin-top:8px; width:100%; background:#fff; border-color:#9b59b6; color:#8e44ad; font-weight:bold;">↗️ 本家 AlphaFold DB を開く</button>
@@ -228,7 +232,7 @@
 
     <div class="right-panel">
         <div class="card viewer-card">
-            <div class="card-header" style="background:#8e44ad; display:flex; justify-content:space-between; align-items:center;">
+            <div class="card-header" style="background:#34495e; display:flex; justify-content:space-between; align-items:center;">
                 <span>🧬 3D Protein Viewer</span>
                 <span id="dataInfo" style="font-size:12px; font-weight:bold; color:#f1c40f;">READY: データを読み込んでください</span>
             </div>
@@ -371,9 +375,10 @@
             if (e.dataTransfer.files.length) handleFileObj(e.dataTransfer.files[0]);
         });
 
+        // 💡 パッチ適用箇所: テキストエリアからのペーストにも対応
         document.addEventListener('paste', (e) => {
             const tagName = e.target.tagName.toLowerCase();
-            if(tagName === 'input' || tagName === 'textarea') return;
+            if(tagName === 'input') return; // 通常のinputは除外
 
             const text = (e.clipboardData || window.clipboardData).getData('text');
             if(text && text.length > 50) {
@@ -413,7 +418,7 @@
         currentStyleMode = colorStyle;
         hiddenChains.clear();
 
-        // 💡 パッチ適用箇所: AFデータの場合のみ、本家への誘導案内パネルを表示
+        // AFデータの場合のみ、本家への誘導案内パネルを表示
         if (isAF) {
             document.getElementById('af_info_panel').style.display = 'block';
         } else {
@@ -481,19 +486,32 @@
             viewer.setStyle({chain: c}, {hide: true});
         });
 
+        /* 💡 パッチ適用箇所: 非表示の鎖にはハイライトを残さないようバグを修正 */
         selectedResidues.forEach(sel => {
-            if (sel.chain && hiddenChains.has(sel.chain)) return;
-            let s = {resi: sel.resi};
-            if(sel.chain && sel.chain !== "undefined") s.chain = sel.chain;
-            
             let highlightStyle = {cartoon: {color: 'red'}, stick: {color: 'red', radius: 0.5}, sphere: {scale: 1.1, color: 'red'}};
             if (currentStyleMode === 'sphere') {
                 highlightStyle = {sphere: {color: 'red'}}; 
             }
-            viewer.setStyle(s, highlightStyle);
-            
-            if(showLabels) {
-                viewer.addLabel(`Res:${sel.resi}`, {backgroundColor: 'red', fontColor: 'white'}, Object.assign({}, s, {atom: "CA"}));
+
+            if (!sel.chain || sel.chain === "undefined") {
+                // 入力窓からの指定（鎖情報なし）の場合、表示中の鎖のみに適用する
+                let visibleChains = window.allAvailableChains ? window.allAvailableChains.filter(c => !hiddenChains.has(c)) : [];
+                visibleChains.forEach(c => {
+                    let s = {resi: sel.resi, chain: c};
+                    viewer.setStyle(s, highlightStyle);
+                    if(showLabels) {
+                        viewer.addLabel(`Res:${sel.resi}`, {backgroundColor: 'red', fontColor: 'white'}, Object.assign({}, s, {atom: "CA"}));
+                    }
+                });
+            } else {
+                // 1D配列（鎖情報あり）からの指定の場合、その鎖が非表示なら描画しない
+                if (hiddenChains.has(sel.chain)) return;
+                
+                let s = {resi: sel.resi, chain: sel.chain};
+                viewer.setStyle(s, highlightStyle);
+                if(showLabels) {
+                    viewer.addLabel(`Res:${sel.resi}`, {backgroundColor: 'red', fontColor: 'white'}, Object.assign({}, s, {atom: "CA"}));
+                }
             }
         });
 
