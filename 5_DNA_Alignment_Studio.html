@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNA Alignment & Editing Studio v3.12 | Bio-Edu Suite</title>
+    <title>DNA Alignment & Editing Studio v3.13 | Bio-Edu Suite</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         /* 画面の固定を解除し、下まで自然にスクロールできるように変更 */
@@ -30,7 +30,7 @@
 
         /* ツールバー */
         .toolbar-row { display: flex; width: 100%; gap: 12px; align-items: center; flex-wrap: wrap; }
-        /* 💡 修正ポイント: ステップラベルの文字色を他アプリと同じグレーに統一 */
+        /* 💡 ステップラベルの文字色を他アプリと同じグレーに統一 */
         .step-label { font-size: 13px; font-weight: bold; color: #7f8c8d; min-width: 80px; display: flex; align-items: center; }
 
         .btn { background: #fdfefe; border: 1px solid #bdc3c7; padding: 6px 12px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 5px; border-radius: 4px; font-weight: bold; transition: all 0.2s; color: #2c3e50; white-space: nowrap; justify-content: center; }
@@ -125,7 +125,8 @@
         
         .mega-invite { background: #fff8e1; border: 1px solid #f5b041; padding: 8px 15px; font-size: 11px; color: #7e5109; line-height: 1.5; display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;}
 
-        .status-bar { background: #2c3e50; color: white; padding: 8px 20px; font-size: 12px; display: flex; justify-content: space-between; font-weight: 600; letter-spacing: 0.5px; z-index: 30; flex-shrink: 0; margin-top: auto;}
+        /* 💡 修正ポイント: ステータスバーを画面下部に常時固定（sticky化） */
+        .status-bar { background: #2c3e50; color: white; padding: 8px 20px; font-size: 12px; display: flex; justify-content: space-between; font-weight: 600; letter-spacing: 0.5px; z-index: 40; flex-shrink: 0; margin-top: auto; position: sticky; bottom: 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.2); }
         .footer { background: #1a252f; padding: 10px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; flex-shrink: 0; }
         
         /* 💡追加機能用CSS: 脈動アニメーション、ローダー */
@@ -158,8 +159,8 @@
         }
 
         /* トースト通知 */
-        #toast { visibility: hidden; min-width: 250px; background-color: #27ae60; color: #fff; text-align: center; border-radius: 4px; padding: 12px 20px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); transform: translateX(-50%); opacity: 0; transition: opacity 0.3s, bottom 0.3s; }
-        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+        #toast { visibility: hidden; min-width: 250px; background-color: #27ae60; color: #fff; text-align: center; border-radius: 4px; padding: 12px 20px; position: fixed; z-index: 1000; left: 50%; bottom: 50px; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); transform: translateX(-50%); opacity: 0; transition: opacity 0.3s, bottom 0.3s; }
+        #toast.show { visibility: visible; opacity: 1; bottom: 70px; /* ステータスバーを避けるために少し高く表示 */ }
         
         /* 💡追加機能用CSS: ドラッグ＆ドロップとチェックボックス */
         .drag-handle { cursor: grab; padding: 2px 4px; font-size: 14px; color: #bdc3c7; user-select: none; display: flex; align-items: center; }
@@ -174,7 +175,7 @@
     <div class="header">
         <h1>🧬 DNA Alignment Studio</h1>
         <p>Bio-Edu Suite: Sequence Curation & Pipeline Hub</p>
-        <div class="version-badge">v3.12</div>
+        <div class="version-badge">v3.13</div>
     </div>
 </div>
 
@@ -368,7 +369,7 @@
 </div>
 
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v3.12 | Sequence Curation & Pipeline Hub
+    &copy; 2026 Bio-Edu Suite v3.13 | Sequence Curation & Pipeline Hub
 </div>
 
 <!-- トースト通知 -->
