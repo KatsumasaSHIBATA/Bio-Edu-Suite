@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNA Alignment & Editing Studio v3.0 | Bio-Edu Suite</title>
+    <title>DNA Alignment & Editing Studio v3.9 | Bio-Edu Suite</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         /* 画面の固定を解除し、下まで自然にスクロールできるように変更 */
@@ -67,7 +67,7 @@
         
         .names-column { width: 280px; background: #f8f9f9; border-right: 2px solid #bdc3c7; flex-shrink: 0; z-index: 10; position: sticky; left: 0; box-shadow: 2px 0 5px rgba(0,0,0,0.03); }
         .name-header { height: 32px; background: #eaeded; border-bottom: 1px solid #bdc3c7; display: flex; align-items: center; padding-left: 15px; font-size: 11px; font-weight: bold; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px; }
-        .name-cell { height: 36px; padding: 0 8px; border-bottom: 1px solid #ecf0f1; display: flex; align-items: center; gap: 5px; background: #fff; transition: background 0.2s; }
+        .name-cell { height: 36px; padding: 0 8px; border-bottom: 1px solid #ecf0f1; display: flex; align-items: center; gap: 3px; background: #fff; transition: background 0.2s; }
         .name-cell:hover { background: #fdfefe; }
         .name-cell.primer-row { background: #f0f8ff; border-left: 3px solid #3498db; }
         
@@ -109,6 +109,8 @@
         .primer-r { border-bottom: 3px solid #e74c3c; } 
         .mutation-bg { background-color: #e74c3c !important; color: white !important; font-weight: 900; z-index: 1; }
         .conserved-bg { background-color: #a2d9ce !important; color: #0e6251 !important; font-weight: 900; z-index: 1; }
+        /* 💡 モチーフ検索のハイライト用CSS */
+        .search-bg { background-color: #f1c40f !important; color: #34495e !important; font-weight: 900; z-index: 2; box-shadow: inset 0 0 0 2px #f39c12; }
 
         /* ヘッダー埋め込み型 プライマー設計ナビ */
         .header-primer-stats { display: flex; gap: 15px; font-size: 12px; background: #1a252f; padding: 6px 15px; border-radius: 4px; border-left: 4px solid #8e44ad; transition: opacity 0.2s; align-items: center; box-shadow: inset 0 1px 3px rgba(0,0,0,0.3); opacity: 0; pointer-events: none; flex-wrap: wrap;}
@@ -145,11 +147,24 @@
             .mega-invite strong { display: block; margin-bottom: 6px; font-size: 12px; }
 
             .editor-container { -webkit-overflow-scrolling: touch; }
-            .names-column { width: 120px !important; }
+            .names-column { width: 160px !important; }
             .name-header { font-size: 9px; padding-left: 5px; }
             .seq-name-input { font-size: 10px; }
             .divider { display: none; }
+            
+            /* スマホ時のエディタツールバー分割 */
+            .editor-toolbar > div:nth-child(2) { border-left: none !important; padding-left: 0 !important; border-top: 1px dashed #bdc3c7; padding-top: 8px; margin-top: 5px; width: 100%; }
         }
+
+        /* トースト通知 */
+        #toast { visibility: hidden; min-width: 250px; background-color: #27ae60; color: #fff; text-align: center; border-radius: 4px; padding: 12px 20px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); transform: translateX(-50%); opacity: 0; transition: opacity 0.3s, bottom 0.3s; }
+        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+        
+        /* 💡追加機能用CSS: ドラッグ＆ドロップとチェックボックス */
+        .drag-handle { cursor: grab; padding: 2px 4px; font-size: 14px; color: #bdc3c7; user-select: none; display: flex; align-items: center; }
+        .drag-handle:active { cursor: grabbing; color: #34495e; }
+        .seq-checkbox { margin: 0 2px; cursor: pointer; }
+        .name-cell.drag-over { border-top: 2px dashed #3498db; background: #ebf5fb; }
     </style>
 </head>
 <body>
@@ -158,7 +173,7 @@
     <div class="header">
         <h1>🧬 DNA Alignment Studio</h1>
         <p>Bio-Edu Suite: Sequence Curation & Pipeline Hub</p>
-        <div class="version-badge">v3.0</div>
+        <div class="version-badge">v3.9</div>
     </div>
 </div>
 
@@ -175,12 +190,9 @@
             <div class="card-body">
                 
                 <div id="rat_step2" class="rationale-text">
-                    <strong>【根拠：なぜプライマーで検索するのか？】</strong><br>
-                    サンガーシーケンスで得られた生の核酸 (DNA/RNA)データには、機械の読み取りノイズや不要な配列が両端に大量に含まれています。自分が使った「Primer F/R」をアンカーとして検索し、ノイズを省いた「本当に必要な領域」だけを特定します。
-                </div>
-                <div id="rat_step3" class="rationale-text">
-                    <strong>【根拠：なぜ手動でカットするのか？】</strong><br>
-                    端がガタガタになっている部分を残したまま次の解析に進むと、システムがそれを「存在しない未知の突然変異」として誤認識してしまいます。綺麗にトリミングするのがインシリコ解析の鉄則です。
+                    <strong>【根拠：なぜPrimerで両端を特定するのか？】</strong><br>
+                    サンガーシーケンスで得られた生の核酸 (DNA/RNA)データには、機械の読み取りノイズや不要な配列が両端に大量に含まれています。自分が使った「Primer F/R」をアンカーとして検索し、ノイズを省いた「本当に必要な領域」だけを特定・整列します。<br>
+                    <span style="color: #e74c3c; font-weight: bold;">※開始コドンや制限酵素部位などを探す場合は、下のエディタ内にある「モチーフ・コドン検索」を使用してください。</span>
                 </div>
                 <div id="rat_msa" class="rationale-text">
                     <strong>【根拠：MSA(多重整列)とは？】</strong><br>
@@ -214,7 +226,7 @@
                 </div>
                 
                 <div class="toolbar-row" id="step2Row" style="transition: opacity 0.3s;">
-                    <span class="step-label">2. 検索 <button class="rationale-btn" onclick="toggleRationale('rat_step2')" title="なぜ検索するの？">?</button></span>
+                    <span class="step-label">2. 両端特定 <button class="rationale-btn" onclick="toggleRationale('rat_step2')" title="なぜPrimerで特定するの？">?</button></span>
                     <div class="primer-label"><span class="color-box-f"></span> Primer F: <input type="text" id="pF" class="primer-input" value="CCATCCAACATCTCAGCATGATGAAA"></div>
                     <div class="primer-label"><span class="color-box-r"></span> Primer R: <input type="text" id="pR" class="primer-input" value="CCCCTCAGAATGATATTTGTCCTCA"></div>
                     <div class="slider-container">許容率: 
@@ -222,30 +234,29 @@
                         <span id="mismatchVal" style="width: 25px; color: #e74c3c;">20%</span>
                     </div>
 
-                    <button class="btn btn-primary" id="btnStep2" onclick="alignByDualPrimers()" disabled>🧲 プライマー検索＆整列</button>
+                    <button class="btn btn-primary" id="btnStep2" onclick="alignByDualPrimers()" disabled>🧲 両端Primerを特定＆整列</button>
                 </div>
 
+                <!-- 💡 ステップ3をアライメント専用に昇格（カット機能はエディタ領域へ移動） -->
                 <div class="toolbar-row">
-                    <span class="step-label">3. 手動カット <button class="rationale-btn" onclick="toggleRationale('rat_step3')" title="なぜカットするの？">?</button></span>
-                    <button class="btn" id="btnTrimLeft" onclick="trimLeft()" disabled>✂️ 選択位置より左側を一括削除</button>
-                    <button class="btn" id="btnTrimRight" onclick="trimRight()" disabled>✂️ 選択位置より右側を一括削除</button>
-                    
-                    <div class="divider"></div>
-                    
+                    <span class="step-label">3. アライメント <button class="rationale-btn" onclick="toggleRationale('rat_msa')" title="MSAとは？">?</button></span>
                     <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
-                        <div style="display:flex; gap:5px; align-items:center;">
-                            <button class="btn btn-option" id="btnOptionMSA" onclick="runMSA()" disabled>✨ 簡易MSA実行</button>
-                            <button class="rationale-btn" style="width:14px;height:14px;font-size:9px;background:#732d91;margin-left:0;" onclick="event.stopPropagation(); toggleRationale('rat_msa')" title="MSAとは？">?</button>
-                        </div>
+                        <button class="btn btn-option" id="btnOptionMSA" onclick="runMSA()" disabled style="font-size: 12px; padding: 6px 12px;">✨ 簡易MSA (多重整列) を実行</button>
                         <span style="font-size:9px; color:#c0392b; font-weight:bold;">※学習用の簡易機能です。長い配列はフリーズします。</span>
                     </div>
                 </div>
                 
                 <div class="toolbar-row">
                     <span class="step-label">4. 保存 <button class="rationale-btn" onclick="toggleRationale('rat_export')" title="FASTAとCLUSTALの違いは？">?</button></span>
-                    <div class="toolbar-row" style="flex:1;">
-                        <button class="btn btn-success" id="btnExportFasta" onclick="exportFastaAll()" disabled>💾 FASTA出力</button>
-                        <button class="btn btn-success" id="btnExportClustal" onclick="exportClustalAll()" disabled>💾 CLUSTAL出力</button>
+                    <div style="display: flex; gap: 8px; flex: 1; flex-wrap: wrap; max-width: 450px;">
+                        <div style="display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 160px;">
+                            <button class="btn btn-success" id="btnExportFasta" onclick="exportFastaAll()" disabled>💾 FASTA形式で出力</button>
+                            <button class="btn btn-success" id="btnExportClustal" onclick="exportClustalAll()" disabled>💾 CLUSTAL形式で出力</button>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 160px;">
+                            <button class="btn" id="btnCopyFasta" onclick="copyFastaAll()" disabled>📋 FASTA形式でコピー</button>
+                            <button class="btn" id="btnCopyAmino" onclick="copyAminoAll()" disabled>📋 アミノ酸配列をコピー</button>
+                        </div>
                     </div>
 
                     <div class="divider"></div>
@@ -272,20 +283,65 @@
             </div>
         </div>
         
-        <div class="bench-tip" style="border-radius: 0; border-left: none;">
-            <strong>💡 現場のコツ（一括カットと 🎯設計ミッション）</strong><br>
-            ・検索で見つけたPrimerの端をクリックし「左/右カット」を押すとノイズが一気に消えます。<br>
-            ・<strong>ミッション：</strong> 配列をドラッグして、右上の「設計ナビ」の数値が<strong>すべて緑色（適正値）</strong>になる理想の領域を探し出しましょう！
-        </div>
+        <!-- 💡 エディタ専用ツールバー（検索＆手動カットを統合） -->
+        <div class="editor-toolbar" style="padding: 8px 15px; background: #ecf0f1; border-bottom: 1px solid #bdc3c7; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+            
+            <!-- 左側：検索機能 -->
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+                <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
+                    <span style="font-size: 12px; font-weight: bold; color: #34495e; display: flex; align-items: center;">
+                        🔍 モチーフ・コドン検索
+                        <button class="rationale-btn" onclick="toggleRationale('rat_motif')" title="モチーフ検索とは？" style="margin-right: 5px;">?</button>
+                    </span>
+                    <input type="text" id="searchInput" class="primer-input" placeholder="例: ATG または TAA" style="width: 140px; text-transform: uppercase;" onkeypress="if(event.keyCode===13) highlightSearch()">
+                    <button class="btn btn-option" style="padding: 4px 8px; font-size: 11px;" onclick="highlightSearch()">✨ ハイライト</button>
+                    <button class="btn" style="padding: 4px 8px; font-size: 11px;" onclick="clearSearch()">❌ クリア</button>
+                </div>
+                <span style="font-size: 10px; color: #7f8c8d; line-height: 1.4;">※開始コドン(ATG)や終止コドン(TAA等)、制限酵素部位を検索できます。ギャップ(-)は無視されます。</span>
+            </div>
 
-        <div class="keyboard-hints" style="border-radius: 0; border-left: none; border-right: none;">
-            <span>【手動編集】 セルを選択してキーボード操作: [←][→][↑][↓] 移動 ｜ [Space] / [-] ギャップ挿入 ｜ [Backspace] 削除 ｜ [A][T][G][C][Y][R][N]等 上書き</span>
+            <!-- 右側：カット機能とヒントトグル -->
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; border-left: 2px solid #bdc3c7; padding-left: 10px;">
+                <span style="font-size: 12px; font-weight: bold; color: #c0392b; display: flex; align-items: center;">
+                    ✂️ 手動カット
+                    <button class="rationale-btn" onclick="toggleRationale('rat_step3')" title="なぜカットするの？" style="background: #e74c3c; margin-right: 5px;">?</button>
+                </span>
+                <button class="btn" id="btnTrimLeft" onclick="trimLeft()" disabled style="color: #c0392b; border-color: #e6b0aa;">◀ 選択位置より左を削除</button>
+                <button class="btn" id="btnTrimRight" onclick="trimRight()" disabled style="color: #c0392b; border-color: #e6b0aa;">選択位置より右を削除 ▶</button>
+                
+                <div style="width: 1px; height: 24px; background: #bdc3c7; margin: 0 5px;"></div>
+                <!-- 💡 スッキリ化のためのヒント展開ボタン -->
+                <button class="btn" id="btnToggleHints" onclick="toggleHints()" style="font-size: 11px; background: #fef9e7; border-color: #f39c12; color: #d35400;">💡 操作ヒントを開く</button>
+            </div>
+
         </div>
         
-        <div class="bench-tip" style="border-radius: 0; border-left: none; border-top: none; background: #fdfefe;">
-            <strong>💡 あいまい塩基（IUPACコード）の表示・編集対応</strong><br>
-            波形が重なった場合に現れる「あいまい塩基」も、灰色のセルとして正確に表示・入力可能です。<br>
-            <span style="color:#7f8c8d; font-size:10px;">代表的なコード: <strong>Y</strong> (ピリミジン: CかT), <strong>R</strong> (プリン: AかG), <strong>N</strong> (不明な塩基), <strong>W</strong> (AかT), <strong>S</strong> (CかG), <strong>M</strong> (AかC), <strong>K</strong> (GかT)</span>
+        <div id="rat_motif" class="rationale-text" style="margin: 0; border-radius: 0; border-left: none; border-right: none; background: #fef9e7; border-bottom: 1px solid #f39c12;">
+            <strong>【根拠：上部の「Primer両端特定」との違い】</strong><br>
+            ステップ2の「両端特定」が<strong>不要なノイズを切り落とすための目印探し（トリミング準備）</strong>であるのに対し、この「モチーフ検索」は<strong>開始コドン(ATG)や制限酵素部位など、生物学的に意味のある短い配列</strong>がどこにあるかをエディタ内で探し出し、黄色くハイライト（強調表示）するための機能です。
+        </div>
+        <div id="rat_step3" class="rationale-text" style="margin: 0; border-radius: 0; border-left: none; border-right: none; background: #fef9e7; border-bottom: 1px solid #f39c12;">
+            <strong>【根拠：なぜ手動でカットするのか？】</strong><br>
+            端がガタガタになっているノイズ部分や、不要な領域（開始コドンより前など）を残したまま次の解析に進むと、システムがそれを「存在しない未知の突然変異」として誤認識してしまいます。綺麗にトリミングするのがインシリコ解析の鉄則です。
+        </div>
+
+        <!-- 💡 情報過多を防ぐためのアコーディオン（開閉式）エリア: 他アプリと互換性のある帯状UIに復元 -->
+        <div id="editorHintsArea" style="display: none;">
+            <div class="bench-tip" style="border-radius: 0; border-left: none; border-bottom: 1px solid #bdc3c7;">
+                <strong>💡 現場のコツ（一括カットと設計ミッション）</strong><br>
+                ・上部の「Primer特定」や「モチーフ検索」で見つけた配列の端をクリックし、「手動カット」を押すと不要な領域が一気に消えます。<br>
+                ・<strong>ミッション：</strong> 配列をドラッグして、右上の「設計ナビ」の数値が<strong>すべて緑色（適正値）</strong>になる理想の領域を探し出しましょう！
+            </div>
+
+            <div class="keyboard-hints" style="border-radius: 0; border-left: none; border-right: none; margin-bottom: 0;">
+                <span>💡 <strong>【手動編集】</strong> セルを選択してキーボード操作: [←][→][↑][↓] 移動 ｜ [Space] / [-] ギャップ挿入 ｜ [Backspace] 削除 ｜ [A][T][G][C][Y][R][N]等 上書き</span>
+            </div>
+            
+            <div class="bench-tip" style="border-radius: 0; border-left: none; border-top: none; background: #fdfefe;">
+                <strong>💡 あいまい塩基（IUPACコード）の表示・編集対応</strong><br>
+                波形が重なった場合に現れる「あいまい塩基」も、灰色のセルとして正確に表示・入力可能です。<br>
+                <span style="color:#7f8c8d; font-size:10px;">代表的なコード: <strong>Y</strong> (ピリミジン: CかT), <strong>R</strong> (プリン: AかG), <strong>N</strong> (不明な塩基), <strong>W</strong> (AかT), <strong>S</strong> (CかG), <strong>M</strong> (AかC), <strong>K</strong> (GかT)</span>
+            </div>
         </div>
 
         <div class="editor-container" id="editorWrap">
@@ -311,8 +367,11 @@
 </div>
 
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v3.0 | Sequence Curation & Pipeline Hub
+    &copy; 2026 Bio-Edu Suite v3.9 | Sequence Curation & Pipeline Hub
 </div>
+
+<!-- トースト通知 -->
+<div id="toast">メッセージ</div>
 
 <script>
     let sequences = []; 
@@ -333,6 +392,7 @@
     let dragEndCol = -1;
 
     let isConservedVisible = false;
+    let dragSrcIndex = null; // ドラッグ＆ドロップ用
 
     // --- スマートUI自動分岐 ---
     function setRoute(route) {
@@ -344,6 +404,10 @@
         const st = document.getElementById('statusText');
         const step2Row = document.getElementById('step2Row');
         
+        // 💡 ファイルを読み込んだ時点で、いつでも「手動カット」を可能にする
+        document.getElementById('btnTrimLeft').disabled = false;
+        document.getElementById('btnTrimRight').disabled = false;
+        
         if(route === 'B') {
             // NCBIルート
             pF.disabled = true; pR.disabled = true; mismatchSlider.disabled = true;
@@ -353,6 +417,8 @@
             msaBtn.disabled = false; msaBtn.classList.add('pulse-anim');
             document.getElementById('btnExportFasta').disabled = false; 
             document.getElementById('btnExportClustal').disabled = false; 
+            document.getElementById('btnCopyFasta').disabled = false; 
+            document.getElementById('btnCopyAmino').disabled = false; 
             document.getElementById('btnConserved').disabled = false;
             
             st.innerText = "NCBIから登録済みの配列を取得しました。プライマー検索をスキップし、直接MSA（アライメント）が可能です。";
@@ -366,7 +432,7 @@
             if (!msaBtn.disabled) msaBtn.classList.add('pulse-anim');
             else msaBtn.classList.remove('pulse-anim');
             
-            st.innerText = "生データを読み込みました。Primer F/Rを入力してノイズ領域を特定・カットしてください。";
+            st.innerText = "生データを読み込みました。Primer F/Rを入力してノイズ領域を特定するか、自由にカットを行ってください。";
         }
     }
 
@@ -402,6 +468,23 @@
         document.querySelectorAll('.rationale-text').forEach(e => e.style.display = 'none');
         if(!isBlock) el.style.display = 'block';
     }
+    
+    // --- 💡 ヒントの開閉ロジック ---
+    function toggleHints() {
+        const el = document.getElementById('editorHintsArea');
+        const btn = document.getElementById('btnToggleHints');
+        if (el.style.display === 'none') {
+            el.style.display = 'block';
+            btn.innerHTML = '💡 操作ヒントを閉じる';
+            btn.style.background = '#f39c12';
+            btn.style.color = '#fff';
+        } else {
+            el.style.display = 'none';
+            btn.innerHTML = '💡 操作ヒントを開く';
+            btn.style.background = '#fef9e7';
+            btn.style.color = '#d35400';
+        }
+    }
 
     function updateMismatchVal(val) { document.getElementById('mismatchVal').innerText = val + '%'; }
 
@@ -413,6 +496,8 @@
             document.getElementById('btnTrimRight').disabled = false;
             document.getElementById('btnExportFasta').disabled = false; 
             document.getElementById('btnExportClustal').disabled = false; 
+            document.getElementById('btnCopyFasta').disabled = false; 
+            document.getElementById('btnCopyAmino').disabled = false; 
             document.getElementById('btnConserved').disabled = false;
         }
     }
@@ -488,51 +573,61 @@
         lines.forEach(line => {
             line = line.trim();
             if (line.startsWith('>')) {
-                if (currentName) sequences.push({ name: currentName, data: currentSeq.split(''), isFPrimerFasta: false, isRPrimerFasta: false });
+                if (currentName) sequences.push({ name: currentName, data: currentSeq.split(''), isFPrimerFasta: false, isRPrimerFasta: false, isSelected: true });
                 currentName = line.substring(1).split(' ')[0];
                 currentSeq = "";
             } else {
                 currentSeq += line.toUpperCase().replace(/[^A-Z-]/g, '');
             }
         });
-        if (currentName) sequences.push({ name: currentName, data: currentSeq.split(''), isFPrimerFasta: false, isRPrimerFasta: false });
-        else if (currentSeq) sequences.push({ name: defaultName, data: currentSeq.split(''), isFPrimerFasta: false, isRPrimerFasta: false });
+        if (currentName) sequences.push({ name: currentName, data: currentSeq.split(''), isFPrimerFasta: false, isRPrimerFasta: false, isSelected: true });
+        else if (currentSeq) sequences.push({ name: defaultName, data: currentSeq.split(''), isFPrimerFasta: false, isRPrimerFasta: false, isSelected: true });
     }
 
-    function moveSeq(index, direction) {
-        if (index + direction < 0 || index + direction >= sequences.length) return;
-        let temp = sequences[index];
-        sequences[index] = sequences[index + direction];
-        sequences[index + direction] = temp;
-        
-        if (selectedRow === index) selectedRow += direction;
-        else if (selectedRow === index + direction) selectedRow -= direction;
+    // --- ドラッグ＆ドロップ機能 ---
+    function handleDragStart(e) {
+        dragSrcIndex = parseInt(this.dataset.index);
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', dragSrcIndex);
+        this.style.opacity = '0.4';
+    }
 
-        renderEditorSync();
+    function handleDragOver(e) {
+        if (e.preventDefault) e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        return false;
     }
-    
-    function copySeq(index) {
-        let seqString = sequences[index].data.join('').replace(/-/g, '');
-        navigator.clipboard.writeText(`>${sequences[index].name}\n${seqString}`).then(() => alert("コピーしました"));
+
+    function handleDragEnter(e) { this.classList.add('drag-over'); }
+    function handleDragLeave(e) { this.classList.remove('drag-over'); }
+
+    function handleDrop(e) {
+        if (e.stopPropagation) e.stopPropagation();
+        let targetIndex = parseInt(this.dataset.index);
+        if (dragSrcIndex !== null && dragSrcIndex !== targetIndex) {
+            let movedSeq = sequences.splice(dragSrcIndex, 1)[0];
+            sequences.splice(targetIndex, 0, movedSeq);
+            if (selectedRow === dragSrcIndex) selectedRow = targetIndex;
+            else { selectedRow = -1; selectedCol = -1; }
+            renderEditorSync();
+        }
+        return false;
     }
-    
-    function downloadSeq(index) {
-        let seqObj = sequences[index];
-        let seqString = seqObj.data.join('').replace(/-/g, '');
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(new Blob([`>${seqObj.name}\n${seqString}\n`], { type: 'text/plain' }));
-        a.download = `${seqObj.name.replace(/[^a-zA-Z0-9_\-]/g, '_')}.fasta`;
-        a.click();
+
+    function handleDragEnd(e) {
+        this.style.opacity = '1';
+        document.querySelectorAll('.name-cell').forEach(c => c.classList.remove('drag-over'));
     }
+    // ----------------------------
 
     function deleteSeq(index) {
-        if (confirm(`「${sequences[index].name}」を削除しますか？`)) {
-            sequences.splice(index, 1);
-            if(selectedRow === index) { selectedRow = -1; selectedCol = -1; }
-            else if (selectedRow > index) selectedRow--;
-            if(sequences.length < 2) { mutationCols.clear(); conservedCols.clear(); }
-            updateMutationsAndRender();
-        }
+        let deletedName = sequences[index].name;
+        sequences.splice(index, 1);
+        if(selectedRow === index) { selectedRow = -1; selectedCol = -1; }
+        else if (selectedRow > index) selectedRow--;
+        if(sequences.length < 2) { mutationCols.clear(); conservedCols.clear(); }
+        updateMutationsAndRender();
+        showToast(`「${deletedName}」を削除しました`);
     }
 
     function reverseComplement(seq) {
@@ -656,7 +751,7 @@
             updateMutationsAndRender(); 
             
             scrollToPos(alignedPosF);
-            document.getElementById('statusText').innerText = "検索成功！不要な両端（ノイズ領域）は「3. 手動カット（一括削除）」で削り落としてください。";
+            document.getElementById('statusText').innerText = "検索成功！不要な両端（ノイズ領域）はエディタ上部の「手動カット」で削り落としてください。";
         }, 50);
     }
 
@@ -775,7 +870,11 @@
             msaBtn.disabled = sequences.length < 2;
         }
 
-        if(sequences.length < 2) { renderEditorSync(); return; }
+        if(sequences.length < 2) { 
+            reapplySearch(); 
+            renderEditorSync(); 
+            return; 
+        }
 
         let finalAlignLen = Math.max(...sequences.map(s => s.data.length));
         mutationCols.clear();
@@ -801,6 +900,8 @@
                 if (isConserved) conservedCols.add(c);
             }
         }
+        
+        reapplySearch(); // 手動編集等で位置がずれた場合のために検索ハイライトを再計算
         renderEditorSync(); 
     }
 
@@ -911,6 +1012,8 @@
             
             document.getElementById('btnExportFasta').disabled = false; 
             document.getElementById('btnExportClustal').disabled = false; 
+            document.getElementById('btnCopyFasta').disabled = false; 
+            document.getElementById('btnCopyAmino').disabled = false; 
             document.getElementById('btnConserved').disabled = false;
         }, 50);
     }
@@ -925,6 +1028,21 @@
         if (!namesCol || !header || !container) return;
 
         namesCol.innerHTML = '<div class="name-header">配列名</div>';
+        
+        // 全選択用マスターチェックボックスの追加
+        const headerDiv = namesCol.querySelector('.name-header');
+        const selectAllCb = document.createElement('input');
+        selectAllCb.type = 'checkbox';
+        selectAllCb.checked = sequences.length > 0 && sequences.every(s => s.isSelected !== false);
+        selectAllCb.title = "全選択/解除";
+        selectAllCb.style.marginRight = "8px";
+        selectAllCb.style.cursor = "pointer";
+        selectAllCb.onchange = (e) => {
+            sequences.forEach(s => s.isSelected = e.target.checked);
+            renderEditorSync();
+        };
+        headerDiv.insertBefore(selectAllCb, headerDiv.firstChild);
+
         header.innerHTML = ''; 
         container.innerHTML = '';
 
@@ -949,16 +1067,41 @@
             const nameCell = document.createElement('div');
             nameCell.className = (s.isFPrimerFasta || s.isRPrimerFasta) ? 'name-cell primer-row' : 'name-cell';
 
-            const btnUp = document.createElement('button'); btnUp.className = 'action-icon icon-updown'; btnUp.innerHTML = '▲'; btnUp.onclick = () => moveSeq(sIdx, -1); if(sIdx === 0) btnUp.disabled = true;
-            const btnDown = document.createElement('button'); btnDown.className = 'action-icon icon-updown'; btnDown.innerHTML = '▼'; btnDown.onclick = () => moveSeq(sIdx, 1); if(sIdx === sequences.length - 1) btnDown.disabled = true;
+            // D&Dイベント設定
+            nameCell.dataset.index = sIdx;
+            nameCell.addEventListener('dragstart', handleDragStart);
+            nameCell.addEventListener('dragover', handleDragOver);
+            nameCell.addEventListener('drop', handleDrop);
+            nameCell.addEventListener('dragenter', handleDragEnter);
+            nameCell.addEventListener('dragleave', handleDragLeave);
+            nameCell.addEventListener('dragend', handleDragEnd);
+
+            // ドラッグハンドルと個別チェックボックスの追加
+            const dragHandle = document.createElement('div');
+            dragHandle.className = 'drag-handle';
+            dragHandle.innerHTML = '⠿';
+            dragHandle.title = "ドラッグして移動";
+            dragHandle.addEventListener('mousedown', () => { nameCell.draggable = true; });
+            dragHandle.addEventListener('mouseup', () => { nameCell.draggable = false; });
+            dragHandle.addEventListener('mouseleave', () => { nameCell.draggable = false; });
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'seq-checkbox';
+            checkbox.title = "出力・コピーの対象にする";
+            checkbox.checked = s.isSelected !== false;
+            checkbox.onchange = (e) => { 
+                s.isSelected = e.target.checked; 
+                selectAllCb.checked = sequences.every(seq => seq.isSelected !== false);
+            };
+
+            nameCell.appendChild(dragHandle);
+            nameCell.appendChild(checkbox);
             
             const nameInput = document.createElement('input'); nameInput.type = 'text'; nameInput.className = 'seq-name-input'; nameInput.value = s.name; nameInput.oninput = (e) => { s.name = e.target.value; };
-            
-            const btnCopy = document.createElement('button'); btnCopy.className = 'action-icon'; btnCopy.innerHTML = '📋'; btnCopy.onclick = () => copySeq(sIdx);
-            const btnDL = document.createElement('button'); btnDL.className = 'action-icon'; btnDL.innerHTML = '💾'; btnDL.onclick = () => downloadSeq(sIdx);
             const btnDel = document.createElement('button'); btnDel.className = 'action-icon icon-delete'; btnDel.innerHTML = '🗑️'; btnDel.onclick = () => deleteSeq(sIdx);
 
-            nameCell.appendChild(btnUp); nameCell.appendChild(btnDown); nameCell.appendChild(nameInput); nameCell.appendChild(btnCopy); nameCell.appendChild(btnDL); nameCell.appendChild(btnDel);
+            nameCell.appendChild(nameInput); nameCell.appendChild(btnDel);
             fragNames.appendChild(nameCell);
 
             const rowDiv = document.createElement('div'); 
@@ -975,6 +1118,9 @@
                 
                 if(mutationCols.has(bIdx) && !s.isFPrimerFasta && !s.isRPrimerFasta && base !== '-') exClass += " mutation-bg";
                 if(isConservedVisible && conservedCols.has(bIdx) && !s.isFPrimerFasta && !s.isRPrimerFasta && base !== '-') exClass += " conserved-bg";
+                
+                // 💡 検索ハイライトの付与
+                if(s.searchHighlights && s.searchHighlights.has(bIdx)) exClass += " search-bg";
 
                 baseDiv.className = `base base-${base}${exClass}`;
                 baseDiv.innerText = base; 
@@ -988,6 +1134,64 @@
         updateSelectionUI();
         updateDragSelection();
     }
+
+    // --- 💡 検索ハイライト用関数 ---
+    function highlightSearch() {
+        let inputStr = document.getElementById('searchInput').value.trim().toUpperCase();
+        if(!inputStr) { clearSearch(); return; }
+        
+        reapplySearch();
+        renderEditorSync();
+        
+        let foundAny = false;
+        sequences.forEach(s => {
+            if(s.searchHighlights && s.searchHighlights.size > 0) foundAny = true;
+        });
+        
+        if(foundAny) {
+            showToast(`「${inputStr}」をハイライトしました`);
+        } else {
+            showToast(`「${inputStr}」は見つかりませんでした`);
+        }
+    }
+
+    function clearSearch() {
+        document.getElementById('searchInput').value = '';
+        reapplySearch();
+        renderEditorSync();
+    }
+
+    function reapplySearch() {
+        let inputEl = document.getElementById('searchInput');
+        let inputStr = inputEl ? inputEl.value.trim().toUpperCase() : '';
+        let searchStr = inputStr.replace(/U/g, 'T').replace(/[^A-Z]/g, '');
+        
+        sequences.forEach(s => {
+            if (!s.searchHighlights) s.searchHighlights = new Set();
+            s.searchHighlights.clear();
+            
+            if (!searchStr || s.isFPrimerFasta || s.isRPrimerFasta) return;
+
+            let noGapSeq = "";
+            let colMap = [];
+            
+            for(let c=0; c<s.data.length; c++) {
+                if(s.data[c] !== '-') {
+                    noGapSeq += s.data[c];
+                    colMap.push(c);
+                }
+            }
+
+            let startIndex = 0;
+            while((startIndex = noGapSeq.indexOf(searchStr, startIndex)) > -1) {
+                for(let i=0; i<searchStr.length; i++) {
+                    s.searchHighlights.add(colMap[startIndex + i]);
+                }
+                startIndex++;
+            }
+        });
+    }
+    // ----------------------------
 
     function selectCell(rIdx, bIdx) {
         selectedRow = rIdx;
@@ -1107,9 +1311,10 @@
         if(sequences.length === 0) return;
         let output = "";
         sequences.forEach(s => { 
-            if(s.isFPrimerFasta || s.isRPrimerFasta) return;
-            output += `>${s.name}\n${s.data.join('').replace(/-/g, '')}\n`; 
+            if(s.isFPrimerFasta || s.isRPrimerFasta || s.isSelected === false) return;
+            output += `>${s.name}\n${s.data.join('').replace(/-/g, 'N')}\n`; 
         });
+        if(output === "") { showToast("出力対象が選択されていません"); return; }
         const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([output], { type: 'text/plain' }));
         a.download = "aligned_samples.fasta"; a.click();
     }
@@ -1122,6 +1327,7 @@
         
         let namePad = Math.max(20, Math.max(...sequences.map(s => s.name.length)) + 4);
         let baseCounts = new Array(sequences.length).fill(0);
+        let hasSelected = false;
         
         for (let i = 0; i < maxLen; i += 60) {
             output += "\n";
@@ -1129,6 +1335,8 @@
             
             for (let sIdx = 0; sIdx < sequences.length; sIdx++) {
                 let s = sequences[sIdx];
+                if (s.isSelected === false) continue;
+                hasSelected = true;
                 let seqPart = "";
                 for (let j = 0; j < blockLen; j++) {
                     let b = s.data[i + j] || '-';
@@ -1144,7 +1352,7 @@
                 let col = i + j;
                 let bases = [];
                 sequences.forEach(s => {
-                    if (!s.isFPrimerFasta && !s.isRPrimerFasta && s.data[col] !== undefined && s.data[col] !== '-') {
+                    if (!s.isFPrimerFasta && !s.isRPrimerFasta && s.data[col] !== undefined && s.data[col] !== '-' && s.isSelected !== false) {
                         bases.push(s.data[col]);
                     }
                 });
@@ -1165,10 +1373,86 @@
             output += `${consLine}\n`;
         }
         
+        if(!hasSelected) { showToast("出力対象が選択されていません"); return; }
         const a = document.createElement('a'); 
         a.href = URL.createObjectURL(new Blob([output], { type: 'text/plain' }));
         a.download = "aligned_samples.txt"; 
         a.click();
+    }
+
+    function showToast(msg) {
+        const toast = document.getElementById("toast");
+        toast.innerText = msg;
+        toast.className = "show";
+        setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+    }
+
+    function translateDNAtoAmino(dnaSeq) {
+        const codonTable = {
+            'ATA':'I', 'ATC':'I', 'ATT':'I', 'ATG':'M',
+            'ACA':'T', 'ACC':'T', 'ACG':'T', 'ACT':'T',
+            'AAC':'N', 'AAT':'N', 'AAA':'K', 'AAG':'K',
+            'AGC':'S', 'AGT':'S', 'AGA':'R', 'AGG':'R',
+            'CTA':'L', 'CTC':'L', 'CTG':'L', 'CTT':'L',
+            'CCA':'P', 'CCC':'P', 'CCG':'P', 'CCT':'P',
+            'CAC':'H', 'CAT':'H', 'CAA':'Q', 'CAG':'Q',
+            'CGA':'R', 'CGC':'R', 'CGG':'R', 'CGT':'R',
+            'GTA':'V', 'GTC':'V', 'GTG':'V', 'GTT':'V',
+            'GCA':'A', 'GCC':'A', 'GCG':'A', 'GCT':'A',
+            'GAC':'D', 'GAT':'D', 'GAA':'E', 'GAG':'E',
+            'GGA':'G', 'GGC':'G', 'GGG':'G', 'GGT':'G',
+            'TCA':'S', 'TCC':'S', 'TCG':'S', 'TCT':'S',
+            'TTC':'F', 'TTT':'F', 'TTA':'L', 'TTG':'L',
+            'TAC':'Y', 'TAT':'Y', 'TAA':'*', 'TAG':'*', 'TGA':'*'
+        };
+        let amino = '';
+        let seq = dnaSeq.toUpperCase().replace(/U/g, 'T');
+        for(let i=0; i < seq.length - 2; i+=3) {
+            let codon = seq.substring(i, i+3);
+            amino += codonTable[codon] || 'X';
+        }
+        return amino;
+    }
+
+    function copyToClipboardFallback(text, successMessage) {
+        if(text === "") { showToast("対象が選択されていません"); return; }
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            showToast(successMessage);
+        } catch (err) {
+            console.error('Fallback: Oops, unable to copy', err);
+            alert("コピーに失敗しました。");
+        }
+        document.body.removeChild(textArea);
+    }
+
+    function copyFastaAll() {
+        if(sequences.length === 0) return;
+        let output = "";
+        sequences.forEach(s => { 
+            if(s.isFPrimerFasta || s.isRPrimerFasta || s.isSelected === false) return;
+            output += `>${s.name}\n${s.data.join('').replace(/-/g, 'N')}\n`; 
+        });
+        copyToClipboardFallback(output.trim(), "FASTA形式で一括コピーしました");
+    }
+
+    function copyAminoAll() {
+        if(sequences.length === 0) return;
+        let output = "";
+        sequences.forEach(s => { 
+            if(s.isFPrimerFasta || s.isRPrimerFasta || s.isSelected === false) return;
+            let dnaSeq = s.data.join('').replace(/-/g, 'N');
+            let aminoSeq = translateDNAtoAmino(dnaSeq);
+            output += `>${s.name}\n${aminoSeq}\n`;
+        });
+        copyToClipboardFallback(output.trim(), "アミノ酸配列を一括コピーしました");
     }
 </script>
 
