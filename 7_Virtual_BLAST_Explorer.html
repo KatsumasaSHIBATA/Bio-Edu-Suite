@@ -60,8 +60,8 @@
         .bench-tip strong { color: #2980b9; }
 
         /* 結果パネル */
-        .result-card { flex: 1.8; border-top-color: #27ae60; min-width: 500px; }
-        .result-header { background: #27ae60; }
+        .result-card { flex: 1.8; border-top-color: #e67e22; min-width: 500px; }
+        .result-header { background: #1a252f; }
         
         table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: left; }
         th, td { border-bottom: 1px solid #bdc3c7; padding: 8px; }
@@ -142,21 +142,21 @@
         <div class="card-body">
             
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <label style="font-size:12px; font-weight:bold; color:#2c3e50;">1. 未知のDNA配列を入力 (FASTA可) 
+                <label style="font-size:12px; font-weight:bold; color:#2c3e50;">1. 未知のDNAの塩基配列を入力 
                     <button class="rationale-btn" onclick="toggleRationale('rat_blast')" title="BLASTの仕組みは？">?</button>
                 </label>
             </div>
             
             <div id="rat_blast" class="rationale-text">
                 <strong>【根拠：BLASTはどうやって種を特定するのか？】</strong><br>
-                BLASTは、未知の配列（Query）とデータベースの配列（Subject）を総当たりで比較します。ただ一致を探すのではなく、<strong>「一致なら加点、不一致や欠失なら減点」</strong>という数学的なスコアリングを行い、最もスコアが高い（似ている）配列を探し出します。
+                BLASTは、未知の塩基配列（Query）とデータベースの塩基配列（Subject）を総当たりで比較します。ただ一致を探すのではなく、<strong>「一致なら加点、不一致や欠失なら減点」</strong>という数学的なスコアリングを行い、最もスコアが高い（似ている）塩基配列を探し出します。
             </div>
             
             <div class="drop-zone" id="queryDropZone" onclick="document.getElementById('queryInputFile').click()">
-                <p>📂 検索したい未知のDNAデータ(.txt, .fas)をドラッグ＆ドロップ</p>
+                <p>📂 ここをクリック、または検索したい未知のDNAの塩基配列データ(.fasta, .txt)をドラッグ＆ドロップ</p>
                 <input type="file" id="queryInputFile" accept=".fasta,.fas,.txt,.seq" onchange="handleQueryFile(event)">
             </div>
-            <textarea id="queryInput" placeholder="ここにシーケンス結果(未知の肉のDNAなど)が表示されます..."></textarea>
+            <textarea id="queryInput" placeholder="ここにDNAの塩基配列データ(未知の肉のDNAなど)が表示されます..."></textarea>
             
             <div style="border-top: 1px dashed #bdc3c7; margin: 5px 0;"></div>
 
@@ -169,7 +169,7 @@
             <div id="rat_scoring" class="rationale-text">
                 <strong>【実験：ペナルティの重さを変えてみよう】</strong><br>
                 重要なのは「Matchと減点の比率」です。<br>
-                ・<strong>Match（一致）の加点だけを大きくした場合：</strong> 少し似ているだけの配列でもスコアが爆発的に高くなり、遠縁の生物も無理やり「似ている」と誤判定（偽陽性）してしまいます。<br>
+                ・<strong>Match（一致）の加点だけを大きくした場合：</strong> 少し似ているだけの塩基配列でもスコアが爆発的に高くなり、遠縁の生物も無理やり「似ている」と誤判定（偽陽性）してしまいます。<br>
                 ・<strong>Gap（隙間）の減点を軽くした場合：</strong> 無理やりギャップを大量に入れて文字を合わせようとするため、進化的におかしい「不自然なアライメント」が生成されます。<br>
                 ・<strong>Mismatchの減点を重くした場合：</strong> 少しの突然変異も許さなくなるため、近縁種すら検索に引っかからなくなってしまいます。
             </div>
@@ -191,32 +191,32 @@
             <div id="rat_db" class="rationale-text">
                 <strong>【根拠：データベースのカスタマイズ】</strong><br>
                 このアプリには初期状態で「豚、牛、鶏、マグロ」の4種のデータが入っています。<br>
-                もし昆虫のCOI遺伝子や細菌の16S rRNAなどを調べたい場合は、<strong>複数の配列が入ったFASTAファイル</strong>を下の紫の枠にドロップしてください。自分だけのオリジナルデータベースを作って検索実験ができます！
+                もし昆虫のCOI遺伝子や細菌の16S rRNAなどを調べたい場合は、<strong>複数の塩基配列が入ったFASTAファイル</strong>を下の紫の枠にドロップして読み込んでください。自分だけのオリジナルデータベースを作って検索実験ができます！
             </div>
 
             <div class="db-status">
                 <span id="dbCountText">現在の登録生物種: 4 種</span>
-                <button class="btn btn-sm" onclick="resetDB()">🔄 初期化</button>
+                <button class="btn btn-sm" onclick="resetDB()">🔄 リセット</button>
             </div>
 
             <div class="drop-zone db-drop-zone" id="dbDropZone" onclick="document.getElementById('dbInputFile').click()">
-                <p>➕ カスタムDB(複数FASTA)をドロップして追加</p>
+                <p>➕ ここをクリック、またはカスタムDB(複数の塩基配列を含むFASTA)をドロップして読み込む</p>
                 <input type="file" id="dbInputFile" accept=".fasta,.fas,.txt,.seq" onchange="handleDBFile(event)">
             </div>
 
             <div style="display:flex; gap:10px; margin-top:5px;">
-                <button class="btn btn-primary" style="flex:1;" onclick="runVirtualBlast()">🔍 スコア計算＆検索を実行 (BLAST)</button>
+                <button class="btn btn-primary" style="flex:1;" onclick="runVirtualBlast()">▶️ 解析を実行 (BLAST検索)</button>
             </div>
             
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
-                <button class="btn btn-danger btn-sm" onclick="loadShortSequence()">【体験】わざと短い配列で検索</button>
-                <button class="rationale-btn" onclick="toggleRationale('rat_evalue')" title="短いとどうなる？(E-value)">?</button>
+                <button class="btn btn-danger btn-sm" onclick="loadShortSequence()">【体験】わざと短い塩基配列を読み込む</button>
+                <button class="rationale-btn" onclick="toggleRationale('rat_evalue')" title="短い塩基配列だとどうなる？(E-value)">?</button>
             </div>
 
             <div id="rat_evalue" class="rationale-text">
                 <strong>【根拠：E-value（期待値）の罠とは？】</strong><br>
-                E-valueとは<strong>偶然その配列がデータベース内で一致してしまう確率</strong>です。<br>
-                「ATG」のような短い配列は、どんな生物にも偶然存在します。検索する配列が短すぎるとE-valueが跳ね上がり、「同率1位」ばかりになって種同定が不可能になります（DNAバーコーディングの限界）。
+                E-valueとは<strong>偶然その塩基配列がデータベース内で一致してしまう確率</strong>です。<br>
+                「ATG」のような短い塩基配列は、どんな生物にも偶然存在します。検索する塩基配列が短すぎるとE-valueが跳ね上がり、「同率1位」ばかりになって種同定が不可能になります（DNAバーコーディングの限界）。
             </div>
 
         </div>
@@ -224,7 +224,7 @@
 
     <div class="card result-card">
         <div class="card-header result-header">
-            <span>📊 検索結果 (Hits & Alignment)</span>
+            <span style="color: white;">📊 検索結果 (Hits & Alignment)</span>
         </div>
         <div class="card-body" style="background:#f0f3f4; padding:15px;">
             
@@ -243,7 +243,7 @@
                             </tr>
                         </thead>
                         <tbody id="hitsTableBody">
-                            <tr><td colspan="4" style="text-align: center; color: #7f8c8d; padding:20px;">左のパネルから未知の配列を入力して「検索」を実行してください。</td></tr>
+                            <tr><td colspan="4" style="text-align: center; color: #7f8c8d; padding:20px;">左のパネルから未知の塩基配列を読み込み、「解析を実行」をクリックしてください。</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -257,7 +257,7 @@
 
             <div class="ncbi-invite">
                 <h4>🔗 Step up to professional tools (NCBI BLAST)</h4>
-                <p>このシミュレーターで「スコア計算」と「E-value」の仕組みを理解したら、いよいよ全世界のDNAデータが蓄積された本物の<b>「NCBI BLAST」</b>にアクセスしてみましょう。あなたの未知の配列が、地球上のどの生物なのか特定できるはずです。</p>
+                <p>このシミュレーターで「スコア計算」と「E-value」の仕組みを理解したら、いよいよ全世界のDNAデータが蓄積された本物の<b>「NCBI BLAST」</b>にアクセスしてみましょう。あなたの未知の塩基配列が、地球上のどの生物なのか特定できるはずです。</p>
             </div>
 
         </div>
@@ -296,7 +296,7 @@
     function resetDB() {
         localDB = JSON.parse(JSON.stringify(defaultDB));
         updateDBCount();
-        alert("データベースを初期化しました（初期の4種に戻りました）。");
+        alert("データベースをリセットしました（初期の4種に戻りました）。");
     }
 
     // --- ドラッグ＆ドロップ処理 (Query) ---
@@ -354,14 +354,14 @@
                 addedCount++;
             }
             updateDBCount();
-            alert(`${addedCount} 件の配列をローカルデータベースに追加しました！`);
+            alert(`${addedCount} 件の塩基配列をローカルデータベースに読み込みました！`);
         };
         if(e.target.files[0]) reader.readAsText(e.target.files[0]);
     }
 
     function loadShortSequence() {
         document.getElementById('queryInput').value = "ATCACACCCACTA";
-        alert("わざと非常に短い配列（13塩基）を入力しました。\nこれで検索を実行し、「E-value」がどうなるか、種を特定できるか確認してみましょう！");
+        alert("わざと非常に短い塩基配列（13塩基）を読み込みました。\nこれで「解析を実行」し、「E-value」がどうなるか、種を特定できるか確認してみましょう！");
     }
 
     // --- Smith-Waterman Local Alignment ---
@@ -444,7 +444,7 @@
         let query = rawInput.split('\n').filter(line => !line.startsWith('>')).join('').toUpperCase().replace(/[^ATGC]/g, '');
 
         if (!query || query.length < 5) {
-            alert("検索するには最低5塩基以上のDNA配列を入力してください。");
+            alert("解析を実行するには最低5塩基以上のDNAの塩基配列を入力してください。");
             return;
         }
         
@@ -544,7 +544,7 @@
             html += `
             <div style="margin-top:15px; padding:10px; background:rgba(231,76,60,0.2); border-left:4px solid #e74c3c; color:#ffbaba; font-size:11px;">
                 ⚠️ <b>警告: E-value が高すぎます！</b><br>
-                この一致は「偶然の産物（ランダムマッチ）」である可能性が高いです。配列が短すぎるか、生物種が全く異なります。
+                この一致は「偶然の産物（ランダムマッチ）」である可能性が高いです。塩基配列が短すぎるか、生物種が全く異なります。
             </div>`;
         }
 
@@ -555,7 +555,7 @@
             linkPanel.innerHTML = `
             <div class="external-link-panel">
                 <p>
-                    ✅ 相同性が非常に高く、この配列は <strong>${res.name}</strong> であるとほぼ確定できます。<br>
+                    ✅ 相同性が非常に高く、この塩基配列は <strong>${res.name}</strong> であるとほぼ確定できます。<br>
                     より高度な <strong>種の詳細情報 (Taxonomy)</strong> や <strong>遺伝子データ</strong> 等を確認したい場合は、本家の NCBI Database をご参照ください。
                 </p>
                 <a href="https://www.ncbi.nlm.nih.gov/search/all/?term=${encodeURIComponent(res.id)}" target="_blank" style="text-decoration:none;">
