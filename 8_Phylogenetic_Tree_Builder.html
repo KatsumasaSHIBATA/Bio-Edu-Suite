@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Step-by-Step Phylogeny Builder v2.5 | Bio-Edu Suite</title>
+    <title>Step-by-Step Phylogeny Builder v2.15 | Bio-Edu Suite</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
         
         /* 共通ヘッダー */
         .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 30; flex-shrink: 0; }
@@ -26,13 +26,11 @@
         .rationale-btn:hover { background: #16a085; transform: scale(1.1); }
         .rationale-text { display: none; background: #fef9e7; border: 1px solid #f39c12; padding: 10px; border-radius: 4px; font-size: 11px; color: #7e5109; margin-top: 5px; margin-bottom: 5px; line-height: 1.5; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
 
-        /* アルゴリズム切替 */
         .algo-selector { display: flex; gap: 5px; background: #ecf0f1; padding: 4px; border-radius: 4px; margin-bottom: 5px; }
         .algo-selector label { flex: 1; text-align: center; padding: 6px; font-size: 11px; font-weight: bold; color: #7f8c8d; cursor: pointer; border-radius: 3px; transition: 0.2s; }
         .algo-selector input { display: none; }
         .algo-selector input:checked + label { background: #3498db; color: white; }
 
-        /* ドラッグ＆ドロップエリアとテキストエリア */
         .drop-zone { border: 2px dashed #bdc3c7; border-radius: 4px; padding: 10px; text-align: center; background: #fafbfc; transition: 0.2s; cursor: pointer; margin-bottom: 5px;}
         .drop-zone:hover, .drop-zone.dragover { background: #e8f8f5; border-color: #1abc9c; }
         .drop-zone p { margin: 0; font-size: 11px; color: #7f8c8d; font-weight: bold; pointer-events: none; }
@@ -49,11 +47,11 @@
         .btn-step:active:not(:disabled) { transform: translateY(3px); box-shadow: none; }
         .btn-sm { font-size: 10px; padding: 4px 8px; box-shadow: none; }
 
-        /* 行列表⽰テーブル（極限まで圧縮） */
+        /* 行列表⽰テーブル */
         .matrix-container { overflow-x: auto; width: 100%; border: 1px solid #ecf0f1; background: #fff;}
-        table { border-collapse: collapse; font-size: 9px; text-align: center; margin: 0 auto; width: 100%; }
-        th, td { border: 1px solid #bdc3c7; padding: 3px 4px; position: relative; white-space: nowrap; }
-        th { background-color: #eaeded; color: #2c3e50; font-weight: bold; max-width: 60px; overflow: hidden; text-overflow: ellipsis; }
+        table { border-collapse: collapse; font-size: 10px; text-align: center; margin: 0 auto; width: 100%; }
+        th, td { border: 1px solid #bdc3c7; padding: 5px 6px; position: relative; white-space: nowrap; }
+        th { background-color: #eaeded; color: #2c3e50; font-weight: bold; overflow: hidden; text-overflow: ellipsis; }
         .matrix-diagonal { background-color: #ecf0f1; color: #bdc3c7; }
         
         .matrix-clickable { cursor: pointer; transition: 0.2s; }
@@ -61,21 +59,22 @@
         .matrix-min { background-color: #f1c40f !important; font-weight: bold; color: #d35400; box-shadow: inset 0 0 0 2px #e67e22 !important; animation: pulse 1.5s infinite; }
         .matrix-error { background-color: #fadbd8 !important; color: #c0392b; animation: shake 0.4s; }
         
+        /* 結合済み（無効化）された行・列のスタイル */
+        .matrix-inactive { background-color: #f8f9f9; color: #aeb6bf; text-decoration: line-through; }
+        .matrix-inactive-header { color: #aeb6bf; text-decoration: line-through; }
+
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-2px); } 40%, 80% { transform: translateX(2px); } }
 
-        /* 現場のコツパネル */
         .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 10px; border-radius: 4px; font-size: 11px; color: #2c3e50; line-height: 1.4; margin-top: 5px; }
         .bench-tip strong { color: #2980b9; }
 
-        /* 系統樹描画 */
         .tree-card { flex: 1.8; border-top-color: #27ae60; min-width: 450px; }
         .canvas-container { background: #fff; border: 1px solid #bdc3c7; border-radius: 4px; padding: 15px; display: flex; justify-content: center; align-items: center; min-height: 400px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); overflow-x: auto;}
-        canvas { background: white; } /* 保存時に背景が透過しないように */
+        canvas { background: white; } 
         .status-box { background: #1a252f; color: #ecf0f1; padding: 12px; border-radius: 4px; font-family: monospace; font-size: 12px; line-height: 1.5; margin-bottom: 10px;}
         .highlight-step { color: #f1c40f; font-weight: bold; }
 
-        /* 系統樹の解説パネル */
         .tree-explanation { background: #fdfefe; border: 1px solid #27ae60; border-left: 4px solid #27ae60; padding: 10px 15px; border-radius: 4px; font-size: 11px; color: #2c3e50; line-height: 1.5; margin-top: 10px; }
         .tree-explanation h4 { margin: 0 0 5px 0; font-size: 12px; color: #27ae60; }
         .tree-explanation strong { color: #1e8449; }
@@ -86,45 +85,81 @@
 
         .footer { background: #1a252f; padding: 12px; text-align: center; font-size: 10px; color: #7f8c8d; margin-top: auto; border-top: 1px solid #2c3e50; }
         
-        .header-actions { display: flex; gap: 10px; }
-        /* --- 📱 スマホ最適化（レスポンシブ・デザイン） --- */
+        .scientific-name { font-style: italic; font-family: 'Times New Roman', Times, serif; font-weight: 600; color: #2c3e50; }
+        
         @media screen and (max-width: 768px) {
-            /* 画面の余白を減らして広く使う */
             .main-content { padding: 10px; flex-direction: column !important; }
             .card { min-width: 100% !important; margin-bottom: 10px; }
-            
-            /* 横並びのボタンや入力欄を、縦積みの押しやすいサイズに変更 */
             .toolbar-row, .scoring-panel { flex-direction: column; align-items: stretch; gap: 8px; }
             .btn, .search-input, .primer-input { width: 100% !important; justify-content: center; padding: 12px; font-size: 14px; }
             .slider-container, .slider-group { width: 100%; justify-content: space-between; }
-            
-            /* ヘッダー周りの調整 */
             .header h1 { font-size: 16px; margin-right: 40px; }
             .version-badge { top: 10px; right: 10px; padding: 2px 6px; }
-            .header-primer-stats { flex-direction: column; align-items: flex-start; }
-            
-            /* 横スクロール領域を「スマホ特有の滑らかなスクロール」にする */
             .matrix-container, .sequence-grid, .trace-outer-container, .canvas-container, .alignment-detail { 
                 -webkit-overflow-scrolling: touch; 
             }
-            
-            /* キャンバス（系統樹など）が画面を突き破らないように制限 */
             canvas { max-width: 100% !important; height: auto !important; }
-            
-            /* アプリ④：名前列の幅を狭くして、配列を見やすくする */
-            .names-column { width: 100px !important; }
-            .name-header { font-size: 9px; padding-left: 5px; }
-            .seq-name-input { font-size: 10px; }
         }
+
+        /* ====== トースト通知 & モーダルダイアログ & パネル ====== */
+        #toast { position: fixed; bottom: 50px; left: 50%; transform: translateX(-50%) translateY(100px); background: #27ae60; color: white; padding: 12px 24px; border-radius: 30px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 1000; pointer-events: none; }
+        #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); display: none; justify-content: center; align-items: center; z-index: 500; }
+        .modal-content { background: white; padding: 25px; border-radius: 8px; width: 95%; max-width: 850px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto; }
+        .modal-title { font-size: 18px; font-weight: bold; color: #2c3e50; margin-top: 0; margin-bottom: 15px; border-bottom: 2px solid #f0f3f4; padding-bottom: 8px;}
+        
+        .edu-panel { padding: 12px 15px; border-radius: 6px; font-size: 13px; line-height: 1.5; margin-bottom: 15px; }
+        .rationale-panel { background-color: #e8f8f5; border-left: 4px solid #1abc9c; color: #117864; }
+        .rationale-panel strong { color: #0e6251; }
+        
+        .assist-panel { background: #fadbd8; border-left: 4px solid #e74c3c; padding: 15px; margin-top: 15px; }
+        .assist-item { margin-bottom: 0; }
+        .assist-title { font-weight: bold; color: #c0392b; display: flex; align-items: center; gap: 5px; font-size: 14px;}
+        .assist-reason { font-size: 13px; color: #7f8c8d; margin-top: 5px; }
+        .assist-fix { font-size: 13px; color: #2c3e50; font-weight: bold; margin-top: 8px; background: #fff; padding: 10px; border-radius: 4px; border: 1px solid #e74c3c; }
+
+        .mp-tree-card { border: 2px solid #bdc3c7; border-radius: 6px; padding: 15px; background: #fff; transition: all 0.2s; position: relative; }
+        .mp-tree-card:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        
+        .btn-purple { background: #8e44ad; color: white; border-color: #732d91; box-shadow: 0 3px 0 #732d91; width: 100%; padding: 10px; font-size: 13px; border-radius: 4px; font-weight: bold; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center;}
+        .btn-purple:hover { background: #732d91; color: white;}
+        .btn-purple:active { transform: translateY(3px); box-shadow: none; }
+
+        .align-col-header { cursor: pointer; transition: 0.2s; background: #eaeded; }
+        .align-col-header:hover { background: #bdc3c7; }
+        
+        .align-cell { font-family: 'Courier New', monospace; font-size: 13px; font-weight: bold; text-align: center; cursor: pointer; transition: 0.2s; }
+        .align-cell-found { background: #2ecc71 !important; color: white !important; }
+        .align-cell-wrong { background: #e74c3c !important; color: white !important; }
+        .align-cell-conserved { opacity: 0.2; } 
+        
+        .branch-clickable { cursor: pointer; transition: stroke-width 0.2s, stroke 0.2s; }
+        .branch-clickable:hover { stroke: #e67e22 !important; stroke-width: 8px !important; }
+        .branch-mutated { stroke: #e74c3c !important; stroke-width: 5px !important; }
+
+        @keyframes pulse-anim {
+            0% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(52, 152, 219, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0); }
+        }
+        .pulse-anim { animation: pulse-anim 2s infinite; }
+        
+        @keyframes pulse-anim-purple {
+            0% { box-shadow: 0 0 0 0 rgba(142, 68, 173, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(142, 68, 173, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(142, 68, 173, 0); }
+        }
+        .pulse-anim-purple { animation: pulse-anim-purple 2s infinite; }
     </style>
 </head>
 <body>
 
 <div class="header-container">
     <div class="header">
-        <h1>🧬 Step-by-Step Phylogeny Builder</h1>
-        <p>Bio-Edu Suite: Matrix Calculation & UPGMA/NJ Clustering Emulator</p>
-        <div class="version-badge">v2.5</div>
+        <h1>🧬 Step-by-Step Phylogenetic Tree Builder</h1>
+        <p>Bio-Edu Suite: Matrix Calculation & UPGMA/NJ/MP Clustering Emulator</p>
+        <div class="version-badge">v2.15</div>
     </div>
 </div>
 
@@ -143,26 +178,28 @@
                 <label for="algo_nj">NJ法 (進化速度の違いを考慮)</label>
             </div>
 
-            <!-- UI修正: 密集していた「?」を各コンテキストへ分散 -->
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px; margin-bottom:5px;">
                 <label style="font-size:12px; font-weight:bold; color:#2c3e50;">1. アライメント済みFASTA (塩基配列 / アミノ酸配列) を入力 
                     <button class="rationale-btn" style="background:#e67e22;" onclick="toggleRationale('rat_seq_type')" title="アミノ酸とDNAの使い分け">?</button>
                 </label>
             </div>
             
-            <!-- 文言修正: 用途に合わせて正確な表現に -->
             <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
                 <p>📂 ここをクリック、または アライメント済みFASTAデータ (.txt, .fas) をドラッグ＆ドロップ</p>
                 <input type="file" id="fileInput" accept=".fasta,.fas,.txt,.seq" onchange="handleFiles(event)">
             </div>
-            <textarea id="fastaInput" placeholder="ここにアライメント済みのFASTAデータが表示されます。"></textarea>
             
+            <textarea id="fastaInput" placeholder="ここにアライメント済みのFASTAデータを貼り付けてください。&#10;（または右のボタンからデモデータをセットできます）"></textarea>
+            
+            <div style="text-align: right; margin-top: -5px;">
+                <button class="btn btn-sm" style="background:#ecf0f1; border:none; color:#2c3e50; width:auto; display:inline-block;" onclick="loadDemoData()">💡 デモデータをセット</button>
+            </div>
+
             <div id="rat_seq_type" class="rationale-text" style="border-color:#e67e22; background:#fef5e7; color:#d35400;">
                 <strong>💡 なぜこの操作が必要か？（アミノ酸とDNAの使い分け）</strong><br>
                 比較する生物同士の進化的な距離（何億年前に枝分かれしたか）によって、適切な配列データは異なります。もし作成した系統樹が「現在の分類学（教科書の知識）」と大きく矛盾する場合、DNAの変異スピードが早すぎて「多重置換（ノイズ）」が起きている可能性があります。その場合は、より変化の遅い「アミノ酸配列」を使って再度計算してみましょう。
             </div>
 
-            <!-- UI修正: 距離行列の「?」ボタンを計算実行ボタンの横へ移動 -->
             <div style="display:flex; align-items:center; gap:10px; margin-top:5px;">
                 <button class="btn btn-primary" id="btnInit" onclick="initMatrix()" style="flex: 1;">🧮 配列比較 ➡ 距離行列を作成</button>
                 <button class="rationale-btn" onclick="toggleRationale('rat_matrix')" title="距離行列って何？" style="flex-shrink: 0; margin-left: 0;">?</button>
@@ -185,25 +222,24 @@
 
             <div id="rat_upgma" class="rationale-text">
                 <strong>【根拠：結合アルゴリズムの違い】</strong><br>
-                行列から<strong>「一番近い2つ」を探して1つに結合</strong>し、表を更新する作業を繰り返します。<br>
                 ・<strong>UPGMA法:</strong> 単純な平均距離で更新します。根からの距離が全て揃います。<br>
-                ・<strong>NJ法:</strong> 「Q行列」という補正を行い、枝ごとに異なる進化スピードを計算します。
+                ・<strong>NJ法:</strong> 「Q行列」という補正を行い、枝ごとに異なる進化スピードを計算します。<br>
+                ※実際の紙での計算と同じように、計算済みのペアは斜線で消し、新しいグループを右端と下端に書き足して行列を拡張していきます。
             </div>
             
             <div class="matrix-container" id="matrixContainer">
                 <div style="text-align:center; padding:15px; color:#7f8c8d; font-size:10px;">上のボタンを押して行列を作成してください。</div>
             </div>
 
-            <button class="btn btn-step" id="btnNextStep" onclick="executeCombine()">▶ 選択したペアを結合して行列を更新</button>
+            <button class="btn btn-step" id="btnNextStep" onclick="executeCombine()">▶ 選択したペアを結合して行列を拡張</button>
 
             <div class="bench-tip">
                 <strong>💡 現場のコツ（MEGAのブラックボックスを開ける）</strong><br>
-                プロ用ソフトは、この計算を一瞬で終わらせて木を描きますが、<strong>「一番数字が小さい所が親戚になる」「くっついたら表が1行減る」</strong>という裏側を知らないとソフトの奴隷になります。上の表から「一番小さな数字」を探してクリックしてみましょう！<br>
+                プロ用ソフトは一瞬で計算しますが、<strong>「一番数字が小さい所が親戚になる」「ペアをまとめた新しい表をどんどん横に書き足していく」</strong>という手計算の裏側を知らないとソフトの奴隷になります。上の表から「一番小さな数字」を探してクリックしてみましょう！<br>
                 <span style="color:#7f8c8d;">※最小値（同着）が複数ある場合はどれを選んでも正解です。</span>
             </div>
 
             <div class="mega-invite">
-                <!-- UI修正: ML法やブートストラップの「?」ボタンをプロツール案内パネルのヘッダーへ移動 -->
                 <h4>🔗 Step up to professional tools 
                     <button class="rationale-btn" style="background:#8e44ad; margin-left: auto;" onclick="toggleRationale('rat_advanced')" title="ML法やブートストラップは？">?</button>
                 </h4>
@@ -213,6 +249,23 @@
                 </div>
                 <p>より高度な解析（進化モデルを考慮したML法、信頼性を担保するブートストラップ等）が必要になったら、世界標準の解析ソフト<b>「MEGA」</b>を使いましょう。ここで学んだ基礎が役立ちます。</p>
             </div>
+            
+            <!-- ====== MP法体験パネル ====== -->
+            <div class="card" style="border-color: #8e44ad; background-color: #f4ecf7; margin-top: 15px; min-width: 100%; border-top: 4px solid #8e44ad; box-shadow: none;">
+                <h4 style="margin: 0 0 10px 0; font-size: 12px; color: #5b2c6f; display: flex; align-items: center;">
+                    🧬 発展学習：最節約法 (MP法) のステップ・シミュレーション
+                    <button class="rationale-btn" style="background:#8e44ad; margin-left: auto;" onclick="toggleRationale('rat_mp')" title="最節約法とは？">?</button>
+                </h4>
+                <div id="rat_mp" class="rationale-text" style="border-color:#8e44ad; background:#f5eef8; color:#5b2c6f; margin-top:0; margin-bottom:10px;">
+                    <strong>【教科書とのつながり：最節約法】</strong><br>
+                    考えられるすべての系統樹を想定し、突然変異の回数が「最も少なくなる（最節約的な）」ものを選ぶ手法です。<br>
+                    ここでは入力された配列のうち「最初の4種」を用いて、教科書の図解にある「部位（座位）ごとの変異回数の算出」から「全体の比較」までをステップごとに体験します。
+                </div>
+                <button class="btn btn-purple" onclick="startMPSimulation()">
+                    ▶ MP法シミュレーションを開始
+                </button>
+            </div>
+            
         </div>
     </div>
 
@@ -240,7 +293,140 @@
 
 </div>
 
-<div class="footer">&copy; 2026 Bio-Edu Suite v2.5 | For Professional Bioinformatics Education</div>
+<!-- ====== ステップ式になったMP法モーダル ====== -->
+<div id="mpModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3 class="modal-title">🧬 最節約法 (MP法) シミュレーション</h3>
+        
+        <!-- Step 1: 自分で情報をもつ座位を探すインタラクティブ演習 -->
+        <div id="mpStep1" style="display:none;">
+            <div class="edu-panel rationale-panel">
+                <strong>👨‍🏫 ステップ1：系統推定に役立つ『情報をもつ座位』を探そう！</strong>
+                <button class="rationale-btn" style="background:#e67e22;" onclick="toggleRationale('rat_step1_why')" title="情報をもつ座位とは？">?</button>
+                <br>
+                アライメントの列（座位）をクリックして、<strong>「2種以上で同じ塩基が共有されている部位（情報をもつ座位）」</strong>を見つけてください。<br>
+                <span style="font-size:12px; color:#7f8c8d;">※アライメントは横スクロール可能です。「💡ヒント」を使うと見つけやすくなります。<strong>最低3箇所</strong>見つけると次へ進めますが、コンプリートを目指すこともできます！</span>
+            </div>
+
+            <div id="rat_step1_why" class="rationale-text" style="border-color:#1abc9c; background:#e8f8f5; color:#117864;">
+                <strong>💡 【なぜ特定の変異だけを探すの？】</strong><br>
+                実際の遺伝子配列には非常に多くの変異（違い）がありますが、<strong>「1つの生物だけが異なる変異」は、どの系統樹でも1回の突然変異で説明できてしまうため、系統の枝分かれ（トポロジー）を決定する情報になりません。</strong><br>
+                最節約法において本当に重要なのは、<strong>「2つの種と、別の2つの種で共通している変異（例：A,A,T,T など）」</strong>です。これを学術的に<strong>「情報をもつ座位（Informative sites）」</strong>と呼びます。
+            </div>
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div style="font-size:13px; font-weight:bold; color:#2c3e50;">
+                    🔎 発見した『情報をもつ座位』: <span id="mpFoundCount" style="color:#e67e22; font-size:18px; font-weight:bold;">0</span> / <span id="mpTargetCount">0</span> 箇所
+                </div>
+                <div style="display:flex; gap:5px;">
+                    <button class="btn btn-sm" style="background:#f1c40f; color:#d35400; border:none;" onclick="maskConservedSites()">💡 ヒント：変異のない保存領域を薄くする</button>
+                    <button class="btn btn-sm" style="background:#bdc3c7; color:#fff; border:none;" onclick="autoFindVariableSites()">解答（すべて表示）</button>
+                </div>
+            </div>
+
+            <div class="matrix-container" id="mpAlignmentContainer" style="margin-bottom: 15px; border:1px solid #bdc3c7; overflow-x: auto; max-width: 100%;">
+                <!-- ここにアライメントテーブルがレンダリングされる -->
+            </div>
+            
+            <button id="btnProceedToStep2" class="btn btn-primary" style="background:#bdc3c7; border:none; cursor:not-allowed;" disabled onclick="proceedToMPStep2()">
+                ▶ 3箇所の探索を完了してステップ2へ進む
+            </button>
+        </div>
+
+        <!-- Step 2: インタラクティブ枝クリック変異カウント検証ゲーム -->
+        <div id="mpStep2" style="display:none;">
+            <div class="edu-panel rationale-panel">
+                <strong>👨‍🏫 ステップ2：枝をクリックして「突然変異（★）」を置き、最小回数を考えよう！</strong>
+                <button class="rationale-btn" style="background:#e67e22;" onclick="toggleRationale('rat_step2_help')" title="有根系統樹の解き方">?</button>
+                <br>
+                先ほど発見した情報座位（座位 <span id="mpSelectedSiteNum" style="font-weight:bold; color:#e67e22;">-</span>）について、有根系統樹の**枝の上をクリックして突然変異（★）を配置**してください。
+            </div>
+
+            <div id="rat_step2_help" class="rationale-text" style="border-color:#e67e22; background:#fef5e7; color:#d35400;">
+                <strong>💡 【有根系統樹（逆三角形）の解き方】</strong><br>
+                1. 一番左の生物を**外群（進化的に離れた種）**として固定し、そこから右へ分岐していく教科書通りのモデルです。（※一番左の灰色の枝は共通祖先であり、ここへの変異配置は内群の根元と同じ意味になるため固定されています）。<br>
+                2. 各系統樹の<strong>緑色の線（枝）をクリック</strong>すると、突然変異（★）マークを配置・削除できます。<br>
+                3. 目標は、<strong>「すべての生物（葉）の塩基の違いを、最も少ない突然変異の回数（★の数）で説明すること」</strong>です。<br>
+                4. 配置が終わったら、下部の<strong>「変異の配置を論理検証する」</strong>ボタンを押してください！
+            </div>
+            
+            <div style="background:#fff8e1; border:1px solid #f5b041; padding:10px; border-radius:4px; margin-bottom:15px; font-size:12px; color:#7e5109; display:flex; justify-content:space-between; align-items:center;">
+                <div id="mpSelectedSiteBases">
+                    💡 現在選ばれている座位の塩基配置: <b>-</b>
+                </div>
+                <div>
+                     他の部位で試す: <select id="mpSiteSelector" onchange="changeMPInteractiveSite()" style="width:auto; padding:2px 5px; font-size:11px;"></select>
+                </div>
+            </div>
+
+            <!-- 有根系統樹3パターンの枝配置SVG (V字・逆三角形 教科書準拠) -->
+            <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:15px;">
+                <!-- Tree I -->
+                <div id="mpInteractiveCard1" style="flex:1; min-width:260px; border:2px solid #bdc3c7; border-radius:6px; padding:10px; text-align:center; background:#fafbfc;">
+                    <h4 style="margin:0 0 10px 0; font-size:13px; color:#2c3e50;">系統樹 I</h4>
+                    <svg id="mpSvg1" width="250" height="150" style="background:#fff; border-radius:4px; max-width: 100%;"></svg>
+                    <div style="margin-top:10px; font-size:12px; font-weight:bold; color:#2c3e50;">
+                        変異の数: <span id="mutCount1" style="color:#e67e22; font-size:15px;">0</span> 回
+                    </div>
+                    <div id="mutPassIcon1" style="font-size:11px; font-weight:bold; margin-top:5px; color:#7f8c8d;">未検証</div>
+                </div>
+
+                <!-- Tree II -->
+                <div id="mpInteractiveCard2" style="flex:1; min-width:260px; border:2px solid #bdc3c7; border-radius:6px; padding:10px; text-align:center; background:#fafbfc;">
+                    <h4 style="margin:0 0 10px 0; font-size:13px; color:#2c3e50;">系統樹 II</h4>
+                    <svg id="mpSvg2" width="250" height="150" style="background:#fff; border-radius:4px; max-width: 100%;"></svg>
+                    <div style="margin-top:10px; font-size:12px; font-weight:bold; color:#2c3e50;">
+                        変異の数: <span id="mutCount2" style="color:#e67e22; font-size:15px;">0</span> 回
+                    </div>
+                    <div id="mutPassIcon2" style="font-size:11px; font-weight:bold; margin-top:5px; color:#7f8c8d;">未検証</div>
+                </div>
+
+                <!-- Tree III -->
+                <div id="mpInteractiveCard3" style="flex:1; min-width:260px; border:2px solid #bdc3c7; border-radius:6px; padding:10px; text-align:center; background:#fafbfc;">
+                    <h4 style="margin:0 0 10px 0; font-size:13px; color:#2c3e50;">系統樹 III</h4>
+                    <svg id="mpSvg3" width="250" height="150" style="background:#fff; border-radius:4px; max-width: 100%;"></svg>
+                    <div style="margin-top:10px; font-size:12px; font-weight:bold; color:#2c3e50;">
+                        変異の数: <span id="mutCount3" style="color:#e67e22; font-size:15px;">0</span> 回
+                    </div>
+                    <div id="mutPassIcon3" style="font-size:11px; font-weight:bold; margin-top:5px; color:#7f8c8d;">未検証</div>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <button class="btn btn-primary pulse-anim" style="flex:1;" onclick="verifyPlacedMutations()">🧮 変異の配置を論理検証する</button>
+                <button class="btn" style="background:#ecf0f1; border:none; width:auto;" onclick="revealStep2Answers()">🔓 答えを開く</button>
+            </div>
+            
+            <div id="mpStep2Feedback" class="assist-panel" style="display:none; margin-top:0; margin-bottom:15px;"></div>
+            
+            <button id="btnProceedToStep3" class="btn btn-purple" style="background:#bdc3c7; border:none; cursor:not-allowed;" disabled onclick="proceedToMPStep3()">
+                ▶ 全座位（配列全体）の総変異回数を比較する
+            </button>
+        </div>
+
+        <!-- Step 3: 最節約的な系統樹の選択 -->
+        <div id="mpStep3" style="display:none;">
+            <div class="edu-panel rationale-panel">
+                <strong>👨‍🏫 ステップ3：最も最節約的な樹形を選ぶ</strong><br>
+                全座位（配列全体）について計算された総変異回数が集計されました。<br>
+                <strong>最も変異回数が少ない（最節約的な、最も進化の無駄がない）樹形を以下からクリックして選択してください。</strong><br>
+                <span style="font-size:11px; color:#7f8c8d;">※選択肢の配置はランダムにシャッフルされています。</span>
+            </div>
+            <div id="mpResults" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
+                <!-- ここにJSでカードが挿入される -->
+            </div>
+            <div id="mpFeedback" class="assist-panel" style="display:none;"></div>
+        </div>
+
+        <div style="text-align: right; margin-top: 20px;">
+            <button class="btn btn-primary" style="width: auto; padding: 8px 20px; background:#95a5a6; border-color:#7f8c8d; box-shadow:none;" onclick="document.getElementById('mpModal').style.display='none'">閉じる</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast"></div>
+
+<div class="footer">&copy; 2026 Bio-Edu Suite v2.15 | For Professional Bioinformatics Education</div>
 
 <script>
     function toggleRationale(id) {
@@ -250,12 +436,31 @@
         if(!isBlock) el.style.display = 'block';
     }
 
-    const demoFasta = `>Pig_NC000845\nATGACCAACATCCGAAAATCACACCCACTAATAAAAATTATCAACAACGCATTCATTGACCTCCCAGCCCCCTCAAACATCTCATCATGATGAAACTTCGGTTCCCTCTTAGGCATC\n>Cow_NC006853\nATGACTAACATTCGAAAGTCCCACCCACTAATAAAAATTGTAAACAATGCATTCATCGACCTTCCAGCCCCATCAAACATTTCATCATGATGAAATTTCGGTTCCCTCCTGGGAATC\n>Chicken_NC00132\nATGGCACCCAACATTCGAAAATCCCACCCCCTACTAAAAATAATTAACAACTCCCTAATCGACCTCCCAGCCCCATCCAACATCTCTGCTTGATGAAATTTCGGCTCCCTATTAGCAGTC\n>Tuna_NC012920\nATGGCACAACTTCGAAAGACCCATCCCCTAATAAAAATTGTAAACAACGCATTCATTGACCTCCCAGCTCCATCAAACATCTCATCATGATGAAACTTCGGATCCCTTCTAGGGATTTGCT`;
-    document.getElementById('fastaInput').value = demoFasta;
+    const demoFasta = `>Sus_scrofa_Pig\nATGACCAACATCCGAAAATCACACCCACTAATAAAAATTATCAACAACGCATTCATTGACCTCCCAGCCCCCTCAAACATCTCATCATGATGAAACTTCGGTTCCCTCTTAGGCATC\n>Bos_taurus_Cow\nATGACTAACATTCGAAAGTCCCACCCACTAATAAAAATTGTAAACAATGCATTCATCGACCTTCCAGCCCCATCAAACATTTCATCATGATGAAATTTCGGTTCCCTCCTGGGAATC\n>Gallus_gallus_Chicken\nATGGCACCCAACATTCGAAAATCCCACCCCCTACTAAAAATAATTAACAACTCCCTAATCGACCTCCCAGCCCCATCCAACATCTCTGCTTGATGAAATTTCGGCTCCCTATTAGCAGTC\n>Thunnus_orientalis_Tuna\nATGGCACAACTTCGAAAGACCCATCCCCTAATAAAAATTGTAAACAACGCATTCATTGACCTCCCAGCTCCATCAAACATCTCATCATGATGAAACTTCGGATCCCTTCTAGGGATTTGCT`;
+
+    function loadDemoData() {
+        document.getElementById('fastaInput').value = demoFasta;
+        showToast("デモデータをセットしました。");
+    }
 
     let originalNames = [], clusters = [], distanceMatrix = [], stepCount = 0, nextNodeId = 0;
     let selectedPair = null; 
     let initialMatrixCSV = ""; 
+
+    // MP法用のグローバル状態変数
+    let mpNames = [];
+    let mpScores = [0, 0, 0];
+    let mpMinScore = 0;
+    let step3Order = [1, 2, 3]; 
+
+    // 共通のトースト通知
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        if (!toast) return;
+        toast.innerText = message;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
 
     function switchAlgo() {
         if(clusters.length > 0) initMatrix(); 
@@ -297,8 +502,18 @@
         reader.readAsText(e.target.files[0]);
     }
 
-    function shortName(name) {
-        return name.length > 8 ? name.substring(0, 7) + "…" : name;
+    // 学名の国際標準ルールパース (S. scrofa)
+    function formatScientificName(name) {
+        let clean = name.replace(/[A-Z]{1,2}_?\d{4,}/ig, '').replace(/_/g, ' ').trim();
+        let parts = clean.split(/\s+/).map(p => p.replace(/[^a-zA-Z]/g, '')).filter(p => p.length > 0);
+        if (parts.length >= 2) {
+            let genus = parts[0].charAt(0).toUpperCase();
+            let species = parts[1].toLowerCase();
+            return `${genus}. ${species}`; 
+        } else if (parts.length === 1) {
+            return parts[0];
+        }
+        return name.substring(0, 15);
     }
 
     function initMatrix() {
@@ -312,11 +527,12 @@
 
         if(seqs.length < 3) { alert("3つ以上の配列が必要です。"); return; }
         let len = seqs[0].seq.length;
-        if(!seqs.every(s => s.seq.length === len)) { alert("配列長が揃っていません。"); return; }
+        if(!seqs.every(s => s.seq.length === len)) { alert("配列長が揃っていないため解析を開始できません。"); return; }
 
         originalNames = seqs.map(s => s.name);
+        
         clusters = seqs.map((s, i) => ({ 
-            name: s.name, id: i, size: 1, maxDepth: 0, edge: 0, left: null, right: null 
+            name: s.name, id: i, size: 1, maxDepth: 0, edge: 0, left: null, right: null, active: true 
         }));
         nextNodeId = seqs.length;
         
@@ -382,6 +598,705 @@
         a.download = "phylogenetic_tree.png";
         a.click();
     }
+    
+    // ====== MP法 ステップ・シミュレーション用ロジック ======
+    
+    let allInformativeSites = []; 
+    let allVariableSites = [];    
+    let userFoundSites = [];    
+    let TARGET_FIND_COUNT = 0; 
+    
+    let activeMPInteractiveSiteIndex = 0; 
+    let activePlacedMutations = [[], [], []];
+
+    function isInformativeSite(bases) {
+        let counts = {};
+        for (let b of bases) {
+            if (b === '-' || b === 'N') continue; 
+            counts[b] = (counts[b] || 0) + 1;
+        }
+        let sharedBasesCount = 0;
+        for (let b in counts) {
+            if (counts[b] >= 2) sharedBasesCount++;
+        }
+        return sharedBasesCount >= 2;
+    }
+
+    function startMPSimulation() {
+        const lines = document.getElementById('fastaInput').value.split('\n');
+        let seqs = []; let name = "", seq = "";
+        lines.forEach(l => {
+            if(l.startsWith('>')) { if(name) seqs.push({name, seq}); name = l.substring(1).trim(); seq = ""; }
+            else seq += l.toUpperCase().replace(/[^A-Z-]/g, '');
+        });
+        if(name) seqs.push({name, seq});
+
+        if(seqs.length < 4) { 
+            showToast("⚠️ MP法のシミュレーションには4つ以上の配列が必要です。"); 
+            return; 
+        }
+        let len = seqs[0].seq.length;
+        if(!seqs.every(s => s.seq.length === len)) { 
+            showToast("⚠️ 配列長が揃っていません。"); 
+            return; 
+        }
+
+        let targetSeqs = seqs.slice(0, 4);
+        mpNames = targetSeqs.map(s => formatScientificName(s.name)); 
+        
+        userFoundSites = [];
+        allInformativeSites = [];
+        allVariableSites = [];
+        let localScores = [0, 0, 0];
+        
+        for (let k = 0; k < len; k++) {
+            let a = targetSeqs[0].seq[k];
+            let b = targetSeqs[1].seq[k];
+            let c = targetSeqs[2].seq[k];
+            let d = targetSeqs[3].seq[k];
+            
+            let isVar = !(a === b && b === c && c === d);
+            let c1 = calcFitchCost(a, b, c, d);
+            let c2 = calcFitchCost(a, c, b, d);
+            let c3 = calcFitchCost(a, d, b, c);
+            
+            localScores[0] += c1; 
+            localScores[1] += c2; 
+            localScores[2] += c3;
+            
+            if (isVar) {
+                let siteInfo = { pos: k + 1, idx: k, bases: [a, b, c, d], costs: [c1, c2, c3] };
+                allVariableSites.push(siteInfo);
+                if (isInformativeSite([a, b, c, d])) {
+                    allInformativeSites.push(siteInfo);
+                }
+            }
+        }
+
+        mpScores = localScores;
+        mpMinScore = Math.min(...localScores);
+
+        if (allVariableSites.length === 0) {
+            showToast("⚠️ 解析対象の最初の4種に突然変異が全く見つかりません。");
+            return;
+        }
+
+        if (allInformativeSites.length === 0) {
+            allInformativeSites = allVariableSites;
+        }
+        
+        TARGET_FIND_COUNT = allInformativeSites.length;
+
+        let tableHtml = '<table style="width: auto; min-width: 100%; border-collapse: separate; border-spacing: 0;">';
+        tableHtml += '<tr><th style="background:#eaeded; color:#2c3e50; position: sticky; left:0; z-index:10; border-right:2px solid #bdc3c7; border-bottom:1px solid #bdc3c7;">座位</th>';
+        for (let k = 0; k < len; k++) {
+            tableHtml += `<th class="align-col-header" onclick="clickAlignmentCol(${k})" title="この座位を選択">${k + 1}</th>`;
+        }
+        tableHtml += '</tr>';
+        
+        for (let i = 0; i < 4; i++) {
+            tableHtml += `<tr><th style="background:#eaeded; font-size:11px; text-align:left; position: sticky; left:0; z-index:10; border-right:2px solid #bdc3c7; border-bottom:1px solid #bdc3c7;" class="scientific-name">${mpNames[i]}</th>`;
+            for (let k = 0; k < len; k++) {
+                let char = targetSeqs[i].seq[k];
+                let isConserved = targetSeqs.every(s => s.seq[k] === char && char !== '-');
+                let cellClass = isConserved ? "align-cell conserved-cell" : "align-cell";
+                tableHtml += `<td id="align_cell_${i}_${k}" class="${cellClass}" style="border-bottom:1px solid #bdc3c7; border-right:1px solid #bdc3c7;" onclick="clickAlignmentCol(${k})">${char}</td>`;
+            }
+            tableHtml += '</tr>';
+        }
+        tableHtml += '</table>';
+        
+        document.getElementById('mpAlignmentContainer').innerHTML = tableHtml;
+        
+        let countEl = document.getElementById('mpFoundCount');
+        if (countEl) countEl.innerText = `0`;
+        let targetEl = document.getElementById('mpTargetCount');
+        if (targetEl) targetEl.innerText = TARGET_FIND_COUNT;
+        
+        const btn2 = document.getElementById('btnProceedToStep2');
+        if (btn2) {
+            btn2.disabled = true;
+            btn2.style.background = '#bdc3c7';
+            btn2.style.cursor = 'not-allowed';
+            btn2.classList.remove('pulse-anim');
+        }
+
+        document.getElementById('mpModal').style.display = 'flex';
+        document.getElementById('mpStep1').style.display = 'block';
+        document.getElementById('mpStep2').style.display = 'none';
+        document.getElementById('mpStep3').style.display = 'none';
+    }
+
+    function maskConservedSites() {
+        const conservedCells = document.querySelectorAll('.conserved-cell');
+        conservedCells.forEach(c => {
+            c.classList.add('align-cell-conserved');
+        });
+        showToast("💡 ヒント：全員が同じ塩基の列（保存領域）を薄くしました。");
+    }
+
+    function clickAlignmentCol(k) {
+        let cells = [];
+        for (let i = 0; i < 4; i++) {
+            let cell = document.getElementById(`align_cell_${i}_${k}`);
+            if(cell) cells.push(cell);
+        }
+
+        let isInformative = allInformativeSites.some(site => site.idx === k);
+        let isJustVariable = allVariableSites.some(site => site.idx === k);
+
+        if (isInformative) {
+            if (userFoundSites.includes(k)) {
+                showToast(`💡 座位 ${k + 1} はすでに発見しています。`);
+                return;
+            }
+            userFoundSites.push(k);
+            cells.forEach(c => {
+                c.classList.remove('align-cell-wrong');
+                c.classList.add('align-cell-found');
+            });
+            
+            let found = userFoundSites.length;
+            document.getElementById('mpFoundCount').innerText = found;
+
+            if (found === TARGET_FIND_COUNT) {
+                showToast(`🎉 コンプリート！情報をもつすべての座位（${TARGET_FIND_COUNT}箇所）を発見しました！`);
+            } else {
+                showToast(`🎉 正解！座位 ${k + 1} は系統推定に役立つ『情報をもつ座位』です。`);
+            }
+
+            let requiredCount = TARGET_FIND_COUNT >= 3 ? 3 : TARGET_FIND_COUNT;
+
+            if (found >= requiredCount) {
+                const btn2 = document.getElementById('btnProceedToStep2');
+                if(btn2) {
+                    btn2.disabled = false;
+                    btn2.style.background = '#3498db';
+                    btn2.style.cursor = 'pointer';
+                    btn2.classList.add('pulse-anim');
+                }
+            }
+        } else if (isJustVariable) {
+            cells.forEach(c => {
+                c.classList.add('align-cell-wrong');
+                setTimeout(() => c.classList.remove('align-cell-wrong'), 1000);
+            });
+            showToast(`❌ 惜しい！座位 ${k + 1} は1種だけ異なる変異なので、系統の枝分かれを特定できません。`);
+        } else {
+            cells.forEach(c => {
+                c.classList.add('align-cell-wrong');
+                setTimeout(() => c.classList.remove('align-cell-wrong'), 1000);
+            });
+            showToast(`❌ 残念！座位 ${k + 1} は全員が同じ塩基で、変異がありません。`);
+        }
+    }
+
+    function autoFindVariableSites() {
+        let needed = allInformativeSites.map(s => s.idx);
+        needed.forEach(k => {
+            if (!userFoundSites.includes(k)) {
+                userFoundSites.push(k);
+                for (let i = 0; i < 4; i++) {
+                    let cell = document.getElementById(`align_cell_${i}_${k}`);
+                    if(cell) cell.classList.add('align-cell-found');
+                }
+            }
+        });
+        
+        let countEl = document.getElementById('mpFoundCount');
+        if(countEl) countEl.innerText = userFoundSites.length;
+        
+        const btn2 = document.getElementById('btnProceedToStep2');
+        if(btn2) {
+            btn2.disabled = false;
+            btn2.style.background = '#3498db';
+            btn2.style.cursor = 'pointer';
+            btn2.classList.add('pulse-anim');
+        }
+        showToast("すべての情報をもつ座位を表示しました。");
+    }
+
+    function proceedToMPStep2() {
+        let interactiveSites = allInformativeSites.filter(s => userFoundSites.includes(s.idx));
+        if (interactiveSites.length === 0) interactiveSites = allInformativeSites.slice(0, 3); 
+
+        const selector = document.getElementById('mpSiteSelector');
+        selector.innerHTML = '';
+        interactiveSites.forEach((s, idx) => {
+            selector.innerHTML += `<option value="${idx}">部位 (座位 ${s.pos})</option>`;
+        });
+
+        allInformativeSites = interactiveSites;
+        activeMPInteractiveSiteIndex = 0;
+        initMPInteractiveSite(0);
+
+        document.getElementById('mpStep1').style.display = 'none';
+        document.getElementById('mpStep2').style.display = 'block';
+    }
+
+    function initMPInteractiveSite(index) {
+        activeMPInteractiveSiteIndex = index;
+        let site = allInformativeSites[index];
+        
+        document.getElementById('mpSelectedSiteNum').innerText = site.pos;
+        document.getElementById('mpSelectedSiteBases').innerHTML = `
+            💡 現在の塩基: 
+            <span class="scientific-name">${mpNames[0]}</span>: <b>${site.bases[0]}</b>, 
+            <span class="scientific-name">${mpNames[1]}</span>: <b>${site.bases[1]}</b>, 
+            <span class="scientific-name">${mpNames[2]}</span>: <b>${site.bases[2]}</b>, 
+            <span class="scientific-name">${mpNames[3]}</span>: <b>${site.bases[3]}</b>
+        `;
+
+        activePlacedMutations = [
+            [false, false, false, false, false],
+            [false, false, false, false, false],
+            [false, false, false, false, false]
+        ];
+
+        document.getElementById('mpStep2Feedback').style.display = 'none';
+        const btn3 = document.getElementById('btnProceedToStep3');
+        if (btn3) {
+            btn3.disabled = true;
+            btn3.style.background = '#bdc3c7';
+            btn3.style.cursor = 'not-allowed';
+            btn3.classList.remove('pulse-anim-purple');
+        }
+
+        renderInteractiveSVG(1, site.bases[0], site.bases[1], site.bases[2], site.bases[3]); 
+        renderInteractiveSVG(2, site.bases[0], site.bases[2], site.bases[1], site.bases[3]); 
+        renderInteractiveSVG(3, site.bases[0], site.bases[3], site.bases[1], site.bases[2]); 
+        
+        updateMutationCounters();
+    }
+
+    function changeMPInteractiveSite() {
+        const idx = parseInt(document.getElementById('mpSiteSelector').value);
+        initMPInteractiveSite(idx);
+    }
+
+    function toggleMutation(treeType, branchIdx) {
+        activePlacedMutations[treeType - 1][branchIdx] = !activePlacedMutations[treeType - 1][branchIdx];
+        
+        const line = document.getElementById(`line_${treeType}_${branchIdx}`);
+        const star = document.getElementById(`star_${treeType}_${branchIdx}`);
+        
+        if (activePlacedMutations[treeType - 1][branchIdx]) {
+            line.classList.add('branch-mutated');
+            star.setAttribute('opacity', '1');
+        } else {
+            line.classList.remove('branch-mutated');
+            star.setAttribute('opacity', '0');
+        }
+
+        updateMutationCounters();
+    }
+
+    function updateMutationCounters() {
+        for (let t = 1; t <= 3; t++) {
+            let count = activePlacedMutations[t - 1].filter(Boolean).length;
+            document.getElementById(`mutCount${t}`).innerText = count;
+            
+            let textEl = document.getElementById(`mutPassIcon${t}`);
+            textEl.innerText = "未検証";
+            textEl.style.color = "#7f8c8d";
+            document.getElementById(`mpInteractiveCard${t}`).style.borderColor = "#bdc3c7";
+            document.getElementById(`mpInteractiveCard${t}`).style.boxShadow = "none";
+        }
+    }
+
+    // --- SVG 教科書完全準拠の有根系統樹（逆三角形）の描画 ---
+    function renderInteractiveSVG(treeType, b1, b2, b3, b4) {
+        const svg = document.getElementById(`mpSvg${treeType}`);
+        svg.innerHTML = '';
+
+        const root = {x: 125, y: 120};
+        const n1 = {x: 155, y: 90};
+        const n2 = {x: 185, y: 60};
+        
+        let points = [];
+        if (treeType === 1) { 
+            points = [
+                {x: 35, y: 30, b: b1, label: mpNames[0]}, 
+                {x: 95, y: 30, b: b2, label: mpNames[1]}, 
+                {x: 155, y: 30, b: b3, label: mpNames[2]}, 
+                {x: 215, y: 30, b: b4, label: mpNames[3]}  
+            ];
+        } else if (treeType === 2) { 
+            points = [
+                {x: 35, y: 30, b: b1, label: mpNames[0]}, 
+                {x: 95, y: 30, b: b3, label: mpNames[2]}, 
+                {x: 155, y: 30, b: b2, label: mpNames[1]}, 
+                {x: 215, y: 30, b: b4, label: mpNames[3]}  
+            ];
+        } else { 
+            points = [
+                {x: 35, y: 30, b: b1, label: mpNames[0]}, 
+                {x: 95, y: 30, b: b4, label: mpNames[3]}, 
+                {x: 155, y: 30, b: b2, label: mpNames[1]}, 
+                {x: 215, y: 30, b: b3, label: mpNames[2]}  
+            ];
+        }
+
+        let baseLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        baseLine.setAttribute("x1", root.x); baseLine.setAttribute("y1", root.y);
+        baseLine.setAttribute("x2", points[0].x); baseLine.setAttribute("y2", points[0].y);
+        baseLine.setAttribute("stroke", "#bdc3c7"); baseLine.setAttribute("stroke-width", "4");
+        svg.appendChild(baseLine);
+
+        const branches = [
+            {id: 0, x1: root.x, y1: root.y, x2: n1.x, y2: n1.y}, 
+            {id: 1, x1: n1.x, y1: n1.y, x2: points[1].x, y2: points[1].y}, 
+            {id: 2, x1: n2.x, y1: n2.y, x2: points[2].x, y2: points[2].y}, 
+            {id: 3, x1: n2.x, y1: n2.y, x2: points[3].x, y2: points[3].y}, 
+            {id: 4, x1: n1.x, y1: n1.y, x2: n2.x, y2: n2.y} 
+        ];
+
+        branches.forEach(b => {
+            let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("id", `line_${treeType}_${b.id}`);
+            line.setAttribute("x1", b.x1);
+            line.setAttribute("y1", b.y1);
+            line.setAttribute("x2", b.x2);
+            line.setAttribute("y2", b.y2);
+            line.setAttribute("stroke", "#27ae60");
+            line.setAttribute("stroke-width", "4");
+            line.setAttribute("class", "branch-clickable");
+            line.onclick = () => toggleMutation(treeType, b.id);
+            svg.appendChild(line);
+
+            const mx = (b.x1 + b.x2) / 2;
+            const my = (b.y1 + b.y2) / 2;
+            
+            let g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            g.setAttribute("id", `star_${treeType}_${b.id}`);
+            g.setAttribute("opacity", "0");
+            
+            let star = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            star.setAttribute("x", mx);
+            star.setAttribute("y", my + 6);
+            star.setAttribute("font-size", "18");
+            star.setAttribute("fill", "#e74c3c");
+            star.setAttribute("text-anchor", "middle");
+            star.style.pointerEvents = 'none';
+            star.textContent = "★";
+            
+            g.appendChild(star);
+            svg.appendChild(g);
+        });
+
+        points.forEach((p) => {
+            let circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circle.setAttribute("cx", p.x);
+            circle.setAttribute("cy", p.y);
+            circle.setAttribute("r", "12");
+            circle.setAttribute("fill", "#3498db");
+            svg.appendChild(circle);
+
+            let text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            text.setAttribute("x", p.x);
+            text.setAttribute("y", p.y + 4);
+            text.setAttribute("font-size", "11");
+            text.setAttribute("fill", "#fff");
+            text.setAttribute("font-weight", "bold");
+            text.setAttribute("text-anchor", "middle");
+            text.textContent = p.b;
+            svg.appendChild(text);
+
+            let label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            label.setAttribute("x", p.x);
+            label.setAttribute("y", p.y - 18);
+            label.setAttribute("font-size", "10");
+            label.setAttribute("fill", "#7f8c8d");
+            label.setAttribute("text-anchor", "middle");
+            label.setAttribute("class", "scientific-name");
+            label.textContent = p.label;
+            svg.appendChild(label);
+        });
+    }
+
+    function verifyPlacedMutations() {
+        let site = allInformativeSites[activeMPInteractiveSiteIndex];
+        let allPassed = true;
+        let incorrectTrees = [];
+
+        for (let t = 1; t <= 3; t++) {
+            let expectedMin = site.costs[t - 1];
+            let placed = activePlacedMutations[t - 1];
+            let currentCost = placed.filter(Boolean).length;
+            
+            let leaves = [];
+            if (t === 1) leaves = [site.bases[0], site.bases[1], site.bases[2], site.bases[3]]; 
+            else if (t === 2) leaves = [site.bases[0], site.bases[2], site.bases[1], site.bases[3]]; 
+            else leaves = [site.bases[0], site.bases[3], site.bases[1], site.bases[2]]; 
+
+            let isLogical = checkLogicalFeasibility(leaves, placed);
+
+            let card = document.getElementById(`mpInteractiveCard${t}`);
+            let icon = document.getElementById(`mutPassIcon${t}`);
+
+            if (isLogical && currentCost === expectedMin) {
+                card.style.borderColor = "#2ecc71";
+                card.style.boxShadow = "0 0 0 2px #2ecc71";
+                icon.innerText = "🟢 検証クリア！";
+                icon.style.color = "#2ecc71";
+            } else {
+                allPassed = false;
+                incorrectTrees.push(t === 1 ? 'I' : t === 2 ? 'II' : 'III');
+                card.style.borderColor = "#e74c3c";
+                card.style.boxShadow = "0 0 0 2px #e74c3c";
+                
+                if (currentCost < expectedMin) {
+                    icon.innerHTML = `🔴 変異数が足りません (最小: ${expectedMin}回)`;
+                } else if (currentCost > expectedMin) {
+                    icon.innerHTML = `🔴 変異が多すぎます (最小: ${expectedMin}回)`;
+                } else {
+                    icon.innerHTML = "🔴 塩基の不整合 (説明不能)";
+                }
+                icon.style.color = "#e74c3c";
+            }
+        }
+
+        const feedback = document.getElementById('mpStep2Feedback');
+        feedback.style.display = "block";
+
+        if (allPassed) {
+            feedback.style.backgroundColor = '#e8f8f5';
+            feedback.style.borderLeftColor = '#27ae60';
+            feedback.innerHTML = `
+                <div class="assist-item">
+                    <div class="assist-title" style="color:#27ae60;">🎉 完璧です！すべての系統樹で最小変異を正しく配置できました！</div>
+                    <div class="assist-reason" style="color:#2c3e50;">座位によっては「変異回数がどの樹形でも同じ」場合と、「特定の系統樹だけで突然変異が少なくて済む（合理的）」場合があります。</div>
+                    <div class="assist-fix" style="border-color:#2ecc71; color:#117864;">
+                        👉 最小の変異数で説明できる系統樹を探索する最節約法の本質が、これで実感できましたね。<br>
+                        準備が整いました。全座位を集計した配列全体のステップに進みましょう！
+                    </div>
+                </div>
+            `;
+            const btn3 = document.getElementById('btnProceedToStep3');
+            if (btn3) {
+                btn3.disabled = false;
+                btn3.style.background = '#8e44ad';
+                btn3.style.cursor = 'pointer';
+                btn3.classList.add('pulse-anim-purple');
+            }
+        } else {
+            feedback.style.backgroundColor = '#fadbd8';
+            feedback.style.borderLeftColor = '#e74c3c';
+            feedback.innerHTML = `
+                <div class="assist-item">
+                    <div class="assist-title">⚠️ 変異の配置が不正確です (対象: 系統樹 ${incorrectTrees.join(', ')})</div>
+                    <div class="assist-reason">1回の変異（★）では説明できない配置になっているか、無駄な変異が多く置かれています。</div>
+                    <div class="assist-fix">
+                        👉 最小回数を満たすように、★を配置してください。<br>
+                        （例：枝の先で塩基が [C] と [A] にバラバラに配置されている樹形では、1回の変異で全員の塩基を矛盾なく説明することはできず、独立した2回の変異が必要です）
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    function checkLogicalFeasibility(leaves, placed) {
+        const bases = ['A', 'T', 'G', 'C', '-', 'N'];
+        for (let bN1 of bases) {
+            for (let bN2 of bases) {
+                let valid = true;
+                if ((leaves[0] !== bN1) !== placed[0]) valid = false; // Xの枝
+                if ((leaves[1] !== bN1) !== placed[1]) valid = false; // aの枝
+                if ((leaves[2] !== bN2) !== placed[2]) valid = false; // bの枝
+                if ((leaves[3] !== bN2) !== placed[3]) valid = false; // cの枝
+                if ((bN1 !== bN2) !== placed[4]) valid = false;       // 内部枝
+                if (valid) return true; 
+            }
+        }
+        return false;
+    }
+
+    function revealStep2Answers() {
+        let site = allInformativeSites[activeMPInteractiveSiteIndex];
+        for (let t = 1; t <= 3; t++) {
+            let leaves = [];
+            if (t === 1) leaves = [site.bases[0], site.bases[1], site.bases[2], site.bases[3]];
+            else if (t === 2) leaves = [site.bases[0], site.bases[2], site.bases[1], site.bases[3]];
+            else leaves = [site.bases[0], site.bases[3], site.bases[1], site.bases[2]];
+
+            let minScore = site.costs[t - 1];
+            let foundCombination = null;
+            
+            for (let m = 0; m < 32; m++) {
+                let p = [(m & 1) !== 0, (m & 2) !== 0, (m & 4) !== 0, (m & 8) !== 0, (m & 16) !== 0];
+                let cost = p.filter(Boolean).length;
+                if (cost === minScore && checkLogicalFeasibility(leaves, p)) {
+                    foundCombination = p;
+                    break;
+                }
+            }
+
+            if (foundCombination) {
+                activePlacedMutations[t - 1] = foundCombination;
+                for (let b = 0; b < 5; b++) {
+                    const line = document.getElementById(`line_${t}_${b}`);
+                    const star = document.getElementById(`star_${t}_${b}`);
+                    if (foundCombination[b]) {
+                        line.classList.add('branch-mutated');
+                        star.setAttribute('opacity', '1');
+                    } else {
+                        line.classList.remove('branch-mutated');
+                        star.setAttribute('opacity', '0');
+                    }
+                }
+            }
+        }
+        updateMutationCounters();
+        verifyPlacedMutations();
+        showToast("🔓 最小突然変異配置の正解を表示しました。");
+    }
+
+    // --- ランダムシャッフルしてStep 3へ ---
+    function proceedToMPStep3() {
+        step3Order = [1, 2, 3].sort(() => 0.5 - Math.random());
+        
+        let html = '';
+        step3Order.forEach(i => {
+            html += `
+            <div class="mp-tree-card" onclick="selectMPTree(${i})" style="flex:1; min-width: 210px; border: 2px solid #bdc3c7; border-radius: 6px; padding: 15px; cursor: pointer; text-align: center; background: #fff; transition: 0.2s;">
+                <h4 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 14px;">系統樹 ${i === 1 ? 'I' : i === 2 ? 'II' : 'III'}</h4>
+                <canvas id="mpCanvas${i}" width="250" height="150" style="max-width: 100%; height: auto;"></canvas>
+                <p style="margin: 10px 0 0 0; font-size: 13px; font-weight: bold; color: #34495e;">総変異回数: <span style="font-size: 18px; color: #e67e22;">${mpScores[i-1]}</span> 回</p>
+            </div>`;
+        });
+        
+        document.getElementById('mpResults').innerHTML = html;
+        document.getElementById('mpFeedback').style.display = 'none';
+        
+        document.getElementById('mpStep2').style.display = 'none';
+        document.getElementById('mpStep3').style.display = 'block';
+        
+        setTimeout(() => {
+            drawMPTreeCanvas(`mpCanvas1`, 1);
+            drawMPTreeCanvas(`mpCanvas2`, 2);
+            drawMPTreeCanvas(`mpCanvas3`, 3);
+        }, 50);
+    }
+    
+    function calcFitchCost(c1, c2, c3, c4) {
+        let sX = c1 === c2 ? [c1] : [c1, c2];
+        let costX = c1 === c2 ? 0 : 1;
+        
+        let sY = c3 === c4 ? [c3] : [c3, c4];
+        let costY = c3 === c4 ? 0 : 1;
+        
+        let intersect = sX.filter(val => sY.includes(val));
+        if (intersect.length > 0) {
+            return costX + costY;
+        } else {
+            return costX + costY + 1;
+        }
+    }
+    
+    // Step 3用 有根系統樹(逆三角形)のCanvas描画
+    function drawMPTreeCanvas(canvasId, treeType) {
+        // IDが動的に生成されているため、正しいCanvasを探す
+        // step3Orderによって id=mpCanvas1 は必ずしも treeType=1 を描画するわけではない
+        // 修正: canvasId と treeType を直接紐付けて描画する
+        const canvas = document.querySelector(`canvas[id="mpCanvas${treeType}"]`);
+        if(!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width, h = canvas.height;
+        
+        ctx.clearRect(0, 0, w, h);
+        ctx.strokeStyle = '#27ae60';
+        ctx.lineWidth = 4;
+        ctx.lineJoin = 'round';
+        
+        const root = {x: 125, y: 120};
+        const n1 = {x: 155, y: 90};
+        const n2 = {x: 185, y: 60};
+        
+        let points = [];
+        if (treeType === 1) { 
+            points = [ {x: 35, y: 30, label: mpNames[0]}, {x: 95, y: 30, label: mpNames[1]}, {x: 155, y: 30, label: mpNames[2]}, {x: 215, y: 30, label: mpNames[3]} ];
+        } else if (treeType === 2) { 
+            points = [ {x: 35, y: 30, label: mpNames[0]}, {x: 95, y: 30, label: mpNames[2]}, {x: 155, y: 30, label: mpNames[1]}, {x: 215, y: 30, label: mpNames[3]} ];
+        } else {
+            points = [ {x: 35, y: 30, label: mpNames[0]}, {x: 95, y: 30, label: mpNames[3]}, {x: 155, y: 30, label: mpNames[1]}, {x: 215, y: 30, label: mpNames[2]} ];
+        }
+
+        ctx.beginPath();
+        ctx.strokeStyle = '#bdc3c7';
+        ctx.moveTo(root.x, root.y); ctx.lineTo(points[0].x, points[0].y); 
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.strokeStyle = '#27ae60';
+        ctx.moveTo(root.x, root.y); ctx.lineTo(n1.x, n1.y); 
+        ctx.moveTo(n1.x, n1.y); ctx.lineTo(points[1].x, points[1].y); 
+        ctx.moveTo(n1.x, n1.y); ctx.lineTo(n2.x, n2.y); 
+        ctx.moveTo(n2.x, n2.y); ctx.lineTo(points[2].x, points[2].y); 
+        ctx.moveTo(n2.x, n2.y); ctx.lineTo(points[3].x, points[3].y); 
+        ctx.stroke();
+        
+        ctx.fillStyle = '#2c3e50'; 
+        ctx.font = 'italic bold 12px "Times New Roman", serif'; 
+        ctx.textBaseline = 'bottom';
+        ctx.textAlign = 'center';
+        
+        points.forEach(p => {
+            ctx.fillText(p.label, p.x, p.y - 5);
+        });
+    }
+
+    function selectMPTree(index) {
+        const score = mpScores[index - 1];
+        const isCorrect = (score === mpMinScore);
+        const feedback = document.getElementById('mpFeedback');
+        feedback.style.display = 'block';
+        
+        const cards = document.querySelectorAll('.mp-tree-card');
+        
+        step3Order.forEach((treeNum, cardDomIdx) => {
+            let c = cards[cardDomIdx];
+            if (treeNum === index) {
+                c.style.borderColor = isCorrect ? '#27ae60' : '#e74c3c';
+                c.style.boxShadow = isCorrect ? '0 0 0 2px #27ae60' : '0 0 0 2px #e74c3c';
+                c.style.backgroundColor = isCorrect ? '#e8f8f5' : '#fadbd8';
+            } else {
+                c.style.borderColor = '#bdc3c7';
+                c.style.boxShadow = 'none';
+                c.style.backgroundColor = '#fff';
+            }
+        });
+
+        if (isCorrect) {
+            feedback.className = 'assist-panel';
+            feedback.style.backgroundColor = '#e8f8f5';
+            feedback.style.borderLeftColor = '#27ae60';
+            feedback.innerHTML = `
+                <div class="assist-item">
+                    <div class="assist-title" style="color: #27ae60;">🎉 大正解！最も変異回数が少ない（最節約的な）樹形を選びました。</div>
+                    <div class="assist-reason" style="color: #2c3e50;">配列全体における突然変異の合計値が最も小さくなる「系統樹 ${index === 1 ? 'I' : index === 2 ? 'II' : 'III'}」が、最も無駄のない進化モデルとして学術的に支持されます。</div>
+                    <div class="assist-fix" style="border-color: #27ae60; background: #fff; color: #1e8449;">
+                        💡 実際の分子系統解析では、何万〜何億サイトにも及ぶ遺伝子情報をプログラム(MEGA)で走査します。<br>
+                        しかし裏側で行われているのは、今回のように「情報をもつ座位ごとにFitchの変異回数をカウントし、その和が最小のモデルを選択する」という、あなたが体験した地道なアルゴリズムそのものです！
+                    </div>
+                </div>
+            `;
+        } else {
+            feedback.className = 'assist-panel';
+            feedback.style.backgroundColor = '#fadbd8';
+            feedback.style.borderLeftColor = '#e74c3c';
+            feedback.innerHTML = `
+                <div class="assist-item">
+                    <div class="assist-title">⚠️ それは最節約的な樹形ではありません</div>
+                    <div class="assist-reason">選択した系統樹の総変異回数は ${score} 回ですが、もっと変異回数が少なくなる樹形が存在します。</div>
+                    <div class="assist-fix">👉【修正】各カードの下に表示されている「総変異回数」をよく見て、<strong>一番値が小さいもの</strong>を選んでください。</div>
+                </div>
+            `;
+        }
+    }
+
+    // ==========================================
+    // UPGMA / NJ 計算用ロジック群
+    // ==========================================
 
     function getNJQMatrix() {
         const n = clusters.length;
@@ -403,14 +1318,18 @@
         let minVal = Infinity, minI = -1, minJ = -1;
         if(algo === "UPGMA") {
             for(let i=0; i<clusters.length; i++) {
+                if(!clusters[i].active) continue;
                 for(let j=i+1; j<clusters.length; j++) {
+                    if(!clusters[j].active) continue;
                     if(distanceMatrix[i][j] < minVal) { minVal = distanceMatrix[i][j]; minI = i; minJ = j; }
                 }
             }
         } else {
             const {q} = getNJQMatrix();
             for(let i=0; i<clusters.length; i++) {
+                if(!clusters[i].active) continue;
                 for(let j=i+1; j<clusters.length; j++) {
+                    if(!clusters[j].active) continue;
                     if(q[i][j] < minVal) { minVal = q[i][j]; minI = i; minJ = j; }
                 }
             }
@@ -424,11 +1343,15 @@
         if(algo === "NJ") displayMatrix = getNJQMatrix().q;
 
         let html = "<table><tr><th></th>";
-        clusters.forEach(c => html += `<th title="${c.name}">${shortName(c.name)}</th>`);
+        clusters.forEach(c => {
+            let headerCls = c.active ? 'scientific-name' : 'scientific-name matrix-inactive-header';
+            html += `<th title="${formatScientificName(c.name)}"><span class="${headerCls}">${formatScientificName(c.name)}</span></th>`;
+        });
         html += "</tr>";
         
         for(let i=0; i<clusters.length; i++) {
-            html += `<tr><th title="${clusters[i].name}">${shortName(clusters[i].name)}</th>`;
+            let headerCls = clusters[i].active ? 'scientific-name' : 'scientific-name matrix-inactive-header';
+            html += `<tr><th title="${formatScientificName(clusters[i].name)}"><span class="${headerCls}">${formatScientificName(clusters[i].name)}</span></th>`;
             for(let j=0; j<clusters.length; j++) {
                 if(i === j) {
                     html += `<td class="matrix-diagonal">-</td>`;
@@ -436,9 +1359,14 @@
                     html += `<td class="matrix-diagonal"></td>`; 
                 } else {
                     let val = displayMatrix[i][j].toFixed(1);
-                    let isSelected = selectedPair && ((i===selectedPair.i && j===selectedPair.j) || (i===selectedPair.j && j===selectedPair.i));
-                    let cls = isSelected ? 'matrix-min' : 'matrix-clickable';
-                    html += `<td class="${cls}" onclick="checkUserSelection(${i}, ${j})">${val}</td>`;
+                    
+                    if(!clusters[i].active || !clusters[j].active) {
+                        html += `<td class="matrix-inactive">${val}</td>`;
+                    } else {
+                        let isSelected = selectedPair && ((i===selectedPair.i && j===selectedPair.j) || (i===selectedPair.j && j===selectedPair.i));
+                        let cls = isSelected ? 'matrix-min' : 'matrix-clickable';
+                        html += `<td id="matrix_cell_${i}_${j}" class="${cls}" onclick="checkUserSelection(${i}, ${j})">${val}</td>`;
+                    }
                 }
             }
             html += "</tr>";
@@ -448,6 +1376,8 @@
     }
 
     function checkUserSelection(i, j) {
+        if(!clusters[i].active || !clusters[j].active) return;
+        
         let trueMin = findMin();
         const algo = document.querySelector('input[name="algo"]:checked').value;
         
@@ -461,32 +1391,41 @@
 
         if(isCorrect) {
             selectedPair = {i: i, j: j, dist: distanceMatrix[i][j]};
-            document.getElementById('statusLog').innerHTML = `[正解！] <span class="highlight-step">${shortName(clusters[i].name)}</span> と <span class="highlight-step">${shortName(clusters[j].name)}</span> が一番近いですね。<br>「▶ 結合」ボタンを押して、2つを1つの枝にまとめましょう。`;
+            document.getElementById('statusLog').innerHTML = `[正解！] <i class="highlight-step scientific-name" style="color:#f1c40f;">${formatScientificName(clusters[i].name)}</i> と <i class="highlight-step scientific-name" style="color:#f1c40f;">${formatScientificName(clusters[j].name)}</i> が一番近いですね。<br>「▶ 選択したペアを結合して行列を拡張」ボタンを押して、計算済みのペアを斜線で消し、新しいグループを書き足しましょう。`;
             document.getElementById('btnNextStep').style.display = 'block';
             document.getElementById('btnNextStep').disabled = false;
             renderMatrix();
         } else {
             document.getElementById('statusLog').innerHTML = `[不正解] <span style="color:#e74c3c;">そこは一番小さい数字ではありません！</span><br>表をよく見て、一番小さい値を探してクリックしてください。`;
-            renderMatrix();
-            event.target.classList.add('matrix-error');
-            setTimeout(() => { event.target.classList.remove('matrix-error'); }, 400);
             
             selectedPair = null;
             document.getElementById('btnNextStep').style.display = 'none';
+            
+            renderMatrix(); 
+            
+            let targetCell = document.getElementById(`matrix_cell_${i}_${j}`);
+            if (targetCell) {
+                targetCell.classList.add('matrix-error');
+                setTimeout(() => { targetCell.classList.remove('matrix-error'); }, 400);
+            }
         }
     }
 
     function executeCombine() {
-        if(!selectedPair || clusters.length <= 1) return;
+        if(!selectedPair) return;
         const algo = document.querySelector('input[name="algo"]:checked').value;
         
         let i = selectedPair.i, j = selectedPair.j, c1 = clusters[i], c2 = clusters[j], n = clusters.length;
+        
+        let activeNodesCount = clusters.filter(c => c.active).length;
+        if (activeNodesCount <= 1) return;
+
         let newMaxDepth = 0;
         
         if(algo === "NJ") {
-            if (n > 2) {
+            if (activeNodesCount > 2) {
                 const {r} = getNJQMatrix();
-                let d1 = (distanceMatrix[i][j] / 2) + (r[i] - r[j]) / (2 * (n - 2));
+                let d1 = (distanceMatrix[i][j] / 2) + (r[i] - r[j]) / (2 * (n - 2)); 
                 let d2 = distanceMatrix[i][j] - d1;
                 c1.edge = Math.max(0, d1); 
                 c2.edge = Math.max(0, d2);
@@ -501,67 +1440,67 @@
             c2.edge = Math.max(0, newMaxDepth - c2.maxDepth);
         }
 
-        let newNode = { name: `(${shortName(c1.name)},${shortName(c2.name)})`, id: nextNodeId++, size: c1.size+c2.size, maxDepth: newMaxDepth, left: c1, right: c2, edge: 0 };
+        let newNode = { name: `(${formatScientificName(c1.name)},${formatScientificName(c2.name)})`, id: nextNodeId++, size: c1.size+c2.size, maxDepth: newMaxDepth, left: c1, right: c2, edge: 0, active: true };
         
-        let newDist = [];
+        let newDistRow = [];
         for(let k=0; k<n; k++) {
-            if(k!==i && k!==j) {
-                let d = algo === "UPGMA" 
+            let d = 0;
+            if (k === i || k === j) {
+                d = 0;
+            } else {
+                d = algo === "UPGMA" 
                     ? (distanceMatrix[i][k]*c1.size + distanceMatrix[j][k]*c2.size)/newNode.size 
                     : (distanceMatrix[i][k] + distanceMatrix[j][k] - distanceMatrix[i][j])/2;
-                newDist.push(d);
             }
+            newDistRow.push(d);
+            distanceMatrix[k].push(d); 
         }
-
-        let nextC = [], nextM = [], dIdx = 0;
-        for(let r=0; r<n; r++) {
-            if(r!==i && r!==j) {
-                nextC.push(clusters[r]); let row = [];
-                for(let c=0; c<n; c++) if(c!==i && c!==j) row.push(distanceMatrix[r][c]);
-                row.push(newDist[dIdx++]); nextM.push(row);
-            }
-        }
-        nextM.push([...newDist, 0]); nextC.push(newNode);
-        clusters = nextC; distanceMatrix = nextM;
+        newDistRow.push(0); 
+        distanceMatrix.push(newDistRow); 
+        
+        clusters[i].active = false;
+        clusters[j].active = false;
+        clusters.push(newNode);
         
         selectedPair = null;
         document.getElementById('btnNextStep').style.display = 'none';
         stepCount++;
 
-        if(clusters.length === 1) {
+        let remainingNodes = clusters.filter(c => c.active).length;
+
+        if(remainingNodes <= 1) {
             renderMatrix(); 
             drawTree();
             document.getElementById('statusLog').innerHTML = `🎉 <b>系統樹完成！</b> ${algo}法による計算がすべて終了し、ルート（根）に到達しました。`;
-            document.getElementById('matrixContainer').innerHTML = "<div style='text-align:center; padding:15px; color:#27ae60; font-weight:bold; font-size:14px;'>全ての結合が完了しました</div>";
+            document.getElementById('matrixContainer').innerHTML += "<div style='text-align:center; padding:15px; color:#27ae60; font-weight:bold; font-size:14px;'>全ての結合が完了しました</div>";
         } else {
             renderMatrix(); 
             drawTree();
-            document.getElementById('statusLog').innerHTML = `[STEP ${stepCount}] 新しいノードを作成し、行列を更新しました。<br><b>続けて、新しくなった表の中から一番小さい数字をクリックしてください。</b>`;
+            document.getElementById('statusLog').innerHTML = `[STEP ${stepCount}] 新しいグループの行列を右・下に拡張し、計算済みのペアを斜線で消しました。<br><b>続けて、有効なセルの中から一番小さい数字をクリックしてください。</b>`;
         }
     }
 
-    // --- 系統樹のCanvas描画 (見切れ防止・マージン調整・ウォーターマーク) ---
+    // --- 系統樹のCanvas描画 (バグ修正: activeなものだけトラバース) ---
     function drawTree() {
         const canvas = document.getElementById('treeCanvas');
         const ctx = canvas.getContext('2d');
         const w = canvas.width, h = canvas.height;
         ctx.fillStyle = "white"; ctx.fillRect(0,0,w,h); 
-        if(clusters.length === 0) return;
+        
+        let activeClusters = clusters.filter(c => c.active);
+        if(activeClusters.length === 0) return;
 
         let leafCount = 0;
         let globalMaxDepth = 0;
 
-        // 文字がキャンバス右端にはみ出さないよう、最大文字幅を計算
-        ctx.font = 'bold 13px sans-serif';
+        ctx.font = 'italic bold 12px "Times New Roman", serif';
         let maxTextWidth = 0;
         originalNames.forEach(name => {
-            let tw = ctx.measureText(name).width;
+            let tw = ctx.measureText(formatScientificName(name)).width;
             if(tw > maxTextWidth) maxTextWidth = tw;
         });
 
         function traverseY(node) {
-            // Y軸の描画範囲を少し狭めて、ウォーターマーク等とかぶらないようにする
-            // 描画開始を上から80px、下から80px空ける
             if(!node.left) { 
                 node.yPos = leafCount * (h - 160)/Math.max(1, originalNames.length-1) + 80; 
                 leafCount++; 
@@ -572,15 +1511,15 @@
             }
             if(node.maxDepth > globalMaxDepth) globalMaxDepth = node.maxDepth;
         }
-        clusters.forEach(c => traverseY(c));
+        
+        activeClusters.forEach(c => traverseY(c));
 
-        // X軸の描画範囲（右端に文字幅＋20pxの余白、左端に100pxの余白）
-        let drawAreaW = w - 100 - maxTextWidth - 20; 
+        let drawAreaW = w - 120 - maxTextWidth - 30; 
         let scaleX = globalMaxDepth > 0 ? drawAreaW / globalMaxDepth : 1;
 
         function traverseX(node, parentX) {
             if (parentX === undefined) {
-                node.xPos = 100 + (globalMaxDepth - node.maxDepth) * scaleX;
+                node.xPos = 120 + (globalMaxDepth - node.maxDepth) * scaleX;
             } else {
                 node.xPos = parentX + node.edge * scaleX;
             }
@@ -589,7 +1528,8 @@
                 traverseX(node.right, node.xPos);
             }
         }
-        clusters.forEach(c => traverseX(c));
+        
+        activeClusters.forEach(c => traverseX(c));
 
         ctx.lineWidth = 3; ctx.lineJoin = 'round';
         
@@ -597,8 +1537,8 @@
             let x = node.xPos, y = node.yPos;
             
             if(!node.left) {
-                ctx.fillStyle = '#2c3e50'; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-                ctx.fillText(node.name, x + 10, y);
+                ctx.fillStyle = '#2c3e50'; ctx.font = 'italic bold 12px "Times New Roman", serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+                ctx.fillText(formatScientificName(node.name), x + 12, y);
                 ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI*2); ctx.fillStyle = '#3498db'; ctx.fill(); 
                 return;
             }
@@ -617,23 +1557,22 @@
             
             ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI*2); ctx.fillStyle = '#e67e22'; ctx.fill(); ctx.stroke();
         }
-        clusters.forEach(c => draw(c));
+        
+        activeClusters.forEach(c => draw(c));
 
-        // 左上にアルゴリズム名（ウォーターマーク）を印字
         const algo = document.querySelector('input[name="algo"]:checked').value;
-        ctx.fillStyle = '#95a5a6'; // 少し薄めのグレーで目立ちすぎないように
-        ctx.font = 'bold 20px sans-serif';
+        ctx.fillStyle = '#95a5a6'; 
+        ctx.font = 'bold 18px sans-serif';
         ctx.textAlign = 'left';
         ctx.fillText(`Algorithm: ${algo}`, 20, 35);
 
-        // スケールバー (位置を左下に調整)
         ctx.strokeStyle = '#bdc3c7'; ctx.lineWidth = 2; ctx.beginPath();
-        let barY = h - 30; // 下から30px
-        let barX = 100;    // ツリーの開始X位置に合わせる
+        let barY = h - 30; 
+        let barX = 120;    
         ctx.moveTo(barX, barY); ctx.lineTo(barX + (10 * scaleX), barY); ctx.stroke();
         ctx.moveTo(barX, barY-5); ctx.lineTo(barX, barY+5); ctx.stroke();
         ctx.moveTo(barX + (10 * scaleX), barY-5); ctx.lineTo(barX + (10 * scaleX), barY+5); ctx.stroke();
-        ctx.fillStyle = '#7f8c8d'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillStyle = '#7f8c8d'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
         ctx.fillText('10 Mismatch', barX + (5 * scaleX), barY - 10);
     }
 </script>
