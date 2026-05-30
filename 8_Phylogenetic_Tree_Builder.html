@@ -189,12 +189,8 @@
                 <input type="file" id="fileInput" accept=".fasta,.fas,.txt,.seq" onchange="handleFiles(event)">
             </div>
             
-            <textarea id="fastaInput" placeholder="ここにアライメント済みのFASTAデータを貼り付けてください。&#10;（または右のボタンからデモデータをセットできます）"></textarea>
+            <textarea id="fastaInput" placeholder="ここにアライメント済みのFASTAデータを貼り付けてください。"></textarea>
             
-            <div style="text-align: right; margin-top: -5px;">
-                <button class="btn btn-sm" style="background:#ecf0f1; border:none; color:#2c3e50; width:auto; display:inline-block;" onclick="loadDemoData()">💡 デモデータをセット</button>
-            </div>
-
             <div id="rat_seq_type" class="rationale-text" style="border-color:#e67e22; background:#fef5e7; color:#d35400;">
                 <strong>💡 なぜこの操作が必要か？（アミノ酸とDNAの使い分け）</strong><br>
                 比較する生物同士の進化的な距離（何億年前に枝分かれしたか）によって、適切な配列データは異なります。もし作成した系統樹が「現在の分類学（教科書の知識）」と大きく矛盾する場合、DNAの変異スピードが早すぎて「多重置換（ノイズ）」が起きている可能性があります。その場合は、より変化の遅い「アミノ酸配列」を使って再度計算してみましょう。
@@ -339,7 +335,7 @@
                 <strong>👨‍🏫 ステップ2：枝をクリックして「突然変異（★）」を置き、最小回数を考えよう！</strong>
                 <button class="rationale-btn" style="background:#e67e22;" onclick="toggleRationale('rat_step2_help')" title="有根系統樹の解き方">?</button>
                 <br>
-                先ほど発見した情報座位（座位 <span id="mpSelectedSiteNum" style="font-weight:bold; color:#e67e22;">-</span>）について、有根系統樹の**枝の上をクリックして突然変異（★）を配置**してください。
+                先ほど発見した情報座位（座位 <span id="mpSelectedSiteNum" style="font-weight:bold; color:#e67e22;">-</span>）について、有根系統樹の枝の上をクリックして突然変異（★）を配置してください。
             </div>
 
             <div id="rat_step2_help" class="rationale-text" style="border-color:#e67e22; background:#fef5e7; color:#d35400;">
@@ -434,13 +430,6 @@
         const isBlock = (el.style.display === 'block');
         document.querySelectorAll('.rationale-text').forEach(e => e.style.display = 'none');
         if(!isBlock) el.style.display = 'block';
-    }
-
-    const demoFasta = `>Sus_scrofa_Pig\nATGACCAACATCCGAAAATCACACCCACTAATAAAAATTATCAACAACGCATTCATTGACCTCCCAGCCCCCTCAAACATCTCATCATGATGAAACTTCGGTTCCCTCTTAGGCATC\n>Bos_taurus_Cow\nATGACTAACATTCGAAAGTCCCACCCACTAATAAAAATTGTAAACAATGCATTCATCGACCTTCCAGCCCCATCAAACATTTCATCATGATGAAATTTCGGTTCCCTCCTGGGAATC\n>Gallus_gallus_Chicken\nATGGCACCCAACATTCGAAAATCCCACCCCCTACTAAAAATAATTAACAACTCCCTAATCGACCTCCCAGCCCCATCCAACATCTCTGCTTGATGAAATTTCGGCTCCCTATTAGCAGTC\n>Thunnus_orientalis_Tuna\nATGGCACAACTTCGAAAGACCCATCCCCTAATAAAAATTGTAAACAACGCATTCATTGACCTCCCAGCTCCATCAAACATCTCATCATGATGAAACTTCGGATCCCTTCTAGGGATTTGCT`;
-
-    function loadDemoData() {
-        document.getElementById('fastaInput').value = demoFasta;
-        showToast("デモデータをセットしました。");
     }
 
     let originalNames = [], clusters = [], distanceMatrix = [], stepCount = 0, nextNodeId = 0;
