@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phylogenetic Tree Builder v3.2 | Bio-Edu Suite</title>
+    <title>Phylogenetic Tree Builder v3.3 | Bio-Edu Suite</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
@@ -169,7 +169,7 @@
     <div class="header">
         <h1>🧬 Phylogenetic Tree Builder</h1>
         <p>Bio-Edu Suite: Matrix Calculation & UPGMA/NJ/MP Clustering Emulator</p>
-        <div class="version-badge">v3.2</div>
+        <div class="version-badge">v3.3</div>
     </div>
 </div>
 
@@ -183,14 +183,14 @@
             
             <div class="algo-selector" data-tooltip="系統樹を構築するアルゴリズムを選択します">
                 <input type="radio" id="algo_upgma" name="algo" value="UPGMA" checked onchange="switchAlgo()">
-                <label for="algo_upgma">UPGMA法 (塩基置換速度を一定と仮定)</label>
+                <label for="algo_upgma" data-tooltip="塩基置換速度を一定と仮定します">UPGMA法</label>
                 <input type="radio" id="algo_nj" name="algo" value="NJ" onchange="switchAlgo()">
-                <label for="algo_nj">NJ法 (塩基置換速度の違いを考慮)</label>
+                <label for="algo_nj" data-tooltip="系統ごとの塩基置換速度の違いを考慮します">NJ法</label>
             </div>
 
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px; margin-bottom:5px;">
                 <label style="font-size:12px; font-weight:bold; color:#2c3e50;">1. アライメント済みFASTA (塩基配列 / アミノ酸配列) を入力 
-                    <button class="rationale-btn" style="background:#e67e22;" onclick="toggleRationale(event, 'rat_seq_type')">?</button>
+                    <button class="rationale-btn" style="background:#e67e22;" onclick="toggleRationale(event, 'rat_seq_type')" data-tooltip="教育的解説を開く">?</button>
                 </label>
             </div>
             
@@ -200,10 +200,6 @@
             </div>
             
             <textarea id="fastaInput" placeholder="アライメント済みの塩基配列またはアミノ酸配列（FASTA形式）を入力してください。"></textarea>
-            
-            <div style="text-align: right; margin-top: -5px;">
-                <button class="btn btn-sm" style="background:#ecf0f1; border:none; color:#2c3e50; width:auto; display:inline-block;" onclick="loadDemoData()" data-tooltip="学習用のサンプル塩基配列を自動入力します">💡 デモデータをセット</button>
-            </div>
 
             <div id="rat_seq_type" class="rationale-text">
                 <strong>💡 なぜこの操作が必要か？（塩基配列とアミノ酸配列の使い分け）</strong><br>
@@ -211,8 +207,8 @@
             </div>
 
             <div style="display:flex; align-items:center; gap:10px; margin-top:5px;">
-                <button class="btn btn-primary" id="btnInit" onclick="initMatrix()" style="flex: 1;" data-tooltip="入力された塩基配列を比較し、距離行列を作成します">🧮 配列比較 ➡ 距離行列を作成</button>
-                <button class="rationale-btn" onclick="toggleRationale(event, 'rat_matrix')" style="flex-shrink: 0; margin-left: 0;">?</button>
+                <button class="btn btn-primary" id="btnInit" onclick="initMatrix()" style="flex: 1;" data-tooltip="入力された塩基配列を比較し、距離行列を作成します">🧮 距離行列を作成</button>
+                <button class="rationale-btn" onclick="toggleRationale(event, 'rat_matrix')" data-tooltip="教育的解説を開く" style="flex-shrink: 0; margin-left: 0;">?</button>
             </div>
 
             <div id="rat_matrix" class="rationale-text">
@@ -225,7 +221,7 @@
             <div style="display:flex; align-items:center; justify-content: space-between; margin-bottom:5px;">
                 <div style="display:flex; align-items:center; gap:5px;">
                     <h3 style="margin:0; font-size:12px; color:#2c3e50;" id="matrixTitle">📊 2. 現在の距離行列 (不一致率 %)</h3>
-                    <button class="rationale-btn" onclick="toggleRationale(event, 'rat_upgma')">?</button>
+                    <button class="rationale-btn" onclick="toggleRationale(event, 'rat_upgma')" data-tooltip="教育的解説を開く">?</button>
                 </div>
                 <button class="btn btn-sm" id="btnExportCSV" onclick="exportMatrixCSV()" disabled data-tooltip="現在の距離行列をCSV形式で保存します">📥 CSV保存</button>
             </div>
@@ -241,7 +237,7 @@
                 <div style="text-align:center; padding:15px; color:#7f8c8d; font-size:10px;">上のボタンを押して行列を作成してください。</div>
             </div>
 
-            <button class="btn btn-step" id="btnNextStep" onclick="executeCombine()" data-tooltip="選択した2つの分類群を結合し、距離行列を更新します">▶ 選択したペアを結合して行列を拡張</button>
+            <button class="btn btn-step" id="btnNextStep" onclick="executeCombine()" data-tooltip="選択した2つの分類群を結合し、距離行列を更新します">▶ ペアを結合</button>
 
             <div class="bench-tip">
                 <strong>💡 現場のコツ（MEGAのブラックボックスを開ける）</strong><br>
@@ -251,7 +247,7 @@
 
             <div class="mega-invite">
                 <h4>🔗 Step up to professional tools 
-                    <button class="rationale-btn" style="background:#8e44ad; margin-left: auto;" onclick="toggleRationale(event, 'rat_advanced')">?</button>
+                    <button class="rationale-btn" style="background:#8e44ad; margin-left: auto;" onclick="toggleRationale(event, 'rat_advanced')" data-tooltip="教育的解説を開く">?</button>
                 </h4>
                 <div id="rat_advanced" class="rationale-text">
                     <strong>【根拠：ML法やブートストラップはこのアプリにはありません】</strong><br>
@@ -264,7 +260,7 @@
             <div class="card" style="border-color: #8e44ad; background-color: #f4ecf7; margin-top: 15px; min-width: 100%; border-top: 4px solid #8e44ad; box-shadow: none;">
                 <h4 style="margin: 0 0 10px 0; font-size: 12px; color: #5b2c6f; display: flex; align-items: center;">
                     🧬 発展学習：最節約法 (MP法) のステップ・シミュレーション
-                    <button class="rationale-btn" style="background:#8e44ad; margin-left: auto;" onclick="toggleRationale(event, 'rat_mp')">?</button>
+                    <button class="rationale-btn" style="background:#8e44ad; margin-left: auto;" onclick="toggleRationale(event, 'rat_mp')" data-tooltip="教育的解説を開く">?</button>
                 </h4>
                 <div id="rat_mp" class="rationale-text">
                     <strong>【教科書とのつながり：最節約法】</strong><br>
@@ -272,7 +268,7 @@
                     ここでは入力された塩基配列のうち「最初の4つ」を用いて、教科書の図解にある「座位ごとの塩基置換回数の算出」から「全体の比較」までをステップごとに体験します。
                 </div>
                 <button class="btn btn-purple" onclick="startMPSimulation()" data-tooltip="最節約法による系統推定のプロセスを体験します">
-                    ▶ MP法シミュレーションを開始
+                    ▶ シミュレーション開始
                 </button>
             </div>
             
@@ -312,10 +308,10 @@
         <div id="mpStep1" style="display:none;">
             <div class="edu-panel rationale-panel">
                 <strong>👨‍🏫 ステップ1：系統推定に役立つ『情報をもつ座位』を探そう！</strong>
-                <button class="rationale-btn" style="background:#e67e22;" onclick="toggleRationale(event, 'rat_step1_why')">?</button>
+                <button class="rationale-btn" style="background:#e67e22;" onclick="toggleRationale(event, 'rat_step1_why')" data-tooltip="教育的解説を開く">?</button>
                 <br>
                 アライメントの列（座位）をクリックして、<strong>「2種以上で同じ塩基が共有されている部位（情報をもつ座位）」</strong>を見つけてください。<br>
-                <span style="font-size:12px; color:#7f8c8d;">※アライメントは横スクロール可能です。「💡ヒント」を使うと見つけやすくなります。<strong>最低3箇所</strong>見つけると次へ進めますが、コンプリートを目指すこともできます！</span>
+                <span style="font-size:12px; color:#7f8c8d;">※アライメントは横スクロール可能です。「💡保存領域をマスク」を使うと見つけやすくなります。<strong>最低3箇所</strong>見つけると次へ進めますが、コンプリートを目指すこともできます！</span>
             </div>
 
             <div id="rat_step1_why" class="rationale-text">
@@ -329,8 +325,8 @@
                     🔎 発見した『情報をもつ座位』: <span id="mpFoundCount" style="color:#e67e22; font-size:18px; font-weight:bold;">0</span> / <span id="mpTargetCount">0</span> 箇所
                 </div>
                 <div style="display:flex; gap:5px;">
-                    <button class="btn btn-sm" style="background:#f1c40f; color:#d35400; border:none;" onclick="maskConservedSites()" data-tooltip="全員が同じ塩基を持つ列をグレーアウトします">💡 ヒント：塩基置換のない保存領域を薄くする</button>
-                    <button class="btn btn-sm" style="background:#bdc3c7; color:#fff; border:none;" onclick="autoFindVariableSites()" data-tooltip="情報をもつ座位の正解をすべて表示します">解答（すべて表示）</button>
+                    <button class="btn btn-sm" style="background:#f1c40f; color:#d35400; border:none;" onclick="maskConservedSites()" data-tooltip="全員が同じ塩基を持つ列をグレーアウトします">💡 保存領域をマスク</button>
+                    <button class="btn btn-sm" style="background:#bdc3c7; color:#fff; border:none;" onclick="autoFindVariableSites()" data-tooltip="情報をもつ座位の正解をすべて表示します">解答</button>
                 </div>
             </div>
 
@@ -339,7 +335,7 @@
             </div>
             
             <button id="btnProceedToStep2" class="btn btn-primary" style="background:#bdc3c7; border:none; cursor:not-allowed;" disabled onclick="proceedToMPStep2()" data-tooltip="発見した座位を用いて次のステップへ進みます">
-                ▶ 3箇所の探索を完了してステップ2へ進む
+                ▶ ステップ2へ
             </button>
         </div>
 
@@ -347,7 +343,7 @@
         <div id="mpStep2" style="display:none;">
             <div class="edu-panel rationale-panel">
                 <strong>👨‍🏫 ステップ2：枝をクリックして「塩基置換（★）」を置き、最小回数を考えよう！</strong>
-                <button class="rationale-btn" style="background:#e67e22;" onclick="toggleRationale(event, 'rat_step2_help')">?</button>
+                <button class="rationale-btn" style="background:#e67e22;" onclick="toggleRationale(event, 'rat_step2_help')" data-tooltip="教育的解説を開く">?</button>
                 <br>
                 先ほど発見した情報座位（座位 <span id="mpSelectedSiteNum" style="font-weight:bold; color:#e67e22;">-</span>）について、有根系統樹の枝の上をクリックして塩基置換（★）を配置してください。
             </div>
@@ -357,7 +353,7 @@
                 1. 一番左の生物を**外群（進化的に離れた分類群）**として固定し、そこから右へ分岐していく教科書通りのモデルです。（※一番左の灰色の枝は共通祖先であり、ここへの塩基置換配置は内群の根元と同じ意味になるため固定されています）。<br>
                 2. 各系統樹の<strong>緑色の線（枝）をクリック</strong>すると、塩基置換（★）マークを配置・削除できます。<br>
                 3. 目標は、<strong>「すべての生物（葉）の塩基の違いを、最も少ない塩基置換の回数（★の数）で説明すること」</strong>です。<br>
-                4. 配置が終わったら、下部の<strong>「置換の配置を論理検証する」</strong>ボタンを押してください！
+                4. 配置が終わったら、下部の<strong>「論理検証」</strong>ボタンを押してください！
             </div>
             
             <div style="background:#fff8e1; border:1px solid #f5b041; padding:10px; border-radius:4px; margin-bottom:15px; font-size:12px; color:#7e5109; display:flex; justify-content:space-between; align-items:center;">
@@ -403,14 +399,14 @@
             </div>
 
             <div style="display:flex; gap:10px; margin-bottom:15px;">
-                <button class="btn btn-primary pulse-anim" style="flex:1;" onclick="verifyPlacedMutations()" data-tooltip="配置した塩基置換が最小回数か検証します">🧮 置換の配置を論理検証する</button>
-                <button class="btn" style="background:#ecf0f1; border:none; width:auto;" onclick="revealStep2Answers()" data-tooltip="最小となる塩基置換の配置例を表示します">🔓 答えを開く</button>
+                <button class="btn btn-primary pulse-anim" style="flex:1;" onclick="verifyPlacedMutations()" data-tooltip="配置した塩基置換が最小回数か検証します">🧮 論理検証</button>
+                <button class="btn" style="background:#ecf0f1; border:none; width:auto;" onclick="revealStep2Answers()" data-tooltip="最小となる塩基置換の配置例を表示します">🔓 解答</button>
             </div>
             
             <div id="mpStep2Feedback" class="assist-panel" style="display:none; margin-top:0; margin-bottom:15px;"></div>
             
             <button id="btnProceedToStep3" class="btn btn-purple" style="background:#bdc3c7; border:none; cursor:not-allowed;" disabled onclick="proceedToMPStep3()" data-tooltip="配列全体で計算された総塩基置換数を比較します">
-                ▶ 全座位（配列全体）の総塩基置換数を比較する
+                ▶ ステップ3へ
             </button>
         </div>
 
@@ -436,7 +432,7 @@
 
 <div id="toast"></div>
 
-<div class="footer">&copy; 2026 Bio-Edu Suite v3.2 | For Professional Bioinformatics Education</div>
+<div class="footer">&copy; 2026 Bio-Edu Suite v3.3 | For Professional Bioinformatics Education</div>
 
 <script>
     // --- ツールチップ機能 (v1.6準拠) ---
@@ -529,13 +525,6 @@
             document.querySelectorAll('.rationale-text').forEach(el => el.classList.remove('show'));
         }
     });
-
-    const demoFasta = `>Sus_scrofa_Pig\nATGACCAACATCCGAAAATCACACCCACTAATAAAAATTATCAACAACGCATTCATTGACCTCCCAGCCCCCTCAAACATCTCATCATGATGAAACTTCGGTTCCCTCTTAGGCATC\n>Bos_taurus_Cow\nATGACTAACATTCGAAAGTCCCACCCACTAATAAAAATTGTAAACAATGCATTCATCGACCTTCCAGCCCCATCAAACATTTCATCATGATGAAATTTCGGTTCCCTCCTGGGAATC\n>Gallus_gallus_Chicken\nATGGCACCCAACATTCGAAAATCCCACCCCCTACTAAAAATAATTAACAACTCCCTAATCGACCTCCCAGCCCCATCCAACATCTCTGCTTGATGAAATTTCGGCTCCCTATTAGCAGTC\n>Thunnus_orientalis_Tuna\nATGGCACAACTTCGAAAGACCCATCCCCTAATAAAAATTGTAAACAACGCATTCATTGACCTCCCAGCTCCATCAAACATCTCATCATGATGAAACTTCGGATCCCTTCTAGGGATTTGCT`;
-
-    function loadDemoData() {
-        document.getElementById('fastaInput').value = demoFasta;
-        showToast("デモデータをセットしました。");
-    }
 
     let originalNames = [], clusters = [], distanceMatrix = [], stepCount = 0, nextNodeId = 0;
     let selectedPair = null; 
@@ -998,6 +987,7 @@
         }
     }
 
+    // --- SVG 教科書完全準拠の有根系統樹（逆三角形）の描画 ---
     function renderInteractiveSVG(treeType, b1, b2, b3, b4) {
         const svg = document.getElementById(`mpSvg${treeType}`);
         svg.innerHTML = '';
@@ -1479,7 +1469,7 @@
 
         if(isCorrect) {
             selectedPair = {i: i, j: j, dist: distanceMatrix[i][j]};
-            document.getElementById('statusLog').innerHTML = `[正解！] <i class="highlight-step scientific-name" style="color:#f1c40f;">${formatScientificName(clusters[i].name)}</i> と <i class="highlight-step scientific-name" style="color:#f1c40f;">${formatScientificName(clusters[j].name)}</i> が一番近いですね。<br>「▶ 選択したペアを結合して行列を拡張」ボタンを押して、計算済みのペアを斜線で消し、新しいグループを書き足しましょう。`;
+            document.getElementById('statusLog').innerHTML = `[正解！] <i class="highlight-step scientific-name" style="color:#f1c40f;">${formatScientificName(clusters[i].name)}</i> と <i class="highlight-step scientific-name" style="color:#f1c40f;">${formatScientificName(clusters[j].name)}</i> が一番近いですね。<br>「▶ ペアを結合」ボタンを押して、計算済みのペアを斜線で消し、新しいグループを書き足しましょう。`;
             document.getElementById('btnNextStep').style.display = 'block';
             document.getElementById('btnNextStep').disabled = false;
             renderMatrix();
