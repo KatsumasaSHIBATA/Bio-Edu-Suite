@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Protein Structure Explorer v2.7 | Bio-Edu Suite</title>
+    <title>Protein Structure Explorer v2.8 | Bio-Edu Suite</title>
     <script src="https://3Dmol.org/build/3Dmol-min.js"></script>
     <style>
         /* 💡 修正ポイント: 謎の文字が入っていたタイポを修正し、サイズ計算を正常化 */
@@ -142,7 +142,7 @@
     <div class="header">
         <h1>🧬 Protein Structure Explorer</h1>
         <p>Bio-Edu Suite: Integrated 1D-3D Structural Analysis</p>
-        <div class="version-badge">v2.7</div>
+        <div class="version-badge">v2.8</div>
     </div>
 </div>
 
@@ -200,14 +200,15 @@
                     <strong>アプリ⑨（Central Dogma Simulator）</strong> で特定したアミノ酸の性質変化（例：親水性から疎水性へ）が、3D空間でどのような位置にあるか（水に触れる表面に露出しているか、内側に隠れているか）を視覚的に確認し、タンパク質の機能異常のメカニズムを推論してみましょう。
                 </div>
 
-                <button class="btn btn-sync" onclick="syncWithAlignment()" data-tooltip="アプリ⑤または⑨で特定した変異部位のデータを自動で読み込み、赤色でマッピングします">🧬 配列解析結果（アプリ⑤/⑨）から変異を同期</button>
+                <!-- 💡 シェイプアップ: 長い文章を短縮 -->
+                <button class="btn btn-sync" onclick="syncWithAlignment()" data-tooltip="アプリ⑤または⑨で特定した変異部位のデータを自動で読み込み、赤色でマッピングします">🧬 変異データを同期</button>
                 
                 <div class="toolbar-row" style="margin-top:5px;">
                     <span class="step-label" style="min-width: 60px;">残基指定:</span>
                     <div style="display:flex; flex:1; gap:5px;">
                         <input type="text" id="residueList" class="primer-input" placeholder="アミノ酸番号 (カンマ区切り)" onkeypress="if(event.keyCode===13) highlightFromInput()">
-                        <button class="btn" onclick="highlightFromInput()" style="white-space: nowrap;" data-tooltip="入力したアミノ酸番号を赤色で強調表示します">追加表示</button>
-                        <!-- 追加パッチ: 周辺5Åの表示機能 -->
+                        <!-- 💡 シェイプアップ -->
+                        <button class="btn" onclick="highlightFromInput()" style="white-space: nowrap;" data-tooltip="入力したアミノ酸番号を赤色で強調表示します">➕ 追加</button>
                         <button class="btn btn-purple" onclick="showEnvironmentAroundMutations()" style="white-space: nowrap; padding: 8px 10px;" data-tooltip="選択した変異の周囲5Åの構造を抽出し、結合状態をピンポイントで確認します">周辺5Å表示</button>
                     </div>
                 </div>
@@ -242,8 +243,7 @@
                     <button class="btn" onclick="setStyleMode('cartoon')" data-tooltip="タンパク質の骨格（αヘリックスやβシート）をリボン状に表示します">リボンモデル</button>
                     <button class="btn" onclick="setStyleMode('surface')" data-tooltip="分子の表面を表示し、ポケットや相互作用面を確認しやすくします">静電ポテンシャルモデル</button>
                     <button class="btn" onclick="setStyleMode('sphere')" data-tooltip="すべての原子を球体で表示し、実際の体積や密度感を表現します">空間充填モデル</button>
-                    <!-- 追加パッチ: 疎水性表示モード -->
-                    <button class="btn btn-purple" onclick="setStyleMode('hydrophobicity')" style="grid-column: span 2;" data-tooltip="疎水性アミノ酸を🔴赤、親水性を🔵青で示し、疎水性相互作用の「接着面」を可視化します">🔴疎水性 / 🔵親水性 モード (ハイドロパシー)</button>
+                    <button class="btn btn-purple" onclick="setStyleMode('hydrophobicity')" style="grid-column: span 2;" data-tooltip="疎水性アミノ酸を赤色、親水性を青色で示し、疎水性相互作用の「接着面」を可視化します">疎水性 / 親水性 モード (ハイドロパシー)</button>
                 </div>
                 
                 <div id="af_info_panel" style="display:none; margin-top:10px; padding:10px; background:#f4ecf7; border:1px solid #9b59b6; border-radius:4px; font-size:12px; color:#512e5f; line-height:1.5;">
@@ -251,7 +251,8 @@
                     <button class="btn" onclick="openAFDB()" style="margin-top:8px; width:100%; background:#fff; border-color:#9b59b6; color:#8e44ad; font-weight:bold;">↗️ 本家 AlphaFold DB を開く</button>
                 </div>
 
-                <button class="btn" style="margin-top:10px; background:#ecf0f1; border-color:#bdc3c7;" onclick="exportImageModal()" data-tooltip="現在の3Dビューアの表示をPNG画像としてダウンロードします">📸 3D画面をPNG画像で保存</button>
+                <!-- 💡 シェイプアップ -->
+                <button class="btn" style="margin-top:10px; background:#ecf0f1; border-color:#bdc3c7;" onclick="exportImageModal()" data-tooltip="現在の3Dビューアの表示をPNG画像としてダウンロードします">📸 画像保存</button>
             </div>
         </div>
     </div>
@@ -286,7 +287,8 @@
         <div class="card sequence-card">
             <div class="sequence-header">
                 <span>📝 アミノ酸配列 / サブユニットの選択</span>
-                <button class="btn" style="background:#fff; color:#c0392b; border:1px solid #c0392b; padding:4px 8px; font-size:10px; border-radius:3px;" onclick="clearHighlights()" data-tooltip="選択したアミノ酸残基のハイライトをすべて解除します">🧹 選択を全クリア</button>
+                <!-- 💡 シェイプアップ -->
+                <button class="btn" style="background:#fff; color:#c0392b; border:1px solid #c0392b; padding:4px 8px; font-size:10px; border-radius:3px;" onclick="clearHighlights()" data-tooltip="選択したアミノ酸残基のハイライトをすべて解除します">🧹 全クリア</button>
             </div>
             <div class="sequence-body">
                 <div id="chainSelector" class="chain-selector-area"></div>
@@ -303,7 +305,7 @@
     ・<b>PyMOL</b>：世界中の論文で最もよく使われる構造描画ツール。複雑なアニメーションや、ミリ単位での水素結合の距離測定が可能です。
 </div>
 
-<div class="footer">&copy; 2026 Bio-Edu Suite v2.7 | Structural & Educational Mastery</div>
+<div class="footer">&copy; 2026 Bio-Edu Suite v2.8 | Structural & Educational Mastery</div>
 
 <!-- トースト通知 & ツールチップ (v1.6準拠) -->
 <div id="toast"></div>
