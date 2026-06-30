@@ -143,6 +143,27 @@
         #global-tooltip.show-bottom::before {
             content: ''; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); border-width: 5px; border-style: solid; border-color: transparent transparent #2c3e50 transparent;
         }
+
+        /* ----------------------------------------------------
+           追加パッチ（UI/UX v1.6仕様・用語準拠・トースト対応）
+        ---------------------------------------------------- */
+        #toast { position: fixed; bottom: 50px; left: 50%; transform: translateX(-50%) translateY(100px); background: #27ae60; color: white; padding: 12px 24px; border-radius: 30px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 100000; pointer-events: none; white-space: pre-wrap; text-align: center; font-size: 13px; line-height: 1.5;}
+        #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        /* 「?」ボタンのポップオーバー化 */
+        .card { overflow: visible !important; }
+        .card-header { position: relative; }
+        .rationale-text {
+            position: absolute;
+            top: 40px;
+            right: 0;
+            width: 320px;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2) !important;
+        }
+        @media screen and (max-width: 900px) {
+            .rationale-text { right: auto; left: 0; width: 100%; }
+        }
     </style>
 </head>
 <body>
@@ -167,12 +188,12 @@
                 
                 <div id="inputHintDefault" class="bench-tip" style="background:#eafaf1; border-left-color:#27ae60;">
                     <strong>💡 現場のコツ（比較モード）</strong><br>
-                    <strong>2つの配列（野生型と変異型）</strong>を同時入力すると、自動で比較モードになり、翻訳時に変異箇所を検出してアプリ⑩へ同期します。
+                    <strong>2つの塩基配列（野生型と突然変異体）</strong>を同時入力すると、自動で比較モードになり、翻訳時に突然変異箇所を検出してアプリ⑩へ同期します。
                 </div>
                 
                 <div id="inputHintCompare" class="bench-tip" style="background:#fdedec; border-left-color:#e74c3c; display:none;">
                     <strong style="color:#c0392b;">🚨 比較解析の注意点（パイプライン連携）</strong><br>
-                    NCBI等から取得した生配列を複数そのまま比較すると、開始位置（UTR）のズレにより、翻訳フレームが狂って<strong>結果が全て変異（真っ赤）</strong>になることがあります。<br>
+                    NCBI等から取得したDNAの塩基配列を複数そのまま比較すると、開始位置（UTR）のズレにより、翻訳フレームが狂って<strong>結果が全て突然変異（真っ赤）</strong>になることがあります。<br>
                     正確に比較するには、必ず<strong>アプリ⑤（DNA Alignment Studio）</strong>でアライメントとトリミングを行ってから、データをここにペーストしてください。
                 </div>
 
@@ -180,20 +201,20 @@
                 <div class="form-group">
                     <label>オンラインから取得 (NCBI)</label>
                     <div class="input-row">
-                        <input type="text" id="ncbiId" class="primer-input" placeholder="ID (例: NM_000518)" onkeypress="if(event.keyCode===13) fetchNCBI()">
-                        <button class="btn btn-primary" style="flex: 0 0 auto; white-space: nowrap; padding: 6px 12px; font-size: 12px; border-radius: 4px;" onclick="fetchNCBI()">🌐 取得 <span id="apiLoader" class="loader"></span></button>
+                        <input type="text" id="ncbiId" class="primer-input" placeholder="ID (例: NM_000518)" onkeypress="if(event.keyCode===13) fetchNCBI()" data-tooltip="NCBIデータベースから指定したIDの塩基配列を取得します">
+                        <button class="btn btn-primary" style="flex: 0 0 auto; white-space: nowrap; padding: 6px 12px; font-size: 12px; border-radius: 4px;" onclick="fetchNCBI()" data-tooltip="NCBIデータベースからデータを取得します">🌐 取得 <span id="apiLoader" class="loader"></span></button>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label>生データ (塩基配列 / アミノ酸配列)</label>
-                    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-                        <p>📁 ここをクリック、または FASTAデータをドラッグ＆ドロップ</p>
+                    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" data-tooltip="FASTA形式のファイルをドラッグ＆ドロップまたはクリックで読み込みます">
+                        <p>📁 ここをクリック、または FASTA形式の塩基配列をドラッグ＆ドロップ</p>
                         <input type="file" id="fileInput" accept=".fasta,.fas,.txt,.seq" onchange="handleFileSelect(event)" multiple>
                     </div>
                 </div>
 
-                <textarea id="dnaInput" placeholder=">野生型_DNA&#10;ATGCGT...&#10;>変異型_DNA&#10;ATGCCT... (複数入力で比較モードになります)"></textarea>
+                <textarea id="dnaInput" placeholder="FASTA形式の塩基配列を入力してください（複数入力で比較モードになります）" data-tooltip="FASTA形式のDNAの塩基配列をここに入力します"></textarea>
             </div>
         </div>
 
@@ -202,31 +223,30 @@
             <div class="card-header" style="background:#34495e;">
                 <span>🧬 2. 転写</span>
                 <button class="rationale-btn" onclick="toggleRationale('rat_transcription')">?</button>
-            </div>
-            <div class="card-body">
                 <div id="rat_transcription" class="rationale-text" style="border-color:#e67e22;">
                     <strong>【なぜ転写するのか？】</strong><br>
-                    DNAは設計図の原本であり核内に厳重に保管されています。タンパク質を合成するリボソームは核外にあるため、「mRNA」という一時的なメモにコピー（TをUに置換）して持ち出します。<br><br>
+                    DNAは設計図の原本であり核内に厳重に保管されています。ポリペプチドを合成するリボソームは細胞質にあるため、「mRNA」という一時的なメモにコピー（TをUに置換）して持ち出します。<br><br>
                     <strong>【💡 真核生物と原核生物の違い】</strong><br>
                     大腸菌などの<strong>原核生物</strong>は核を持たないため、転写と翻訳が同じ場所で同時に進行します。一方、ヒトなどの<strong>真核生物</strong>では、転写直後のmRNA（前駆体）はそのままでは使えません。不要な部分（<strong>イントロン</strong>）を切り捨てる<strong>スプライシング</strong>や、両端の保護（5'キャップとポリAテール）という修飾を受けてから核外へ運び出されます。<br>
-                    <span style="color:#7f8c8d; font-size:10px;">（※本シミュレーターやNCBIの[NM_]から始まるデータは、既にスプライシング等の修飾が完了した成熟mRNA配列を前提としています）</span>
+                    <span style="color:#7f8c8d; font-size:10px;">（※本シミュレーターやNCBIの[NM_]から始まるデータは、既にスプライシング等の修飾が完了した成熟mRNAの塩基配列を前提としています）</span>
                 </div>
-                <button class="btn btn-action-transcription" onclick="runTranscription()" style="width:100%;">⏬ 転写を実行 (DNA ➡ mRNA)</button>
+            </div>
+            <div class="card-body">
+                <button class="btn btn-action-transcription" onclick="runTranscription()" style="width:100%;" data-tooltip="入力されたDNAの塩基配列をmRNAに転写します">⏬ 転写</button>
             </div>
         </div>
 
         <!-- 3. 翻訳コントロール＆凡例 -->
         <div class="card" style="border-top-color: #e84393;">
             <div class="card-header" style="background:#34495e;">
-                <span>🥩 3. 翻訳と変異の検出</span>
+                <span>🥩 3. 翻訳と突然変異の検出</span>
                 <button class="rationale-btn" onclick="toggleRationale('rat_translation')">?</button>
+                <div id="rat_translation" class="rationale-text" style="border-color:#e84393;">
+                    <strong>【DNAの突然変異がもたらす意味】</strong><br>アミノ酸が「親水性」から「疎水性」などの全く異なる性質に変わると、ポリペプチドの立体構造や機能が崩壊し、疾患の原因となります。
+                </div>
             </div>
             <div class="card-body">
-                <div id="rat_translation" class="rationale-text" style="border-color:#e84393;">
-                    <strong>【DNAの変異がもたらす意味】</strong><br>アミノ酸が「親水性」から「疎水性」などの全く異なる性質に変わると、タンパク質全体の立体構造や機能が崩壊し、疾患の原因となります。
-                </div>
-                
-                <button class="btn btn-action-translation" onclick="runTranslation()" id="btnTranslate" style="width:100%;" disabled>⏬ 翻訳を実行 (mRNA ➡ タンパク質)</button>
+                <button class="btn btn-action-translation" onclick="runTranslation()" id="btnTranslate" style="width:100%;" disabled data-tooltip="転写されたmRNAをアミノ酸配列に翻訳します">⏬ 翻訳</button>
 
                 <div class="legend-panel">
                     <span style="grid-column: span 2; font-weight: bold; color: #7f8c8d; border-bottom: 1px solid #bdc3c7; padding-bottom: 2px;">🎨 アミノ酸の化学的性質 (性質急変に注意)</span>
@@ -250,7 +270,7 @@
             </div>
             <div class="card-body" style="padding:0;">
                 <div class="result-box" id="mrnaResult" style="border-radius:0 0 8px 8px;">
-                    <span style="color:#7f8c8d; padding: 10px;">操作パネルから「転写を実行」してください。</span>
+                    <span style="color:#7f8c8d; padding: 10px;">操作パネルから「転写」を実行してください。</span>
                 </div>
             </div>
         </div>
@@ -262,15 +282,15 @@
             </div>
             <div class="card-body" style="padding:0;">
                 <div class="codon-container" id="proteinResult" style="border:none; border-bottom: 1px solid #bdc3c7; border-radius:0;">
-                    <div style="color:#7f8c8d; padding: 20px; width:100%; text-align:center;">転写後、操作パネルから「翻訳を実行」してください。</div>
+                    <div style="color:#7f8c8d; padding: 20px; width:100%; text-align:center;">転写後、操作パネルから「翻訳」を実行してください。</div>
                 </div>
                 <div id="mutationAlertContainer" style="display:none; margin: 15px; padding: 12px; border-radius: 4px; font-size: 12px; line-height: 1.5; border: 1px solid;"></div>
             </div>
         </div>
 
         <div class="mega-invite">
-            <strong>🔗 より高度な解析へ (プロツールへの招待)</strong><br>
-            実際の疾患遺伝子の配列を翻訳してみましょう。<br>
+            <strong>🔗 より高度な解析へ (プロツールへの招待)</strong>
+            実際の疾患遺伝子の塩基配列を翻訳してみましょう。<br>
             本物の遺伝子領域（ORF）を探すためには <b>『ExPASy Translate Tool』</b> を、翻訳されたアミノ酸が立体的にどう影響するかを確認するためには、アプリ⑩（Protein Structure Explorer）や <b>PyMOL</b> を使ってみましょう。
         </div>
 
@@ -279,7 +299,7 @@
 </div>
 
 <div class="status-bar">
-    <span id="statusText">ステップ1: FASTAデータを入力してください（複数可）。</span>
+    <span id="statusText">ステップ1: FASTA形式の塩基配列を入力してください（複数可）。</span>
     <span id="posText">Sequences: 0</span>
 </div>
 
@@ -287,7 +307,19 @@
     &copy; 2026 Bio-Edu Suite v1.8 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
+<div id="toast"></div>
+
 <script>
+    // --- 追加パッチ: トースト通知 ---
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.innerText = message;
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+
     function toggleRationale(id) {
         const el = document.getElementById(id);
         const isBlock = (el.style.display === 'block');
@@ -381,7 +413,7 @@
             updateLength();
             document.getElementById('statusText').innerText = "データを取得・追加しました。";
         } catch (error) {
-            alert("取得エラー:\n" + error.message);
+            showToast("取得エラー:\n" + error.message);
             document.getElementById('statusText').innerText = "エラー";
         } finally {
             document.getElementById('apiLoader').style.display = 'none';
@@ -392,14 +424,14 @@
 
     function runTranscription() {
         let seqs = parseFasta();
-        if(seqs.length === 0 || !seqs[0].seq) { alert("DNAデータを入力してください。"); return; }
+        if(seqs.length === 0 || !seqs[0].seq) { showToast("DNAの塩基配列を入力してください。"); return; }
         
         currentMRNAs = seqs.map(s => ({ name: s.name, mrna: s.seq.replace(/T/g, 'U') }));
         
         let htmlOutput = '';
         if (currentMRNAs.length > 1) {
             let isAligned = currentMRNAs.every(s => s.mrna.length === currentMRNAs[0].mrna.length);
-            let warnMsg = isAligned ? "" : `<span style="color:#e74c3c; margin-left:10px;">⚠️ 未アライメント (配列の長さが異なります)</span>`;
+            let warnMsg = isAligned ? "" : `<span style="color:#e74c3c; margin-left:10px;">⚠️ 未アライメント (塩基配列の長さが異なります)</span>`;
             htmlOutput += `<div style="color:#e67e22; font-weight:bold; margin-bottom:10px;">🔍 比較モード: ${currentMRNAs.length}配列を並行表示しています。${warnMsg}</div>`;
         }
         
@@ -484,7 +516,7 @@
             let len0 = currentMRNAs[0].mrna.length;
             let len1 = currentMRNAs[1].mrna.length;
             if (len0 !== len1) {
-                alert("⚠️ 警告: 比較する配列の長さが異なります。\n\nアライメント（位置合わせ）されていないため、翻訳フレームがずれて不当に多くの変異（真っ赤）が検出される可能性があります。\n\n正確な比較を行うには、先に「アプリ⑤」でアライメントと開始位置のトリミングを行ってください。");
+                showToast("⚠️ 警告: 比較する塩基配列の長さが異なります。\n\nアライメント（位置合わせ）されていないため、翻訳フレームがずれて不当に多くの突然変異（真っ赤）が検出される可能性があります。\n\n正確な比較を行うには、先に「アプリ⑤」でアライメントと開始位置のトリミングを行ってください。");
             }
         }
 
@@ -509,7 +541,9 @@
             let aaWT = codonTable[codWT] || 'X';
             
             let pos = Math.floor(i/3) + 1;
-            let isMutated = (currentMRNAs.length > 1 && aaMut !== aaWT);
+            
+            // 野生型または突然変異型のどちらかが不明（X）の場合は変異判定から除外する
+            let isMutated = (currentMRNAs.length > 1 && aaMut !== aaWT && aaWT !== 'X' && aaMut !== 'X');
             
             if (isMutated) mutPositions.push(pos);
 
@@ -527,7 +561,7 @@
             let tooltipText = `残基番号: ${pos}\n${aaData.code3} (${aaData.name})\n${aaData.property}`;
             if(isMutated) {
                 let dWT = aminoAcids[aaWT] || { code3: 'Unk', property: '不明' };
-                tooltipText = `⚠️ 変異箇所 (残基 ${pos})\n[野生型] ${dWT.code3} (${dWT.property})\n   ↓\n[変異型] ${aaData.code3} (${aaData.property})`;
+                tooltipText = `⚠️ 突然変異箇所 (残基 ${pos})\n[野生型] ${dWT.code3} (${dWT.property})\n   ↓\n[突然変異体] ${aaData.code3} (${aaData.property})`;
             }
             if(aaMut !== '?') div.setAttribute('data-tooltip', tooltipText);
 
@@ -549,16 +583,16 @@
             alertBox.style.background = '#fdedec';
             alertBox.style.color = '#c0392b';
             alertBox.innerHTML = `
-                <strong style="color:#c0392b; font-size:13px;">🚨 アミノ酸の変異を ${mutPositions.length} 箇所検出しました！</strong><br>
-                変異残基番号: ${mutPositions.join(', ')}<br><br>
-                <span style="color:#2c3e50;">この変異データは自動的にシステムに保存されました。<br>
-                続いて <b>アプリ⑩（Protein Structure Explorer）</b> を開き、「変異を同期」ボタンを押して、この性質変化が立体構造にどのような影響を与えているか確認してください。</span>`;
+                <strong style="color:#c0392b; font-size:13px;">🚨 アミノ酸配列の変化を ${mutPositions.length} 箇所検出しました！</strong><br>
+                突然変異残基番号: ${mutPositions.join(', ')}<br><br>
+                <span style="color:#2c3e50;">この突然変異データは自動的にシステムに保存されました。<br>
+                続いて <b>アプリ⑩（Protein Structure Explorer）</b> を開き、「変異を同期」ボタンを押して、この性質変化がポリペプチドの立体構造にどのような影響を与えているか確認してください。</span>`;
         } else if (currentMRNAs.length > 1) {
             alertBox.style.display = 'block';
             alertBox.style.borderColor = '#27ae60';
             alertBox.style.background = '#eafaf1';
             alertBox.style.color = '#1e8449';
-            alertBox.innerHTML = `<strong>✅ アミノ酸の性質変化（ミスセンス変異）は検出されませんでした。</strong><br>塩基配列が変化していてもアミノ酸が変わらない「サイレント変異」である可能性が高いです。`;
+            alertBox.innerHTML = `<strong>✅ アミノ酸配列の変化（突然変異）は検出されませんでした。</strong><br>DNAの塩基配列が変化していてもアミノ酸配列が変わらない突然変異である可能性が高いです。`;
         } else {
             alertBox.style.display = 'none'; 
         }
@@ -630,6 +664,55 @@
             tooltip.style.opacity = '0';
             tooltip.style.display = 'none';
         }, true);
+    });
+
+    // --- 追加パッチ: .codon-box以外の全般的なツールチップ(ボタン等)のサポート ---
+    document.body.addEventListener('mouseover', (e) => {
+        const btn = e.target.closest('[data-tooltip]:not(.codon-box)');
+        if (btn) {
+            const tooltip = document.getElementById('global-tooltip');
+            tooltip.innerText = btn.getAttribute('data-tooltip');
+            tooltip.style.display = 'block';
+            tooltip.className = ''; 
+            
+            const rect = btn.getBoundingClientRect();
+            tooltip.style.top = (rect.bottom + 5) + 'px';
+            tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+            tooltip.style.transform = 'translateX(-50%)';
+            
+            requestAnimationFrame(() => {
+                const ttRect = tooltip.getBoundingClientRect();
+                let topPos = rect.bottom + 5;
+                let leftPos = rect.left + rect.width / 2;
+                let arrowClass = 'show-bottom'; 
+
+                if (topPos + ttRect.height > window.innerHeight) {
+                    topPos = rect.top - ttRect.height - 5;
+                    arrowClass = 'show-top'; 
+                }
+                
+                if (leftPos - ttRect.width / 2 < 5) {
+                    leftPos = 5 + ttRect.width / 2;
+                } else if (leftPos + ttRect.width / 2 > window.innerWidth - 5) {
+                    leftPos = window.innerWidth - ttRect.width / 2 - 5;
+                }
+
+                tooltip.style.top = topPos + 'px';
+                tooltip.style.left = leftPos + 'px';
+                tooltip.style.transform = `translateX(-50%)`;
+                tooltip.classList.add(arrowClass);
+                tooltip.style.opacity = '1';
+            });
+        }
+    });
+
+    document.body.addEventListener('mouseout', (e) => {
+        const btn = e.target.closest('[data-tooltip]:not(.codon-box)');
+        if (btn) {
+            const tooltip = document.getElementById('global-tooltip');
+            tooltip.style.opacity = '0';
+            tooltip.style.display = 'none';
+        }
     });
 
 </script>
