@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phylogenetic Tree Builder v3.3 | Bio-Edu Suite</title>
+    <title>Phylogenetic Tree Builder v3.4 | Bio-Edu Suite</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
@@ -169,7 +169,7 @@
     <div class="header">
         <h1>🧬 Phylogenetic Tree Builder</h1>
         <p>Bio-Edu Suite: Matrix Calculation & UPGMA/NJ/MP Clustering Emulator</p>
-        <div class="version-badge">v3.3</div>
+        <div class="version-badge">v3.4</div>
     </div>
 </div>
 
@@ -368,9 +368,9 @@
             <!-- 有根系統樹3パターンの枝配置SVG -->
             <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:15px;">
                 <!-- Tree I -->
-                <div id="mpInteractiveCard1" style="flex:1; min-width:260px; border:2px solid #bdc3c7; border-radius:6px; padding:10px; text-align:center; background:#fafbfc;">
+                <div id="mpInteractiveCard1" style="flex:1; min-width:280px; border:2px solid #bdc3c7; border-radius:6px; padding:10px; text-align:center; background:#fafbfc;">
                     <h4 style="margin:0 0 10px 0; font-size:13px; color:#2c3e50;">系統樹 I</h4>
-                    <svg id="mpSvg1" width="250" height="150" style="background:#fff; border-radius:4px; max-width: 100%;"></svg>
+                    <svg id="mpSvg1" width="280" height="150" style="background:#fff; border-radius:4px; max-width: 100%;"></svg>
                     <div style="margin-top:10px; font-size:12px; font-weight:bold; color:#2c3e50;">
                         塩基置換数: <span id="mutCount1" style="color:#e67e22; font-size:15px;">0</span> 回
                     </div>
@@ -378,9 +378,9 @@
                 </div>
 
                 <!-- Tree II -->
-                <div id="mpInteractiveCard2" style="flex:1; min-width:260px; border:2px solid #bdc3c7; border-radius:6px; padding:10px; text-align:center; background:#fafbfc;">
+                <div id="mpInteractiveCard2" style="flex:1; min-width:280px; border:2px solid #bdc3c7; border-radius:6px; padding:10px; text-align:center; background:#fafbfc;">
                     <h4 style="margin:0 0 10px 0; font-size:13px; color:#2c3e50;">系統樹 II</h4>
-                    <svg id="mpSvg2" width="250" height="150" style="background:#fff; border-radius:4px; max-width: 100%;"></svg>
+                    <svg id="mpSvg2" width="280" height="150" style="background:#fff; border-radius:4px; max-width: 100%;"></svg>
                     <div style="margin-top:10px; font-size:12px; font-weight:bold; color:#2c3e50;">
                         塩基置換数: <span id="mutCount2" style="color:#e67e22; font-size:15px;">0</span> 回
                     </div>
@@ -388,9 +388,9 @@
                 </div>
 
                 <!-- Tree III -->
-                <div id="mpInteractiveCard3" style="flex:1; min-width:260px; border:2px solid #bdc3c7; border-radius:6px; padding:10px; text-align:center; background:#fafbfc;">
+                <div id="mpInteractiveCard3" style="flex:1; min-width:280px; border:2px solid #bdc3c7; border-radius:6px; padding:10px; text-align:center; background:#fafbfc;">
                     <h4 style="margin:0 0 10px 0; font-size:13px; color:#2c3e50;">系統樹 III</h4>
-                    <svg id="mpSvg3" width="250" height="150" style="background:#fff; border-radius:4px; max-width: 100%;"></svg>
+                    <svg id="mpSvg3" width="280" height="150" style="background:#fff; border-radius:4px; max-width: 100%;"></svg>
                     <div style="margin-top:10px; font-size:12px; font-weight:bold; color:#2c3e50;">
                         塩基置換数: <span id="mutCount3" style="color:#e67e22; font-size:15px;">0</span> 回
                     </div>
@@ -432,7 +432,7 @@
 
 <div id="toast"></div>
 
-<div class="footer">&copy; 2026 Bio-Edu Suite v3.3 | For Professional Bioinformatics Education</div>
+<div class="footer">&copy; 2026 Bio-Edu Suite v3.4 | For Professional Bioinformatics Education</div>
 
 <script>
     // --- ツールチップ機能 (v1.6準拠) ---
@@ -614,8 +614,9 @@
 
         originalNames = seqs.map(s => s.name);
         
+        // ツリー描画における交差を防ぐため、minLeafIndexを追加
         clusters = seqs.map((s, i) => ({ 
-            name: s.name, id: i, size: 1, maxDepth: 0, edge: 0, left: null, right: null, active: true 
+            name: s.name, id: i, size: 1, maxDepth: 0, edge: 0, left: null, right: null, active: true, minLeafIndex: i 
         }));
         nextNodeId = seqs.length;
         
@@ -988,35 +989,36 @@
     }
 
     // --- SVG 教科書完全準拠の有根系統樹（逆三角形）の描画 ---
+    // 左側の余白を増やし、幅を280に拡張して学名の見切れを防止
     function renderInteractiveSVG(treeType, b1, b2, b3, b4) {
         const svg = document.getElementById(`mpSvg${treeType}`);
         svg.innerHTML = '';
 
-        const root = {x: 125, y: 120};
-        const n1 = {x: 155, y: 90};
-        const n2 = {x: 185, y: 60};
+        const root = {x: 155, y: 120};
+        const n1 = {x: 185, y: 90};
+        const n2 = {x: 215, y: 60};
         
         let points = [];
         if (treeType === 1) { 
             points = [
-                {x: 35, y: 30, b: b1, label: mpNames[0]}, 
-                {x: 95, y: 30, b: b2, label: mpNames[1]}, 
-                {x: 155, y: 30, b: b3, label: mpNames[2]}, 
-                {x: 215, y: 30, b: b4, label: mpNames[3]}  
+                {x: 65, y: 30, b: b1, label: mpNames[0]}, 
+                {x: 125, y: 30, b: b2, label: mpNames[1]}, 
+                {x: 185, y: 30, b: b3, label: mpNames[2]}, 
+                {x: 245, y: 30, b: b4, label: mpNames[3]}  
             ];
         } else if (treeType === 2) { 
             points = [
-                {x: 35, y: 30, b: b1, label: mpNames[0]}, 
-                {x: 95, y: 30, b: b3, label: mpNames[2]}, 
-                {x: 155, y: 30, b: b2, label: mpNames[1]}, 
-                {x: 215, y: 30, b: b4, label: mpNames[3]}  
+                {x: 65, y: 30, b: b1, label: mpNames[0]}, 
+                {x: 125, y: 30, b: b3, label: mpNames[2]}, 
+                {x: 185, y: 30, b: b2, label: mpNames[1]}, 
+                {x: 245, y: 30, b: b4, label: mpNames[3]}  
             ];
         } else { 
             points = [
-                {x: 35, y: 30, b: b1, label: mpNames[0]}, 
-                {x: 95, y: 30, b: b4, label: mpNames[3]}, 
-                {x: 155, y: 30, b: b2, label: mpNames[1]}, 
-                {x: 215, y: 30, b: b3, label: mpNames[2]}  
+                {x: 65, y: 30, b: b1, label: mpNames[0]}, 
+                {x: 125, y: 30, b: b4, label: mpNames[3]}, 
+                {x: 185, y: 30, b: b2, label: mpNames[1]}, 
+                {x: 245, y: 30, b: b3, label: mpNames[2]}  
             ];
         }
 
@@ -1240,9 +1242,9 @@
         let html = '';
         step3Order.forEach(i => {
             html += `
-            <div class="mp-tree-card" onclick="selectMPTree(${i})" style="flex:1; min-width: 210px; border: 2px solid #bdc3c7; border-radius: 6px; padding: 15px; cursor: pointer; text-align: center; background: #fff; transition: 0.2s;" data-tooltip="この系統樹を最も最節約的であると選択します">
+            <div class="mp-tree-card" onclick="selectMPTree(${i})" style="flex:1; min-width: 280px; border: 2px solid #bdc3c7; border-radius: 6px; padding: 15px; cursor: pointer; text-align: center; background: #fff; transition: 0.2s;" data-tooltip="この系統樹を最も最節約的であると選択します">
                 <h4 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 14px;">系統樹 ${i === 1 ? 'I' : i === 2 ? 'II' : 'III'}</h4>
-                <canvas id="mpCanvas${i}" width="250" height="150" style="max-width: 100%; height: auto;"></canvas>
+                <canvas id="mpCanvas${i}" width="280" height="150" style="max-width: 100%; height: auto;"></canvas>
                 <p style="margin: 10px 0 0 0; font-size: 13px; font-weight: bold; color: #34495e;">総塩基置換数: <span style="font-size: 18px; color: #e67e22;">${mpScores[i-1]}</span> 回</p>
             </div>`;
         });
@@ -1275,6 +1277,7 @@
         }
     }
     
+    // Step 3用 Canvas描画 (座標と幅を調整)
     function drawMPTreeCanvas(canvasId, treeType) {
         const canvas = document.querySelector(`canvas[id="${canvasId}"]`);
         if(!canvas) return;
@@ -1286,17 +1289,17 @@
         ctx.lineWidth = 4;
         ctx.lineJoin = 'round';
         
-        const root = {x: 125, y: 120};
-        const n1 = {x: 155, y: 90};
-        const n2 = {x: 185, y: 60};
+        const root = {x: 155, y: 120};
+        const n1 = {x: 185, y: 90};
+        const n2 = {x: 215, y: 60};
         
         let points = [];
         if (treeType === 1) { 
-            points = [ {x: 35, y: 30, label: mpNames[0]}, {x: 95, y: 30, label: mpNames[1]}, {x: 155, y: 30, label: mpNames[2]}, {x: 215, y: 30, label: mpNames[3]} ];
+            points = [ {x: 65, y: 30, label: mpNames[0]}, {x: 125, y: 30, label: mpNames[1]}, {x: 185, y: 30, label: mpNames[2]}, {x: 245, y: 30, label: mpNames[3]} ];
         } else if (treeType === 2) { 
-            points = [ {x: 35, y: 30, label: mpNames[0]}, {x: 95, y: 30, label: mpNames[2]}, {x: 155, y: 30, label: mpNames[1]}, {x: 215, y: 30, label: mpNames[3]} ];
+            points = [ {x: 65, y: 30, label: mpNames[0]}, {x: 125, y: 30, label: mpNames[2]}, {x: 185, y: 30, label: mpNames[1]}, {x: 245, y: 30, label: mpNames[3]} ];
         } else {
-            points = [ {x: 35, y: 30, label: mpNames[0]}, {x: 95, y: 30, label: mpNames[3]}, {x: 155, y: 30, label: mpNames[1]}, {x: 215, y: 30, label: mpNames[2]} ];
+            points = [ {x: 65, y: 30, label: mpNames[0]}, {x: 125, y: 30, label: mpNames[3]}, {x: 185, y: 30, label: mpNames[1]}, {x: 245, y: 30, label: mpNames[2]} ];
         }
 
         ctx.beginPath();
@@ -1518,7 +1521,7 @@
             c2.edge = Math.max(0, newMaxDepth - c2.maxDepth);
         }
 
-        let newNode = { name: `(${formatScientificName(c1.name)},${formatScientificName(c2.name)})`, id: nextNodeId++, size: c1.size+c2.size, maxDepth: newMaxDepth, left: c1, right: c2, edge: 0, active: true };
+        let newNode = { name: `(${formatScientificName(c1.name)},${formatScientificName(c2.name)})`, id: nextNodeId++, size: c1.size+c2.size, maxDepth: newMaxDepth, left: c1, right: c2, edge: 0, active: true, minLeafIndex: Math.min(c1.minLeafIndex, c2.minLeafIndex) };
         
         let newDistRow = [];
         for(let k=0; k<n; k++) {
@@ -1565,7 +1568,8 @@
         const w = canvas.width, h = canvas.height;
         ctx.fillStyle = "white"; ctx.fillRect(0,0,w,h); 
         
-        let activeClusters = clusters.filter(c => c.active);
+        // 描画交差バグを防ぐため、minLeafIndex順にソートしてトラバース
+        let activeClusters = clusters.filter(c => c.active).sort((a, b) => a.minLeafIndex - b.minLeafIndex);
         if(activeClusters.length === 0) return;
 
         let leafCount = 0;
@@ -1590,10 +1594,7 @@
             if(node.maxDepth > globalMaxDepth) globalMaxDepth = node.maxDepth;
         }
         
-        let rootNode = clusters.find(c => c.active);
-        if(!rootNode && clusters.length > 0) rootNode = clusters[clusters.length - 1]; 
-        
-        if (rootNode) traverseY(rootNode);
+        activeClusters.forEach(c => traverseY(c));
 
         let drawAreaW = w - 120 - maxTextWidth - 30; 
         let scaleX = globalMaxDepth > 0 ? drawAreaW / globalMaxDepth : 1;
@@ -1609,7 +1610,7 @@
                 traverseX(node.right, node.xPos);
             }
         }
-        if (rootNode) traverseX(rootNode);
+        activeClusters.forEach(c => traverseX(c));
 
         ctx.lineWidth = 3; ctx.lineJoin = 'round';
         
@@ -1637,7 +1638,7 @@
             
             ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI*2); ctx.fillStyle = '#e67e22'; ctx.fill(); ctx.stroke();
         }
-        if (rootNode) draw(rootNode);
+        activeClusters.forEach(c => draw(c));
 
         const algo = document.querySelector('input[name="algo"]:checked').value;
         ctx.fillStyle = '#95a5a6'; 
