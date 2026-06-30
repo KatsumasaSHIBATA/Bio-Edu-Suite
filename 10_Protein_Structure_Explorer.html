@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Protein Structure Explorer v2.8 | Bio-Edu Suite</title>
+    <title>Protein Structure Explorer v2.11 | Bio-Edu Suite</title>
     <script src="https://3Dmol.org/build/3Dmol-min.js"></script>
     <style>
         /* 💡 修正ポイント: 謎の文字が入っていたタイポを修正し、サイズ計算を正常化 */
@@ -59,11 +59,13 @@
         
         /* 1D-3D 連動ビューア */
         .right-panel { display: flex; flex-direction: column; gap: 15px; position: sticky; top: 20px; min-width: 0; }
-        .viewer-card { border-top-color: #9b59b6; display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.1); height: 480px; }
+        
+        /* 💡 パッチ適用箇所: 高さを固定(480px)せず、コンテンツに合わせて伸びるように修正し見切れを防止 */
+        .viewer-card { border-top-color: #9b59b6; display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.1); min-height: 520px; height: auto; }
         #gldiv { width: 100%; flex: 1; min-height: 350px; background: #0b0b0b; position: relative; }
         
-        .viewer-controls { background: #2c3e50; padding: 10px; display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; }
-        .viewer-controls .btn { background: #34495e; color: white; border: none; box-shadow: 0 3px 0 #1a252f; }
+        .viewer-controls { background: #2c3e50; padding: 10px 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; border-bottom: 1px solid #34495e; }
+        .viewer-controls .btn { background: #34495e; color: white; border: none; box-shadow: 0 3px 0 #1a252f; padding: 8px 10px; }
         .viewer-controls .btn:active { transform: translateY(3px); box-shadow: none; }
 
         .sequence-card { border-top-color: #e67e22; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
@@ -89,8 +91,8 @@
             .main-content { grid-template-columns: 1fr; padding: 10px; }
             .right-panel { position: static; }
             .toolbar-row { flex-direction: column; align-items: stretch; }
-            .viewer-controls { grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 8px 5px; }
-            .viewer-controls .btn { font-size: 10px; padding: 8px 2px; letter-spacing: -0.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .viewer-controls { grid-template-columns: repeat(2, 1fr) !important; gap: 6px; padding: 10px; }
+            .viewer-controls .btn { font-size: 11px; padding: 8px 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
             .mega-invite { width: calc(100% - 20px); margin: 0 auto 20px auto !important; }
         }
 
@@ -108,10 +110,6 @@
         }
         .viewer-card.fullscreen-mode .viewer-controls {
             padding-bottom: 20px; /* フルスクリーン時下部の操作余裕 */
-        }
-        @media screen and (max-width: 768px) {
-            /* 全画面ボタン追加に伴い、スマホ時は2列(または4列)レイアウトで破綻を防ぐ */
-            .viewer-controls { grid-template-columns: repeat(2, 1fr) !important; }
         }
 
         /* =========================================
@@ -142,21 +140,22 @@
     <div class="header">
         <h1>🧬 Protein Structure Explorer</h1>
         <p>Bio-Edu Suite: Integrated 1D-3D Structural Analysis</p>
-        <div class="version-badge">v2.8</div>
+        <div class="version-badge">v2.12</div>
     </div>
 </div>
 
 <div class="main-content">
     <div class="control-panel">
         <div class="card">
+            <!-- 💡 全絵文字を削除し、プレーンでプロフェッショナルなテキストに -->
             <div class="card-header">⚙️ 1. 構造データの読込（オンライン/ローカル）</div>
             <div class="card-body">
                 
                 <div class="toolbar-row">
                     <span class="step-label" style="min-width: 120px;">PDB / AlphaFold <button class="rationale-btn" onclick="toggleRationale('rat_pdb')" title="オンライン取得とは？">?</button></span>
                     <div style="display:flex; flex:1; gap:8px; width:100%;">
-                        <input type="text" id="pdbId" class="primer-input" style="flex:4;" placeholder="ID (例: 2HHB, P68871)" onkeypress="if(event.keyCode===13) loadOnlinePDB()">
-                        <button class="btn btn-primary" onclick="loadOnlinePDB()" style="flex:1; font-size: 13px; padding: 8px; min-width: 80px;">🌐 取得</button>
+                        <input type="text" id="pdbId" class="primer-input" style="flex:4;" placeholder="PDB ID または UniProt ID" onkeypress="if(event.keyCode===13) loadOnlinePDB()">
+                        <button class="btn btn-primary" onclick="loadOnlinePDB()" style="flex:1; font-size: 13px; padding: 8px; min-width: 80px;" data-tooltip="PDB ID（4文字）または UniProt ID（AlphaFold用）を入力してオンライン取得します">🌐 取得</button>
                     </div>
                 </div>
                 <div id="rat_pdb" class="rationale-text" style="margin-top:0;">
@@ -200,15 +199,14 @@
                     <strong>アプリ⑨（Central Dogma Simulator）</strong> で特定したアミノ酸の性質変化（例：親水性から疎水性へ）が、3D空間でどのような位置にあるか（水に触れる表面に露出しているか、内側に隠れているか）を視覚的に確認し、タンパク質の機能異常のメカニズムを推論してみましょう。
                 </div>
 
-                <button class="btn btn-sync" onclick="syncWithAlignment()">🧬 配列解析結果（アプリ⑤/⑨）から変異を同期</button>
+                <button class="btn btn-sync" onclick="syncWithAlignment()" data-tooltip="アプリ⑤または⑨で特定した変異部位のデータを自動で読み込み、赤色でマッピングします">🧬 変異データを同期</button>
                 
                 <div class="toolbar-row" style="margin-top:5px;">
                     <span class="step-label" style="min-width: 60px;">残基指定:</span>
                     <div style="display:flex; flex:1; gap:5px;">
-                        <input type="text" id="residueList" class="primer-input" placeholder="番号: 6, 25..." onkeypress="if(event.keyCode===13) highlightFromInput()">
-                        <button class="btn" onclick="highlightFromInput()" style="white-space: nowrap;">追加表示</button>
-                        <!-- 追加パッチ: 周辺5Åの表示機能 -->
-                        <button class="btn btn-purple" onclick="showEnvironmentAroundMutations()" style="white-space: nowrap; padding: 8px 10px;">周辺5Å表示</button>
+                        <input type="text" id="residueList" class="primer-input" placeholder="アミノ酸番号 (カンマ区切り)" onkeypress="if(event.keyCode===13) highlightFromInput()">
+                        <button class="btn" onclick="highlightFromInput()" style="white-space: nowrap;" data-tooltip="入力したアミノ酸番号を赤色で強調表示します">➕ 追加</button>
+                        <button class="btn btn-purple" onclick="showEnvironmentAroundMutations()" style="white-space: nowrap; padding: 8px 10px;" data-tooltip="選択した変異の周囲5Åの構造を抽出し、結合状態をピンポイントで確認します">周辺5Å表示</button>
                     </div>
                 </div>
 
@@ -218,14 +216,46 @@
                 </div>
                 
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
-                    <button id="btnLigand" class="btn btn-toggle" onclick="toggleLigands()">💊 リガンド: OFF</button>
-                    <button id="btnDNA" class="btn btn-toggle" style="background:#2980b9; box-shadow:0 3px 0 #1a5276 !important;" onclick="toggleDNA()">🧬 DNA: OFF</button>
+                    <button id="btnLigand" class="btn btn-toggle" onclick="toggleLigands()" data-tooltip="ヘムなどの非タンパク質化合物（リガンド）の表示を切り替えます">💊 リガンド: OFF</button>
+                    <button id="btnDNA" class="btn btn-toggle" style="background:#2980b9; box-shadow:0 3px 0 #1a5276 !important;" onclick="toggleDNA()" data-tooltip="結合しているDNAやRNAの表示を切り替えます">🧬 DNA: OFF</button>
                 </div>
             </div>
         </div>
 
         <div class="card">
             <div class="card-header">🎨 3. 表示スタイル・出力</div>
+            <div class="card-body">
+                <div id="rat_sync" class="rationale-text">
+                    <strong>【根拠：アミノ酸配列から3D構造への因果関係】</strong><br>
+                    DNAの突然変異そのものを見るのではなく、「翻訳された結果としてのアミノ酸の性質変化」が立体構造の崩壊を規定します。<br>
+                    <strong>アプリ⑨（Central Dogma Simulator）</strong> で特定したアミノ酸の性質変化（例：親水性から疎水性へ）が、3D空間でどのような位置にあるか（水に触れる表面に露出しているか、内側に隠れているか）を視覚的に確認し、タンパク質の機能異常のメカニズムを推論してみましょう。
+                </div>
+
+                <button class="btn btn-sync" onclick="syncWithAlignment()" data-tooltip="アプリ⑤または⑨で特定した変異部位のデータを自動で読み込み、赤色でマッピングします">変異データを同期</button>
+                
+                <div class="toolbar-row" style="margin-top:5px;">
+                    <span class="step-label" style="min-width: 60px;">残基指定:</span>
+                    <div style="display:flex; flex:1; gap:5px;">
+                        <input type="text" id="residueList" class="primer-input" placeholder="アミノ酸番号 (カンマ区切り)" onkeypress="if(event.keyCode===13) highlightFromInput()">
+                        <button class="btn" onclick="highlightFromInput()" style="white-space: nowrap;" data-tooltip="入力したアミノ酸番号を赤色で強調表示します">追加表示</button>
+                        <button class="btn btn-purple" onclick="showEnvironmentAroundMutations()" style="white-space: nowrap; padding: 8px 10px;" data-tooltip="選択した変異の周囲5Åの構造を抽出し、結合状態をピンポイントで確認します">周辺5Å表示</button>
+                    </div>
+                </div>
+
+                <div class="step-label" style="margin-top:10px;">分子の強調表示 <button class="rationale-btn" onclick="toggleRationale('rat_mol')">?</button></div>
+                <div id="rat_mol" class="rationale-text">
+                    <strong>【根拠】</strong> タンパク質は単体では働きません。中心にある「ヘム」などのリガンドや、結合した「DNA」を表示して初めて機能が見えてきます。
+                </div>
+                
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+                    <button id="btnLigand" class="btn btn-toggle" onclick="toggleLigands()" data-tooltip="ヘムなどの非タンパク質化合物（リガンド）の表示を切り替えます">リガンド: OFF</button>
+                    <button id="btnDNA" class="btn btn-toggle" style="background:#2980b9; box-shadow:0 3px 0 #1a5276 !important;" onclick="toggleDNA()" data-tooltip="結合しているDNAやRNAの表示を切り替えます">DNA: OFF</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">3. 表示スタイル・出力</div>
             <div class="card-body">
                 
                 <div class="step-label">スタイルの使い分け <button class="rationale-btn" onclick="toggleRationale('rat_style')">?</button></div>
@@ -238,20 +268,20 @@
                 </div>
                 
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
-                    <button class="btn" onclick="setStyleMode('chain')">サブユニット別に色分け</button>
-                    <button class="btn" onclick="setStyleMode('cartoon')">リボンモデル</button>
-                    <button class="btn" onclick="setStyleMode('surface')">静電ポテンシャルモデル</button>
-                    <button class="btn" onclick="setStyleMode('sphere')">空間充填モデル</button>
-                    <!-- 追加パッチ: 疎水性表示モード -->
-                    <button class="btn btn-purple" onclick="setStyleMode('hydrophobicity')" style="grid-column: span 2;">🔴疎水性 / 🔵親水性 モード (ハイドロパシー)</button>
+                    <!-- 💡 v2.7の学術的テキストに完全に戻し、絵文字を排除しました -->
+                    <button class="btn" onclick="setStyleMode('chain')" data-tooltip="複数のポリペプチド（サブユニット）を異なる色で塗り分けます">サブユニット別に色分け</button>
+                    <button class="btn" onclick="setStyleMode('cartoon')" data-tooltip="タンパク質の骨格（αヘリックスやβシート）をリボン状に表示します">リボンモデル</button>
+                    <button class="btn" onclick="setStyleMode('surface')" data-tooltip="分子の表面を表示し、ポケットや相互作用面を確認しやすくします">静電ポテンシャルモデル</button>
+                    <button class="btn" onclick="setStyleMode('sphere')" data-tooltip="すべての原子を球体で表示し、実際の体積や密度感を表現します">空間充填モデル</button>
+                    <button class="btn btn-purple" onclick="setStyleMode('hydrophobicity')" style="grid-column: span 2;" data-tooltip="疎水性アミノ酸を赤、親水性を青で示し、疎水性相互作用の「接着面」を可視化します">疎水性 / 親水性 モード (ハイドロパシー)</button>
                 </div>
                 
                 <div id="af_info_panel" style="display:none; margin-top:10px; padding:10px; background:#f4ecf7; border:1px solid #9b59b6; border-radius:4px; font-size:12px; color:#512e5f; line-height:1.5;">
                     ⚠️ より高度な <strong>CATH分類 (ドメイン)</strong> や <strong>AlphaMissense (病原性予測)</strong> 等を確認したい場合は、本家の AlphaFold Database をご参照ください。<br>
-                    <button class="btn" onclick="openAFDB()" style="margin-top:8px; width:100%; background:#fff; border-color:#9b59b6; color:#8e44ad; font-weight:bold;">↗️ 本家 AlphaFold DB を開く</button>
+                    <button class="btn" onclick="openAFDB()" style="margin-top:8px; width:100%; background:#fff; border-color:#9b59b6; color:#8e44ad; font-weight:bold;">↗ 本家 AlphaFold DB を開く</button>
                 </div>
 
-                <button class="btn" style="margin-top:10px; background:#ecf0f1; border-color:#bdc3c7;" onclick="exportImageModal()">📸 3D画面をPNG画像で保存</button>
+                <button class="btn" style="margin-top:10px; background:#ecf0f1; border-color:#bdc3c7;" onclick="exportImageModal()" data-tooltip="現在の3Dビューアの表示をPNG画像としてダウンロードします">📸 画像保存</button>
             </div>
         </div>
     </div>
@@ -263,24 +293,20 @@
                 <span id="dataInfo" style="font-size:12px; font-weight:bold; color:#f1c40f;">READY: データを読み込んでください</span>
             </div>
             <div id="gldiv"></div>
-            <!-- 断面カット スライダー追加に伴いボーダー追加 -->
-            <div class="viewer-controls" style="border-bottom: 1px solid #1a252f;">
-                <button class="btn" onclick="resetView()">🔄 視点リセット</button>
-                <button class="btn" id="spinBtn" onclick="toggleSpin()">🔄 自動回転 ON</button>
-                <button id="btnLabel" class="btn btn-toggle" style="background:#34495e; box-shadow:0 3px 0 #1a252f !important;" onclick="toggleLabels()">🏷️ ラベル表示: OFF</button>
-                <button class="btn" id="btnFullscreen" onclick="toggleFullScreen()" title="ショートカット: Fキー">⛶ 全画面表示</button>
+            <!-- 💡 追加パッチ: 断面カットの余白を広げ、スマホで押し潰されないよう flex-wrap を適用 -->
+            <div class="viewer-controls" style="border-bottom: 1px solid #34495e; padding-bottom: 15px;">
+                <button class="btn" onclick="resetView()" data-tooltip="カメラの視点とズーム、断面カットを初期状態に戻します">🔄 視点リセット</button>
+                <button class="btn" id="spinBtn" onclick="toggleSpin()" data-tooltip="分子をY軸周りに自動で回転させます">🔄 自動回転 ON</button>
+                <button id="btnLabel" class="btn btn-toggle" style="background:#34495e; box-shadow:0 3px 0 #1a252f !important;" onclick="toggleLabels()" data-tooltip="選択した変異部位のアミノ酸番号をラベル表示します">🏷️ ラベル表示: OFF</button>
+                <button class="btn" id="btnFullscreen" onclick="toggleFullScreen()" data-tooltip="3Dビューアを全画面に拡大します（ショートカット: Fキー）">⛶ 全画面表示</button>
             </div>
-            <!-- 追加パッチ: 断面カット (Clipping Plane) -->
-            <div style="background: #2c3e50; padding: 8px 10px; display: flex; align-items: center; gap: 10px; position: relative;">
-                <span style="color: white; font-size: 11px; font-weight: bold; white-space: nowrap;">断面カット:</span>
-                <input type="range" id="clipSlider" min="0" max="100" value="100" oninput="updateClipping(this.value)" style="flex: 1; accent-color: #1abc9c; cursor: pointer;">
-                <button class="rationale-btn" style="margin-left: 0; position: relative; z-index: 10;" onclick="toggleRationale('rat_clip')" title="断面カットとは？">?</button>
-                
-                <!-- 💡 修正パッチ: 固定高さに隠れないよう、上に浮かび上がるツールチップ形式に変更 -->
-                <div id="rat_clip" class="rationale-text" style="display:none; position: absolute; bottom: calc(100% + 5px); right: 10px; width: 280px; background: #fef5e7; color: #a04000; border: 1px solid #f39c12; border-radius: 4px; font-size: 11px; padding: 10px; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+            <div style="background: #2c3e50; padding: 12px 15px; display: flex; align-items: center; gap: 10px; position: relative; flex-wrap: wrap;">
+                <span style="color: #bdc3c7; font-size: 12px; font-weight: bold; white-space: nowrap;">🔪 断面カット:</span>
+                <input type="range" id="clipSlider" min="0" max="100" value="100" oninput="updateClipping(this.value)" style="flex: 1; min-width: 150px; accent-color: #1abc9c; cursor: pointer; height: 6px; border-radius: 3px;">
+                <button class="rationale-btn" style="margin-left: auto; position: relative; z-index: 10; background: #1a252f; border: 1px solid #1abc9c; color: #1abc9c;" onclick="toggleRationale('rat_clip')" title="断面カットとは？">?</button>
+                <div id="rat_clip" class="rationale-text" style="display:none; margin-top:0;">
                     <strong>【断面から内部構造を見る】</strong><br>
                     スライダーを左に動かすと、手前側から分子を切り取り「断面」を表示します。変異したアミノ酸が、相手の分子にどれほど深く食い込んでいるか（結合の深さ）が一目瞭然になります。
-                    <div style="position: absolute; bottom: -5px; right: 12px; width: 8px; height: 8px; background: #fef5e7; border-bottom: 1px solid #f39c12; border-right: 1px solid #f39c12; transform: rotate(45deg);"></div>
                 </div>
             </div>
         </div>
@@ -288,7 +314,7 @@
         <div class="card sequence-card">
             <div class="sequence-header">
                 <span>📝 アミノ酸配列 / サブユニットの選択</span>
-                <button class="btn" style="background:#fff; color:#c0392b; border:1px solid #c0392b; padding:4px 8px; font-size:10px; border-radius:3px;" onclick="clearHighlights()">🧹 選択を全クリア</button>
+                <button class="btn" style="background:#fff; color:#c0392b; border:1px solid #c0392b; padding:4px 8px; font-size:10px; border-radius:3px;" onclick="clearHighlights()" data-tooltip="選択したアミノ酸残基のハイライトをすべて解除します">🧹 全クリア</button>
             </div>
             <div class="sequence-body">
                 <div id="chainSelector" class="chain-selector-area"></div>
@@ -305,7 +331,7 @@
     ・<b>PyMOL</b>：世界中の論文で最もよく使われる構造描画ツール。複雑なアニメーションや、ミリ単位での水素結合の距離測定が可能です。
 </div>
 
-<div class="footer">&copy; 2026 Bio-Edu Suite v2.8 | Structural & Educational Mastery</div>
+<div class="footer">&copy; 2026 Bio-Edu Suite v2.11 | Structural & Educational Mastery</div>
 
 <!-- トースト通知 & ツールチップ (v1.6準拠) -->
 <div id="toast"></div>
@@ -367,10 +393,98 @@
         initTooltip();
     });
 
+    // 💡 パッチ: すべての解説パネルをスマートなポップオーバーにする処理
     function toggleRationale(id) {
         const el = document.getElementById(id);
-        el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+        const btn = event ? (event.currentTarget || event.target) : null;
+        
+        // 既に表示されている場合は閉じる
+        if (el.style.display === 'block') {
+            el.style.display = 'none';
+            return;
+        }
+
+        // 他のすべての解説パネルを閉じて排他制御
+        document.querySelectorAll('.rationale-text').forEach(p => p.style.display = 'none');
+        
+        // HTML構造に依存せず、画面上に「固定のポップオーバー」として表示
+        el.style.display = 'block';
+        el.style.position = 'fixed'; // fixedで親要素の影響を断ち切る
+        el.style.zIndex = '9999';
+        el.style.width = '300px';
+        el.style.background = '#fef5e7';
+        el.style.color = '#a04000';
+        el.style.border = '1px solid #f39c12';
+        el.style.borderRadius = '6px';
+        el.style.padding = '12px';
+        el.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
+        el.style.margin = '0';
+        el.style.right = 'auto'; 
+        el.style.bottom = 'auto';
+        
+        // 吹き出しの尻尾を生成（初回のみ）
+        if (!el.querySelector('.pop-arrow')) {
+            const arrow = document.createElement('div');
+            arrow.className = 'pop-arrow';
+            arrow.style.position = 'absolute';
+            arrow.style.width = '10px';
+            arrow.style.height = '10px';
+            arrow.style.background = '#fef5e7';
+            arrow.style.transform = 'rotate(45deg)';
+            el.appendChild(arrow);
+        }
+
+        if (btn) {
+            const btnRect = btn.getBoundingClientRect();
+            const elRect = el.getBoundingClientRect();
+            const arrow = el.querySelector('.pop-arrow');
+            
+            // 基本はボタンの「上側」に表示
+            let topPos = btnRect.top - elRect.height - 10;
+            let leftPos = btnRect.left - 20; 
+            
+            // 矢印の基本位置（下向き）
+            arrow.style.bottom = '-6px';
+            arrow.style.top = 'auto';
+            arrow.style.left = '20px';
+            arrow.style.borderBottom = '1px solid #f39c12';
+            arrow.style.borderRight = '1px solid #f39c12';
+            arrow.style.borderTop = 'none';
+            arrow.style.borderLeft = 'none';
+
+            // 画面上部にはみ出る場合は「ボタンの下側」に表示
+            if (topPos < 10) {
+                topPos = btnRect.bottom + 10;
+                arrow.style.top = '-6px';
+                arrow.style.bottom = 'auto';
+                arrow.style.borderBottom = 'none';
+                arrow.style.borderRight = 'none';
+                arrow.style.borderTop = '1px solid #f39c12';
+                arrow.style.borderLeft = '1px solid #f39c12';
+            }
+
+            // 画面右側にはみ出る場合は左にずらす
+            if (leftPos + elRect.width > window.innerWidth - 10) {
+                let overflow = (leftPos + elRect.width) - (window.innerWidth - 10);
+                leftPos -= overflow;
+                arrow.style.left = (20 + overflow) + 'px'; // 矢印の位置をボタンに追従させる
+            }
+
+            el.style.top = topPos + 'px';
+            el.style.left = leftPos + 'px';
+        }
     }
+
+    // 💡 パッチ: 画面外クリックやスクロールでポップオーバーを自動で閉じる
+    document.addEventListener('mousedown', function(e) {
+        if (!e.target.closest('.rationale-btn') && !e.target.closest('.rationale-text')) {
+            document.querySelectorAll('.rationale-text').forEach(p => p.style.display = 'none');
+        }
+    });
+    window.addEventListener('scroll', function() {
+        document.querySelectorAll('.rationale-text').forEach(p => p.style.display = 'none');
+    }, true);
+
 
     function setStatus(msg) {
         document.getElementById('dataInfo').innerText = msg;
@@ -581,8 +695,20 @@
         /* 💡 パッチ適用箇所: 3Dビューアのラベルに名称と性質を追加表示 */
         selectedResidues.forEach(sel => {
             let highlightStyle = {cartoon: {color: 'red'}, stick: {color: 'red', radius: 0.5}, sphere: {scale: 1.1, color: 'red'}};
-            if (currentStyleMode === 'sphere' || currentStyleMode === 'hydrophobicity') {
+            
+            // 💡 修正: 空間充填モデルやハイドロパシーモード時のハイライト設定
+            if (currentStyleMode === 'sphere') {
                 highlightStyle = {sphere: {color: 'red'}}; 
+            } else if (currentStyleMode === 'hydrophobicity') {
+                // 💡 ハイドロパシーモード時は、赤色で塗りつぶさず「元の色（疎水/親水）を維持したまま少し大きくする」ことで性質を見やすくする
+                const hydroColor = atom => {
+                    const hydrophobic = ['VAL','ILE','LEU','MET','PHE','TRP','CYS','ALA'];
+                    const hydrophilic = ['ARG','LYS','ASP','GLU','ASN','GLN','HIS','SER','THR','TYR'];
+                    if (hydrophobic.includes(atom.resn)) return '#e74c3c';
+                    if (hydrophilic.includes(atom.resn)) return '#3498db';
+                    return '#bdc3c7';
+                };
+                highlightStyle = {sphere: {scale: 1.3, colorfunc: hydroColor}}; 
             }
 
             // ラベル用テキストの生成関数
@@ -595,13 +721,16 @@
                 return resn ? `${resn} ${resi}` : `Res:${resi}`;
             };
 
+            // 💡 修正: ラベルの背景色を、色による誤認（赤＝疎水と勘違いする等）を防ぐためシックなダークグレーに変更
+            const labelBgColor = 'rgba(44, 62, 80, 0.9)'; 
+
             if (!sel.chain || sel.chain === "undefined") {
                 let visibleChains = window.allAvailableChains ? window.allAvailableChains.filter(c => !hiddenChains.has(c)) : [];
                 visibleChains.forEach(c => {
                     let s = {resi: sel.resi, chain: c};
                     viewer.setStyle(s, highlightStyle);
                     if(showLabels) {
-                        viewer.addLabel(getLabelText(sel.resi, c), {backgroundColor: 'rgba(231, 76, 60, 0.9)', fontColor: 'white'}, Object.assign({}, s, {atom: "CA"}));
+                        viewer.addLabel(getLabelText(sel.resi, c), {backgroundColor: labelBgColor, fontColor: 'white'}, Object.assign({}, s, {atom: "CA"}));
                     }
                 });
             } else {
@@ -610,7 +739,7 @@
                 let s = {resi: sel.resi, chain: sel.chain};
                 viewer.setStyle(s, highlightStyle);
                 if(showLabels) {
-                    viewer.addLabel(getLabelText(sel.resi, sel.chain), {backgroundColor: 'rgba(231, 76, 60, 0.9)', fontColor: 'white'}, Object.assign({}, s, {atom: "CA"}));
+                    viewer.addLabel(getLabelText(sel.resi, sel.chain), {backgroundColor: labelBgColor, fontColor: 'white'}, Object.assign({}, s, {atom: "CA"}));
                 }
             }
         });
@@ -677,7 +806,7 @@
                 // 💡 シェイプアップ: 3D空間では邪魔にならないようシンプルに表記
                 let labelText = resn ? `${resn} ${sel.resi}` : `Res:${sel.resi}`;
 
-                viewer.addLabel(labelText, {backgroundColor: 'rgba(231, 76, 60, 0.9)', fontColor: 'white'}, s);
+                viewer.addLabel(labelText, {backgroundColor: 'rgba(44, 62, 80, 0.9)', fontColor: 'white'}, s);
             });
         }
 
