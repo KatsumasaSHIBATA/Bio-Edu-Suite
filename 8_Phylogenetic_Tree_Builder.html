@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phylogenetic Tree Builder v3.7 | Bio-Edu Suite</title>
+    <title>Phylogenetic Tree Builder v3.9 | Bio-Edu Suite</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
@@ -169,7 +169,7 @@
     <div class="header">
         <h1>🧬 Phylogenetic Tree Builder</h1>
         <p>Bio-Edu Suite: Matrix Calculation & UPGMA/NJ/MP Clustering Emulator</p>
-        <div class="version-badge">v3.7</div>
+        <div class="version-badge">v3.9</div>
     </div>
 </div>
 
@@ -183,9 +183,9 @@
             
             <div class="algo-selector" data-tooltip="系統樹を構築するアルゴリズムを選択します">
                 <input type="radio" id="algo_upgma" name="algo" value="UPGMA" checked onchange="switchAlgo()">
-                <label for="algo_upgma" data-tooltip="塩基置換速度を一定と仮定します">UPGMA法</label>
+                <label for="algo_upgma" data-tooltip="塩基置換速度を一定と仮定します">平均距離法 (UPGMA法)</label>
                 <input type="radio" id="algo_nj" name="algo" value="NJ" onchange="switchAlgo()">
-                <label for="algo_nj" data-tooltip="系統ごとの塩基置換速度の違いを考慮します">NJ法</label>
+                <label for="algo_nj" data-tooltip="系統ごとの塩基置換速度の違いを考慮します">近隣結合法 (NJ法)</label>
             </div>
 
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px; margin-bottom:5px;">
@@ -228,8 +228,8 @@
 
             <div id="rat_upgma" class="rationale-text">
                 <strong>【根拠：結合アルゴリズムの違い】</strong><br>
-                ・<strong>UPGMA法:</strong> 塩基置換速度が一定であると仮定し、単純な平均距離で更新します。共通祖先からの距離が全て揃います。<br>
-                ・<strong>NJ法:</strong> 「Q行列」という補正を行い、系統ごとに異なる塩基置換速度を考慮して計算します。<br>
+                ・<strong>平均距離法 (UPGMA法):</strong> 塩基置換速度が一定であると仮定し、単純な平均距離で更新します。共通祖先からの距離が全て揃います。<br>
+                ・<strong>近隣結合法 (NJ法):</strong> 「Q行列」という補正を行い、系統ごとに異なる塩基置換速度を考慮して計算します。<br>
                 ※実際の紙での計算と同じように、計算済みのペアは斜線で消し、新しいグループを右端と下端に書き足して行列を拡張していきます。
             </div>
             
@@ -264,8 +264,8 @@
                 </h4>
                 <div id="rat_mp" class="rationale-text">
                     <strong>【教科書とのつながり：最節約法】</strong><br>
-                    考えられるすべての系統樹を想定し、突然変異の回数が「最も少なくなる（最節約的な）」ものを選ぶ手法です。<br>
-                    ここでは入力された塩基配列のうち「最初の4つ」を用いて、教科書の図解にある「座位ごとの突然変異回数の算出」から「全体の比較」までをステップごとに体験します。
+                    考えられるすべての系統樹を想定し、塩基置換の回数が「最も少なくなる（最節約的な）」ものを選ぶ手法です。<br>
+                    ここでは入力された塩基配列のうち「最初の4つ」を用いて、教科書の図解にある「座位ごとの塩基置換回数の算出」から「全体の比較」までをステップごとに体験します。
                 </div>
                 <button class="btn btn-purple" onclick="startMPSimulation()" data-tooltip="最節約法による系統推定のプロセスを体験します">
                     ▶ シミュレーション開始
@@ -315,9 +315,9 @@
             </div>
 
             <div id="rat_step1_why" class="rationale-text">
-                <strong>💡 【なぜ特定の突然変異だけを探すの？】</strong><br>
-                実際の遺伝子配列には非常に多くの突然変異（違い）がありますが、<strong>「1つの生物だけが異なる突然変異」は、どの系統樹でも1回の置換で説明できてしまうため、系統の枝分かれ（トポロジー）を決定する情報になりません。</strong><br>
-                最節約法において本当に重要なのは、<strong>「2つの種と、別の2つの種で共通している突然変異（例：A,A,T,T など）」</strong>です。これを学術的に<strong>「情報をもつ座位（Informative sites）」</strong>と呼びます。
+                <strong>💡 【なぜ特定の塩基置換だけを探すの？】</strong><br>
+                実際の遺伝子配列には非常に多くの塩基置換（違い）がありますが、<strong>「1つの生物だけが異なる塩基置換」は、どの系統樹でも1回の置換で説明できてしまうため、系統の枝分かれ（トポロジー）を決定する情報になりません。</strong><br>
+                最節約法において本当に重要なのは、<strong>「2つの種と、別の2つの種で共通している塩基置換（例：A,A,T,T など）」</strong>です。これを学術的に<strong>「情報をもつ座位（Informative sites）」</strong>と呼びます。
             </div>
             
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
@@ -342,17 +342,17 @@
         <!-- Step 2: インタラクティブ枝クリック変異カウント検証ゲーム -->
         <div id="mpStep2" style="display:none;">
             <div class="edu-panel rationale-panel">
-                <strong>👨‍🏫 ステップ2：枝をクリックして突然変異（★）を置き、最小回数を考えよう！</strong>
+                <strong>👨‍🏫 ステップ2：枝をクリックして「塩基置換（色付きの棒）」を置き、最小回数を考えよう！</strong>
                 <button class="rationale-btn" style="background:#e67e22;" onclick="toggleRationale(event, 'rat_step2_help')">?</button>
                 <br>
-                先ほど発見した情報座位（座位 <span id="mpSelectedSiteNum" style="font-weight:bold; color:#e67e22;">-</span>）について、有根系統樹の枝の上をクリックして突然変異（★）を配置してください。
+                先ほど発見した情報座位（座位 <span id="mpSelectedSiteNum" style="font-weight:bold; color:#e67e22;">-</span>）について、有根系統樹の枝の上をクリックして塩基置換を配置してください。
             </div>
 
             <div id="rat_step2_help" class="rationale-text">
                 <strong>💡 【有根系統樹（逆三角形）の解き方】</strong><br>
-                1. 一番左の生物を<strong>外群（進化的に離れた分類群）</strong>として固定し、そこから右へ分岐していく教科書通りのモデルです。（※一番左の灰色の枝は共通祖先であり、ここへの突然変異配置は内群の根元と同じ意味になるため固定されています）。<br>
-                2. 各系統樹の<strong>緑色の線（枝）をクリック</strong>すると、突然変異（★）マークを配置・削除できます。<br>
-                3. 目標は、<strong>「すべての生物（葉）の塩基の違いを、最も少ない突然変異の回数（★の数）で説明すること」</strong>です。<br>
+                1. 一番左の生物を**外群（進化的に離れた分類群）**として固定し、そこから右へ分岐していく教科書通りのモデルです。（※一番左の灰色の枝は共通祖先であり、ここへの塩基置換配置は内群の根元と同じ意味になるため固定されています）。<br>
+                2. 各系統樹の<strong>緑色の線（枝）をクリック</strong>すると、塩基置換マーク（色付きの棒と座位番号）を配置・削除できます。<br>
+                3. 目標は、<strong>「すべての生物（葉）の塩基の違いを、最も少ない塩基置換の回数で説明すること」</strong>です。<br>
                 4. 配置が終わったら、下部の<strong>「論理検証」</strong>ボタンを押してください！
             </div>
             
@@ -368,44 +368,44 @@
             <!-- 有根系統樹3パターンの枝配置SVG -->
             <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:15px;">
                 <!-- Tree I -->
-                <div id="mpInteractiveCard1" style="flex:1; min-width:300px; border:2px solid #bdc3c7; border-radius:6px; padding:10px; text-align:center; background:#fafbfc;">
+                <div id="mpInteractiveCard1" style="flex:1; min-width:260px; border:2px solid #bdc3c7; border-radius:6px; padding:10px; text-align:center; background:#fafbfc;">
                     <h4 style="margin:0 0 10px 0; font-size:13px; color:#2c3e50;">系統樹 I</h4>
-                    <svg id="mpSvg1" width="290" height="150" style="background:#fff; border-radius:4px; max-width: 100%;"></svg>
+                    <svg id="mpSvg1" width="250" height="150" style="background:#fff; border-radius:4px; max-width: 100%;"></svg>
                     <div style="margin-top:10px; font-size:12px; font-weight:bold; color:#2c3e50;">
-                        突然変異数: <span id="mutCount1" style="color:#e67e22; font-size:15px;">0</span> 回
+                        塩基置換数: <span id="mutCount1" style="color:#e67e22; font-size:15px;">0</span> 回
                     </div>
                     <div id="mutPassIcon1" style="font-size:11px; font-weight:bold; margin-top:5px; color:#7f8c8d;">未検証</div>
                 </div>
 
                 <!-- Tree II -->
-                <div id="mpInteractiveCard2" style="flex:1; min-width:300px; border:2px solid #bdc3c7; border-radius:6px; padding:10px; text-align:center; background:#fafbfc;">
+                <div id="mpInteractiveCard2" style="flex:1; min-width:260px; border:2px solid #bdc3c7; border-radius:6px; padding:10px; text-align:center; background:#fafbfc;">
                     <h4 style="margin:0 0 10px 0; font-size:13px; color:#2c3e50;">系統樹 II</h4>
-                    <svg id="mpSvg2" width="290" height="150" style="background:#fff; border-radius:4px; max-width: 100%;"></svg>
+                    <svg id="mpSvg2" width="250" height="150" style="background:#fff; border-radius:4px; max-width: 100%;"></svg>
                     <div style="margin-top:10px; font-size:12px; font-weight:bold; color:#2c3e50;">
-                        突然変異数: <span id="mutCount2" style="color:#e67e22; font-size:15px;">0</span> 回
+                        塩基置換数: <span id="mutCount2" style="color:#e67e22; font-size:15px;">0</span> 回
                     </div>
                     <div id="mutPassIcon2" style="font-size:11px; font-weight:bold; margin-top:5px; color:#7f8c8d;">未検証</div>
                 </div>
 
                 <!-- Tree III -->
-                <div id="mpInteractiveCard3" style="flex:1; min-width:300px; border:2px solid #bdc3c7; border-radius:6px; padding:10px; text-align:center; background:#fafbfc;">
+                <div id="mpInteractiveCard3" style="flex:1; min-width:260px; border:2px solid #bdc3c7; border-radius:6px; padding:10px; text-align:center; background:#fafbfc;">
                     <h4 style="margin:0 0 10px 0; font-size:13px; color:#2c3e50;">系統樹 III</h4>
-                    <svg id="mpSvg3" width="290" height="150" style="background:#fff; border-radius:4px; max-width: 100%;"></svg>
+                    <svg id="mpSvg3" width="250" height="150" style="background:#fff; border-radius:4px; max-width: 100%;"></svg>
                     <div style="margin-top:10px; font-size:12px; font-weight:bold; color:#2c3e50;">
-                        突然変異数: <span id="mutCount3" style="color:#e67e22; font-size:15px;">0</span> 回
+                        塩基置換数: <span id="mutCount3" style="color:#e67e22; font-size:15px;">0</span> 回
                     </div>
                     <div id="mutPassIcon3" style="font-size:11px; font-weight:bold; margin-top:5px; color:#7f8c8d;">未検証</div>
                 </div>
             </div>
 
             <div style="display:flex; gap:10px; margin-bottom:15px;">
-                <button class="btn btn-primary pulse-anim" style="flex:1;" onclick="verifyPlacedMutations()" data-tooltip="配置した突然変異が最小回数か検証します">🧮 論理検証</button>
-                <button class="btn" style="background:#ecf0f1; border:none; width:auto;" onclick="revealStep2Answers()" data-tooltip="最小となる突然変異の配置例を表示します">🔓 解答</button>
+                <button class="btn btn-primary pulse-anim" style="flex:1;" onclick="verifyPlacedMutations()" data-tooltip="配置した塩基置換が最小回数か検証します">🧮 論理検証</button>
+                <button class="btn" style="background:#ecf0f1; border:none; width:auto;" onclick="revealStep2Answers()" data-tooltip="最小となる塩基置換の配置例を表示します">🔓 解答</button>
             </div>
             
             <div id="mpStep2Feedback" class="assist-panel" style="display:none; margin-top:0; margin-bottom:15px;"></div>
             
-            <button id="btnProceedToStep3" class="btn btn-purple" style="background:#bdc3c7; border:none; cursor:not-allowed;" disabled onclick="proceedToMPStep3()" data-tooltip="配列全体で計算された総突然変異回数を比較します">
+            <button id="btnProceedToStep3" class="btn btn-purple" style="background:#bdc3c7; border:none; cursor:not-allowed;" disabled onclick="proceedToMPStep3()" data-tooltip="配列全体で計算された総塩基置換数を比較します">
                 ▶ ステップ3へ
             </button>
         </div>
@@ -413,12 +413,12 @@
         <!-- Step 3: 最節約的な系統樹の選択 -->
         <div id="mpStep3" style="display:none;">
             <div class="edu-panel rationale-panel">
-                <strong>👨‍🏫 ステップ3：最も最節約的な樹形を選ぶ</strong><br>
-                全座位（配列全体）について計算された総突然変異回数が集計されました。<br>
-                <strong>最も突然変異回数が少ない（最節約的な、最も進化の無駄がない）樹形を以下からクリックして選択してください。</strong><br>
+                👨‍🏫 ステップ3：最も最節約的な樹形を選ぶ<br>
+                全座位（配列全体）について計算された総塩基置換数が集計されました。<br>
+                <strong>最も塩基置換数が少ない（最節約的な、最も進化の無駄がない）樹形を以下からクリックして選択してください。</strong><br>
                 <span style="font-size:11px; color:#7f8c8d;">※選択肢の配置はランダムにシャッフルされています。</span>
             </div>
-            <div id="mpResults" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
+            <div id="mpResults" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; justify-content: center;">
                 <!-- ここにJSでカードが挿入される -->
             </div>
             <div id="mpFeedback" class="assist-panel" style="display:none;"></div>
@@ -432,7 +432,7 @@
 
 <div id="toast"></div>
 
-<div class="footer">&copy; 2026 Bio-Edu Suite v3.7 | For Professional Bioinformatics Education</div>
+<div class="footer">&copy; 2026 Bio-Edu Suite v3.9 | For Professional Bioinformatics Education</div>
 
 <script>
     // --- ツールチップ機能 (v1.6準拠) ---
@@ -562,9 +562,9 @@
         
         panel.style.display = 'block';
         if (algo === 'UPGMA') {
-            text.innerHTML = `<strong>UPGMA法:</strong> すべての分類群が「同じ速度で進化した」と仮定しています。そのため、分岐点（共通祖先）から現在の生物（葉）までの<strong>枝の長さ（横方向の距離）がすべて同じ</strong>になります。左下のスケールバー（10 Mismatch = 10%の塩基・アミノ酸の違い）と横幅を比較することで、分岐したのがどれくらい昔かを直感的に読み取れます。`;
+            text.innerHTML = `<strong>平均距離法 (UPGMA法):</strong> すべての分類群が「同じ速度で進化した」と仮定しています。そのため、分岐点（共通祖先）から現在の生物（葉）までの<strong>枝の長さ（横方向の距離）がすべて同じ</strong>になります。左下のスケールバー（10 Mismatch = 10%の塩基・アミノ酸の違い）と横幅を比較することで、分岐したのがどれくらい昔かを直感的に読み取れます。`;
         } else {
-            text.innerHTML = `<strong>NJ法:</strong> 分類群ごとに「塩基置換速度が異なる」ことを考慮して計算しています。そのため、UPGMA法とは異なり、<strong>現在の生物（葉）の右端が揃わず、枝の長さがバラバラ</strong>になります。横に長く伸びている枝ほど、その系統で多くの塩基置換（またはアミノ酸置換）が蓄積したことを示しています。`;
+            text.innerHTML = `<strong>近隣結合法 (NJ法):</strong> 分類群ごとに「塩基置換速度が異なる」ことを考慮して計算しています。そのため、UPGMA法とは異なり、<strong>現在の生物（葉）の右端が揃わず、枝の長さがバラバラ</strong>になります。横に長く伸びている枝ほど、その系統で多くの塩基置換（またはアミノ酸置換）が蓄積したことを示しています。`;
         }
     }
 
@@ -691,7 +691,7 @@
         a.click();
     }
     
-    // ====== MP法 ステップ・シミュレーション用ロジック ======
+    // ====== 最節約法 (MP法) ステップ・シミュレーション用ロジック ======
     
     let allInformativeSites = []; 
     let allVariableSites = [];    
@@ -700,6 +700,9 @@
     
     let activeMPInteractiveSiteIndex = 0; 
     let activePlacedMutations = [[], [], []];
+    
+    // MP法で割り当てるカラーパレット（座位ごとに固定色）
+    const SITE_COLORS = ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db', '#9b59b6', '#e67e22', '#1abc9c', '#34495e', '#d35400', '#8e44ad'];
 
     function isInformativeSite(bases) {
         let counts = {};
@@ -724,7 +727,7 @@
         if(name) seqs.push({name, seq});
 
         if(seqs.length < 4) { 
-            showToast("⚠️ MP法のシミュレーションには4つ以上の配列が必要です。"); 
+            showToast("⚠️ 最節約法 (MP法) のシミュレーションには4つ以上の配列が必要です。"); 
             return; 
         }
         let len = seqs[0].seq.length;
@@ -757,9 +760,31 @@
             localScores[2] += c3;
             
             if (isVar) {
-                let siteInfo = { pos: k + 1, idx: k, bases: [a, b, c, d], costs: [c1, c2, c3] };
+                let siteInfo = { pos: k + 1, idx: k, bases: [a, b, c, d], costs: [c1, c2, c3], optimalPlacements: [] };
                 allVariableSites.push(siteInfo);
                 if (isInformativeSite([a, b, c, d])) {
+                    // 情報をもつ座位に色と最適配置を割り当て
+                    siteInfo.color = SITE_COLORS[allInformativeSites.length % SITE_COLORS.length];
+                    
+                    // 各樹形に対する最適配置を事前計算（Step 3 描画用）
+                    for (let t = 1; t <= 3; t++) {
+                        let leaves = [];
+                        if (t === 1) leaves = [a, b, c, d]; 
+                        else if (t === 2) leaves = [a, c, b, d]; 
+                        else leaves = [a, d, b, c]; 
+
+                        let minScore = siteInfo.costs[t - 1];
+                        let foundCombination = null;
+                        for (let m = 0; m < 32; m++) {
+                            let p = [(m & 1) !== 0, (m & 2) !== 0, (m & 4) !== 0, (m & 8) !== 0, (m & 16) !== 0];
+                            if (p.filter(Boolean).length === minScore && checkLogicalFeasibility(leaves, p)) {
+                                foundCombination = p;
+                                break;
+                            }
+                        }
+                        siteInfo.optimalPlacements.push(foundCombination || [false, false, false, false, false]);
+                    }
+                    
                     allInformativeSites.push(siteInfo);
                 }
             }
@@ -769,7 +794,7 @@
         mpMinScore = Math.min(...localScores);
 
         if (allVariableSites.length === 0) {
-            showToast("⚠️ 解析対象の最初の4種に突然変異が全く見つかりません。");
+            showToast("⚠️ 解析対象の最初の4種に塩基置換が全く見つかりません。");
             return;
         }
 
@@ -824,7 +849,7 @@
         conservedCells.forEach(c => {
             c.classList.add('align-cell-conserved');
         });
-        showToast("💡 ヒント：突然変異のない保存領域を薄くしました。");
+        showToast("💡 ヒント：塩基置換のない保存領域を薄くしました。");
     }
 
     function clickAlignmentCol(k) {
@@ -873,13 +898,13 @@
                 c.classList.add('align-cell-wrong');
                 setTimeout(() => c.classList.remove('align-cell-wrong'), 1000);
             });
-            showToast(`❌ 惜しい！座位 ${k + 1} は1つの分類群だけが異なる突然変異なので、系統の枝分かれを特定できません。`);
+            showToast(`❌ 惜しい！座位 ${k + 1} は1つの分類群だけが異なる塩基置換なので、系統の枝分かれを特定できません。`);
         } else {
             cells.forEach(c => {
                 c.classList.add('align-cell-wrong');
                 setTimeout(() => c.classList.remove('align-cell-wrong'), 1000);
             });
-            showToast(`❌ 残念！座位 ${k + 1} は全員が同じ塩基で、突然変異がありません。`);
+            showToast(`❌ 残念！座位 ${k + 1} は全員が同じ塩基で、置換がありません。`);
         }
     }
 
@@ -954,9 +979,9 @@
             btn3.classList.remove('pulse-anim-purple');
         }
 
-        renderInteractiveSVG(1, site.bases[0], site.bases[1], site.bases[2], site.bases[3]); 
-        renderInteractiveSVG(2, site.bases[0], site.bases[2], site.bases[1], site.bases[3]); 
-        renderInteractiveSVG(3, site.bases[0], site.bases[3], site.bases[1], site.bases[2]); 
+        renderInteractiveSVG(1, site); 
+        renderInteractiveSVG(2, site); 
+        renderInteractiveSVG(3, site); 
         
         updateMutationCounters();
     }
@@ -970,14 +995,14 @@
         activePlacedMutations[treeType - 1][branchIdx] = !activePlacedMutations[treeType - 1][branchIdx];
         
         const line = document.getElementById(`line_${treeType}_${branchIdx}`);
-        const star = document.getElementById(`star_${treeType}_${branchIdx}`);
+        const starGroup = document.getElementById(`star_${treeType}_${branchIdx}`); 
         
         if (activePlacedMutations[treeType - 1][branchIdx]) {
             line.classList.add('branch-mutated');
-            star.setAttribute('opacity', '1');
+            starGroup.setAttribute('opacity', '1');
         } else {
             line.classList.remove('branch-mutated');
-            star.setAttribute('opacity', '0');
+            starGroup.setAttribute('opacity', '0');
         }
 
         updateMutationCounters();
@@ -996,35 +1021,35 @@
         }
     }
 
-    function renderInteractiveSVG(treeType, b1, b2, b3, b4) {
+    function renderInteractiveSVG(treeType, site) {
         const svg = document.getElementById(`mpSvg${treeType}`);
         svg.innerHTML = '';
 
-        const root = {x: 175, y: 120};
-        const n1 = {x: 205, y: 90};
-        const n2 = {x: 235, y: 60};
+        const root = {x: 140, y: 120};
+        const n1 = {x: 170, y: 90};
+        const n2 = {x: 200, y: 60};
         
         let points = [];
         if (treeType === 1) { 
             points = [
-                {x: 85, y: 30, b: b1, label: mpNames[0]}, 
-                {x: 145, y: 30, b: b2, label: mpNames[1]}, 
-                {x: 205, y: 30, b: b3, label: mpNames[2]}, 
-                {x: 265, y: 30, b: b4, label: mpNames[3]}  
+                {x: 50, y: 30, b: site.bases[0], label: mpNames[0]}, 
+                {x: 110, y: 30, b: site.bases[1], label: mpNames[1]}, 
+                {x: 170, y: 30, b: site.bases[2], label: mpNames[2]}, 
+                {x: 230, y: 30, b: site.bases[3], label: mpNames[3]}  
             ];
         } else if (treeType === 2) { 
             points = [
-                {x: 85, y: 30, b: b1, label: mpNames[0]}, 
-                {x: 145, y: 30, b: b3, label: mpNames[2]}, 
-                {x: 205, y: 30, b: b2, label: mpNames[1]}, 
-                {x: 265, y: 30, b: b4, label: mpNames[3]}  
+                {x: 50, y: 30, b: site.bases[0], label: mpNames[0]}, 
+                {x: 110, y: 30, b: site.bases[2], label: mpNames[2]}, 
+                {x: 170, y: 30, b: site.bases[1], label: mpNames[1]}, 
+                {x: 230, y: 30, b: site.bases[3], label: mpNames[3]}  
             ];
         } else { 
             points = [
-                {x: 85, y: 30, b: b1, label: mpNames[0]}, 
-                {x: 145, y: 30, b: b4, label: mpNames[3]}, 
-                {x: 205, y: 30, b: b2, label: mpNames[1]}, 
-                {x: 265, y: 30, b: b3, label: mpNames[2]}  
+                {x: 50, y: 30, b: site.bases[0], label: mpNames[0]}, 
+                {x: 110, y: 30, b: site.bases[3], label: mpNames[3]}, 
+                {x: 170, y: 30, b: site.bases[1], label: mpNames[1]}, 
+                {x: 230, y: 30, b: site.bases[2], label: mpNames[2]}  
             ];
         }
 
@@ -1061,17 +1086,26 @@
             let g = document.createElementNS("http://www.w3.org/2000/svg", "g");
             g.setAttribute("id", `star_${treeType}_${b.id}`);
             g.setAttribute("opacity", "0");
+            g.style.pointerEvents = 'none'; 
             
-            let star = document.createElementNS("http://www.w3.org/2000/svg", "text");
-            star.setAttribute("x", mx);
-            star.setAttribute("y", my + 6);
-            star.setAttribute("font-size", "18");
-            star.setAttribute("fill", "#e74c3c");
-            star.setAttribute("text-anchor", "middle");
-            star.style.pointerEvents = 'none';
-            star.textContent = "★";
+            let barLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            barLine.setAttribute("x1", mx - 10);
+            barLine.setAttribute("y1", my);
+            barLine.setAttribute("x2", mx + 10);
+            barLine.setAttribute("y2", my);
+            barLine.setAttribute("stroke", site.color || '#e74c3c');
+            barLine.setAttribute("stroke-width", "4");
             
-            g.appendChild(star);
+            let numText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            numText.setAttribute("x", mx + 14);
+            numText.setAttribute("y", my + 4);
+            numText.setAttribute("font-size", "12");
+            numText.setAttribute("font-weight", "bold");
+            numText.setAttribute("fill", "#2c3e50");
+            numText.textContent = site.pos;
+            
+            g.appendChild(barLine);
+            g.appendChild(numText);
             svg.appendChild(g);
         });
 
@@ -1137,9 +1171,9 @@
                 card.style.boxShadow = "0 0 0 2px #e74c3c";
                 
                 if (currentCost < expectedMin) {
-                    icon.innerHTML = `🔴 突然変異数が足りません (最小: ${expectedMin}回)`;
+                    icon.innerHTML = `🔴 塩基置換数が足りません (最小: ${expectedMin}回)`;
                 } else if (currentCost > expectedMin) {
-                    icon.innerHTML = `🔴 突然変異が多すぎます (最小: ${expectedMin}回)`;
+                    icon.innerHTML = `🔴 塩基置換が多すぎます (最小: ${expectedMin}回)`;
                 } else {
                     icon.innerHTML = "🔴 塩基の不整合 (説明不能)";
                 }
@@ -1155,10 +1189,10 @@
             feedback.style.borderLeftColor = '#27ae60';
             feedback.innerHTML = `
                 <div class="assist-item">
-                    <div class="assist-title" style="color:#27ae60;">🎉 完璧です！すべての系統樹で最小の突然変異を正しく配置できました！</div>
-                    <div class="assist-reason" style="color:#2c3e50;">座位によっては「突然変異回数がどの樹形でも同じ」場合と、「特定の系統樹だけで突然変異が少なくて済む（合理的）」場合があります。</div>
+                    <div class="assist-title" style="color:#27ae60;">🎉 完璧です！すべての系統樹で最小の塩基置換を正しく配置できました！</div>
+                    <div class="assist-reason" style="color:#2c3e50;">座位によっては「塩基置換数がどの樹形でも同じ」場合と、「特定の系統樹だけで塩基置換が少なくて済む（合理的）」場合があります。</div>
                     <div class="assist-fix" style="border-color:#2ecc71; color:#117864;">
-                        👉 最小の突然変異数で説明できる系統樹を探索する最節約法の本質が、これで実感できましたね。<br>
+                        👉 最小の塩基置換数で説明できる系統樹を探索する最節約法 (MP法) の本質が、これで実感できましたね。<br>
                         準備が整いました。全座位を集計した配列全体のステップに進みましょう！
                     </div>
                 </div>
@@ -1175,10 +1209,10 @@
             feedback.style.borderLeftColor = '#e74c3c';
             feedback.innerHTML = `
                 <div class="assist-item">
-                    <div class="assist-title">⚠️ 突然変異の配置が不正確です (対象: 系統樹 ${incorrectTrees.join(', ')})</div>
-                    <div class="assist-reason">1回の突然変異（★）では説明できない配置になっているか、無駄な置換が多く置かれています。</div>
+                    <div class="assist-title">⚠️ 塩基置換の配置が不正確です (対象: 系統樹 ${incorrectTrees.join(', ')})</div>
+                    <div class="assist-reason">1回の塩基置換では説明できない配置になっているか、無駄な置換が多く置かれています。</div>
                     <div class="assist-fix">
-                        👉 最小回数を満たすように、★を配置してください。<br>
+                        👉 最小回数を満たすように、枝をクリックして配置をやり直してください。<br>
                         （例：枝の先で塩基が [C] と [A] にバラバラに配置されている樹形では、1回の置換で全員の塩基を矛盾なく説明することはできず、独立した2回の置換が必要です）
                     </div>
                 </div>
@@ -1191,11 +1225,11 @@
         for (let bN1 of bases) {
             for (let bN2 of bases) {
                 let valid = true;
-                if ((leaves[0] !== bN1) !== placed[0]) valid = false; // Xの枝
-                if ((leaves[1] !== bN1) !== placed[1]) valid = false; // aの枝
-                if ((leaves[2] !== bN2) !== placed[2]) valid = false; // bの枝
-                if ((leaves[3] !== bN2) !== placed[3]) valid = false; // cの枝
-                if ((bN1 !== bN2) !== placed[4]) valid = false;       // 内部枝
+                if ((leaves[0] !== bN1) !== placed[0]) valid = false; 
+                if ((leaves[1] !== bN1) !== placed[1]) valid = false; 
+                if ((leaves[2] !== bN2) !== placed[2]) valid = false; 
+                if ((leaves[3] !== bN2) !== placed[3]) valid = false; 
+                if ((bN1 !== bN2) !== placed[4]) valid = false;       
                 if (valid) return true; 
             }
         }
@@ -1205,41 +1239,26 @@
     function revealStep2Answers() {
         let site = allInformativeSites[activeMPInteractiveSiteIndex];
         for (let t = 1; t <= 3; t++) {
-            let leaves = [];
-            if (t === 1) leaves = [site.bases[0], site.bases[1], site.bases[2], site.bases[3]];
-            else if (t === 2) leaves = [site.bases[0], site.bases[2], site.bases[1], site.bases[3]];
-            else leaves = [site.bases[0], site.bases[3], site.bases[1], site.bases[2]];
-
-            let minScore = site.costs[t - 1];
-            let foundCombination = null;
-            
-            for (let m = 0; m < 32; m++) {
-                let p = [(m & 1) !== 0, (m & 2) !== 0, (m & 4) !== 0, (m & 8) !== 0, (m & 16) !== 0];
-                let cost = p.filter(Boolean).length;
-                if (cost === minScore && checkLogicalFeasibility(leaves, p)) {
-                    foundCombination = p;
-                    break;
-                }
-            }
+            let foundCombination = site.optimalPlacements[t - 1];
 
             if (foundCombination) {
                 activePlacedMutations[t - 1] = foundCombination;
                 for (let b = 0; b < 5; b++) {
                     const line = document.getElementById(`line_${t}_${b}`);
-                    const star = document.getElementById(`star_${t}_${b}`);
+                    const starGroup = document.getElementById(`star_${t}_${b}`);
                     if (foundCombination[b]) {
                         line.classList.add('branch-mutated');
-                        star.setAttribute('opacity', '1');
+                        starGroup.setAttribute('opacity', '1');
                     } else {
                         line.classList.remove('branch-mutated');
-                        star.setAttribute('opacity', '0');
+                        starGroup.setAttribute('opacity', '0');
                     }
                 }
             }
         }
         updateMutationCounters();
         verifyPlacedMutations();
-        showToast("🔓 最小突然変異配置の正解を表示しました。");
+        showToast("🔓 最小塩基置換配置の正解を表示しました。");
     }
 
     function proceedToMPStep3() {
@@ -1248,10 +1267,12 @@
         let html = '';
         step3Order.forEach(i => {
             html += `
-            <div class="mp-tree-card" onclick="selectMPTree(${i})" style="flex:1; min-width: 300px; border: 2px solid #bdc3c7; border-radius: 6px; padding: 15px; cursor: pointer; text-align: center; background: #fff; transition: 0.2s;" data-tooltip="この系統樹を最も最節約的であると選択します">
-                <h4 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 14px;">系統樹 ${i === 1 ? 'I' : i === 2 ? 'II' : 'III'}</h4>
-                <canvas id="mpCanvas${i}" width="290" height="150" style="max-width: 100%; height: auto;"></canvas>
-                <p style="margin: 10px 0 0 0; font-size: 13px; font-weight: bold; color: #34495e;">総突然変異回数: <span style="font-size: 18px; color: #e67e22;">${mpScores[i-1]}</span> 回</p>
+            <div class="mp-tree-card" onclick="selectMPTree(${i})" style="flex: 1 1 30%; min-width: 220px; max-width: 32%; border: 2px solid #bdc3c7; border-radius: 6px; padding: 10px; cursor: pointer; text-align: center; background: #fff; transition: 0.2s;" data-tooltip="この系統樹を最も最節約的であると選択します">
+                <h4 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 13px;">系統樹 ${i === 1 ? 'I' : i === 2 ? 'II' : 'III'}</h4>
+                <div style="width: 100%; display: flex; justify-content: center;">
+                    <canvas id="mpCanvas${i}" width="220" height="130" style="max-width: 100%; height: auto;"></canvas>
+                </div>
+                <p style="margin: 10px 0 0 0; font-size: 12px; font-weight: bold; color: #34495e;">総塩基置換数: <span style="font-size: 16px; color: #e67e22;">${mpScores[i-1]}</span> 回</p>
             </div>`;
         });
         
@@ -1283,6 +1304,7 @@
         }
     }
     
+    // Step 3用 Canvas描画 (色付きのバーを削除しシンプルに描画)
     function drawMPTreeCanvas(canvasId, treeType) {
         const canvas = document.querySelector(`canvas[id="${canvasId}"]`);
         if(!canvas) return;
@@ -1294,17 +1316,17 @@
         ctx.lineWidth = 4;
         ctx.lineJoin = 'round';
         
-        const root = {x: 175, y: 120};
-        const n1 = {x: 205, y: 90};
-        const n2 = {x: 235, y: 60};
+        const root = {x: 120, y: 110};
+        const n1 = {x: 150, y: 80};
+        const n2 = {x: 180, y: 50};
         
         let points = [];
         if (treeType === 1) { 
-            points = [ {x: 85, y: 30, label: mpNames[0]}, {x: 145, y: 30, label: mpNames[1]}, {x: 205, y: 30, label: mpNames[2]}, {x: 265, y: 30, label: mpNames[3]} ];
+            points = [ {x: 30, y: 20, label: mpNames[0]}, {x: 90, y: 20, label: mpNames[1]}, {x: 150, y: 20, label: mpNames[2]}, {x: 210, y: 20, label: mpNames[3]} ];
         } else if (treeType === 2) { 
-            points = [ {x: 85, y: 30, label: mpNames[0]}, {x: 145, y: 30, label: mpNames[2]}, {x: 205, y: 30, label: mpNames[1]}, {x: 265, y: 30, label: mpNames[3]} ];
+            points = [ {x: 30, y: 20, label: mpNames[0]}, {x: 90, y: 20, label: mpNames[2]}, {x: 150, y: 20, label: mpNames[1]}, {x: 210, y: 20, label: mpNames[3]} ];
         } else {
-            points = [ {x: 85, y: 30, label: mpNames[0]}, {x: 145, y: 30, label: mpNames[3]}, {x: 205, y: 30, label: mpNames[1]}, {x: 265, y: 30, label: mpNames[2]} ];
+            points = [ {x: 30, y: 20, label: mpNames[0]}, {x: 90, y: 20, label: mpNames[3]}, {x: 150, y: 20, label: mpNames[1]}, {x: 210, y: 20, label: mpNames[2]} ];
         }
 
         ctx.beginPath();
@@ -1322,7 +1344,7 @@
         ctx.stroke();
         
         ctx.fillStyle = '#2c3e50'; 
-        ctx.font = 'italic bold 12px "Times New Roman", serif'; 
+        ctx.font = 'italic bold 10px "Times New Roman", serif'; 
         ctx.textBaseline = 'bottom';
         ctx.textAlign = 'center';
         
@@ -1358,11 +1380,11 @@
             feedback.style.borderLeftColor = '#27ae60';
             feedback.innerHTML = `
                 <div class="assist-item">
-                    <div class="assist-title" style="color: #27ae60;">🎉 大正解！最も突然変異回数が少ない（最節約的な）樹形を選びました。</div>
-                    <div class="assist-reason" style="color: #2c3e50;">配列全体における突然変異の合計値が最も小さくなる「系統樹 ${index === 1 ? 'I' : index === 2 ? 'II' : 'III'}」が、最も無駄のない進化モデルとして学術的に支持されます。</div>
+                    <div class="assist-title" style="color: #27ae60;">🎉 大正解！最も塩基置換数が少ない（最節約的な）樹形を選びました。</div>
+                    <div class="assist-reason" style="color: #2c3e50;">配列全体における塩基置換の合計値が最も小さくなる「系統樹 ${index === 1 ? 'I' : index === 2 ? 'II' : 'III'}」が、最も無駄のない進化モデルとして学術的に支持されます。</div>
                     <div class="assist-fix" style="border-color: #27ae60; background: #fff; color: #1e8449;">
-                        💡 実際の分子系統解析では、何万〜何億サイトにも及ぶ遺伝子情報をプログラム(MEGA)で走査します。<br>
-                        しかし裏側で行われているのは、今回のように「情報をもつ座位ごとにFitchの突然変異回数をカウントし、その和が最小のモデルを選択する」という、あなたが体験した地道なアルゴリズムそのものです！
+                        💡 実際の分子系統解析では、何万〜何億サイトにも及ぶ遺伝子情報をコンピュータで走査します。<br>
+                        しかし裏側で行われているのは、今回のように「情報をもつ座位ごとに塩基置換数をカウントし、その和が最小のモデルを選択する」という、あなたが体験した地道な最節約法 (MP法) のアルゴリズムそのものです！
                     </div>
                 </div>
             `;
@@ -1373,15 +1395,15 @@
             feedback.innerHTML = `
                 <div class="assist-item">
                     <div class="assist-title">⚠️ それは最節約的な樹形ではありません</div>
-                    <div class="assist-reason">選択した系統樹の総突然変異回数は ${score} 回ですが、もっと突然変異回数が少なくなる樹形が存在します。</div>
-                    <div class="assist-fix">👉【修正】各カードの下に表示されている「総突然変異回数」をよく見て、<strong>一番値が小さいもの</strong>を選んでください。</div>
+                    <div class="assist-reason">選択した系統樹の総塩基置換数は ${score} 回ですが、もっと塩基置換数が少なくなる樹形が存在します。</div>
+                    <div class="assist-fix">👉【修正】各カードの下に表示されている「総塩基置換数」をよく見て、<strong>一番値が小さいもの</strong>を選んでください。</div>
                 </div>
             `;
         }
     }
 
     // ==========================================
-    // UPGMA / NJ 計算用ロジック群
+    // 平均距離法 (UPGMA) / 近隣結合法 (NJ) 計算用ロジック群
     // ==========================================
 
     function getNJQMatrix() {
@@ -1440,13 +1462,13 @@
         let html = "<table><tr><th></th>";
         clusters.forEach(c => {
             let headerCls = c.active ? 'scientific-name' : 'scientific-name matrix-inactive-header';
-            html += `<th><span class="${headerCls}">${formatScientificName(c.name)}</span></th>`;
+            html += `<th data-tooltip="${formatScientificName(c.name)}"><span class="${headerCls}">${formatScientificName(c.name)}</span></th>`;
         });
         html += "</tr>";
         
         for(let i=0; i<clusters.length; i++) {
             let headerCls = clusters[i].active ? 'scientific-name' : 'scientific-name matrix-inactive-header';
-            html += `<tr><th><span class="${headerCls}">${formatScientificName(clusters[i].name)}</span></th>`;
+            html += `<tr><th data-tooltip="${formatScientificName(clusters[i].name)}"><span class="${headerCls}">${formatScientificName(clusters[i].name)}</span></th>`;
             for(let j=0; j<clusters.length; j++) {
                 if(i === j) {
                     html += `<td class="matrix-diagonal">-</td>`;
@@ -1566,7 +1588,7 @@
         if(remainingNodes <= 1) {
             renderMatrix(); 
             drawTree();
-            document.getElementById('statusLog').innerHTML = `🎉 <b>系統樹完成！</b> ${algo}法による計算がすべて終了し、共通祖先（根）に到達しました。`;
+            document.getElementById('statusLog').innerHTML = `🎉 <b>系統樹完成！</b> ${algo === 'UPGMA' ? '平均距離法 (UPGMA法)' : '近隣結合法 (NJ法)'}による計算がすべて終了し、共通祖先（根）に到達しました。`;
             document.getElementById('matrixContainer').innerHTML += "<div style='text-align:center; padding:15px; color:#27ae60; font-weight:bold; font-size:14px;'>全ての分類群の結合が完了しました</div>";
         } else {
             renderMatrix(); 
@@ -1575,7 +1597,7 @@
         }
     }
 
-    // --- 系統樹のCanvas描画 ---
+    // --- 系統樹のCanvas描画 (枝の長さ・数値を描画) ---
     function drawTree() {
         const canvas = document.getElementById('treeCanvas');
         const ctx = canvas.getContext('2d');
@@ -1648,16 +1670,29 @@
             ctx.moveTo(x, ly); ctx.lineTo(lx, ly);
             ctx.moveTo(x, ry); ctx.lineTo(rx, ry);
             ctx.stroke();
+
+            // --- 各枝の上に距離（長さ）の数値を描画 ---
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = '11px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            
+            let leftEdgeVal = node.left.edge.toFixed(1);
+            ctx.fillText(leftEdgeVal, (x + lx) / 2, ly - 3);
+            
+            let rightEdgeVal = node.right.edge.toFixed(1);
+            ctx.fillText(rightEdgeVal, (x + rx) / 2, ry - 3);
             
             ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI*2); ctx.fillStyle = '#e67e22'; ctx.fill(); ctx.stroke();
         }
         activeClusters.forEach(c => draw(c));
 
-        const algo = document.querySelector('input[name="algo"]:checked').value;
+        const algoVal = document.querySelector('input[name="algo"]:checked').value;
+        const algoName = algoVal === 'UPGMA' ? '平均距離法 (UPGMA法)' : '近隣結合法 (NJ法)';
         ctx.fillStyle = '#95a5a6'; 
         ctx.font = 'bold 18px sans-serif';
         ctx.textAlign = 'left';
-        ctx.fillText(`Algorithm: ${algo}`, 20, 35);
+        ctx.fillText(`Algorithm: ${algoName}`, 20, 35);
 
         ctx.strokeStyle = '#bdc3c7'; ctx.lineWidth = 2; ctx.beginPath();
         let barY = h - 30; 
