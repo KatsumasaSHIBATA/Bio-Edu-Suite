@@ -190,7 +190,7 @@
 
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px; margin-bottom:5px;">
                 <label style="font-size:12px; font-weight:bold; color:#2c3e50;">1. アライメント済みFASTA (塩基配列 / アミノ酸配列) を入力 
-                    <button class="rationale-btn" style="background:#e67e22;" onclick="toggleRationale(event, 'rat_seq_type')" data-tooltip="教育的解説を開く">?</button>
+                    <button class="rationale-btn" style="background:#e67e22;" onclick="toggleRationale(event, 'rat_seq_type')">?</button>
                 </label>
             </div>
             
@@ -208,7 +208,7 @@
 
             <div style="display:flex; align-items:center; gap:10px; margin-top:5px;">
                 <button class="btn btn-primary" id="btnInit" onclick="initMatrix()" style="flex: 1;" data-tooltip="入力された塩基配列を比較し、距離行列を作成します">🧮 距離行列を作成</button>
-                <button class="rationale-btn" onclick="toggleRationale(event, 'rat_matrix')" data-tooltip="教育的解説を開く" style="flex-shrink: 0; margin-left: 0;">?</button>
+                <button class="rationale-btn" onclick="toggleRationale(event, 'rat_matrix')" style="flex-shrink: 0; margin-left: 0;">?</button>
             </div>
 
             <div id="rat_matrix" class="rationale-text">
@@ -221,7 +221,7 @@
             <div style="display:flex; align-items:center; justify-content: space-between; margin-bottom:5px;">
                 <div style="display:flex; align-items:center; gap:5px;">
                     <h3 style="margin:0; font-size:12px; color:#2c3e50;" id="matrixTitle">📊 2. 現在の距離行列 (不一致率 %)</h3>
-                    <button class="rationale-btn" onclick="toggleRationale(event, 'rat_upgma')" data-tooltip="教育的解説を開く">?</button>
+                    <button class="rationale-btn" onclick="toggleRationale(event, 'rat_upgma')">?</button>
                 </div>
                 <button class="btn btn-sm" id="btnExportCSV" onclick="exportMatrixCSV()" disabled data-tooltip="現在の距離行列をCSV形式で保存します">📥 CSV保存</button>
             </div>
@@ -247,7 +247,7 @@
 
             <div class="mega-invite">
                 <h4>🔗 Step up to professional tools 
-                    <button class="rationale-btn" style="background:#8e44ad; margin-left: auto;" onclick="toggleRationale(event, 'rat_advanced')" data-tooltip="教育的解説を開く">?</button>
+                    <button class="rationale-btn" style="background:#8e44ad; margin-left: auto;" onclick="toggleRationale(event, 'rat_advanced')">?</button>
                 </h4>
                 <div id="rat_advanced" class="rationale-text">
                     <strong>【根拠：ML法やブートストラップはこのアプリにはありません】</strong><br>
@@ -260,7 +260,7 @@
             <div class="card" style="border-color: #8e44ad; background-color: #f4ecf7; margin-top: 15px; min-width: 100%; border-top: 4px solid #8e44ad; box-shadow: none;">
                 <h4 style="margin: 0 0 10px 0; font-size: 12px; color: #5b2c6f; display: flex; align-items: center;">
                     🧬 発展学習：最節約法 (MP法) のステップ・シミュレーション
-                    <button class="rationale-btn" style="background:#8e44ad; margin-left: auto;" onclick="toggleRationale(event, 'rat_mp')" data-tooltip="教育的解説を開く">?</button>
+                    <button class="rationale-btn" style="background:#8e44ad; margin-left: auto;" onclick="toggleRationale(event, 'rat_mp')">?</button>
                 </h4>
                 <div id="rat_mp" class="rationale-text">
                     <strong>【教科書とのつながり：最節約法】</strong><br>
@@ -308,7 +308,7 @@
         <div id="mpStep1" style="display:none;">
             <div class="edu-panel rationale-panel">
                 <strong>👨‍🏫 ステップ1：系統推定に役立つ『情報をもつ座位』を探そう！</strong>
-                <button class="rationale-btn" style="background:#e67e22;" onclick="toggleRationale(event, 'rat_step1_why')" data-tooltip="教育的解説を開く">?</button>
+                <button class="rationale-btn" style="background:#e67e22;" onclick="toggleRationale(event, 'rat_step1_why')">?</button>
                 <br>
                 アライメントの列（座位）をクリックして、<strong>「2種以上で同じ塩基が共有されている部位（情報をもつ座位）」</strong>を見つけてください。<br>
                 <span style="font-size:12px; color:#7f8c8d;">※アライメントは横スクロール可能です。「💡保存領域をマスク」を使うと見つけやすくなります。<strong>最低3箇所</strong>見つけると次へ進めますが、コンプリートを目指すこともできます！</span>
@@ -343,7 +343,7 @@
         <div id="mpStep2" style="display:none;">
             <div class="edu-panel rationale-panel">
                 <strong>👨‍🏫 ステップ2：枝をクリックして「塩基置換（★）」を置き、最小回数を考えよう！</strong>
-                <button class="rationale-btn" style="background:#e67e22;" onclick="toggleRationale(event, 'rat_step2_help')" data-tooltip="教育的解説を開く">?</button>
+                <button class="rationale-btn" style="background:#e67e22;" onclick="toggleRationale(event, 'rat_step2_help')">?</button>
                 <br>
                 先ほど発見した情報座位（座位 <span id="mpSelectedSiteNum" style="font-weight:bold; color:#e67e22;">-</span>）について、有根系統樹の枝の上をクリックして塩基置換（★）を配置してください。
             </div>
