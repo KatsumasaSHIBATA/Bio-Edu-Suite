@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phylogenetic Tree Builder v3.9 | Bio-Edu Suite</title>
+    <title>Phylogenetic Tree Builder v3.11 | Bio-Edu Suite</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
@@ -169,7 +169,7 @@
     <div class="header">
         <h1>🧬 Phylogenetic Tree Builder</h1>
         <p>Bio-Edu Suite: Matrix Calculation & UPGMA/NJ/MP Clustering Emulator</p>
-        <div class="version-badge">v3.9</div>
+        <div class="version-badge">v3.11</div>
     </div>
 </div>
 
@@ -350,7 +350,7 @@
 
             <div id="rat_step2_help" class="rationale-text">
                 <strong>💡 【有根系統樹（逆三角形）の解き方】</strong><br>
-                1. 一番左の生物を**外群（進化的に離れた分類群）**として固定し、そこから右へ分岐していく教科書通りのモデルです。（※一番左の灰色の枝は共通祖先であり、ここへの塩基置換配置は内群の根元と同じ意味になるため固定されています）。<br>
+                1. 一番左の生物を<strong>外群（進化的に離れた分類群）</strong>として固定し、そこから右へ分岐していく教科書通りのモデルです。（※一番左の灰色の枝は共通祖先であり、ここへの塩基置換配置は内群の根元と同じ意味になるため固定されています）。<br>
                 2. 各系統樹の<strong>緑色の線（枝）をクリック</strong>すると、塩基置換マーク（色付きの棒と座位番号）を配置・削除できます。<br>
                 3. 目標は、<strong>「すべての生物（葉）の塩基の違いを、最も少ない塩基置換の回数で説明すること」</strong>です。<br>
                 4. 配置が終わったら、下部の<strong>「論理検証」</strong>ボタンを押してください！
@@ -413,10 +413,10 @@
         <!-- Step 3: 最節約的な系統樹の選択 -->
         <div id="mpStep3" style="display:none;">
             <div class="edu-panel rationale-panel">
-                👨‍🏫 ステップ3：最も最節約的な樹形を選ぶ<br>
-                全座位（配列全体）について計算された総塩基置換数が集計されました。<br>
+                <strong>👨‍🏫 ステップ3：最も最節約的な樹形を選ぶ</strong><br>
+                全座位（配列全体）について計算された総塩基置換数が集計され、代表的な座位の塩基置換が枝にマッピングされました。<br>
                 <strong>最も塩基置換数が少ない（最節約的な、最も進化の無駄がない）樹形を以下からクリックして選択してください。</strong><br>
-                <span style="font-size:11px; color:#7f8c8d;">※選択肢の配置はランダムにシャッフルされています。</span>
+                <span style="font-size:11px; color:#7f8c8d;">※選択肢の配置はランダムにシャッフルされています。<br>※見やすさのため、系統樹の枝上へのマッピングは、発見した情報座位のうち最大5箇所までに省略して表示しています。</span>
             </div>
             <div id="mpResults" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; justify-content: center;">
                 <!-- ここにJSでカードが挿入される -->
@@ -432,7 +432,7 @@
 
 <div id="toast"></div>
 
-<div class="footer">&copy; 2026 Bio-Edu Suite v3.9 | For Professional Bioinformatics Education</div>
+<div class="footer">&copy; 2026 Bio-Edu Suite v3.11 | For Professional Bioinformatics Education</div>
 
 <script>
     // --- ツールチップ機能 (v1.6準拠) ---
@@ -585,7 +585,6 @@
         reader.readAsText(e.target.files[0]);
     }
 
-    // 学名の国際標準ルールパース (S. scrofa)
     function formatScientificName(name) {
         let clean = name.replace(/[A-Z]{1,2}_?\d{4,}/ig, '').replace(/_/g, ' ').trim();
         let parts = clean.split(/\s+/).map(p => p.replace(/[^a-zA-Z]/g, '')).filter(p => p.length > 0);
@@ -614,7 +613,6 @@
 
         originalNames = seqs.map(s => s.name);
         
-        // ツリー描画における交差を防ぐため、minLeafIndexを追加
         clusters = seqs.map((s, i) => ({ 
             name: s.name, id: i, size: 1, maxDepth: 0, edge: 0, left: null, right: null, active: true, minLeafIndex: i 
         }));
@@ -701,8 +699,8 @@
     let activeMPInteractiveSiteIndex = 0; 
     let activePlacedMutations = [[], [], []];
     
-    // MP法で割り当てるカラーパレット（座位ごとに固定色）
-    const SITE_COLORS = ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db', '#9b59b6', '#e67e22', '#1abc9c', '#34495e', '#d35400', '#8e44ad'];
+    // 代表座位に割り当てるカラーパレット
+    const SITE_COLORS = ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db', '#9b59b6'];
 
     function isInformativeSite(bases) {
         let counts = {};
@@ -715,6 +713,21 @@
             if (counts[b] >= 2) sharedBasesCount++;
         }
         return sharedBasesCount >= 2;
+    }
+    
+    function calcFitchCost(c1, c2, c3, c4) {
+        let sX = c1 === c2 ? [c1] : [c1, c2];
+        let costX = c1 === c2 ? 0 : 1;
+        
+        let sY = c3 === c4 ? [c3] : [c3, c4];
+        let costY = c3 === c4 ? 0 : 1;
+        
+        let intersect = sX.filter(val => sY.includes(val));
+        if (intersect.length > 0) {
+            return costX + costY;
+        } else {
+            return costX + costY + 1;
+        }
     }
 
     function startMPSimulation() {
@@ -763,10 +776,8 @@
                 let siteInfo = { pos: k + 1, idx: k, bases: [a, b, c, d], costs: [c1, c2, c3], optimalPlacements: [] };
                 allVariableSites.push(siteInfo);
                 if (isInformativeSite([a, b, c, d])) {
-                    // 情報をもつ座位に色と最適配置を割り当て
                     siteInfo.color = SITE_COLORS[allInformativeSites.length % SITE_COLORS.length];
                     
-                    // 各樹形に対する最適配置を事前計算（Step 3 描画用）
                     for (let t = 1; t <= 3; t++) {
                         let leaves = [];
                         if (t === 1) leaves = [a, b, c, d]; 
@@ -784,7 +795,6 @@
                         }
                         siteInfo.optimalPlacements.push(foundCombination || [false, false, false, false, false]);
                     }
-                    
                     allInformativeSites.push(siteInfo);
                 }
             }
@@ -1289,21 +1299,6 @@
         }, 50);
     }
     
-    function calcFitchCost(c1, c2, c3, c4) {
-        let sX = c1 === c2 ? [c1] : [c1, c2];
-        let costX = c1 === c2 ? 0 : 1;
-        
-        let sY = c3 === c4 ? [c3] : [c3, c4];
-        let costY = c3 === c4 ? 0 : 1;
-        
-        let intersect = sX.filter(val => sY.includes(val));
-        if (intersect.length > 0) {
-            return costX + costY;
-        } else {
-            return costX + costY + 1;
-        }
-    }
-    
     // Step 3用 Canvas描画 (色付きのバーを削除しシンプルに描画)
     function drawMPTreeCanvas(canvasId, treeType) {
         const canvas = document.querySelector(`canvas[id="${canvasId}"]`);
@@ -1351,6 +1346,49 @@
         points.forEach(p => {
             ctx.fillText(p.label, p.x, p.y - 5);
         });
+
+        // --- 学生が実際に発見した情報座位の中から、重ならないよう最大5個をマッピング ---
+        let foundSites = allInformativeSites.filter(site => userFoundSites.includes(site.idx));
+        let displaySites = foundSites.slice(0, 5); 
+        let branchMutations = [[], [], [], [], []];
+        
+        displaySites.forEach(site => {
+            if (site.optimalPlacements && site.optimalPlacements[treeType - 1]) {
+                site.optimalPlacements[treeType - 1].forEach((isPlaced, bIdx) => {
+                    if (isPlaced) branchMutations[bIdx].push(site);
+                });
+            }
+        });
+
+        const branchesWithId = [
+            {id: 0, x1: root.x, y1: root.y, x2: n1.x, y2: n1.y}, 
+            {id: 1, x1: n1.x, y1: n1.y, x2: points[1].x, y2: points[1].y}, 
+            {id: 2, x1: n2.x, y1: n2.y, x2: points[2].x, y2: points[2].y}, 
+            {id: 3, x1: n2.x, y1: n2.y, x2: points[3].x, y2: points[3].y}, 
+            {id: 4, x1: n1.x, y1: n1.y, x2: n2.x, y2: n2.y} 
+        ];
+
+        branchesWithId.forEach(b => {
+            let muts = branchMutations[b.id];
+            for (let i = 0; i < muts.length; i++) {
+                let t = (i + 1) / (muts.length + 1);
+                let mx = b.x1 + t * (b.x2 - b.x1);
+                let my = b.y1 + t * (b.y2 - b.y1);
+                
+                ctx.strokeStyle = muts[i].color || '#e74c3c';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(mx - 6, my);
+                ctx.lineTo(mx + 6, my);
+                ctx.stroke();
+                
+                ctx.fillStyle = '#2c3e50';
+                ctx.font = 'bold 10px sans-serif';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(muts[i].pos, mx + 8, my);
+            }
+        });
     }
 
     function selectMPTree(index) {
@@ -1384,7 +1422,7 @@
                     <div class="assist-reason" style="color: #2c3e50;">配列全体における塩基置換の合計値が最も小さくなる「系統樹 ${index === 1 ? 'I' : index === 2 ? 'II' : 'III'}」が、最も無駄のない進化モデルとして学術的に支持されます。</div>
                     <div class="assist-fix" style="border-color: #27ae60; background: #fff; color: #1e8449;">
                         💡 実際の分子系統解析では、何万〜何億サイトにも及ぶ遺伝子情報をコンピュータで走査します。<br>
-                        しかし裏側で行われているのは、今回のように「情報をもつ座位ごとに塩基置換数をカウントし、その和が最小のモデルを選択する」という、あなたが体験した地道な最節約法 (MP法) のアルゴリズムそのものです！
+                        しかし裏側で行われているのは、今回のように「情報をもつ座位ごとに最小の塩基置換数をカウントし、その和が最も少なくなるモデルを選択する」という、あなたが体験した地道な最節約法 (MP法) のアルゴリズムそのものです！
                     </div>
                 </div>
             `;
