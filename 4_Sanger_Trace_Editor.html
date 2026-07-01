@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sanger Trace Editor v1.9 | Bio-Edu Suite</title>
+    <title>Sanger Trace Editor v2.0 | Bio-Edu Suite</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         
@@ -114,6 +114,61 @@
             .editor-toolbar { padding: 10px !important; }
             .editor-toolbar > div:nth-child(2) { border-left: none !important; padding-left: 0 !important; border-top: 1px dashed #bdc3c7; padding-top: 8px; margin-top: 5px; width: 100%; }
         }
+
+        /* 🚨 追記：要素を押し下げないポップオーバー化（絶対配置） */
+        .rationale-text {
+            position: absolute !important;
+            z-index: 1000 !important;
+            width: 320px !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
+            border: 1px solid #f39c12 !important;
+            border-left: 4px solid #e67e22 !important;
+            background-color: #fef5e7 !important;
+            color: #a04000 !important;
+            margin: 0 !important;
+            padding: 12px !important;
+            border-radius: 6px !important;
+            line-height: 1.5 !important;
+            font-size: 12px !important;
+        }
+        .rationale-text strong {
+            color: #7e5109 !important;
+            display: block !important;
+            margin-bottom: 6px !important;
+            font-size: 13px !important;
+        }
+
+        /* --- ツールチップ (v1.6準拠) --- */
+        .custom-tooltip {
+            position: fixed;
+            background: rgba(44, 62, 80, 0.95);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .custom-tooltip::after {
+            content: '';
+            position: absolute;
+            border-width: 6px;
+            border-style: solid;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .custom-tooltip.show-top::after {
+            top: 100%;
+            border-color: rgba(44, 62, 80, 0.95) transparent transparent transparent;
+        }
+        .custom-tooltip.show-bottom::after {
+            bottom: 100%;
+            border-color: transparent transparent rgba(44, 62, 80, 0.95) transparent;
+        }
     </style>
 </head>
 <body>
@@ -122,7 +177,7 @@
     <div class="header">
         <h1>🧬 Sanger Trace Editor</h1>
         <p>Bio-Edu Suite: AB1 Binary Parsing, Trace Visualization & Curation</p>
-        <div class="version-badge">v1.9</div>
+        <div class="version-badge">v2.0</div>
     </div>
 </div>
 
@@ -132,14 +187,14 @@
         <div class="card-header">⚙️ in silico 生データ品質管理パネル</div>
         <div class="card-body">
             
-            <div id="rat_ab1" class="rationale-text">
-                <strong>【根拠：なぜ波形（.ab1）を直接見るのか？】</strong><br>
-                シーケンサーは核酸 (DNA/RNA)の末端に付いた「4色の蛍光色素」をカメラで読み取り、波形(Trace)として出力します。機械が自動で波形から塩基（A,T,G,C）を判定しますが、波形が乱れた場所では間違えたり「N（判読不能）」と判定したりします。<br>
+            <div id="rat_ab1" class="rationale-text popover-panel">
+                <strong>【根拠：なぜ波形（.ab1）を直接見るのか？】</strong>
+                シーケンサーはDNAの末端に付いた「4色の蛍光色素」をカメラで読み取り、波形(Trace)として出力します。機械が自動で波形から塩基（A,T,G,C）を判定しますが、波形が乱れた場所では間違えたり「N（判読不能）」と判定したりします。<br>
                 <strong>「機械を100%信用せず、生データ（波形）を人間の目で確認して手動で修正(キュレーション)する」</strong>のが、論文を書くための絶対条件です。
             </div>
-            <div id="rat_export" class="rationale-text">
-                <strong>【根拠：なぜFASTA形式で保存するのか？】</strong><br>
-                FASTA形式は、配列データをコンピューターで扱うための世界標準フォーマットです。多重整列（MSA）やBLAST検索など、次のステップの解析ソフト（アプリ⑤等）へデータを引き継ぐために使用します。
+            <div id="rat_export" class="rationale-text popover-panel">
+                <strong>【根拠：なぜFASTA形式で保存するのか？】</strong>
+                FASTA形式は、塩基配列をコンピューターで扱うための世界標準フォーマットです。多重整列（MSA）やBLAST検索など、次のステップの解析ソフト（DNA Alignment Studio等）へデータを引き継ぐために使用します。
             </div>
 
             <div class="toolbar-row" style="align-items: stretch;">
@@ -147,7 +202,7 @@
                 
                 <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px; flex: 1;">
                     <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" style="margin: 0; min-width: 180px; padding: 8px 15px;">
-                        <p>📂 ここをクリック、または .ab1 ファイル をドラッグ＆ドロップ</p>
+                        <p>📂 読み込む / Load (.ab1)</p>
                         <input type="file" id="fileInput" accept=".ab1" onchange="handleFileSelect(event)">
                     </div>
                 </div>
@@ -166,15 +221,15 @@
             <div class="toolbar-row">
                 <span class="step-label">3. 保存 <button class="rationale-btn" onclick="toggleRationale('rat_export')" title="FASTA出力の理由は？">?</button></span>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap; flex: 1; max-width: 450px;">
-                    <button class="btn btn-success" id="btnExport" onclick="exportFasta()" disabled style="flex: 1; min-width: 160px;">💾 FASTA形式で出力</button>
-                    <button class="btn" id="btnCopyFasta" onclick="copyFasta()" disabled style="flex: 1; min-width: 160px;">📋 FASTA形式でコピー</button>
+                    <button class="btn btn-success" id="btnExport" onclick="exportFasta()" disabled style="flex: 1; min-width: 160px;" data-tooltip="波形データから抽出した塩基配列をFASTAファイルとして保存します。">💾 FASTA保存</button>
+                    <button class="btn" id="btnCopyFasta" onclick="copyFasta()" disabled style="flex: 1; min-width: 160px;" data-tooltip="波形データから抽出した塩基配列をクリップボードにコピーします。">📋 FASTAコピー</button>
                 </div>
             </div>
         </div>
     </div>
 
     <div class="card trace-card">
-        <div class="card-header">📊 波形ビュアー (Trace Curation)</div>
+        <div class="card-header">📊 波形ビュアー</div>
         
         <!-- アプリ⑤のエディタツールバーを導入（検索＆手動カットを統合） -->
         <div class="editor-toolbar" style="padding: 8px 15px; background: #ecf0f1; border-bottom: 1px solid #bdc3c7; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
@@ -183,12 +238,12 @@
             <div style="display: flex; flex-direction: column; gap: 5px;">
                 <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
                     <span style="font-size: 12px; font-weight: bold; color: #34495e; display: flex; align-items: center;">
-                        🔍 配列・モチーフ検索
-                        <button class="rationale-btn" onclick="toggleRationale('rat_motif')" title="配列検索とは？" style="margin-right: 5px;">?</button>
+                        🔍 塩基配列検索
+                        <button class="rationale-btn" onclick="toggleRationale('rat_motif')" style="margin-right: 5px;">?</button>
                     </span>
-                    <input type="text" id="searchInput" class="primer-input" placeholder="例: ATG または TAA" style="width: 140px; text-transform: uppercase;" onkeypress="if(event.keyCode===13) searchSequence()" disabled>
-                    <button class="btn btn-option" id="btnSearch" style="padding: 4px 8px; font-size: 11px;" onclick="searchSequence()" disabled>✨ ハイライト</button>
-                    <button class="btn" id="btnClearSearch" style="padding: 4px 8px; font-size: 11px;" onclick="clearSearch()" disabled>❌ クリア</button>
+                    <input type="text" id="searchInput" class="primer-input" placeholder="検索する塩基配列を入力" style="width: 140px; text-transform: uppercase;" onkeypress="if(event.keyCode===13) searchSequence()" disabled>
+                    <button class="btn btn-option" id="btnSearch" style="padding: 4px 8px; font-size: 11px;" onclick="searchSequence()" disabled data-tooltip="入力した塩基配列を波形上で探し、ハイライトします。">✨ 検索 / Search</button>
+                    <button class="btn" id="btnClearSearch" style="padding: 4px 8px; font-size: 11px;" onclick="clearSearch()" disabled data-tooltip="ハイライトを解除し、元の表示に戻します。">❌ リセット / Reset</button>
                 </div>
                 <span style="font-size: 10px; color: #7f8c8d; line-height: 1.4;">※プライマー配列等を検索し、黄色くハイライトします。</span>
             </div>
@@ -197,24 +252,24 @@
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; border-left: 2px solid #bdc3c7; padding-left: 10px;">
                 <span style="font-size: 12px; font-weight: bold; color: #c0392b; display: flex; align-items: center;">
                     ✂️ 手動カット
-                    <button class="rationale-btn" onclick="toggleRationale('rat_step3')" title="なぜカットするの？" style="background: #e74c3c; margin-right: 5px;">?</button>
+                    <button class="rationale-btn" onclick="toggleRationale('rat_step3')" style="background: #e74c3c; margin-right: 5px;">?</button>
                 </span>
-                <button class="btn" id="btnTrimLeft" onclick="trimLeft()" disabled style="color: #c0392b; border-color: #e6b0aa;">◀ 選択位置より左を削除</button>
-                <button class="btn" id="btnTrimRight" onclick="trimRight()" disabled style="color: #c0392b; border-color: #e6b0aa;">選択位置より右を削除 ▶</button>
+                <button class="btn" id="btnTrimLeft" onclick="trimLeft()" disabled style="color: #c0392b; border-color: #e6b0aa;" data-tooltip="選択した塩基より左側（5'側）の波形データを一括で削除します。">◀ 左を削除</button>
+                <button class="btn" id="btnTrimRight" onclick="trimRight()" disabled style="color: #c0392b; border-color: #e6b0aa;" data-tooltip="選択した塩基より右側（3'側）の波形データを一括で削除します。">右を削除 ▶</button>
                 
                 <div style="width: 1px; height: 24px; background: #bdc3c7; margin: 0 5px;"></div>
                 <!-- スッキリ化のためのヒント展開ボタン -->
-                <button class="btn" id="btnToggleHints" onclick="toggleHints()" style="font-size: 11px; background: #fef9e7; border-color: #f39c12; color: #d35400;">💡 操作ヒントを開く</button>
+                <button class="btn" id="btnToggleHints" onclick="toggleHints()" style="font-size: 11px; background: #fef9e7; border-color: #f39c12; color: #d35400;" data-tooltip="手動編集のショートカットキーやコツを確認できます。">💡 ヒント</button>
             </div>
         </div>
 
         <!-- ツールバー用のRationaleパネル -->
-        <div id="rat_motif" class="rationale-text" style="margin: 0; border-radius: 0; border-left: none; border-right: none; background: #fef9e7; border-bottom: 1px solid #f39c12;">
-            <strong>【根拠：なぜ波形の中で配列を検索するのか？】</strong><br>
-            自分がPCRで使った「プライマー配列」を検索して見つけ出し、そこから外側がノイズであることを特定するためです。また、開始コドンや制限酵素部位など、特定の配列が正しく読まれているか確認する際にも役立ちます。
+        <div id="rat_motif" class="rationale-text popover-panel">
+            <strong>【根拠：なぜ波形の中で塩基配列を検索するのか？】</strong>
+            自分がPCRで使った「プライマーの塩基配列」を検索して見つけ出し、そこから外側がノイズであることを特定するためです。また、開始コドンや制限酵素部位など、特定の塩基配列が正しく読まれているか確認する際にも役立ちます。
         </div>
-        <div id="rat_step3" class="rationale-text" style="margin: 0; border-radius: 0; border-left: none; border-right: none; background: #fef9e7; border-bottom: 1px solid #f39c12;">
-            <strong>【根拠：なぜノイズカットが必要か？】</strong><br>
+        <div id="rat_step3" class="rationale-text popover-panel">
+            <strong>【根拠：なぜノイズカットが必要か？】</strong>
             サンガーシーケンスの原理上、反応の最初（0〜50塩基付近）と最後（800塩基以降）は必ず波形が乱れ、ノイズだらけになります。検索で見つけたプライマー等の位置を基準に、<strong>外側のノイズ領域は全て削除する（トリミング）</strong>のが鉄則です。
         </div>
 
@@ -253,27 +308,53 @@
 </div>
 
 <div class="status-bar">
-    <span id="statusText">ステップ1: シーケンス結果（.ab1 ファイル）を読み込んでください。</span>
+    <span id="statusText">Status: Please load .ab1 file.</span>
     <span id="fileInfoText">File: - | Base: -</span>
 </div>
 
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v1.9 | Developed for Bioinformatics & Wet-Lab Education
+    Bio-Edu Suite &copy; 2026 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
 <!-- 💡追加: アプリ⑤共通のトースト通知 -->
 <div id="toast">メッセージ</div>
 
+<!-- ツールチップ要素 -->
+<div id="globalTooltip" class="custom-tooltip"></div>
+
 <script>
+    // 🚨 追記：位置計算によるポップオーバー化
     function toggleRationale(id) {
+        const e = window.event;
         const el = document.getElementById(id);
-        if(el.style.display === 'block') {
-            el.style.display = 'none';
-        } else {
-            document.querySelectorAll('.rationale-text').forEach(e => e.style.display = 'none');
+        const isShowing = el.style.display === 'block';
+        
+        // 全て隠す
+        document.querySelectorAll('.rationale-text').forEach(e => e.style.display = 'none');
+        
+        if(!isShowing) {
             el.style.display = 'block';
+            if (e && e.target) {
+                const btnRect = e.target.getBoundingClientRect();
+                let topPos = btnRect.bottom + window.scrollY + 8;
+                let leftPos = btnRect.left + window.scrollX - 150 + (btnRect.width / 2);
+                
+                if (leftPos < 10) leftPos = 10;
+                if (leftPos + 320 > window.innerWidth) leftPos = window.innerWidth - 330;
+                
+                el.style.top = topPos + 'px';
+                el.style.left = leftPos + 'px';
+            }
         }
+        if(e) e.stopPropagation();
     }
+
+    // 画面のどこかをクリックしたらポップオーバーを閉じる
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.rationale-text') && !e.target.closest('.rationale-btn')) {
+            document.querySelectorAll('.rationale-text').forEach(node => node.style.display = 'none');
+        }
+    });
     
     // 💡 ヒントの開閉ロジック
     function toggleHints() {
@@ -281,12 +362,12 @@
         const btn = document.getElementById('btnToggleHints');
         if (el.style.display === 'none') {
             el.style.display = 'block';
-            btn.innerHTML = '💡 操作ヒントを閉じる';
+            btn.innerHTML = '💡 閉じる';
             btn.style.background = '#f39c12';
             btn.style.color = '#fff';
         } else {
             el.style.display = 'none';
-            btn.innerHTML = '💡 操作ヒントを開く';
+            btn.innerHTML = '💡 ヒント';
             btn.style.background = '#fef9e7';
             btn.style.color = '#d35400';
         }
@@ -325,13 +406,13 @@
     // --- ABIF (.ab1) Binary Parser ---
     function processFile(file) {
         currentFileName = file.name;
-        document.getElementById('statusText').innerText = "バイナリ解析中...";
+        document.getElementById('statusText').innerText = "Status: Parsing binary data...";
         
         const reader = new FileReader();
         reader.onload = function(e) {
             try {
                 ab1Data = parseAB1(e.target.result);
-                document.getElementById('statusText').innerText = "解析完了。波形を確認し、[A/T/G/C]や[Backspace]キーでキュレーションを行ってください。";
+                document.getElementById('statusText').innerText = "Status: Ready. Please check trace and curate.";
                 document.getElementById('fileInfoText').innerText = `File: ${currentFileName}`;
                 
                 // UIアンロック (アプリ⑤統一のボタン追加)
@@ -349,8 +430,8 @@
                 selectedBaseIndex = -1;
                 redrawAll();
             } catch (err) {
-                alert("ファイルの解析に失敗しました。正しい .ab1 ファイルか確認してください。\n" + err);
-                document.getElementById('statusText').innerText = "エラーが発生しました。";
+                showToast("ファイルの解析に失敗しました。正しい .ab1 ファイルか確認してください。");
+                document.getElementById('statusText').innerText = "Status: Error parsing file.";
             }
         };
         reader.readAsArrayBuffer(file);
@@ -612,9 +693,9 @@
                 ab1Data.bases[actualIndex].isHighlight = true;
             }
             selectBase(validIndices[matchIdx]);
-            document.getElementById('statusText').innerText = `検索成功。これより外側のノイズは「一括削除」ボタンで削除してください。`;
+            document.getElementById('statusText').innerText = `Status: Highlighted sequence.`;
         } else {
-            alert("指定された配列が見つかりません。");
+            showToast("指定された塩基配列が見つかりません。");
         }
         redrawAll();
     }
@@ -624,32 +705,32 @@
         if(!ab1Data) return;
         ab1Data.bases.forEach(b => b.isHighlight = false);
         redrawAll();
-        document.getElementById('statusText').innerText = "検索ハイライトをクリアしました。";
+        document.getElementById('statusText').innerText = "Status: Search cleared.";
     }
 
     // --- 一括カット機能 ---
     function trimLeft() {
         if(!ab1Data || selectedBaseIndex === -1) {
-            alert("カットする基準となる塩基をクリックして選択してください。");
+            showToast("カットする基準となる塩基をクリックして選択してください。");
             return;
         }
         for(let i = 0; i < selectedBaseIndex; i++) {
             ab1Data.bases[i].isDeleted = true;
         }
         redrawAll();
-        document.getElementById('statusText').innerText = "選択位置より左側の領域を一括削除しました。";
+        document.getElementById('statusText').innerText = "Status: Trimmed left region.";
     }
 
     function trimRight() {
         if(!ab1Data || selectedBaseIndex === -1) {
-            alert("カットする基準となる塩基をクリックして選択してください。");
+            showToast("カットする基準となる塩基をクリックして選択してください。");
             return;
         }
         for(let i = selectedBaseIndex + 1; i < ab1Data.bases.length; i++) {
             ab1Data.bases[i].isDeleted = true;
         }
         redrawAll();
-        document.getElementById('statusText').innerText = "選択位置より右側の領域を一括削除しました。";
+        document.getElementById('statusText').innerText = "Status: Trimmed right region.";
     }
 
     // --- 💡FASTA出力・コピー・トースト機能の統合 ---
@@ -661,7 +742,7 @@
     }
 
     function copyToClipboardFallback(text, successMessage) {
-        if(text === "") { alert("対象が選択されていません"); return; }
+        if(text === "") { showToast("対象が選択されていません"); return; }
         const textArea = document.createElement("textarea");
         textArea.value = text;
         textArea.style.position = "fixed";
@@ -674,7 +755,7 @@
             showToast(successMessage);
         } catch (err) {
             console.error('Fallback: Oops, unable to copy', err);
-            alert("コピーに失敗しました。");
+            showToast("コピーに失敗しました。");
         }
         document.body.removeChild(textArea);
     }
@@ -694,7 +775,7 @@
         a.download = `${headerName}.fasta`; 
         a.click();
         
-        document.getElementById('statusText').innerText = `FASTAファイルを保存しました！このデータを Alignment Studio に入れて解析を進めましょう。`;
+        document.getElementById('statusText').innerText = `Status: File saved. Please proceed to DNA Alignment Studio.`;
         showToast("FASTAファイルを保存しました");
     }
 
@@ -708,9 +789,62 @@
         let headerName = currentFileName.replace(/\.ab1$/i, '_curated');
         let output = `>${headerName}\n${seqStr}\n`;
         
-        document.getElementById('statusText').innerText = `クリップボードにコピーしました！このデータを Alignment Studio に貼り付けて解析を進めましょう。`;
+        document.getElementById('statusText').innerText = `Status: Copied to clipboard. Please proceed to DNA Alignment Studio.`;
         copyToClipboardFallback(output.trim(), "FASTA形式でコピーしました");
     }
+
+    // --- ツールチップ制御 ---
+    const tooltip = document.getElementById('globalTooltip');
+
+    document.body.addEventListener('mouseover', (e) => {
+        const target = e.target.closest('[data-tooltip]');
+        if (target) {
+            const text = target.getAttribute('data-tooltip');
+            tooltip.innerHTML = text;
+            tooltip.style.display = 'block';
+            
+            const rect = target.getBoundingClientRect();
+            const ttRect = tooltip.getBoundingClientRect();
+            
+            let topPos = rect.top - ttRect.height - 8;
+            let leftPos = rect.left + (rect.width / 2);
+            let arrowClass = 'show-top'; 
+
+            if (topPos < 0) {
+                topPos = rect.bottom + 8;
+                arrowClass = 'show-bottom'; 
+            }
+            
+            if (leftPos - ttRect.width / 2 < 5) {
+                leftPos = 5 + ttRect.width / 2;
+            } else if (leftPos + ttRect.width / 2 > window.innerWidth - 5) {
+                leftPos = window.innerWidth - ttRect.width / 2 - 5;
+            }
+
+            tooltip.className = `custom-tooltip ${arrowClass}`;
+            tooltip.style.top = topPos + 'px';
+            tooltip.style.left = leftPos + 'px';
+            tooltip.style.transform = `translateX(-50%)`;
+            tooltip.style.opacity = '1';
+        }
+    });
+
+    document.body.addEventListener('mouseout', (e) => {
+        const target = e.target.closest('[data-tooltip]');
+        if (target) {
+            tooltip.style.opacity = '0';
+            setTimeout(() => {
+                if (tooltip.style.opacity === '0') {
+                    tooltip.style.display = 'none';
+                }
+            }, 200);
+        }
+    });
+
+    document.addEventListener('scroll', () => {
+        tooltip.style.opacity = '0';
+        tooltip.style.display = 'none';
+    }, true);
 </script>
 
 </body>
