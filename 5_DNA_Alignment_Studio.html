@@ -1424,7 +1424,7 @@
     function exportClustalAll() {
         if(sequences.length === 0) return;
         
-        let output = "CLUSTAL O(1.2.4) multiple sequence alignment\n\n";
+        let output = "CLUSTAL formatted alignment by DNA Alignment Studio v3.14 (Bio-Edu Suite)\n\n";
         let maxLen = Math.max(...sequences.map(s => s.data.length));
         
         let namePad = Math.max(20, Math.max(...sequences.map(s => s.name.length)) + 4);
