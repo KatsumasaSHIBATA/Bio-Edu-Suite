@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sanger Trace Editor v2.0 | Bio-Edu Suite</title>
+    <title>Sanger Trace Editor v2.1 | Bio-Edu Suite</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         
@@ -31,8 +31,8 @@
 
         /* ツールバー */
         .toolbar-row { display: flex; width: 100%; gap: 15px; align-items: center; flex-wrap: wrap; }
-        /* 💡変更: ステップラベルの文字色をスクリーンショットに合わせて濃い灰色に統一 */
-        .step-label { font-size: 13px; font-weight: bold; color: #34495e; min-width: 80px; display: flex; align-items: center; }
+        /* 💡変更: ステップラベルの文字色を他アプリ（⑤等）と同じグレーに統一 */
+        .step-label { font-size: 13px; font-weight: bold; color: #7f8c8d; min-width: 80px; display: flex; align-items: center; }
 
         /* justify-content: center; を追加しモバイル時のボタンテキスト左寄りを防止 */
         .btn { background: #fdfefe; border: 1px solid #bdc3c7; padding: 6px 12px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 5px; border-radius: 4px; font-weight: bold; transition: all 0.2s; color: #2c3e50; white-space: nowrap; }
@@ -115,21 +115,21 @@
             .editor-toolbar > div:nth-child(2) { border-left: none !important; padding-left: 0 !important; border-top: 1px dashed #bdc3c7; padding-top: 8px; margin-top: 5px; width: 100%; }
         }
 
-        /* 🚨 追記：要素を押し下げないポップオーバー化（絶対配置） */
+        /* 🚨 追記：要素を押し下げないポップオーバー化（絶対配置） - アプリ⑤互換デザインに上書き */
         .rationale-text {
+            display: none;
             position: absolute !important;
-            z-index: 1000 !important;
+            z-index: 2000 !important;
             width: 320px !important;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
             border: 1px solid #f39c12 !important;
-            border-left: 4px solid #e67e22 !important;
-            background-color: #fef5e7 !important;
-            color: #a04000 !important;
+            background-color: #fef9e7 !important;
+            color: #7e5109 !important;
             margin: 0 !important;
-            padding: 12px !important;
-            border-radius: 6px !important;
+            padding: 10px !important;
+            border-radius: 4px !important;
             line-height: 1.5 !important;
-            font-size: 12px !important;
+            font-size: 11px !important;
         }
         .rationale-text strong {
             color: #7e5109 !important;
@@ -177,7 +177,7 @@
     <div class="header">
         <h1>🧬 Sanger Trace Editor</h1>
         <p>Bio-Edu Suite: AB1 Binary Parsing, Trace Visualization & Curation</p>
-        <div class="version-badge">v2.0</div>
+        <div class="version-badge">v2.1</div>
     </div>
 </div>
 
@@ -198,11 +198,11 @@
             </div>
 
             <div class="toolbar-row" style="align-items: stretch;">
-                <span class="step-label" style="display: flex; align-items: center;">1. データ読込 <button class="rationale-btn" onclick="toggleRationale('rat_ab1')" title="波形を見る意味は？">?</button></span>
+                <span class="step-label" style="display: flex; align-items: center;">1. データ読込 <button class="rationale-btn" onclick="toggleRationale('rat_ab1')">?</button></span>
                 
                 <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px; flex: 1;">
                     <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" style="margin: 0; min-width: 180px; padding: 8px 15px;">
-                        <p>📂 読み込む / Load (.ab1)</p>
+                        <p>📂 ここをクリック、または 生データ(.ab1) をドラッグ＆ドロップ</p>
                         <input type="file" id="fileInput" accept=".ab1" onchange="handleFileSelect(event)">
                     </div>
                 </div>
@@ -219,17 +219,17 @@
             </div>
             
             <div class="toolbar-row">
-                <span class="step-label">3. 保存 <button class="rationale-btn" onclick="toggleRationale('rat_export')" title="FASTA出力の理由は？">?</button></span>
+                <span class="step-label">3. 保存 <button class="rationale-btn" onclick="toggleRationale('rat_export')">?</button></span>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap; flex: 1; max-width: 450px;">
-                    <button class="btn btn-success" id="btnExport" onclick="exportFasta()" disabled style="flex: 1; min-width: 160px;" data-tooltip="波形データから抽出した塩基配列をFASTAファイルとして保存します。">💾 FASTA保存</button>
-                    <button class="btn" id="btnCopyFasta" onclick="copyFasta()" disabled style="flex: 1; min-width: 160px;" data-tooltip="波形データから抽出した塩基配列をクリップボードにコピーします。">📋 FASTAコピー</button>
+                    <button class="btn btn-success" id="btnExport" onclick="exportFasta()" disabled style="flex: 1; min-width: 160px;" data-tooltip="波形データから抽出した塩基配列をFASTA形式でファイルとして保存します。">💾 FASTA保存</button>
+                    <button class="btn" id="btnCopyFasta" onclick="copyFasta()" disabled style="flex: 1; min-width: 160px;" data-tooltip="波形データから抽出した塩基配列をFASTA形式でクリップボードにコピーします。">📋 FASTAコピー</button>
                 </div>
             </div>
         </div>
     </div>
 
     <div class="card trace-card">
-        <div class="card-header">📊 波形ビュアー</div>
+        <div class="card-header">📊 波形ビュアー (Trace Curation)</div>
         
         <!-- アプリ⑤のエディタツールバーを導入（検索＆手動カットを統合） -->
         <div class="editor-toolbar" style="padding: 8px 15px; background: #ecf0f1; border-bottom: 1px solid #bdc3c7; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
@@ -241,11 +241,11 @@
                         🔍 塩基配列検索
                         <button class="rationale-btn" onclick="toggleRationale('rat_motif')" style="margin-right: 5px;">?</button>
                     </span>
-                    <input type="text" id="searchInput" class="primer-input" placeholder="検索する塩基配列を入力" style="width: 140px; text-transform: uppercase;" onkeypress="if(event.keyCode===13) searchSequence()" disabled>
-                    <button class="btn btn-option" id="btnSearch" style="padding: 4px 8px; font-size: 11px;" onclick="searchSequence()" disabled data-tooltip="入力した塩基配列を波形上で探し、ハイライトします。">✨ 検索 / Search</button>
-                    <button class="btn" id="btnClearSearch" style="padding: 4px 8px; font-size: 11px;" onclick="clearSearch()" disabled data-tooltip="ハイライトを解除し、元の表示に戻します。">❌ リセット / Reset</button>
+                    <input type="text" id="searchInput" class="primer-input" placeholder="検索したい塩基配列を入力" style="width: 140px; text-transform: uppercase;" onkeypress="if(event.keyCode===13) searchSequence()" disabled>
+                    <button class="btn btn-option" id="btnSearch" style="padding: 4px 8px; font-size: 11px;" onclick="searchSequence()" disabled data-tooltip="入力した塩基配列を波形上で探し、ハイライトします。">✨ 検索</button>
+                    <button class="btn" id="btnClearSearch" style="padding: 4px 8px; font-size: 11px;" onclick="clearSearch()" disabled data-tooltip="ハイライトを解除し、元の表示に戻します。">❌ クリア</button>
                 </div>
-                <span style="font-size: 10px; color: #7f8c8d; line-height: 1.4;">※プライマー配列等を検索し、黄色くハイライトします。</span>
+                <span style="font-size: 10px; color: #7f8c8d; line-height: 1.4;">※プライマーの塩基配列等を検索し、黄色くハイライトします。</span>
             </div>
 
             <!-- 右側：手動カットとヒントトグル -->
@@ -254,8 +254,8 @@
                     ✂️ 手動カット
                     <button class="rationale-btn" onclick="toggleRationale('rat_step3')" style="background: #e74c3c; margin-right: 5px;">?</button>
                 </span>
-                <button class="btn" id="btnTrimLeft" onclick="trimLeft()" disabled style="color: #c0392b; border-color: #e6b0aa;" data-tooltip="選択した塩基より左側（5'側）の波形データを一括で削除します。">◀ 左を削除</button>
-                <button class="btn" id="btnTrimRight" onclick="trimRight()" disabled style="color: #c0392b; border-color: #e6b0aa;" data-tooltip="選択した塩基より右側（3'側）の波形データを一括で削除します。">右を削除 ▶</button>
+                <button class="btn" id="btnTrimLeft" onclick="trimLeft()" disabled style="color: #c0392b; border-color: #e6b0aa;" data-tooltip="選択した塩基より左側の波形データを一括で削除します。">◀ 左カット</button>
+                <button class="btn" id="btnTrimRight" onclick="trimRight()" disabled style="color: #c0392b; border-color: #e6b0aa;" data-tooltip="選択した塩基より右側の波形データを一括で削除します。">右カット ▶</button>
                 
                 <div style="width: 1px; height: 24px; background: #bdc3c7; margin: 0 5px;"></div>
                 <!-- スッキリ化のためのヒント展開ボタン -->
@@ -277,8 +277,8 @@
         <div id="editorHintsArea" style="display: none;">
             <div class="bench-tip" style="border-radius: 0; border-left: none; border-top: none; border-bottom: 1px solid #dcdde1; margin: 0;">
                 <strong>💡 現場のコツ（一括カットの使い方）</strong><br>
-                ・検索で見つけた配列の先頭をクリックし、「✂️ 左を削除」を押すと、それより前のノイズがすべて消えます。<br>
-                ・同様に、配列の末尾をクリックし、「✂️ 右を削除」を押すと、それ以降のノイズがすべて消えます。
+                ・検索で見つけた塩基配列の先頭をクリックし、「✂️ 左カット」を押すと、それより前のノイズがすべて消えます。<br>
+                ・同様に、塩基配列の末尾をクリックし、「✂️ 右カット」を押すと、それ以降のノイズがすべて消えます。
             </div>
 
             <div class="keyboard-hints" style="border-radius: 0; border-left: none; border-right: none; margin: 0; border-bottom: 1px solid #f5b041;">
