@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alignment Print Studio v1.6 | Bio-Edu Suite</title>
+    <title>Alignment Print Studio v1.7 | Bio-Edu Suite</title>
     <style>
         /* 全体のボックスサイズとリセット */
         *, *::before, *::after { box-sizing: border-box; }
 
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        /* スクロールバグ防止のため overflow-x: hidden を追加 */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
         
         /* 共通ヘッダー */
         .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 10; }
@@ -29,6 +30,7 @@
         /* 根拠表示用スタイル */
         .rationale-btn { background: #1abc9c; color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s;}
         .rationale-btn:hover { background: #16a085; transform: scale(1.1); }
+        /* 変更: display: none; は維持しつつ、JSでフロート化（ポップオーバー化）させる */
         .rationale-text { display: none; background: #fef9e7; border: 1px solid #f39c12; padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; margin-bottom: 5px; line-height: 1.5; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
 
         /* 共通 UI コンポーネント */
@@ -36,7 +38,7 @@
         .drop-zone.dragover { border-color: #3498db; background: #ebf5fb; color: #3498db; }
         .drop-zone:hover { border-color: #3498db; }
         
-        /* 💡 UI修正: ステータスバーを画面下部に固定し、影をつけてフロート感を出す */
+        /* ステータスバーを画面下部に固定し、影をつけてフロート感を出す */
         .status-bar { background: #34495e; color: white; padding: 6px 15px; font-size: 12px; flex-shrink: 0; display: flex; align-items: center; width: 100%; margin-top: auto; position: sticky; bottom: 0; z-index: 20; box-shadow: 0 -2px 10px rgba(0,0,0,0.15); }
 
         /* トースト通知 */
@@ -89,6 +91,43 @@
         /* 共通フッター */
         .footer { width: 100%; background: #1a252f; padding: 15px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; border-top: 1px solid #2c3e50; }
 
+        /* --- 追加: ツールチップ (Template_Reference_App v1.6準拠) --- */
+        .custom-tooltip {
+            position: fixed;
+            background: rgba(44, 62, 80, 0.95);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .custom-tooltip::after {
+            content: '';
+            position: absolute;
+            border-width: 6px;
+            border-style: solid;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .custom-tooltip.show-top::after {
+            top: 100%;
+            border-color: rgba(44, 62, 80, 0.95) transparent transparent transparent;
+        }
+        .custom-tooltip.show-bottom::after {
+            bottom: 100%;
+            border-color: transparent transparent rgba(44, 62, 80, 0.95) transparent;
+        }
+
+        /* --- 追加: スマホ対応ガードレール --- */
+        @media (max-width: 900px) {
+            .control-panel { position: static !important; }
+        }
+
         /* 🖨️ 印刷時専用のスタイル */
         @media print {
             body { background: white; padding: 0; margin: 0; }
@@ -111,7 +150,7 @@
     <div class="header">
         <h1>🧬 Alignment Print Studio</h1>
         <p>Bio-Edu Suite: Smart Paging & Formatting for CLUSTAL Data</p>
-        <div class="version-badge">v1.6</div>
+        <div class="version-badge">v1.7</div>
     </div>
 </div>
 
@@ -119,7 +158,7 @@
     
     <div class="control-panel no-print">
         <h2>⚙️ 1. アライメントデータの入力と書式設定
-            <button class="rationale-btn" onclick="toggleRationale('rat_print')" title="なぜこのツールが必要？">?</button>
+            <button class="rationale-btn" onclick="toggleRationale('rat_print')">?</button>
         </h2>
         
         <div class="control-panel-body">
@@ -144,24 +183,26 @@
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 5px;">
-                <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" style="padding: 12px; font-size: 12px;">
-                    📂 ここをクリック、または FASTA/CLUSTALデータ をドラッグ＆ドロップ
+                <!-- ボタン文字をシェイプアップし、ツールチップで補足 -->
+                <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" style="padding: 12px; font-size: 12px;" data-tooltip="ここをクリックするか、ファイルをドラッグ＆ドロップして塩基配列・アミノ酸配列のデータを読み込みます">
+                    📂 ファイルを選択 / ドロップ
                     <input type="file" id="fileInput" style="display: none;" accept=".fasta,.txt,.aln">
                 </div>
 
-                <textarea id="inputText" placeholder="ここにテキストデータ（CLUSTAL形式など）を直接貼り付け (Ctrl+V) てください..."></textarea>
+                <!-- プレースホルダーから例文を消し、機能説明のみに最適化 -->
+                <textarea id="inputText" placeholder="塩基配列またはアミノ酸配列のアライメント結果（CLUSTAL形式など）をここに貼り付け（Ctrl+V）てください。"></textarea>
             </div>
             
             <div class="settings-grid">
                 <div class="setting-item">
-                    <span style="color: #c0392b;">✂️ ブロック終端の認識キー:</span>
-                    <input type="text" id="breakKeyword" class="keyword-input" value="Primer_R" oninput="renderText()">
-                    <span style="font-size:10px; font-weight:normal; color:#7f8c8d;">を含む行をひと塊(ブロック)とする</span>
+                    <span style="color: #c0392b;">✂️ 終端キー:</span>
+                    <!-- ツールチップ化により横の長ったらしい説明を削除してスッキリ配置 -->
+                    <input type="text" id="breakKeyword" class="keyword-input" value="Primer_R" oninput="renderText()" data-tooltip="このキーワードを含む行を1つのブロックの終端（改ページ禁止）と認識します">
                 </div>
 
                 <div class="setting-item" style="border-left: 2px solid #ecf0f1; padding-left: 15px;">
                     <span>📄 用紙の向き:</span>
-                    <div class="radio-group">
+                    <div class="radio-group" data-tooltip="印刷時（PDF保存時）のA4用紙の向きを指定します">
                         <input type="radio" id="ori_land" name="orientation" value="landscape" checked onchange="updateOrientation()">
                         <label for="ori_land">横 (A4)</label>
                         <input type="radio" id="ori_port" name="orientation" value="portrait" onchange="updateOrientation()">
@@ -171,11 +212,12 @@
 
                 <div class="setting-item" style="border-left: 2px solid #ecf0f1; padding-left: 15px;">
                     <label for="fontSize">🔍 文字サイズ:</label>
-                    <input type="range" id="fontSize" min="4" max="14" step="0.5" value="9" oninput="updateFontSize(this.value)">
+                    <input type="range" id="fontSize" min="4" max="14" step="0.5" value="9" oninput="updateFontSize(this.value)" data-tooltip="塩基配列・アミノ酸配列の文字サイズを調整して、1行に収まる長さを変更します">
                     <span id="fontSizeDisplay" style="color: #3498db; min-width: 45px; text-align:right; font-size:14px; font-family: monospace;">9.0pt</span>
                 </div>
                 
-                <button class="btn-print" onclick="triggerPrint()">🖨️ 印刷 / PDF保存</button>
+                <!-- ボタン文字のシェイプアップ -->
+                <button class="btn-print" onclick="triggerPrint()" data-tooltip="現在のプレビューをA4サイズで印刷、またはPDFとして保存します">🖨️ 出力</button>
             </div>
 
             <div class="bench-tip">
@@ -196,21 +238,70 @@
 <!-- トースト通知 -->
 <div id="toast">メッセージ</div>
 
-<!-- 💡 UI修正: スクロールしても常に画面下部に固定されるステータスバー -->
+<!-- ツールチップ要素 (Template_Reference_App v1.6準拠) -->
+<div id="globalTooltip" class="custom-tooltip"></div>
+
+<!-- ステータスバー -->
 <div class="status-bar no-print">
     <span id="statusText">Status: Standby</span>
 </div>
 
 <!-- 共通フッター -->
 <div class="footer no-print">
-    &copy; 2026 Bio-Edu Suite v1.6 | Developed for Bioinformatics & Wet-Lab Education
+    &copy; 2026 Bio-Edu Suite v1.7 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
 <script>
+    // 既存のトグル機能を改修し、要素を押し下げないポップオーバー方式へ変更
     function toggleRationale(id) {
         const el = document.getElementById(id);
-        el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+        const btn = event.currentTarget;
+        
+        if (el.style.position !== 'fixed') {
+            // 初回起動時のセットアップ (ポップオーバー化)
+            el.style.position = 'fixed';
+            el.style.zIndex = '9999';
+            el.style.width = '320px';
+            el.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
+            document.body.appendChild(el); // body直下に移動してoverflowによる見切れを回避
+        }
+
+        if (el.style.display === 'block') {
+            el.style.display = 'none';
+        } else {
+            // 他のポップオーバーを閉じる
+            document.querySelectorAll('.rationale-text').forEach(p => p.style.display = 'none');
+            
+            el.style.display = 'block';
+            
+            // 位置計算
+            const rect = btn.getBoundingClientRect();
+            let topPos = rect.bottom + 8;
+            let leftPos = rect.left;
+            
+            el.style.left = leftPos + 'px';
+            el.style.top = topPos + 'px';
+            
+            // 画面右端、下端のはみ出し補正
+            setTimeout(() => {
+                const pRect = el.getBoundingClientRect();
+                if (pRect.right > window.innerWidth) {
+                    el.style.left = (window.innerWidth - pRect.width - 10) + 'px';
+                }
+                if (pRect.bottom > window.innerHeight) {
+                    el.style.top = (rect.top - pRect.height - 8) + 'px';
+                }
+            }, 0);
+        }
+        event.stopPropagation();
     }
+
+    // グローバルクリックでポップオーバーを閉じる
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.rationale-text') && !e.target.closest('.rationale-btn')) {
+            document.querySelectorAll('.rationale-text').forEach(p => p.style.display = 'none');
+        }
+    });
 
     function showToast(msg) {
         const toast = document.getElementById("toast");
@@ -354,7 +445,65 @@
         styleTag.innerHTML = `@media print { @page { size: A4 ${orientation}; margin: 15mm; } }`;
     }
 
-    const demoText = `CLUSTAL O(1.2.4) multiple sequence alignment
+    // ツールチップ制御 (イベントデリゲーション)
+    const tooltip = document.getElementById('globalTooltip');
+    
+    document.body.addEventListener('mouseover', (e) => {
+        const target = e.target.closest('[data-tooltip]');
+        if (target) {
+            const text = target.getAttribute('data-tooltip');
+            tooltip.innerHTML = text;
+            tooltip.style.display = 'block';
+            
+            // 位置計算
+            const rect = target.getBoundingClientRect();
+            const ttRect = tooltip.getBoundingClientRect();
+            
+            let topPos = rect.top - ttRect.height - 8;
+            let leftPos = rect.left + (rect.width / 2);
+            let arrowClass = 'show-top'; 
+
+            // 画面下にはみ出る場合は下側に表示を切り替え（矢印は上）
+            if (topPos < 0) {
+                topPos = rect.bottom + 8;
+                arrowClass = 'show-bottom'; 
+            }
+            
+            // 左右のはみ出し調整
+            if (leftPos - ttRect.width / 2 < 5) {
+                leftPos = 5 + ttRect.width / 2;
+            } else if (leftPos + ttRect.width / 2 > window.innerWidth - 5) {
+                leftPos = window.innerWidth - ttRect.width / 2 - 5;
+            }
+
+            tooltip.className = `custom-tooltip ${arrowClass}`;
+            tooltip.style.top = topPos + 'px';
+            tooltip.style.left = leftPos + 'px';
+            tooltip.style.transform = `translateX(-50%)`;
+            tooltip.style.opacity = '1';
+        }
+    });
+
+    document.body.addEventListener('mouseout', (e) => {
+        const target = e.target.closest('[data-tooltip]');
+        if (target) {
+            tooltip.style.opacity = '0';
+            setTimeout(() => {
+                if (tooltip.style.opacity === '0') {
+                    tooltip.style.display = 'none';
+                }
+            }, 200);
+        }
+    });
+    
+    // スクロール時にツールチップを隠す
+    document.addEventListener('scroll', () => {
+        tooltip.style.opacity = '0';
+        tooltip.style.display = 'none';
+    }, true);
+
+    // デモ用テキスト（ユーザー指示により初期入力は削除し、プレースホルダーのみを見せます）
+    const demoText = `CLUSTAL formatted alignment by DNA Alignment Studio v3.14 (Bio-Edu Suite)
 
 Primer_F_L14841             ------------------------------------------------------------	0
 Sus_scrofa_NC000845         ---ATGACCAACATCCGAAAATCACACCCACTAATAAAAATTATCAACAACGCATTCATT	57
@@ -369,7 +518,7 @@ Bos_taurus_NC006853         GACCTTCCAGCCCCATCAAACATTTCATCATGATGAAATTTCGGTTCCCTCC
 Gallus_gallus_NC001323      GACCTCCCAGCCCCATCCAACATCTCTGCTTGATGAAATTTCGGCTCCCTATTAGCAGTC	120
 Primer_R_H15149_RC          ------------------------------------------------------------	0`;
     
-    inputText.value = demoText;
+    // inputText.value = demoText; // 初期表示は空にしてプレースホルダーの説明を活かします
     renderText();
 </script>
 </body>
