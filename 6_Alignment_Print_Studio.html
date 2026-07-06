@@ -49,10 +49,10 @@
         textarea { width: 100%; height: 120px; font-family: 'Courier New', Consolas, monospace; font-size: 12px; padding: 15px; border: 1px solid #bdc3c7; border-radius: 4px; box-sizing: border-box; resize: vertical; outline: none; background: #fdfefe; color: #2c3e50; line-height: 1.4; transition: 0.2s; white-space: pre; overflow-x: auto;}
         textarea:focus { border-color: #3498db; box-shadow: 0 0 0 3px rgba(52,152,219,0.2); }
 
-        /* 印刷設定グリッド */
-        .settings-grid { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; background: #f8f9fa; padding: 15px 20px; border-radius: 6px; border: 1px solid #dee2e6; }
+        /* 印刷設定グリッド（1行化対応） */
+        .settings-grid { display: flex; justify-content: space-between; align-items: center; flex-wrap: nowrap; gap: 10px; background: #f8f9fa; padding: 12px 15px; border-radius: 6px; border: 1px solid #dee2e6; overflow-x: auto; }
         
-        .setting-item { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: bold; color: #34495e;}
+        .setting-item { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: bold; color: #34495e; white-space: nowrap; flex-shrink: 0; }
         
         input[type="range"] { width: 100px; cursor: pointer; accent-color: #3498db; }
         input[type="text"].keyword-input { padding: 6px 10px; border: 1px solid #bdc3c7; border-radius: 4px; width: 120px; font-family: monospace; font-size: 12px; font-weight: bold; color: #e74c3c; outline: none; transition: 0.2s;}
@@ -64,8 +64,8 @@
         .radio-group input[type="radio"] { display: none; }
         .radio-group input[type="radio"]:checked + label { background: #3498db; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         
-        /* 印刷ボタン */
-        .btn-print { background: #27ae60; color: white; border: none; padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: 900; box-shadow: 0 4px 0 #1e8449; font-size: 14px; transition: 0.1s; display: flex; align-items: center; gap: 8px; letter-spacing: 1px; }
+        /* 印刷ボタン（縮小防止対応） */
+        .btn-print { background: #27ae60; color: white; border: none; padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: 900; box-shadow: 0 4px 0 #1e8449; font-size: 14px; transition: 0.1s; display: flex; align-items: center; gap: 8px; letter-spacing: 1px; flex-shrink: 0; white-space: nowrap; }
         .btn-print:active { transform: translateY(4px); box-shadow: none; }
 
         /* 現場のコツパネル */
