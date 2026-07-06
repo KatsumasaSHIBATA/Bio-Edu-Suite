@@ -57,7 +57,7 @@
         .rationale-btn:hover { background: #16a085; transform: scale(1.1); }
         .rationale-text { display: none; background: #fef9e7; border: 1px solid #f39c12; padding: 10px; border-radius: 6px; font-size: 11px; color: #7e5109; margin-top: 5px; line-height: 1.5; }
         
-        /* 1D-3D 連動ビューア */
+        /* アミノ酸配列-3D 連動ビューア */
         .right-panel { display: flex; flex-direction: column; gap: 15px; position: sticky; top: 20px; min-width: 0; }
         
         /* 💡 パッチ適用箇所: 高さを固定(480px)せず、コンテンツに合わせて伸びるように修正し見切れを防止 */
@@ -70,7 +70,7 @@
 
         .sequence-card { border-top-color: #e67e22; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
-        /* 💡 パッチ適用箇所: 1D配列パネルのヘッダー背景色を紺色に統一 */
+        /* 💡 パッチ適用箇所: アミノ酸配列パネルのヘッダー背景色を紺色に統一 */
         .sequence-header { background: #34495e; color: white; padding: 10px 15px; font-size: 13px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
         .sequence-body { padding: 15px; max-height: 220px; overflow-y: auto; background: #fff; font-family: 'Courier New', Courier, monospace; font-size: 15px; line-height: 1.8; word-wrap: break-word; user-select: none; }
         
@@ -107,6 +107,7 @@
             margin: 0 !important;
             border-radius: 0 !important;
             border-top: none !important;
+            overflow-y: auto !important; /* スマホ全画面時スクロール用 */
         }
         .viewer-card.fullscreen-mode .viewer-controls {
             padding-bottom: 20px; /* フルスクリーン時下部の操作余裕 */
@@ -182,13 +183,13 @@
                     <input type="file" id="fileInput" accept=".pdb,.cif,.txt" style="display:none;" onchange="handleFileSelect(event)">
                 </div>
                 
-                <textarea id="pasteArea" class="primer-input" style="width: 100%; height: 80px; resize: vertical; font-size: 11px; font-family: monospace; background: #fafbfc; border: 1px dashed #bdc3c7;" placeholder="※コピーしたテキストデータ (PDB/CIF 等) をここに直接貼り付け (Ctrl+V) てください"></textarea>
+                <textarea id="pasteArea" class="primer-input" style="width: 100%; height: 80px; resize: vertical; font-size: 11px; font-family: monospace; background: #fafbfc; border: 1px dashed #bdc3c7;" placeholder="※コピーしたテキストデータ (PDB/CIF 等) をここに直接貼り付けてください"></textarea>
 
             </div>
         </div>
 
         <div class="card">
-            <div class="card-header">2. 機能部位のハイライト（変異マッピング）
+            <div class="card-header">2. 機能部位のハイライト（突然変異マッピング）
                 <button class="rationale-btn" onclick="toggleRationale('rat_sync')">?</button>
             </div>
             <div class="card-body">
@@ -198,14 +199,14 @@
                     <strong>アプリ⑨（Central Dogma Simulator）</strong> で特定したアミノ酸の性質変化（例：親水性から疎水性へ）が、3D空間でどのような位置にあるか（水に触れる表面に露出しているか、内側に隠れているか）を視覚的に確認し、タンパク質の機能異常のメカニズムを推論してみましょう。
                 </div>
 
-                <button class="btn btn-sync" onclick="syncWithAlignment()" data-tooltip="アプリ⑤または⑨で特定した変異部位のデータを自動で読み込み、赤色でマッピングします">🧬 変異データを同期</button>
+                <button class="btn btn-sync" onclick="syncWithAlignment()" data-tooltip="アプリ⑤または⑨で特定した突然変異部位のデータを自動で読み込み、赤色でマッピングします">🧬 データ同期</button>
                 
                 <div class="toolbar-row" style="margin-top:5px;">
                     <span class="step-label" style="min-width: 60px;">残基指定:</span>
                     <div style="display:flex; flex:1; gap:5px;">
                         <input type="text" id="residueList" class="primer-input" placeholder="アミノ酸番号 (カンマ区切り)" onkeypress="if(event.keyCode===13) highlightFromInput()">
                         <button class="btn" onclick="highlightFromInput()" style="white-space: nowrap;" data-tooltip="入力したアミノ酸番号を赤色で強調表示します">➕ 追加</button>
-                        <button class="btn btn-purple" onclick="showEnvironmentAroundMutations()" style="white-space: nowrap; padding: 8px 10px;" data-tooltip="選択した変異の周囲5Åの構造を抽出し、結合状態をピンポイントで確認します">🔍 周辺5Å表示</button>
+                        <button class="btn btn-purple" onclick="showEnvironmentAroundMutations()" style="white-space: nowrap; padding: 8px 10px;" data-tooltip="選択した突然変異部位の周囲5Åの構造を抽出し、結合状態をピンポイントで確認します">🔍 周辺5Å</button>
                     </div>
                 </div>
 
@@ -235,20 +236,19 @@
                 </div>
                 
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
-                    <!-- 💡 指定通り、ここだけは学術的で落ち着いたテキストに戻しました（絵文字なし） -->
-                    <button class="btn" onclick="setStyleMode('chain')" data-tooltip="複数のポリペプチド（サブユニット）を異なる色で塗り分けます">サブユニット別に色分け</button>
-                    <button class="btn" onclick="setStyleMode('cartoon')" data-tooltip="タンパク質の骨格（αヘリックスやβシート）をリボン状に表示します">リボンモデル</button>
-                    <button class="btn" onclick="setStyleMode('surface')" data-tooltip="分子の表面を表示し、ポケットや相互作用面を確認しやすくします">静電ポテンシャルモデル</button>
-                    <button class="btn" onclick="setStyleMode('sphere')" data-tooltip="すべての原子を球体で表示し、実際の体積や密度感を表現します">空間充填モデル</button>
-                    <button class="btn btn-purple" onclick="setStyleMode('hydrophobicity')" style="grid-column: span 2;" data-tooltip="疎水性アミノ酸を赤、親水性を青で示し、疎水性相互作用の「接着面」を可視化します">疎水性 / 親水性 モード (ハイドロパシー)</button>
+                    <button class="btn" onclick="setStyleMode('chain')" data-tooltip="複数のポリペプチド（サブユニット）を異なる色で塗り分けます">サブユニット</button>
+                    <button class="btn" onclick="setStyleMode('cartoon')" data-tooltip="タンパク質の骨格（αヘリックスやβシート）をリボン状に表示します">リボン</button>
+                    <button class="btn" onclick="setStyleMode('surface')" data-tooltip="分子の表面を表示し、ポケットや相互作用面を確認しやすくします">表面</button>
+                    <button class="btn" onclick="setStyleMode('sphere')" data-tooltip="すべての原子を球体で表示し、実際の体積や密度感を表現します">空間充填</button>
+                    <button class="btn btn-purple" onclick="setStyleMode('hydrophobicity')" style="grid-column: span 2;" data-tooltip="疎水性アミノ酸を赤、親水性を青で示し、疎水性相互作用の「接着面」を可視化します">ハイドロパシー</button>
                 </div>
                 
                 <div id="af_info_panel" style="display:none; margin-top:10px; padding:10px; background:#f4ecf7; border:1px solid #9b59b6; border-radius:4px; font-size:12px; color:#512e5f; line-height:1.5;">
                     ⚠️ より高度な <strong>CATH分類 (ドメイン)</strong> や <strong>AlphaMissense (病原性予測)</strong> 等を確認したい場合は、本家の AlphaFold Database をご参照ください。<br>
-                    <button class="btn" onclick="openAFDB()" style="margin-top:8px; width:100%; background:#fff; border-color:#9b59b6; color:#8e44ad; font-weight:bold;">↗ 本家 AlphaFold DB を開く</button>
+                    <button class="btn" onclick="openAFDB()" style="margin-top:8px; width:100%; background:#fff; border-color:#9b59b6; color:#8e44ad; font-weight:bold;" data-tooltip="より詳細な情報は本家のAlphaFold DBで確認できます">↗ AlphaFold DB</button>
                 </div>
 
-                <button class="btn" style="margin-top:10px; background:#ecf0f1; border-color:#bdc3c7;" onclick="exportImageModal()" data-tooltip="現在の3Dビューアの表示をPNG画像としてダウンロードします">📸 画像保存</button>
+                <button class="btn" style="margin-top:10px; background:#ecf0f1; border-color:#bdc3c7;" onclick="exportImage()" data-tooltip="現在の3Dビューアの表示をPNG画像としてダウンロードします">📸 保存</button>
             </div>
         </div>
     </div>
@@ -262,10 +262,10 @@
             <div id="gldiv"></div>
             <!-- 💡 コントロールパネルの表示を修正 -->
             <div class="viewer-controls">
-                <button class="btn" onclick="resetView()" data-tooltip="カメラの視点とズーム、断面カットを初期状態に戻します">🔄 視点リセット</button>
-                <button class="btn" id="spinBtn" onclick="toggleSpin()" data-tooltip="分子をY軸周りに自動で回転させます">🔄 自動回転 ON</button>
-                <button id="btnLabel" class="btn btn-toggle" style="background:#34495e; box-shadow:0 3px 0 #1a252f !important;" onclick="toggleLabels()" data-tooltip="選択した変異部位のアミノ酸番号をラベル表示します">🏷️ ラベル表示: OFF</button>
-                <button class="btn" id="btnFullscreen" onclick="toggleFullScreen()" data-tooltip="3Dビューアを全画面に拡大します（ショートカット: Fキー）">⛶ 全画面表示</button>
+                <button class="btn" onclick="resetView()" data-tooltip="カメラの視点とズーム、断面カットを初期状態に戻します">🔄 リセット</button>
+                <button class="btn" id="spinBtn" onclick="toggleSpin()" data-tooltip="分子をY軸周りに自動で回転させます">🔄 回転: ON</button>
+                <button id="btnLabel" class="btn btn-toggle" style="background:#34495e; box-shadow:0 3px 0 #1a252f !important;" onclick="toggleLabels()" data-tooltip="選択した突然変異部位のアミノ酸番号をラベル表示します">🏷️ ラベル: OFF</button>
+                <button class="btn" id="btnFullscreen" onclick="toggleFullScreen()" data-tooltip="3Dビューアを全画面に拡大します（ショートカット: Fキー）">⛶ 全画面</button>
             </div>
             <!-- 💡 追加パッチ: 断面カットの余白を広げ、スマホで押し潰されないよう flex-wrap を適用 -->
             <div style="background: #2c3e50; padding: 12px 15px; display: flex; align-items: center; gap: 10px; position: relative; flex-wrap: wrap;">
@@ -274,7 +274,7 @@
                 <button class="rationale-btn" style="margin-left: auto; position: relative; z-index: 10; background: #1a252f; border: 1px solid #1abc9c; color: #1abc9c;" onclick="toggleRationale('rat_clip')" title="断面カットとは？">?</button>
                 <div id="rat_clip" class="rationale-text" style="display:none; margin-top:0;">
                     <strong>【断面から内部構造を見る】</strong><br>
-                    スライダーを左に動かすと、手前側から分子を切り取り「断面」を表示します。変異したアミノ酸が、相手の分子にどれほど深く食い込んでいるか（結合の深さ）が一目瞭然になります。
+                    スライダーを左に動かすと、手前側から分子を切り取り「断面」を表示します。突然変異したアミノ酸が、相手の分子にどれほど深く食い込んでいるか（結合の深さ）が一目瞭然になります。
                 </div>
             </div>
         </div>
@@ -282,7 +282,7 @@
         <div class="card sequence-card">
             <div class="sequence-header">
                 <span>アミノ酸配列 / サブユニットの選択</span>
-                <button class="btn" style="background:#fff; color:#c0392b; border:1px solid #c0392b; padding:4px 8px; font-size:10px; border-radius:3px;" onclick="clearHighlights()" data-tooltip="選択したアミノ酸残基のハイライトをすべて解除します">🧹 全クリア</button>
+                <button class="btn" style="background:#fff; color:#c0392b; border:1px solid #c0392b; padding:4px 8px; font-size:10px; border-radius:3px;" onclick="clearHighlights()" data-tooltip="選択したアミノ酸残基のハイライトをすべて解除します">🧹 クリア</button>
             </div>
             <div class="sequence-body">
                 <div id="chainSelector" class="chain-selector-area"></div>
@@ -762,7 +762,7 @@
     function showEnvironmentAroundMutations() {
         if (!viewer || !viewer.getModel(0)) return;
         if (selectedResidues.length === 0) {
-            showToast("先に抽出したい変異部位（残基）を選択してください。");
+            showToast("先に抽出したい突然変異部位（残基）を選択してください。");
             return;
         }
         
@@ -771,7 +771,7 @@
         updateVisuals();
         
         if (isEnvViewActive) {
-            showToast("変異の周囲 5Å の空間を抽出表示しました。");
+            showToast("突然変異部位の周囲 5Å の空間を抽出表示しました。");
         } else {
             showToast("周辺5Åの表示を解除しました。");
         }
@@ -822,7 +822,7 @@
                 currentChain = atom.chain;
             }
             
-            // 💡 パッチ: 1D配列のホバー時に表示するリッチなツールチップテキストを構築
+            // 💡 パッチ: アミノ酸配列のホバー時に表示するリッチなツールチップテキストを構築
             let aa1 = aaMap[atom.resn] || "X"; 
             let info = aaInfo[atom.resn];
             let tooltipText = info ? `<strong style='color:#f1c40f;'>${info.name} (${atom.resn})</strong><br>残基番号: ${atom.resi}<br>性質: ${info.type}` : `残基番号: ${atom.resi}`;
@@ -866,9 +866,8 @@
         showLabels = !showLabels; 
         const btn = document.getElementById('btnLabel');
         btn.classList.toggle('active', showLabels);
-        // 💡 ラベルボタンにも絵文字を復活
-        btn.innerText = showLabels ? "🏷️ ラベル表示: ON" : "🏷️ ラベル表示: OFF";
-        updateVisuals(); // toggleによるバグを解消
+        btn.innerText = showLabels ? "🏷️ ラベル: ON" : "🏷️ ラベル: OFF";
+        updateVisuals(); 
     }
     
     function toggleLigands() { 
@@ -912,14 +911,17 @@
 
     function clearHighlights() { selectedResidues = []; updateVisuals(); }
     function resetView() { if(initialView) viewer.setView(initialView); viewer.zoomTo(); document.getElementById('clipSlider').value = 100; updateClipping(100); viewer.render(); }
-    function toggleSpin() { isSpinning = !isSpinning; viewer.spin(isSpinning ? "y" : false); document.getElementById('spinBtn').innerText = isSpinning ? "🔄 自動回転 OFF" : "🔄 自動回転 ON"; }
+    function toggleSpin() { isSpinning = !isSpinning; viewer.spin(isSpinning ? "y" : false); document.getElementById('spinBtn').innerText = isSpinning ? "🔄 回転: OFF" : "🔄 回転: ON"; }
 
-    function exportImageModal() {
+    function exportImage() {
         const url = viewer.pngURI();
-        const m = document.createElement('div');
-        m.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; display:flex; justify-content:center; align-items:center; padding:20px;";
-        m.innerHTML = `<div style="background:#fff; padding:20px; border-radius:8px; text-align:center;"><h3 style="margin-top:0; color:#2c3e50;">📸 画像の保存</h3><img src="${url}" style="width:100%; max-width:400px; border:1px solid #ccc;"><br><a href="${url}" download="protein.png" style="display:inline-block; margin-top:15px; padding:10px 20px; background:#3498db; color:white; text-decoration:none; border-radius:4px; font-weight:bold;">📥 画像をダウンロード</a><br><button onclick="document.body.removeChild(this.parentNode.parentNode)" style="margin-top:10px; padding:8px 20px; background:#e74c3c; color:white; border:none; border-radius:4px; cursor:pointer;">閉じる</button></div>`;
-        document.body.appendChild(m);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = "protein_structure.png";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        showToast("📸 画像を保存しました");
     }
 
     function syncWithAlignment() {
@@ -942,9 +944,9 @@
                 toggleLabels();
             }
             
-            setStatus(`同期完了: アプリ⑨の解析結果から変異を赤色でマッピングしました！`);
+            setStatus(`同期完了: アプリ⑨の解析結果から突然変異を赤色でマッピングしました！`);
         }
-        else showToast("同期する変異データが見つかりません。先に「アプリ⑤」または「アプリ⑨」で配列を解析し、変異を検出してください。");
+        else showToast("同期する突然変異データが見つかりません。先に「アプリ⑤」または「アプリ⑨」で配列を解析し、突然変異を検出してください。");
     }
 
     function toggleFullScreen() {
@@ -952,9 +954,9 @@
         card.classList.toggle('fullscreen-mode');
         const btn = document.getElementById('btnFullscreen');
         if (card.classList.contains('fullscreen-mode')) {
-            btn.innerText = "⛶ 元に戻す";
+            btn.innerText = "⛶ 戻す";
         } else {
-            btn.innerText = "⛶ 全画面表示";
+            btn.innerText = "⛶ 全画面";
         }
         setTimeout(() => window.dispatchEvent(new Event('resize')), 100);
     }
