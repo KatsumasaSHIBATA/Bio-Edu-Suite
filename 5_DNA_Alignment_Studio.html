@@ -129,6 +129,9 @@
         /* 💡 モチーフ検索のハイライト用CSS */
         .search-bg { background-color: #f1c40f !important; color: #34495e !important; font-weight: 900; z-index: 2; box-shadow: inset 0 0 0 2px #f39c12; }
 
+        /* 💡 コドン区切り用（色変更・背景削除により視認性向上） */
+        .codon-border { border-right: 2px solid #7f8c8d !important; }
+
         /* ヘッダー埋め込み型 プライマー設計ナビ */
         .header-primer-stats { display: flex; gap: 15px; font-size: 12px; background: #1a252f; padding: 6px 15px; border-radius: 4px; border-left: 4px solid #8e44ad; transition: opacity 0.2s; align-items: center; box-shadow: inset 0 1px 3px rgba(0,0,0,0.3); opacity: 0; pointer-events: none; flex-wrap: wrap;}
         .h-stat { display: flex; align-items: baseline; gap: 4px; color: #ecf0f1; font-weight: bold; }
@@ -254,10 +257,13 @@
                     ・<strong>GC含量 (40〜60%):</strong> GとCは水素結合が3本あり強く結合するため、極端な偏りを防ぎます。<br>
                     ・<strong>Tm値 (55〜65℃):</strong> DNAの二重らせんが半分ほどける温度です。FとRでTm値の差を「5℃以内」に揃えるのがPCR成功の鉄則です。
                 </div>
+                <!-- 💡 読み枠（リーディングフレーム）の解説を統合 -->
                 <div id="rat_export" class="rationale-text">
                     <strong>【根拠：FASTAとCLUSTALの違い】</strong><br>
                     ・<strong>FASTA:</strong> BLASTや系統樹作成など、コンピューター（プログラム）に読み込ませるためのデータです。<br>
-                    ・<strong>CLUSTAL:</strong> 突然変異が視覚的にわかりやすい、人間（論文の読者）が読むための表示形式です。次のアプリ「Alignment Print Studio」で美しく印刷できます。
+                    ・<strong>CLUSTAL:</strong> 突然変異が視覚的にわかりやすい、人間（論文の読者）が読むための表示形式です。次のアプリ「Alignment Print Studio」で美しく印刷できます。<br><br>
+                    <strong>【根拠：読み枠（リーディングフレーム）のズレ】</strong><br>
+                    アミノ酸は「3つの塩基（コドン）」で1つ決定されます。そのため、翻訳の開始位置が1塩基でもズレると（フレームシフト）、全く異なるアミノ酸配列が生成されてしまいます。「+1, +2, +3」のトグルを切り替えて、その恐ろしさを実感してください。
                 </div>
 
                 <!-- 💡 データ読込: NCBIとドロップ窓を横並びに配置し、NCBI窓とボタンも横並びに -->
@@ -290,22 +296,33 @@
                 <!-- 💡 ステップ3をアライメント専用に昇格（カット機能はエディタ領域へ移動） -->
                 <div class="toolbar-row">
                     <span class="step-label">3. アライメント <button class="rationale-btn" onclick="toggleRationale('rat_msa')">?</button></span>
-                    <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
-                        <button class="btn btn-option" id="btnOptionMSA" onclick="runMSA()" disabled style="font-size: 12px; padding: 6px 12px;" data-tooltip="塩基配列の相同性を比較して整列させます">✨ 簡易MSA</button>
-                        <span style="font-size:9px; color:#c0392b; font-weight:bold;">※学習用の簡易機能です。長い配列はフリーズします。</span>
+                    <!-- 💡 ドットプロットを削除しスッキリ化 -->
+                    <div style="display:flex; flex-direction:row; gap:8px; align-items:center; flex-wrap: wrap;">
+                        <button class="btn btn-option" id="btnOptionMSA" onclick="runMSA()" disabled style="font-size: 12px; padding: 6px 12px;" data-tooltip="チェックされた塩基配列の相同性を比較して整列させます">✨ 簡易MSA</button>
+                        <span style="font-size:9px; color:#c0392b; font-weight:bold;">※段階的MSA: チェックした配列のみが計算対象になります。</span>
                     </div>
                 </div>
                 
                 <div class="toolbar-row">
+                    <!-- 💡 保存ステップの？ボタンにフレームシフトの解説を統合 -->
                     <span class="step-label">4. 保存 <button class="rationale-btn" onclick="toggleRationale('rat_export')">?</button></span>
                     <div style="display: flex; gap: 8px; flex: 1; flex-wrap: wrap; max-width: 450px;">
                         <div style="display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 160px;">
                             <button class="btn btn-success" id="btnExportFasta" onclick="exportFastaAll()" disabled data-tooltip="FASTA形式でファイルとして保存します">💾 FASTA保存</button>
                             <button class="btn btn-success" id="btnExportClustal" onclick="exportClustalAll()" disabled data-tooltip="CLUSTAL形式でファイルとして保存します">💾 CLUSTAL保存</button>
                         </div>
+                        
+                        <!-- 💡 リーディングフレームの選択トグルを追加 -->
                         <div style="display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 160px;">
                             <button class="btn" id="btnCopyFasta" onclick="copyFastaAll()" disabled data-tooltip="FASTA形式でクリップボードにコピーします">📋 FASTAコピー</button>
-                            <button class="btn" id="btnCopyAmino" onclick="copyAminoAll()" disabled data-tooltip="アミノ酸配列に翻訳してコピーします">📋 アミノ酸コピー</button>
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <button class="btn" id="btnCopyAmino" onclick="copyAminoAll()" disabled data-tooltip="アミノ酸配列に翻訳してコピーします" style="flex:1;">📋 アミノ酸コピー</button>
+                                <select id="frameSelect" class="primer-input" style="width: auto; padding: 4px 6px; height: 100%; border-color: #bdc3c7;" data-tooltip="読み枠(リーディングフレーム)を選択します">
+                                    <option value="0">+1</option>
+                                    <option value="1">+2</option>
+                                    <option value="2">+3</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
@@ -356,10 +373,21 @@
                     ✂️ 手動カット
                     <button class="rationale-btn" onclick="toggleRationale('rat_step3')" style="background: #e74c3c; margin-right: 5px;">?</button>
                 </span>
-                <button class="btn" id="btnTrimLeft" onclick="trimLeft()" disabled style="color: #c0392b; border-color: #e6b0aa;" data-tooltip="選択した塩基より左側の配列をすべて削除します">◀ 左カット</button>
-                <button class="btn" id="btnTrimRight" onclick="trimRight()" disabled style="color: #c0392b; border-color: #e6b0aa;" data-tooltip="選択した塩基より右側の配列をすべて削除します">右カット ▶</button>
+                
+                <!-- 💡 アンドゥ・リドゥボタンの追加 -->
+                <button class="btn" id="btnUndo" onclick="undo()" disabled style="font-size: 11px; padding: 4px 8px;" data-tooltip="前の状態に戻る (Ctrl+Z)">↩️ 戻る</button>
+                <button class="btn" id="btnRedo" onclick="redo()" disabled style="font-size: 11px; padding: 4px 8px;" data-tooltip="やり直す (Ctrl+Y)">やり直す ↪️</button>
+                <div style="width: 1px; height: 16px; background: #bdc3c7; margin: 0 2px;"></div>
+                
+                <button class="btn" id="btnTrimLeft" onclick="trimLeft()" disabled style="color: #c0392b; border-color: #e6b0aa; font-size: 11px; padding: 4px 8px;" data-tooltip="選択した塩基より左側の配列をすべて削除します">◀ 左カット</button>
+                <button class="btn" id="btnTrimRight" onclick="trimRight()" disabled style="color: #c0392b; border-color: #e6b0aa; font-size: 11px; padding: 4px 8px;" data-tooltip="選択した塩基より右側の配列をすべて削除します">右カット ▶</button>
                 
                 <div style="width: 1px; height: 24px; background: #bdc3c7; margin: 0 5px;"></div>
+                
+                <!-- 💡 コドン区切りトグルボタンの追加 -->
+                <button class="btn" id="btnToggleCodon" onclick="toggleCodonGrid()" style="font-size: 11px; background: #e8f8f5; border-color: #1abc9c; color: #16a085; padding: 4px 8px;" data-tooltip="3塩基(コドン)ごとの区切り線をエディタに表示します">✨ コドン区切り</button>
+                <div style="width: 1px; height: 24px; background: #bdc3c7; margin: 0 5px;"></div>
+
                 <!-- 💡 スッキリ化のためのヒント展開ボタン -->
                 <button class="btn" id="btnToggleHints" onclick="toggleHints()" style="font-size: 11px; background: #fef9e7; border-color: #f39c12; color: #d35400;" data-tooltip="エディタの操作方法とヒントを表示します">💡 ヒント</button>
             </div>
@@ -385,7 +413,7 @@
             </div>
 
             <div class="keyboard-hints" style="border-radius: 0; border-left: none; border-right: none; margin-bottom: 0;">
-                <span>💡 <strong>【手動編集】</strong> セルを選択してキーボード操作: [←][→][↑][↓] 移動 ｜ [Space] / [-] ギャップ挿入 ｜ [Backspace] 削除 ｜ [A][T][G][C][Y][R][N]等 上書き</span>
+                <span>💡 <strong>【手動編集】</strong> セルを選択してキーボード操作: [←][→][↑][↓] 移動 ｜ [Space] / [-] ギャップ挿入 ｜ [Backspace] 削除 ｜ [A][T][G][C][Y][R][N]等 上書き ｜ [Ctrl+Z] 戻る</span>
             </div>
             
             <div class="bench-tip" style="border-radius: 0; border-left: none; border-top: none; background: #fdfefe;">
@@ -447,6 +475,74 @@
 
     let isConservedVisible = false;
     let dragSrcIndex = null; // ドラッグ＆ドロップ用
+    
+    let isCodonGridVisible = false; // 💡 コドン区切り表示フラグ
+
+    // --- 💡 Undo / Redo の状態管理 ---
+    let historyStates = [];
+    let historyIndex = -1;
+
+    function saveState() {
+        let state = sequences.map(s => ({
+            name: s.name,
+            data: [...s.data],
+            isFPrimerFasta: s.isFPrimerFasta,
+            isRPrimerFasta: s.isRPrimerFasta,
+            isSelected: s.isSelected,
+            fStart: s.fStart, fEnd: s.fEnd, rStart: s.rStart, rEnd: s.rEnd,
+            searchHighlights: s.searchHighlights ? new Set(s.searchHighlights) : new Set()
+        }));
+        
+        if (historyIndex < historyStates.length - 1) {
+            historyStates = historyStates.slice(0, historyIndex + 1);
+        }
+        
+        historyStates.push(state);
+        historyIndex++;
+        
+        // メモリ保護のため履歴上限を20とする
+        if (historyStates.length > 20) {
+            historyStates.shift();
+            historyIndex--;
+        }
+        updateUndoRedoUI();
+    }
+
+    function undo() {
+        if (historyIndex > 0) {
+            historyIndex--;
+            restoreState(historyStates[historyIndex]);
+        }
+    }
+
+    function redo() {
+        if (historyIndex < historyStates.length - 1) {
+            historyIndex++;
+            restoreState(historyStates[historyIndex]);
+        }
+    }
+
+    function restoreState(state) {
+        sequences = state.map(s => ({
+            name: s.name,
+            data: [...s.data],
+            isFPrimerFasta: s.isFPrimerFasta,
+            isRPrimerFasta: s.isRPrimerFasta,
+            isSelected: s.isSelected,
+            fStart: s.fStart, fEnd: s.fEnd, rStart: s.rStart, rEnd: s.rEnd,
+            searchHighlights: s.searchHighlights ? new Set(s.searchHighlights) : new Set()
+        }));
+        updateMutationsAndRender();
+        updateUndoRedoUI();
+    }
+
+    function updateUndoRedoUI() {
+        const btnUndo = document.getElementById('btnUndo');
+        const btnRedo = document.getElementById('btnRedo');
+        if(btnUndo) btnUndo.disabled = historyIndex <= 0;
+        if(btnRedo) btnRedo.disabled = historyIndex >= historyStates.length - 1;
+    }
+    // ----------------------------
 
     // --- スマートUI自動分岐 ---
     function setRoute(route) {
@@ -462,13 +558,16 @@
         document.getElementById('btnTrimLeft').disabled = false;
         document.getElementById('btnTrimRight').disabled = false;
         
+        const selectedCount = sequences.filter(s => s.isSelected !== false && !s.isFPrimerFasta && !s.isRPrimerFasta).length;
+
         if(route === 'B') {
             // NCBIルート
             pF.disabled = true; pR.disabled = true; mismatchSlider.disabled = true;
             btnStep2.disabled = true; 
             if(step2Row) step2Row.style.opacity = "0.4";
             
-            msaBtn.disabled = false; msaBtn.classList.add('pulse-anim');
+            msaBtn.disabled = selectedCount < 2; 
+            if(!msaBtn.disabled) msaBtn.classList.add('pulse-anim');
             document.getElementById('btnExportFasta').disabled = false; 
             document.getElementById('btnExportClustal').disabled = false; 
             document.getElementById('btnCopyFasta').disabled = false; 
@@ -482,12 +581,13 @@
             btnStep2.disabled = false; 
             if(step2Row) step2Row.style.opacity = "1";
             
-            msaBtn.disabled = sequences.length < 2; 
+            msaBtn.disabled = selectedCount < 2; 
             if (!msaBtn.disabled) msaBtn.classList.add('pulse-anim');
             else msaBtn.classList.remove('pulse-anim');
             
             st.innerText = "生データを読み込みました。プライマー F/Rを入力してノイズ領域を特定するか、自由にカットを行ってください。";
         }
+        updateMSAButtonState();
     }
 
     // --- NCBI APIから自動取得 ---
@@ -508,6 +608,7 @@
             parseFasta(data, "NCBI_" + idInput);
             renderEditorSync();
             setRoute('B'); // 取得成功時にルートBを適用
+            saveState(); // 💡 初期状態保存
         } catch (error) {
             showToast("取得エラー: " + error.message);
             document.getElementById('statusText').innerText = "エラー";
@@ -579,6 +680,22 @@
         }
     }
 
+    // --- 💡 コドン区切り表示のロジック ---
+    function toggleCodonGrid() {
+        isCodonGridVisible = !isCodonGridVisible;
+        let btn = document.getElementById('btnToggleCodon');
+        if (isCodonGridVisible) {
+            btn.innerHTML = "✨ 区切り非表示";
+            btn.style.backgroundColor = "#1abc9c";
+            btn.style.color = "white";
+        } else {
+            btn.innerHTML = "✨ コドン区切り";
+            btn.style.backgroundColor = "#e8f8f5";
+            btn.style.color = "#16a085";
+        }
+        renderEditorSync();
+    }
+
     // --- 💡 検索ボタンの活性化ロジック ---
     function toggleHighlightBtn() {
         const val = document.getElementById('searchInput').value.trim();
@@ -616,6 +733,15 @@
             btn.style.borderColor = "";
         }
         renderEditorSync(); 
+    }
+
+    // 💡 ドットプロットを削除し、MSAのボタン状態のみをチェックする関数にリネーム
+    function updateMSAButtonState() {
+        const selectedCount = sequences.filter(s => s.isSelected !== false && !s.isFPrimerFasta && !s.isRPrimerFasta).length;
+        const msaBtn = document.getElementById('btnOptionMSA');
+        if (msaBtn) {
+            msaBtn.disabled = selectedCount < 2;
+        }
     }
 
     const dropZone = document.getElementById('dropZone');
@@ -658,10 +784,7 @@
                     if(fileInput) fileInput.value = ''; 
                     unlockStep(2);
                     setRoute('A'); // ファイル読込時にルートAを適用
-                    
-                    if (sequences.length >= 2) {
-                        document.getElementById('btnOptionMSA').disabled = false;
-                    }
+                    saveState(); // 💡 初期状態保存
                 }
             };
             reader.readAsText(file);
@@ -711,6 +834,7 @@
             if (selectedRow === dragSrcIndex) selectedRow = targetIndex;
             else { selectedRow = -1; selectedCol = -1; }
             renderEditorSync();
+            saveState(); // 💡 状態保存
         }
         return false;
     }
@@ -728,6 +852,7 @@
         else if (selectedRow > index) selectedRow--;
         if(sequences.length < 2) { mutationCols.clear(); conservedCols.clear(); }
         updateMutationsAndRender();
+        saveState(); // 💡 状態保存
         showToast(`「${deletedName}」を削除しました`);
     }
 
@@ -850,6 +975,7 @@
             isTrimRightDone = false;
 
             updateMutationsAndRender(); 
+            saveState(); // 💡 状態保存
             
             scrollToPos(alignedPosF);
             document.getElementById('statusText').innerText = "検索成功！不要な両端（ノイズ領域）はエディタ上部の「手動カット」で削り落としてください。";
@@ -878,6 +1004,7 @@
         
         isTrimLeftDone = true;
         updateMutationsAndRender();
+        saveState(); // 💡 状態保存
         checkManualTrimState();
     }
     
@@ -892,6 +1019,7 @@
         
         isTrimRightDone = true;
         updateMutationsAndRender();
+        saveState(); // 💡 状態保存
         checkManualTrimState();
     }
 
@@ -899,7 +1027,6 @@
         const maxLen = Math.max(...sequences.map(s => s.data.length));
         if (isTrimLeftDone && isTrimRightDone) {
             if (maxLen <= 2000) {
-                document.getElementById('btnOptionMSA').disabled = false;
                 document.getElementById('statusText').innerText = "カット完了。ダウンロード、またはオプションの簡易MSAを実行可能です。";
             } else {
                 document.getElementById('statusText').innerText = "配列がまだ長すぎます。MSAを実行する場合はさらに内側をカットしてください。";
@@ -911,12 +1038,28 @@
         }
     }
 
+    // 💡 ショートカットを含むキーボード操作
     document.addEventListener('keydown', function(e) {
         if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        // Undo/Redo ショートカット
+        if (e.ctrlKey || e.metaKey) {
+            if (e.key === 'z' || e.key === 'Z') {
+                e.preventDefault();
+                if (e.shiftKey) redo(); else undo();
+                return;
+            } else if (e.key === 'y' || e.key === 'Y') {
+                e.preventDefault();
+                redo();
+                return;
+            }
+        }
+
         if(selectedRow === -1 || selectedCol === -1) return;
 
         let seq = sequences[selectedRow];
         let prevent = false;
+        let requiresSave = false;
         let key = e.key.toUpperCase();
 
         if (e.key === 'ArrowRight') {
@@ -936,6 +1079,7 @@
             if (seq.fStart !== -1 && selectedCol < seq.fEnd) { if(selectedCol < seq.fStart) seq.fStart--; seq.fEnd--; }
             if (seq.rStart !== -1 && selectedCol < seq.rEnd) { if(selectedCol < seq.rStart) seq.rStart--; seq.rEnd--; }
             prevent = true;
+            requiresSave = true;
             updateMutationsAndRender();
         } else if (e.key === ' ' || e.key === '-' || e.key === '_') {
             seq.data.splice(selectedCol, 0, '-');
@@ -943,6 +1087,7 @@
             if (seq.rStart !== -1 && selectedCol <= seq.rEnd) { if(selectedCol <= seq.rStart) seq.rStart++; seq.rEnd++; }
             selectedCol++; 
             prevent = true;
+            requiresSave = true;
             updateMutationsAndRender();
         } else if (['A','T','G','C','U','N','Y','R','W','S','M','K','B','V','D','H'].includes(key)) {
             if(selectedCol < seq.data.length) {
@@ -952,6 +1097,7 @@
             }
             selectedCol++;
             prevent = true;
+            requiresSave = true;
             updateMutationsAndRender();
         }
 
@@ -962,14 +1108,14 @@
                 let cell = document.querySelector(`.row[data-row="${selectedRow}"] .base[data-col="${selectedCol}"]`);
                 if(cell) cell.scrollIntoView({block: "nearest", inline: "nearest"});
             }
+            if (requiresSave) {
+                saveState(); // 💡 入力ごとに状態保存
+            }
         }
     });
 
     function updateMutationsAndRender() {
-        const msaBtn = document.getElementById('btnOptionMSA');
-        if (msaBtn) {
-            msaBtn.disabled = sequences.length < 2;
-        }
+        updateMSAButtonState(); // 💡 状態チェック
 
         if(sequences.length < 2) { 
             reapplySearch(); 
@@ -984,7 +1130,8 @@
         for(let c=0; c<finalAlignLen; c++) {
             let bases = [];
             sequences.forEach(s => { 
-                if(!s.isFPrimerFasta && !s.isRPrimerFasta && s.data[c] !== undefined && s.data[c] !== '-') {
+                // 💡 修正ポイント1: s.isSelected !== false を追加し、チェックが外れている配列を比較対象から除外
+                if(!s.isFPrimerFasta && !s.isRPrimerFasta && s.isSelected !== false && s.data[c] !== undefined && s.data[c] !== '-') {
                     bases.push(s.data[c]); 
                 }
             });
@@ -1041,9 +1188,11 @@
         return [align1, align2, ops];
     }
 
+    // 💡 段階的MSAのための改修
     function runMSA() {
-        let targetSeqs = sequences.filter(s => !s.isFPrimerFasta && !s.isRPrimerFasta);
-        if(targetSeqs.length < 2) { showToast("比較する配列が2つ以上必要です。"); return; }
+        // チェックされている配列だけを対象にする
+        let targetSeqs = sequences.filter(s => !s.isFPrimerFasta && !s.isRPrimerFasta && s.isSelected !== false);
+        if(targetSeqs.length < 2) { showToast("比較する配列を2つ以上選択してください。"); return; }
         let seqStrs = targetSeqs.map(s => s.data.join('').replace(/-/g, ''));
         let maxLen = Math.max(...seqStrs.map(s => s.length));
         
@@ -1082,14 +1231,16 @@
             }
 
             let tIdx = 0;
+            let finalAlignLen = alignedSeqs[0].length;
+            
             for(let i=0; i<sequences.length; i++) {
-                if(!sequences[i].isFPrimerFasta && !sequences[i].isRPrimerFasta) {
+                // 選択された配列のみ、新しいアライメント結果で上書き
+                if(!sequences[i].isFPrimerFasta && !sequences[i].isRPrimerFasta && sequences[i].isSelected !== false) {
                     sequences[i].data = alignedSeqs[tIdx].split('');
                     tIdx++;
                 }
             }
 
-            let finalAlignLen = alignedSeqs[0].length;
             let fPrimer = document.getElementById('pF').value.toUpperCase().replace(/[^A-Z]/g, '');
             let rPrimer = document.getElementById('pR').value.toUpperCase().replace(/[^A-Z]/g, '');
             let rPrimerRC = reverseComplement(rPrimer);
@@ -1107,6 +1258,8 @@
             });
 
             updateMutationsAndRender();
+            saveState(); // 💡 状態保存
+            
             const msaBtn = document.getElementById('btnOptionMSA');
             if(msaBtn) msaBtn.classList.remove('pulse-anim');
             document.getElementById('statusText').innerText = "簡易MSA完了！突然変異（赤）や保存領域（薄緑）を確認し、ドラッグしてプライマーを設計してみましょう。";
@@ -1149,6 +1302,7 @@
 
         if (sequences.length === 0) {
             container.innerHTML = '<div style="color:#7f8c8d; text-align:center; padding-top:150px; font-size:16px;">データを読み込んでください。</div>';
+            updateMSAButtonState();
             return;
         }
 
@@ -1159,7 +1313,13 @@
         const fragRows = document.createDocumentFragment();
 
         for (let i = 0; i < maxLen; i++) {
-            const marker = document.createElement('div'); marker.className = 'pos-marker';
+            const marker = document.createElement('div'); 
+            let mClass = 'pos-marker';
+            // 💡 マーカー部分にもコドン区切りを適用（背景色は削除しボーダーのみ）
+            if (isCodonGridVisible) {
+                if ((i + 1) % 3 === 0) mClass += ' codon-border';
+            }
+            marker.className = mClass;
             if ((i + 1) % 10 === 0) marker.innerText = i + 1;
             fragHeader.appendChild(marker);
         }
@@ -1189,11 +1349,13 @@
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.className = 'seq-checkbox';
-            checkbox.setAttribute('data-tooltip', "出力・コピーの対象にする");
+            checkbox.setAttribute('data-tooltip', "出力・操作の対象にする");
             checkbox.checked = s.isSelected !== false;
             checkbox.onchange = (e) => { 
                 s.isSelected = e.target.checked; 
                 selectAllCb.checked = sequences.every(seq => seq.isSelected !== false);
+                updateMSAButtonState(); // 💡 状態チェック
+                updateMutationsAndRender(); // 💡 チェックボックスを切り替えた瞬間に色を再計算する
             };
 
             nameCell.appendChild(dragHandle);
@@ -1217,11 +1379,17 @@
                 if(s.fStart !== undefined && s.fStart !== -1 && bIdx >= s.fStart && bIdx < s.fEnd) exClass += " primer-f";
                 if(s.rStart !== undefined && s.rStart !== -1 && bIdx >= s.rStart && bIdx < s.rEnd) exClass += " primer-r";
                 
-                if(mutationCols.has(bIdx) && !s.isFPrimerFasta && !s.isRPrimerFasta && base !== '-') exClass += " mutation-bg";
-                if(isConservedVisible && conservedCols.has(bIdx) && !s.isFPrimerFasta && !s.isRPrimerFasta && base !== '-') exClass += " conserved-bg";
+                // 💡 修正ポイント2: s.isSelected !== false を追加し、チェックが外れている配列には変異/保存の背景色を適用しない
+                if(s.isSelected !== false && mutationCols.has(bIdx) && !s.isFPrimerFasta && !s.isRPrimerFasta && base !== '-') exClass += " mutation-bg";
+                if(s.isSelected !== false && isConservedVisible && conservedCols.has(bIdx) && !s.isFPrimerFasta && !s.isRPrimerFasta && base !== '-') exClass += " conserved-bg";
                 
                 // 💡 検索ハイライトの付与
                 if(s.searchHighlights && s.searchHighlights.has(bIdx)) exClass += " search-bg";
+
+                // 💡 コドン区切りの付与（ボーダーのみに変更）
+                if(isCodonGridVisible && !s.isFPrimerFasta && !s.isRPrimerFasta) {
+                    if ((bIdx + 1) % 3 === 0) exClass += " codon-border";
+                }
 
                 baseDiv.className = `base base-${base}${exClass}`;
                 baseDiv.innerText = base; 
@@ -1234,6 +1402,7 @@
         header.appendChild(fragHeader); namesCol.appendChild(fragNames); container.appendChild(fragRows);
         updateSelectionUI();
         updateDragSelection();
+        updateMSAButtonState();
     }
 
     // --- 💡 検索ハイライト用関数 ---
@@ -1489,7 +1658,8 @@
         setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
     }
 
-    function translateDNAtoAmino(dnaSeq) {
+    // 💡 フレームシフト対応のアミノ酸翻訳ロジック
+    function translateDNAtoAmino(dnaSeq, frameOffset = 0) {
         const codonTable = {
             'ATA':'I', 'ATC':'I', 'ATT':'I', 'ATG':'M',
             'ACA':'T', 'ACC':'T', 'ACG':'T', 'ACT':'T',
@@ -1509,7 +1679,9 @@
         };
         let amino = '';
         let seq = dnaSeq.toUpperCase().replace(/U/g, 'T');
-        for(let i=0; i < seq.length - 2; i+=3) {
+        
+        // 💡 ユーザーが選択したオフセット（0, 1, 2）から読み始める
+        for(let i = frameOffset; i < seq.length - 2; i += 3) {
             let codon = seq.substring(i, i+3);
             amino += codonTable[codon] || 'X';
         }
@@ -1548,13 +1720,19 @@
     function copyAminoAll() {
         if(sequences.length === 0) return;
         let output = "";
+        // 💡 トグルで選択されたフレームを取得 (0, 1, or 2)
+        let frameOffset = parseInt(document.getElementById('frameSelect').value) || 0;
+        
         sequences.forEach(s => { 
             if(s.isFPrimerFasta || s.isRPrimerFasta || s.isSelected === false) return;
             let dnaSeq = s.data.join('').replace(/-/g, 'N');
-            let aminoSeq = translateDNAtoAmino(dnaSeq);
-            output += `>${s.name}\n${aminoSeq}\n`;
+            let aminoSeq = translateDNAtoAmino(dnaSeq, frameOffset);
+            
+            // フレームがずれていることをFASTAのヘッダにも明記する
+            let frameName = frameOffset === 0 ? "" : `_Frame+${frameOffset + 1}`;
+            output += `>${s.name}${frameName}\n${aminoSeq}\n`;
         });
-        copyToClipboardFallback(output.trim(), "アミノ酸配列を一括コピーしました");
+        copyToClipboardFallback(output.trim(), `アミノ酸配列 (Frame +${frameOffset + 1}) を一括コピーしました`);
     }
 
     // --- ツールチップの制御 ---
