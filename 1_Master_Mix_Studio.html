@@ -16,14 +16,14 @@
         .version-badge { position: absolute; right: 20px; top: 20px; background: #34495e; color: #1abc9c; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid #1abc9c; }
         
         .main-content { width: 100%; max-width: 1000px; padding: 20px; display: flex; flex-wrap: wrap; gap: 20px; flex: 1; align-items: flex-start;}
-        .card { background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; flex: 1; min-width: 320px; border-top: 4px solid #3498db; display: flex; flex-direction: column; }
-        .card-header { background: #34495e; color: white; padding: 12px 18px; font-size: 15px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
-        .card-body { padding: 18px; flex: 1; display: flex; flex-direction: column; }
+        .card { background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); flex: 1; min-width: 320px; border-top: 4px solid #3498db; display: flex; flex-direction: column; }
+        .card-header { background: #34495e; color: white; padding: 12px 18px; font-size: 15px; font-weight: bold; display: flex; align-items: center; gap: 10px; position: relative; border-radius: 4px 4px 0 0; }
+        .card-body { padding: 18px; flex: 1; display: flex; flex-direction: column; position: relative; }
         
-        /* 根拠表示用スタイル */
+        /* 根拠表示用スタイル（アプリ②のポップオーバー方式に統一） */
         .rationale-btn { background: #1abc9c; color: white; border-radius: 50%; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s;}
         .rationale-btn:hover { background: #16a085; transform: scale(1.1); }
-        .rationale-text { display: none; background: #fef9e7; border: 1px solid #f39c12; padding: 12px; border-radius: 6px; font-size: 12px; color: #7e5109; margin-top: 8px; line-height: 1.5; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
+        .rationale-text { display: none; position: absolute; z-index: 1000; width: 300px; max-width: 90vw; background: #fef9e7; border: 1px solid #f39c12; padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; margin: 0; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.15); font-weight: normal; }
 
         .input-group { margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; background: #f8f9fa; padding: 8px 12px; border-radius: 6px; border: 1px solid #e0e6ed;}
         .input-group label { font-size: 12px; font-weight: 600; color: #34495e; flex: 1; }
@@ -66,6 +66,30 @@
         /* 現場のコツパネル */
         .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px; border-radius: 6px; font-size: 11px; color: #2c3e50; margin-top: auto; line-height: 1.6; }
         .bench-tip strong { color: #2980b9; font-size: 12px;}
+
+        /* アプリ②共通: ツールチップ */
+        [data-tooltip] { position: relative; cursor: pointer; }
+        [data-tooltip]::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%; left: 50%; transform: translateX(-50%);
+            background: rgba(44, 62, 80, 0.95); color: white;
+            padding: 6px 10px; border-radius: 4px; font-size: 11px;
+            white-space: nowrap; opacity: 0; pointer-events: none;
+            transition: 0.2s; margin-bottom: 5px; z-index: 200; font-weight: normal; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        [data-tooltip]:hover::before { opacity: 1; transform: translateX(-50%) translateY(-2px); }
+
+        /* アプリ②共通: トースト通知 */
+        .toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px);
+            background: #34495e; color: white; padding: 12px 24px; border-radius: 6px;
+            font-size: 13px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            opacity: 0; pointer-events: none; transition: 0.3s; z-index: 1000; display: flex; align-items: center; gap: 8px;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .toast.error { background: #e74c3c; }
+        .toast.success { background: #27ae60; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
         /* --- 📱 スマホ最適化（レスポンシブ・デザイン） --- */
@@ -115,7 +139,7 @@
         
         <div class="card">
             <div class="card-header">💧 1. DNA 希釈計算 
-                <button class="rationale-btn" onclick="toggleRationale('rat_dil')" title="なぜ希釈するの？">?</button>
+                <button class="rationale-btn" onclick="toggleRationale('rat_dil')">?</button>
             </div>
             <div class="card-body">
                 <div id="rat_dil" class="rationale-text">
@@ -164,7 +188,7 @@
 
         <div class="card" style="border-top-color: #9b59b6;">
             <div class="card-header">⚙️ 2. 総液量設定 (Total Vol)
-                <button class="rationale-btn" onclick="toggleRationale('rat_vol')" title="なぜ液量を変えるの？">?</button>
+                <button class="rationale-btn" onclick="toggleRationale('rat_vol')">?</button>
             </div>
             <div class="card-body">
                 <div id="rat_vol" class="rationale-text">
@@ -202,7 +226,7 @@
 
     <div class="card" style="border-top-color: #1abc9c; flex: 1.5; min-width: 350px;">
         <div class="card-header">🧪 3. Master Mix 計算表
-            <button class="rationale-btn" onclick="toggleRationale('rat_mm')" title="計算のルールは？">?</button>
+            <button class="rationale-btn" onclick="toggleRationale('rat_mm')">?</button>
         </div>
         <div class="card-body">
             <div id="rat_mm" class="rationale-text">
@@ -268,15 +292,93 @@
     &copy; 2026 Bio-Edu Suite v1.0 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
+<!-- トースト通知用のコンテナ -->
+<div id="toast" class="toast"></div>
+
 <script>
+    // --- アプリ②と共通のポップオーバー制御 ---
+    document.addEventListener('click', closeRationale);
+    document.addEventListener('touchstart', closeRationale, {passive: true});
+
+    function closeRationale(e) {
+        if (!e.target.closest('.rationale-btn') && !e.target.closest('.rationale-text')) {
+            document.querySelectorAll('.rationale-text').forEach(text => text.style.display = 'none');
+        }
+    }
+
     function toggleRationale(id) {
         const el = document.getElementById(id);
-        if(el.style.display === 'block') {
-            el.style.display = 'none';
-        } else {
-            // Close others
-            document.querySelectorAll('.rationale-text').forEach(e => e.style.display = 'none');
+        const e = window.event || event;
+        const btn = e ? (e.currentTarget || e.target).closest('.rationale-btn') : null;
+        
+        if (e && btn && e.type === 'click') {
+            if (e.clientX !== 0 && e.clientY !== 0) { 
+                const rect = btn.getBoundingClientRect();
+                if (e.clientX < rect.left - 5 || e.clientX > rect.right + 5 ||
+                    e.clientY < rect.top - 5 || e.clientY > rect.bottom + 5) {
+                    return; 
+                }
+            }
+        }
+
+        if(e && e.stopPropagation) e.stopPropagation();
+        if(e && e.preventDefault) e.preventDefault();
+
+        const isCurrentlyBlock = (el.style.display === 'block');
+
+        // Close others
+        document.querySelectorAll('.rationale-text').forEach(text => text.style.display = 'none');
+
+        if (!isCurrentlyBlock) {
             el.style.display = 'block';
+            
+            if (btn) {
+                const btnRect = btn.getBoundingClientRect();
+                // 親要素（.card-body または .card-header）からの相対位置を計算
+                const containerRect = el.parentElement.getBoundingClientRect();
+                
+                let topPos = btnRect.bottom - containerRect.top + 8;
+                let leftPos = btnRect.left - containerRect.left;
+                
+                el.style.top = topPos + 'px';
+                el.style.left = leftPos + 'px';
+                el.style.right = 'auto';
+                el.style.width = '300px';
+
+                // 画面右端の見切れ防止
+                const textRect = el.getBoundingClientRect();
+                if (textRect.right > window.innerWidth - 10) {
+                    el.style.left = 'auto';
+                    el.style.right = '0px';
+                    
+                    if(el.getBoundingClientRect().left < 10) {
+                        el.style.left = '-10px';
+                        el.style.width = (window.innerWidth - 30) + 'px';
+                    }
+                }
+            }
+        }
+    }
+
+    // --- トースト通知機能 ---
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('toast');
+        toast.innerText = message;
+        toast.className = 'toast show ' + type;
+        setTimeout(() => { toast.classList.remove('show'); }, 3000);
+    }
+
+    // --- アプリ②への連携保存機能 (オートセーブ) ---
+    function autoSaveData() {
+        try {
+            const data = {
+                totalVol: document.getElementById('mm_total_vol').value,
+                enzyme: document.getElementById('enzyme_type').value,
+                timestamp: new Date().getTime()
+            };
+            localStorage.setItem('bio_edu_mm_data', JSON.stringify(data));
+        } catch(e) {
+            console.error('自動保存に失敗しました。', e);
         }
     }
 
@@ -475,6 +577,9 @@
         document.getElementById('notice_dist').innerText = dist.toFixed(1);
         document.getElementById('notice_dna').innerText = dnaVol.toFixed(1);
         document.getElementById('notice_total').innerText = totalVol.toFixed(1);
+
+        // 常に最新の状態を自動保存
+        autoSaveData();
     }
 </script>
 </body>
