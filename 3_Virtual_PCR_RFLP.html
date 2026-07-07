@@ -15,20 +15,22 @@
         .header p { margin: 5px 0 0 0; font-size: 12px; color: #1abc9c; font-weight: 600; letter-spacing: 0.5px; }
         .version-badge { position: absolute; right: 20px; top: 20px; background: #34495e; color: #1abc9c; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid #1abc9c; }
 
-        .main-content { width: 100%; max-width: 1400px; padding: 20px; display: flex; flex-wrap: wrap; gap: 20px; flex: 1; align-items: flex-start;}
+        /* 💡 パッチ適用: アプリ⑩に合わせたCSS Gridレイアウト (左: 380px, 右: 残り全て) */
+        .main-content { width: 100%; max-width: 1400px; padding: 20px; display: grid; grid-template-columns: 380px 1fr; gap: 20px; align-items: start; flex: 1; }
         
-        .card { background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; flex: 1; min-width: 380px; display: flex; flex-direction: column; border-top: 4px solid #3498db;}
+        /* 💡 パッチ適用: Gridの子要素となるためflexやmin-widthを調整し、はみ出し防止のmin-width:0を追加 */
+        .card { background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; min-width: 0; display: flex; flex-direction: column; border-top: 4px solid #3498db; }
         .card-header { background: #34495e; color: white; padding: 12px 18px; font-size: 15px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
         .card-body { padding: 18px; flex: 1; display: flex; flex-direction: column; }
         
-        /* 根拠表示用スタイル */
+        /* 根拠表示用スタイル（ポップオーバー化） */
         .rationale-btn { background: #1abc9c; color: white; border-radius: 50%; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s;}
         .rationale-btn:hover { background: #16a085; transform: scale(1.1); }
-        .rationale-text { display: none; background: #fef9e7; border: 1px solid #f39c12; padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; margin-top: 8px; line-height: 1.5; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 12px;}
+        .rationale-text { display: none; position: absolute; z-index: 1000; width: 300px; max-width: 90vw; background: #fef9e7; border: 1px solid #f39c12; padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; margin: 0; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.15); font-weight: normal; }
 
         /* 設定グループ */
         .settings-group { background: #fdfefe; border: 1px solid #e5e8e8; padding: 15px; border-radius: 6px; margin-bottom: 15px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);}
-        .settings-group h4 { margin: 0 0 10px 0; color: #2c3e50; font-size: 14px; border-bottom: 1px solid #ecf0f1; padding-bottom: 5px; display: flex; align-items: center;}
+        .settings-group h4 { margin: 0 0 10px 0; color: #2c3e50; font-size: 14px; border-bottom: 1px solid #ecf0f1; padding-bottom: 5px; display: flex; align-items: center; position: relative;}
         
         /* 共通インプット */
         .input-group { margin-bottom: 10px; }
@@ -36,6 +38,7 @@
         input[type="text"], input[type="number"], select { padding: 8px; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 13px; font-weight: bold; color: #2c3e50; outline: none; width: 100%; transition: 0.2s;}
         input:focus, select:focus { border-color: #3498db; box-shadow: 0 0 0 2px rgba(52,152,219,0.2); }
         .mono-input { font-family: 'Courier New', Courier, monospace; letter-spacing: 1px; }
+        input::placeholder { color: #bdc3c7; font-weight: normal; font-size: 11px; }
 
         /* ファイル読込UI */
         .file-upload-area { margin-bottom: 10px; display: flex; align-items: center; gap: 10px;}
@@ -60,8 +63,6 @@
         .btn-group { display: flex; gap: 10px; margin-top: 10px; }
         .action-btn { background-color: #e74c3c; color: white; border: none; padding: 12px 20px; font-size: 14px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; flex: 1; box-shadow: 0 3px 0 #c0392b;}
         .action-btn:hover { background-color: #c0392b; transform: translateY(2px); box-shadow: 0 1px 0 #c0392b;}
-        .reset-btn { background-color: #95a5a6; color: white; border: none; padding: 12px 20px; font-size: 13px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; box-shadow: 0 3px 0 #7f8c8d;}
-        .reset-btn:hover { background-color: #7f8c8d; transform: translateY(2px); box-shadow: 0 1px 0 #7f8c8d;}
         
         .add-btn { background-color: #27ae60; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; transition: 0.2s;}
         .add-btn:hover { background-color: #219150; }
@@ -77,48 +78,72 @@
         .error { color: #e74c3c; font-weight: bold; }
 
         /* 🔬 ゲルデザイン (右パネル) */
-        .gel-card { border-top-color: #9b59b6; flex: 1.5; min-width: 500px; display: flex; flex-direction: column;}
+        /* 💡 パッチ適用: アプリ⑩のようにスクロール時に右パネルが追従するように sticky を追加 */
+        .gel-card { border-top-color: #9b59b6; display: flex; flex-direction: column; position: sticky; top: 20px; }
         .gel-panel { flex: 1; overflow-x: auto; background: #111; padding: 20px; border-radius: 6px; box-shadow: inset 0 8px 16px rgba(0,0,0,0.8); display: flex; flex-direction: column; position: relative;}
         .gel { display: inline-flex; min-width: 100%; height: 500px; position: relative; padding-top: 20px; border-top: 2px solid #444; }
         .lane { width: 70px; height: 100%; position: relative; border-right: 1px dashed rgba(255,255,255,0.1); display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
         .lane:last-child { border-right: none; }
-        .well { width: 46px; height: 8px; border: 1px solid #444; background-color: #000; position: absolute; top: 0; border-radius: 2px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.8); }
-        .band { width: 46px; height: 4px; position: absolute; border-radius: 2px; background-color: #00ffff; box-shadow: 0 0 10px #00ffff, 0 0 2px #fff; opacity: 0.85; cursor: pointer; transition: 0.2s; }
-        .band:hover { opacity: 1; background-color: #fff; box-shadow: 0 0 15px #00ffff, 0 0 5px #fff; transform: scaleY(1.5); z-index: 10; }
+        .well { width: 46px; height: 8px; border: 1px solid #444; background-color: #000; position: absolute; top: 0; border-radius: 2px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.8); z-index: 20; }
+        
+        /* バンドのトランジションに top を追加し、泳動アニメーションを実現 */
+        .band { width: 46px; height: 4px; position: absolute; border-radius: 2px; background-color: #00ffff; box-shadow: 0 0 10px #00ffff, 0 0 2px #fff; opacity: 0.85; cursor: pointer; transition: top 1.5s ease-out, background-color 0.2s, transform 0.2s, box-shadow 0.2s, opacity 0.2s; z-index: 10; }
+        .band:hover { opacity: 1; background-color: #fff; box-shadow: 0 0 15px #00ffff, 0 0 5px #fff; transform: scaleY(1.5); z-index: 30; }
         .ladder-band { background-color: #ff9f43; box-shadow: 0 0 8px #ff9f43; opacity: 0.8; }
         .ladder-label { color: #ccc; position: absolute; font-size: 10px; left: 4px; top: -14px; font-family: monospace; }
+        
         .lane-title { color: #ecf0f1; position: absolute; bottom: -25px; font-size: 11px; font-weight: bold; text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 5px; box-sizing: border-box; }
         
         .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px; border-radius: 6px; font-size: 11px; color: #2c3e50; margin-top: 15px; line-height: 1.5; }
         .bench-tip strong { color: #2980b9; font-size: 12px;}
 
+        /* ツールチップとトースト用スタイル（アプリ②連携） */
+        [data-tooltip] { position: relative; cursor: pointer; }
+        [data-tooltip]::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%; left: 50%; transform: translateX(-50%);
+            background: rgba(44, 62, 80, 0.95); color: white;
+            padding: 6px 10px; border-radius: 4px; font-size: 11px;
+            white-space: nowrap; opacity: 0; pointer-events: none;
+            transition: 0.2s; margin-bottom: 5px; z-index: 200; font-weight: normal; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        [data-tooltip]:hover::before { opacity: 1; transform: translateX(-50%) translateY(-2px); }
+
+        .toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px);
+            background: #34495e; color: white; padding: 12px 24px; border-radius: 6px;
+            font-size: 13px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            opacity: 0; pointer-events: none; transition: 0.3s; z-index: 1000; display: flex; align-items: center; gap: 8px;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .toast.error { background: #e74c3c; }
+        .toast.success { background: #27ae60; }
+
         /* 共通フッター */
         .footer { width: 100%; background: #1a252f; padding: 15px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; margin-top: auto; border-top: 1px solid #2c3e50; }
+        
         /* --- 📱 スマホ最適化（レスポンシブ・デザイン） --- */
         @media screen and (max-width: 768px) {
-            /* 画面の余白を減らして広く使う */
-            .main-content { padding: 10px; flex-direction: column !important; }
+            /* 💡 パッチ適用: スマホ時は1カラムのGridにし、stickyを解除 */
+            .main-content { grid-template-columns: 1fr; padding: 10px; }
+            .gel-card { position: static; }
             .card { min-width: 100% !important; margin-bottom: 10px; }
             
-            /* 横並びのボタンや入力欄を、縦積みの押しやすいサイズに変更 */
             .toolbar-row, .scoring-panel { flex-direction: column; align-items: stretch; gap: 8px; }
             .btn, .search-input, .primer-input { width: 100% !important; justify-content: center; padding: 12px; font-size: 14px; }
             .slider-container, .slider-group { width: 100%; justify-content: space-between; }
             
-            /* ヘッダー周りの調整 */
             .header h1 { font-size: 16px; margin-right: 40px; }
             .version-badge { top: 10px; right: 10px; padding: 2px 6px; }
             .header-primer-stats { flex-direction: column; align-items: flex-start; }
             
-            /* 横スクロール領域を「スマホ特有の滑らかなスクロール」にする */
             .matrix-container, .sequence-grid, .trace-outer-container, .canvas-container, .alignment-detail { 
                 -webkit-overflow-scrolling: touch; 
             }
             
-            /* キャンバス（系統樹など）が画面を突き破らないように制限 */
             canvas { max-width: 100% !important; height: auto !important; }
             
-            /* アプリ④：名前列の幅を狭くして、塩基配列を見やすくする */
             .names-column { width: 100px !important; }
             .name-header { font-size: 9px; padding-left: 5px; }
             .seq-name-input { font-size: 10px; }
@@ -148,26 +173,26 @@
                 </div>
                 
                 <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-                    📁 ここをクリック、または FASTAデータを ドラッグ＆ドロップ
+                    📁 ここをクリック、またはファイルをドロップ
                     <input type="file" id="fileInput" accept=".fasta,.fas,.txt,.seq" multiple style="display: none;" onchange="loadFiles(event)">
                     <div id="fileStatus" class="file-status" style="margin-top: 5px;"></div>
                 </div>
                 
-                <textarea id="fastaInput" placeholder="※コピーしたテキストデータ (FASTA等) をここに直接貼り付け (Ctrl+V) てください"></textarea>
+                <textarea id="fastaInput" placeholder="FASTA等のテキストデータを貼り付け"></textarea>
             </div>
 
             <div class="settings-group">
                 <h4>2. PCR設定 <button class="rationale-btn" onclick="toggleRationale('rat_pcr')" title="なぜミスマッチを許すの？">?</button></h4>
                 <div id="rat_pcr" class="rationale-text">
-                    <strong>【根拠：ミスマッチ許容率】</strong> プライマーはDNAに100%一致しなくても、多少の違い（変異）ならくっついて増幅します（特に遠縁の生物種の場合）。これを再現するため、あえて0%〜30%の「遊び（Fuzzy）」を持たせて検索します。
+                    <strong>【根拠：ミスマッチ許容率】</strong> プライマーはDNAに100%一致しなくても、突然変異等による多少の塩基配列の違いならくっついて増幅します（特に遠縁の生物種の場合）。これを再現するため、あえて0%〜30%の「遊び（Fuzzy）」を持たせて検索します。
                 </div>
                 <div class="input-group">
                     <label>Primer F (5' ➡ 3'):</label>
-                    <input type="text" id="primerF" value="CCATCCAACATCTCAGCATGATGAAA" class="mono-input">
+                    <input type="text" id="primerF" value="" class="mono-input" placeholder="例: CCATCCAACATCTCAGCATGATGAAA">
                 </div>
                 <div class="input-group">
                     <label>Primer R (5' ➡ 3'):</label>
-                    <input type="text" id="primerR" value="CCCCTCAGAATGATATTTGTCCTCA" class="mono-input">
+                    <input type="text" id="primerR" value="" class="mono-input" placeholder="例: CCCCTCAGAATGATATTTGTCCTCA">
                 </div>
                 <div style="background: #fdf2e9; padding: 10px; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; border-left: 3px solid #e67e22;">
                     <span style="font-size:12px; font-weight:bold; color:#d35400;">ミスマッチ許容率:</span>
@@ -183,25 +208,24 @@
                     <strong>【根拠：RFLP法の原理】</strong> PCRで増やしたDNAの長さが同じでも、生物種によって「中の塩基配列」は異なります。特定の塩基配列（例: GGATCC）だけを認識して切る「ハサミ（制限酵素）」を使うことで、塩基配列の違いを「切れた長さの違い」として可視化できます。
                 </div>
                 
-                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                    <select id="enzymeSelect" onchange="loadEnzymeToEditor()"></select>
-                    <button onclick="deleteEnzyme()" class="del-btn" title="選択中の制限酵素を削除">🗑️</button>
+                <div style="display: flex; gap: 8px; margin-bottom: 10px; align-items: center;">
+                    <select id="enzymeSelect" onchange="loadEnzymeToEditor()" style="flex: 1;"></select>
+                    <button onclick="deleteEnzyme()" class="del-btn" data-tooltip="選択中の制限酵素を削除" style="white-space: nowrap; flex-shrink: 0;">🗑️ 削除</button>
                 </div>
                 
                 <div class="enzyme-editor">
                     <span class="enzyme-editor-title">✏️ 酵素の追加・編集 (選択して上書き)</span>
                     <div class="input-row">
-                        <input type="text" id="customName" placeholder="名前 (例: BamHI)" style="flex: 1.5;">
-                        <input type="text" id="customSeq" placeholder="塩基配列 (例: GGATCC)" class="mono-input" style="flex: 2; padding:6px;">
-                        <input type="number" id="customCut" placeholder="位置 (例:1)" style="flex: 1;" min="0">
-                        <button onclick="saveEnzyme()" class="add-btn">💾 保存</button>
+                        <input type="text" id="customName" placeholder="制限酵素の名前" style="flex: 1.5;">
+                        <input type="text" id="customSeq" placeholder="認識する塩基配列" class="mono-input" style="flex: 2; padding:6px;">
+                        <input type="number" id="customCut" placeholder="切断位置" style="flex: 1;" min="0">
+                        <button onclick="saveEnzyme()" class="add-btn" data-tooltip="入力した情報で制限酵素を保存します" style="white-space: nowrap; flex-shrink: 0;">💾 保存</button>
                     </div>
                 </div>
             </div>
 
             <div class="btn-group">
-                <button onclick="runPipeline()" class="action-btn">🚀 解析を実行 (Run Virtual PCR & Digestion)</button>
-                <button onclick="location.reload()" class="reset-btn">🔄 リセット</button>
+                <button onclick="runPipeline()" class="action-btn" data-tooltip="Virtual PCRと制限酵素処理のシミュレーションを実行します">🚀 解析を実行</button>
             </div>
 
         </div>
@@ -246,7 +270,6 @@
     </div>
 </div>
 
-<!-- プロツールへの接続提案パネル (追記) -->
 <div style="width: 100%; max-width: 1400px; padding: 0 20px; margin-bottom: 20px; box-sizing: border-box;">
     <div style="background: #fff8e1; border: 1px solid #f39c12; border-radius: 6px; padding: 15px;">
         <h4 style="margin: 0 0 5px 0; color: #d35400; font-size: 14px; display: flex; align-items: center; gap: 5px;">
@@ -264,14 +287,72 @@
     &copy; 2026 Bio-Edu Suite v1.1 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
+<!-- トースト通知用要素 -->
+<div id="toast" class="toast"></div>
+
 <script>
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('toast');
+        toast.innerText = message;
+        toast.className = 'toast show ' + type;
+        setTimeout(() => { toast.classList.remove('show'); }, 3000);
+    }
+
+    // 💡 ポップオーバーロジック（UIを押し下げない絶対配置）
+    document.addEventListener('click', closeRationale);
+    document.addEventListener('touchstart', closeRationale, {passive: true});
+
+    function closeRationale(e) {
+        if (!e.target.closest('.rationale-btn') && !e.target.closest('.rationale-text')) {
+            document.querySelectorAll('.rationale-text').forEach(text => text.style.display = 'none');
+        }
+    }
+
     function toggleRationale(id) {
         const el = document.getElementById(id);
-        if(el.style.display === 'block') {
-            el.style.display = 'none';
-        } else {
-            document.querySelectorAll('.rationale-text').forEach(e => e.style.display = 'none');
+        const e = window.event || event;
+        const btn = e ? (e.currentTarget || e.target).closest('.rationale-btn') : null;
+        
+        if (e && btn && e.type === 'click') {
+            if (e.clientX !== 0 && e.clientY !== 0) { 
+                const rect = btn.getBoundingClientRect();
+                if (e.clientX < rect.left - 5 || e.clientX > rect.right + 5 ||
+                    e.clientY < rect.top - 5 || e.clientY > rect.bottom + 5) {
+                    return; 
+                }
+            }
+        }
+
+        if(e && e.stopPropagation) e.stopPropagation();
+        if(e && e.preventDefault) e.preventDefault();
+
+        const isCurrentlyBlock = (el.style.display === 'block');
+        document.querySelectorAll('.rationale-text').forEach(text => text.style.display = 'none');
+
+        if (!isCurrentlyBlock) {
             el.style.display = 'block';
+            if (btn) {
+                const btnRect = btn.getBoundingClientRect();
+                const containerRect = el.parentElement.getBoundingClientRect();
+                
+                let topPos = btnRect.bottom - containerRect.top + 8;
+                let leftPos = btnRect.left - containerRect.left;
+                
+                el.style.top = topPos + 'px';
+                el.style.left = leftPos + 'px';
+                el.style.right = 'auto';
+                el.style.width = '300px';
+
+                const textRect = el.getBoundingClientRect();
+                if (textRect.right > window.innerWidth - 10) {
+                    el.style.left = 'auto';
+                    el.style.right = '0px';
+                    if(el.getBoundingClientRect().left < 10) {
+                        el.style.left = '-10px';
+                        el.style.width = (window.innerWidth - 30) + 'px';
+                    }
+                }
+            }
         }
     }
 
@@ -293,7 +374,6 @@
         handleFiles(e.dataTransfer.files);
     });
 
-    // --- (追記) ドロップゾーンのドラッグ＆ドロップ処理 ---
     const dropZone = document.getElementById('dropZone');
     if (dropZone) {
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
@@ -322,7 +402,10 @@
                 if(!content.startsWith('>')) textArea.value += `>${file.name}\n${content}`;
                 else textArea.value += content;
                 filesLoaded++;
-                if (filesLoaded === files.length) fileStatus.innerText = `✅ ${files.length} ファイル完了`;
+                if (filesLoaded === files.length) {
+                    fileStatus.innerText = `✅ ${files.length} ファイル完了`;
+                    showToast(`${files.length} 件のファイルを読み込みました`, 'success');
+                }
             };
             reader.readAsText(file);
         });
@@ -330,11 +413,28 @@
 
     // 🧬 制限酵素データベース
     let enzymeDB = {
-        "BamHI": { seq: "GGATCC", offset: 1, desc: "ブタ判定用" },
-        "AluI":  { seq: "AGCT",   offset: 2, desc: "ウシ・トリ判定用" }
+        "BamHI": { seq: "GGATCC", offset: 1, desc: "" },
+        "AluI":  { seq: "AGCT",   offset: 2, desc: "" }
     };
 
-    window.onload = () => { renderEnzymeSelect(); };
+    window.onload = () => { 
+        renderEnzymeSelect(); 
+        loadPrimerData();
+    };
+
+    // 💡 アプリ②で設定したプライマーの自動読み込み
+    function loadPrimerData() {
+        try {
+            const dataStr = localStorage.getItem('bio_edu_primer_data');
+            if (dataStr) {
+                const data = JSON.parse(dataStr);
+                let loaded = false;
+                if (data.primerF) { document.getElementById('primerF').value = data.primerF; loaded = true; }
+                if (data.primerR) { document.getElementById('primerR').value = data.primerR; loaded = true; }
+                if (loaded) showToast("アプリ②のプライマー情報を同期しました", "success");
+            }
+        } catch(e) {}
+    }
 
     function renderEnzymeSelect() {
         const select = document.getElementById('enzymeSelect');
@@ -372,20 +472,20 @@
         let cut = parseInt(document.getElementById('customCut').value);
         
         if(!name || !seq || isNaN(cut) || cut < 0 || cut > seq.length) {
-            alert("正しい名前、塩基配列（A,T,G,C）、切断位置（数字）を入力してください。");
+            showToast("正しい名前、塩基配列（A,T,G,C）、切断位置（数字）を入力してください。", "error");
             return;
         }
         if(name === "NoCut") {
-            alert("「NoCut」はシステム予約語のため使用できません。");
+            showToast("「NoCut」はシステム予約語のため使用できません。", "error");
             return;
         }
         
-        let desc = enzymeDB[name] ? enzymeDB[name].desc : "カスタム追加";
+        let desc = enzymeDB[name] ? enzymeDB[name].desc : "";
         enzymeDB[name] = { seq: seq, offset: cut, desc: desc };
         
         renderEnzymeSelect();
         document.getElementById('enzymeSelect').value = name;
-        alert(`制限酵素「${name}」をデータベースに保存しました。`);
+        showToast(`制限酵素「${name}」を保存しました。`, "success");
     }
 
     function deleteEnzyme() {
@@ -396,6 +496,7 @@
             delete enzymeDB[name];
             renderEnzymeSelect();
             loadEnzymeToEditor();
+            showToast(`制限酵素「${name}」を削除しました。`, "success");
         }
     }
 
@@ -481,6 +582,18 @@
         return maxTop - (ratio * (maxTop - minTop));
     }
 
+    // 💡 属名省略・種小名イタリック化のフォーマッター (アンダースコアやスペース区切りに対応)
+    function formatSpeciesName(name) {
+        let parts = name.split(/[_ ]/);
+        if (parts.length >= 2) {
+            let genus = parts[0];
+            let species = parts[1];
+            let rest = parts.slice(2).join(' ');
+            return `${genus.charAt(0)}. <i>${species}</i>` + (rest ? ' ' + rest : '');
+        }
+        return name;
+    }
+
     function runPipeline() {
         let text = document.getElementById('fastaInput').value;
         let pF = document.getElementById('primerF').value;
@@ -488,24 +601,26 @@
         let fuzzyPercent = parseInt(document.getElementById('fuzzyPercent').value) || 0;
         let enzymeName = document.getElementById('enzymeSelect').value;
         
-        if(!text) { alert("FASTAデータを入力してください！"); return; }
-        if(!enzymeName) { alert("使用する制限酵素を選んでください！"); return; }
+        if(!text) { showToast("FASTAデータを入力してください！", "error"); return; }
+        if(!enzymeName) { showToast("使用する制限酵素を選んでください！", "error"); return; }
 
         let samples = parseFasta(text);
-        if(samples.length === 0) { alert("DNAの塩基配列が正しくありません。"); return; }
+        if(samples.length === 0) { showToast("DNAの塩基配列が正しくありません。", "error"); return; }
 
         let tbodyHtml = "", gelHtml = "";
         const ladderSizes = [2000, 1500, 1000, 750, 500, 400, 300, 200, 100];
         
         gelHtml += `<div class="lane"><div class="well"></div><div class="lane-title" style="color:#ff9f43;">Marker</div>`;
         ladderSizes.forEach(size => {
-            gelHtml += `<div class="band ladder-band" style="top: ${calcTopLogScale(size)}px;" title="Marker: ${size} bp"><span class="ladder-label">${size}</span></div>`;
+            // 初期状態はウェル付近 (top: 30px)
+            gelHtml += `<div class="band ladder-band" data-top="${calcTopLogScale(size)}" style="top: 30px;" title="Marker: ${size} bp"><span class="ladder-label">${size}</span></div>`;
         });
         gelHtml += `</div>`;
 
         samples.forEach(sample => {
             let amplicon = virtualPCR(sample.seq, pF, pR, fuzzyPercent);
             let pcrStatus = "", fragStr = "", fragments = [];
+            let formattedName = formatSpeciesName(sample.name);
 
             if (amplicon) {
                 let isFull = (!pF && !pR) ? " (全塩基配列)" : " bp";
@@ -523,12 +638,13 @@
                 fragStr = `<span style="color:#7f8c8d;">-</span>`;
             }
 
-            tbodyHtml += `<tr><td style="font-weight:bold; color:#2c3e50;">${sample.name}</td><td>${pcrStatus}</td><td>${fragStr}</td></tr>`;
+            tbodyHtml += `<tr><td style="font-weight:bold; color:#2c3e50;">${formattedName}</td><td>${pcrStatus}</td><td>${fragStr}</td></tr>`;
 
-            gelHtml += `<div class="lane"><div class="well"></div><div class="lane-title" title="${sample.name}">${sample.name.substring(0, 10)}</div>`;
+            gelHtml += `<div class="lane"><div class="well"></div><div class="lane-title" title="${sample.name}">${formattedName}</div>`;
             if (amplicon) {
                 fragments.forEach(size => {
-                    gelHtml += `<div class="band" style="top: ${calcTopLogScale(size)}px;" title="${sample.name}&#10;サイズ: ${size} bp"></div>`;
+                    // 初期状態はウェル付近 (top: 30px)
+                    gelHtml += `<div class="band" data-top="${calcTopLogScale(size)}" style="top: 30px;" title="${sample.name}&#10;サイズ: ${size} bp"></div>`;
                 });
             }
             gelHtml += `</div>`;
@@ -536,6 +652,17 @@
 
         document.getElementById('tableBody').innerHTML = tbodyHtml;
         document.getElementById('virtualGel').innerHTML = gelHtml;
+
+        // 💡 泳動アニメーションの実行 (DOMレンダリング直後に位置を更新してtransitionを発火させる)
+        setTimeout(() => {
+            document.querySelectorAll('#virtualGel .band').forEach(band => {
+                if (band.dataset.top) {
+                    band.style.top = band.dataset.top + 'px';
+                }
+            });
+        }, 50);
+
+        showToast("解析が完了しました。電気泳動を開始します。", "success");
     }
 </script>
 
