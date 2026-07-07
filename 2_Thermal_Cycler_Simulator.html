@@ -267,7 +267,7 @@
 
             <div class="input-group" style="grid-column: span 5;">
                 <label style="display: flex; align-items: center; width: 100%;">5. 試薬組成 (VOL液量) <button class="rationale-btn" onclick="toggleRationale('rat_vol')">?</button>
-                    <button style="margin-left:auto; background:#3498db; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;" data-tooltip="アプリ1(Master Mix Studio)の計算結果を読み込みます" onclick="importFromApp1()">📋 データ同期</button>
+                    <button style="margin-left:auto; background:#3498db; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;" data-tooltip="アプリ1(Master Mix Studio)の計算結果を読み込みます" onclick="importFromApp1()">📋 アプリ1から反映</button>
                 </label>
                 <div id="rat_vol" class="rationale-text">
                     <strong>【根拠】</strong> PCR機器は、入力された「VOL」の液量に基づいて、ヒーターの加熱・冷却パワー（熱容量）を自動計算しています。ここが間違っていると、設定温度に達するスピードが狂い、実験が失敗します。
@@ -464,11 +464,43 @@
         setTimeout(() => { toast.classList.remove('show'); }, 3000);
     }
 
+    // 🏆 アプリ1から自動保存されたデータを読み込み、完全に同期させるロジック
     function importFromApp1() {
         try {
             const dataStr = localStorage.getItem('bio_edu_mm_data');
             if (dataStr) {
-                showToast('アプリ1からデータを読み込み、反映しました', 'success');
+                const data = JSON.parse(dataStr);
+                
+                // 1. 酵素の反映（アプリ1とアプリ2の対応付け）
+                const enzymeMap = {
+                    'premix': 'KODOne',
+                    'buf5x': 'PrimeSTAR',
+                    'buf10x': 'ExTaq'
+                };
+                if (data.enzyme && enzymeMap[data.enzyme]) {
+                    document.getElementById('enzymeSelect').value = enzymeMap[data.enzyme];
+                    updateRecipe(); // レシピを再生成（ベースとなる標準液量が展開される）
+                }
+                
+                // 2. 総液量の反映とスケール計算
+                if (data.totalVol) {
+                    const targetVol = parseFloat(data.totalVol);
+                    const defaultVol = (data.enzyme === 'premix') ? 20 : 50; // KOD Oneは20µL, 他は50µLベース
+                    const ratio = targetVol / defaultVol; // 必要な倍率を計算
+                    
+                    // 各試薬の入力欄を比率に合わせて自動計算して上書き
+                    const inputs = document.querySelectorAll('.reagent-input');
+                    inputs.forEach(input => {
+                        input.value = (parseFloat(input.value) * ratio).toFixed(2);
+                    });
+                    calculateVol();
+                    
+                    // LCD（サーマルサイクラー）側のVOL設定値も書き換える
+                    lcdData.vol = Math.round(targetVol).toString();
+                    if(lcdData.view === 'SETUP') renderLCD();
+                }
+
+                showToast(`アプリ1のデータを同期しました (酵素: ${enzymeMap[data.enzyme]}, 液量: ${data.totalVol}µL)`, 'success');
             } else {
                 showToast('アプリ1の保存データが見つかりません。手動で入力してください。', 'error');
             }
