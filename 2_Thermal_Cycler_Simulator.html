@@ -267,10 +267,13 @@
 
             <div class="input-group" style="grid-column: span 5;">
                 <label style="display: flex; align-items: center; width: 100%;">5. 試薬組成 (VOL液量) <button class="rationale-btn" onclick="toggleRationale('rat_vol')">?</button>
-                    <button style="margin-left:auto; background:#3498db; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;" data-tooltip="アプリ1(Master Mix Studio)の計算結果を読み込みます" onclick="importFromApp1()">📋 アプリ1から反映</button>
+                    <button style="margin-left:auto; background:#3498db; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;" data-tooltip="アプリ1(Master Mix Studio)の計算結果を読み込みます" onclick="importFromApp1()">アプリ同期</button>
                 </label>
                 <div id="rat_vol" class="rationale-text">
-                    <strong>【根拠】</strong> PCR機器は、入力された「VOL」の液量に基づいて、ヒーターの加熱・冷却パワー（熱容量）を自動計算しています。ここが間違っていると、設定温度に達するスピードが狂い、実験が失敗します。
+                    <strong>【根拠：なぜVOLを正しく設定するのか？】</strong><br>
+                    PCR機器は、入力された「VOL」の液量に基づいて、ヒーターの加熱・冷却パワー（熱容量）を自動計算しています。ここが間違っていると、設定温度に達するスピードが狂い、実験が失敗します。<br><br>
+                    <strong>【表示が小数点第2位までの理由】</strong><br>
+                    アプリ1から読み込んだ「総液量」に基づいて比率（スケール）計算が自動で行われるため、割り切れない細かい数値が出ることがあります。ここでは「計算上の正確な必要量」を可視化するためにあえて小数点第2位まで表示しています。（実際の実験では、これを四捨五入してピペットの目盛りに合わせて測ります）
                 </div>
                 <div class="vol-guide" id="volGuideText">標準反応液量: 20 µL</div>
                 <div class="reagent-grid" id="reagentGrid">
