@@ -343,7 +343,7 @@
             
             <div id="primerStatsPanel" class="header-primer-stats">
                 <span style="color: #f1c40f; font-weight: bold; margin-right: 5px;">🎯 プライマー設計ナビ:</span>
-                <span class="h-stat">配列: <span id="psSeq" class="val-seq">-</span></span>
+                <span class="h-stat" style="align-items: center;">配列: <span id="psSeq" class="val-seq" style="cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.6)'" onmouseout="this.style.background='rgba(0,0,0,0.3)'" onclick="copyPrimerSequence()" data-tooltip="クリックして完全な配列をコピー">-</span></span>
                 <span class="h-stat">長さ: <span id="psLen" class="val-display">-</span><span class="val-target">bp (適正:18-25)</span></span>
                 <span class="h-stat">GC含量: <span id="psGC" class="val-display">-</span><span class="val-target">% (適正:40-60)</span></span>
                 <span class="h-stat">Tm値: <span id="psTm" class="val-display">-</span><span class="val-target">℃ (適正:55-65)</span></span>
@@ -477,6 +477,7 @@
     let dragSrcIndex = null; // ドラッグ＆ドロップ用
     
     let isCodonGridVisible = false; // 💡 コドン区切り表示フラグ
+    let currentSelectedPrimer = ""; // 💡 選択されたプライマー配列の保持用
 
     // --- 💡 Undo / Redo の状態管理 ---
     let historyStates = [];
@@ -768,6 +769,7 @@
         isTrimRightDone = false;
         
         document.getElementById('primerStatsPanel').style.opacity = '0';
+        document.getElementById('primerStatsPanel').style.pointerEvents = 'none';
 
         let loadedCount = 0;
         let fileInput = document.getElementById('fileInput');
@@ -887,6 +889,7 @@
         mutationCols.clear();
         conservedCols.clear();
         document.getElementById('primerStatsPanel').style.opacity = '0';
+        document.getElementById('primerStatsPanel').style.pointerEvents = 'none';
 
         let rPrimerRC = reverseComplement(rPrimer); 
         let tolerancePercent = parseInt(document.getElementById('mismatchSlider').value) / 100;
@@ -999,6 +1002,7 @@
         });
         selectedCol = -1; selectedRow = -1; 
         document.getElementById('primerStatsPanel').style.opacity = '0';
+        document.getElementById('primerStatsPanel').style.pointerEvents = 'none';
 
         alignedPosF = Math.max(0, alignedPosF - selectedCol); alignedPosR = Math.max(0, alignedPosR - selectedCol);
         
@@ -1016,6 +1020,7 @@
         sequences.forEach(s => { s.data.splice(selectedCol + 1); });
         selectedCol = -1; selectedRow = -1;
         document.getElementById('primerStatsPanel').style.opacity = '0';
+        document.getElementById('primerStatsPanel').style.pointerEvents = 'none';
         
         isTrimRightDone = true;
         updateMutationsAndRender();
@@ -1515,6 +1520,7 @@
     });
 
     function calculatePrimerStats(seq) {
+        currentSelectedPrimer = seq; // 💡 選択された完全な配列を保持
         let displaySeq = seq.length > 20 ? seq.substring(0, 18) + '...' : seq;
         document.getElementById('psSeq').innerText = displaySeq;
         
@@ -1549,6 +1555,7 @@
         
         if (dragStartRow === -1 || dragStartCol === -1 || dragEndCol === -1) {
             document.getElementById('primerStatsPanel').style.opacity = '0';
+            document.getElementById('primerStatsPanel').style.pointerEvents = 'none';
             return;
         }
 
@@ -1573,9 +1580,18 @@
         if (selectedSeq.length > 0 && start !== end) {
             calculatePrimerStats(selectedSeq);
             document.getElementById('primerStatsPanel').style.opacity = '1';
+            document.getElementById('primerStatsPanel').style.pointerEvents = 'auto';
         } else {
+            currentSelectedPrimer = ""; // 💡 選択解除時にリセット
             document.getElementById('primerStatsPanel').style.opacity = '0';
+            document.getElementById('primerStatsPanel').style.pointerEvents = 'none';
         }
+    }
+
+    // 💡 選択されたプライマー配列をコピーする関数
+    function copyPrimerSequence() {
+        if (!currentSelectedPrimer) return;
+        copyToClipboardFallback(currentSelectedPrimer, "プライマー配列をコピーしました。すぐに注文等に利用できます。");
     }
 
     function exportFastaAll() {
