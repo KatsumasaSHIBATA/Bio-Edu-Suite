@@ -267,7 +267,7 @@
 
             <div class="input-group" style="grid-column: span 5;">
                 <label style="display: flex; align-items: center; width: 100%;">5. 試薬組成 (VOL液量) <button class="rationale-btn" onclick="toggleRationale('rat_vol')">?</button>
-                    <button style="margin-left:auto; background:#3498db; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;" data-tooltip="アプリ①(Master Mix Studio)の計算結果を読み込みます" onclick="importFromApp1()">アプリ同期</button>
+                    <button style="margin-left:auto; background:#3498db; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;" data-tooltip="アプリ1(Master Mix Studio)の計算結果を読み込みます" onclick="importFromApp1()">アプリ同期</button>
                 </label>
                 <div id="rat_vol" class="rationale-text">
                     <strong>【根拠：なぜVOLを正しく設定するのか？】</strong><br>
@@ -676,6 +676,13 @@
         
         document.getElementById('tmValueDisplay').innerText = `F: ${tmF > 0 ? tmF.toFixed(1) : '--.-'}℃ / R: ${tmR > 0 ? tmR.toFixed(1) : '--.-'}℃`;
         document.getElementById('tmAvgDisplay').innerText = avg > 0 ? `${avg.toFixed(1)} ℃` : "--.- ℃";
+
+        // 入力されたプライマーを保存し、アプリ③へ連携する
+        const primerData = {
+            primerF: document.getElementById('primerF').value.trim(),
+            primerR: document.getElementById('primerR').value.trim()
+        };
+        localStorage.setItem('bio_edu_primer_data', JSON.stringify(primerData));
     }
 
     let lcdData = {
