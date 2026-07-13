@@ -83,51 +83,28 @@
         /* 機器全体を囲むラッパー */
         .machine-scroll-wrapper { width: 100%; display: flex; justify-content: center; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 20px;}
 
-        /* 💡 機器をPC向けに大型化 (560px) ＆ 密度感の維持 */
-        .machine-body { background: #e0e6ed; width: 100%; max-width: 560px; min-width: 560px; border-radius: 12px; padding: 25px; box-shadow: 0 20px 40px rgba(0,0,0,0.2), inset 0 2px 5px rgba(255,255,255,0.8); border: 1px solid #bdc3c7; display: flex; flex-direction: column; align-items: center; gap: 15px; margin: 0 auto; }
+        /* 機器本体の左右を切り落とし (幅を狭く、中身の縮尺は維持) */
+        .machine-body { background: #e0e6ed; width: 100%; max-width: 472px; min-width: 472px; border-radius: 12px; padding: 25px; box-shadow: 0 20px 40px rgba(0,0,0,0.2), inset 0 2px 5px rgba(255,255,255,0.8); border: 1px solid #bdc3c7; display: flex; flex-direction: column; align-items: center; gap: 15px; margin: 0 auto; }
         .machine-vent { width: 100%; height: 12px; display: flex; gap: 12px; margin-bottom: -10px; }
         .vent-line { flex: 1; height: 4px; background: #95a5a6; border-radius: 2px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.5); }
 
-        /* 液晶ディスプレイ */
-        .lcd-bezel { background: #222; padding: 12px 12px 22px 12px; border-radius: 8px; width: 100%; border: 2px solid #111; box-shadow: inset 0 0 20px rgba(0,0,0,0.9), 0 2px 5px rgba(255,255,255,0.2); position: relative; }
+        /* 液晶ディスプレイ: 下のパネルと幅を統一 */
+        .lcd-bezel { background: #222; padding: 12px 12px 22px 12px; border-radius: 8px; width: 420px; margin: 0 auto; border: 2px solid #111; box-shadow: inset 0 0 20px rgba(0,0,0,0.9), 0 2px 5px rgba(255,255,255,0.2); position: relative; }
         .lcd-bezel::after { content: "─────── Standard PCR Thermal Cycler ───────"; position: absolute; bottom: 5px; left: 0; width: 100%; text-align: center; color: #eee; font-size: 10px; font-family: 'Times New Roman', serif; font-style: italic; letter-spacing: 1px; }
         
         .lcd-screen { 
-            background: #78a381; width: 100%; height: 175px; border: inset 3px rgba(0,0,0,0.4); padding: 10px 15px; 
+            background: #78a381; width: 100%; height: 130px; border: inset 3px rgba(0,0,0,0.4); padding: 10px 15px; 
             color: #0a1f12; overflow: hidden; display: flex; align-items: flex-start; justify-content: flex-start;
         }
         
-        /* 💡 限界突破！見切れないギリギリの超特大フォント (21px) */
+        /* 限界まで文字を大きく (切れないギリギリのサイズ・縮尺) */
         .lcd-content {
-            font-family: 'Courier New', Courier, monospace; font-weight: bold; font-size: 21px; line-height: 1.2; white-space: pre; text-shadow: 0px 0px 1px rgba(0,0,0,0.2); letter-spacing: -0.5px;
+            font-family: 'Courier New', Courier, monospace; font-weight: bold; font-size: 26px; line-height: 1.05; white-space: pre; text-shadow: 0px 0px 1px rgba(0,0,0,0.2); letter-spacing: -1.2px; transform: scaleX(0.95); transform-origin: left top;
         }
         
         .lcd-screen .blink { animation: blinker 1s step-end infinite; }
         .lcd-screen .editing { background: #0a1f12; color: #78a381; display: inline-block;}
         @keyframes blinker { 50% { opacity: 0; } }
-
-        /* 操作パネル: PCの大画面に合わせたサイズ感 */
-        .hardware-panel { width: 100%; display: flex; justify-content: space-around; gap: 15px; align-items: center; background: #dcdde1; padding: 20px 15px; border-radius: 8px; border: 1px solid #bdc3c7; box-shadow: inset 0 2px 4px rgba(255,255,255,0.8), 0 4px 8px rgba(0,0,0,0.1); }
-        
-        .action-keys { display: flex; flex-direction: column; gap: 8px; width: 85px; justify-content: center; order: 3; }
-        .hw-btn-run { background: #009432; color: white; border: 1px solid #006266; box-shadow: 0 4px 0 #006266; height: 55px; font-size: 18px; border-radius: 6px; letter-spacing: 1px;}
-        .hw-btn-pause { background: #f1c40f; color: #2c3e50; border: 1px solid #d4ac0d; box-shadow: 0 4px 0 #d4ac0d; height: 35px; font-size: 12px; border-radius: 4px;}
-        .hw-btn-stop { background: #ea2027; color: white; border: 1px solid #b33939; box-shadow: 0 4px 0 #b33939; height: 35px; font-size: 12px; border-radius: 4px;}
-        .hw-btn-run:active, .hw-btn-pause:active, .hw-btn-stop:active { transform: translateY(4px); box-shadow: none; margin-top: 4px; margin-bottom: -4px; }
-
-        .nav-keys { display: flex; align-items: center; justify-content: center; flex: 1; order: 2; }
-        .cross-keys { display: grid; grid-template-columns: repeat(3, 40px); grid-template-rows: repeat(3, 40px); gap: 4px; background: #130f40; padding: 12px; border-radius: 50%; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5), 0 2px 0 #ffffff; border: 2px solid #090720; position: relative;}
-        
-        .hw-btn-arrow { background: #ffffff; font-size: 14px; color: #130f40; border-radius: 4px; box-shadow: 0 3px 0 #bdc3c7; border: none;}
-        .hw-btn-ent { background: #ffffff; color: #130f40; font-size: 11px; grid-column: 2; grid-row: 2; box-shadow: 0 3px 0 #bdc3c7; border: none; border-radius: 50%; }
-        .hw-btn-arrow:active, .hw-btn-ent:active { transform: translateY(3px); box-shadow: none; margin-top: 3px; margin-bottom: -3px; }
-
-        .num-pad { display: grid; grid-template-columns: repeat(3, 40px); grid-template-rows: repeat(4, 40px); gap: 5px; order: 1; margin-left: 5px;}
-        .hw-btn-num { background: #130f40; font-size: 18px; font-weight: bold; color: #ffffff; border-radius: 50%; box-shadow: 0 4px 0 #090720; border: 1px solid #090720; }
-        .hw-btn-c { background: #ffffff; color: #2c3e50; box-shadow: 0 4px 0 #bdc3c7; border: 1px solid #bdc3c7; font-size: 14px; border-radius: 4px; }
-        .hw-btn-num:active, .hw-btn-c:active { transform: translateY(4px); box-shadow: none; margin-top: 4px; margin-bottom: -4px; }
-
-        .hw-btn { font-weight: 900; cursor: pointer; transition: 0.1s; text-transform: uppercase; display: flex; align-items: center; justify-content: center; user-select: none; }
 
         /* モーダル群 */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; justify-content: center; align-items: center; padding: 20px; }
@@ -155,6 +132,9 @@
 
         .footer { background: #1a252f; width: 100%; padding: 15px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; margin-top: auto; border-top: 1px solid #2c3e50; }
         
+        .hw-btn { font-weight: 900; cursor: pointer; transition: 0.1s; text-transform: uppercase; display: flex; align-items: center; justify-content: center; user-select: none; }
+        .hw-btn:active { transform: translateY(3px); box-shadow: none !important; margin-top: 3px; margin-bottom: -3px; }
+
         @media screen and (max-width: 768px) {
             .main-content { padding: 10px; }
             .scenario-inputs { grid-template-columns: 1fr; gap: 12px; }
@@ -169,9 +149,7 @@
             .header h1 { font-size: 18px; padding-right: 60px; }
             .version-badge { top: 12px; right: 10px; }
 
-            /* 💡 スクロールバグの解消：左端から始まり、右へスクロールできるようにする */
             .machine-scroll-wrapper { justify-content: flex-start; padding-bottom: 15px; padding-left: 10px; padding-right: 10px; }
-            /* autoマージンを打ち消すことで、左側の隠れを防ぐ */
             .machine-body { margin: 0; padding: 20px; gap: 15px; } 
 
             .scenario-panel h2 { padding: 12px 15px; margin-top: 0; }
@@ -236,11 +214,11 @@
                 </div>
                 <div style="display:flex; gap:5px; margin-bottom:4px; align-items:center;">
                     <span style="font-size:11px; width:115px; flex-shrink:0; font-weight:bold; color:#2c3e50;">Primer F (5' ➡ 3'):</span>
-                    <input type="text" id="primerF" value="" placeholder="塩基配列を入力" oninput="calculateTm()">
+                    <input type="text" id="primerF" value="" placeholder="5'側のプライマー配列を入力" style="font-family: 'Courier New', Courier, monospace;" oninput="calculateTm()">
                 </div>
                 <div style="display:flex; gap:5px; align-items:center;">
                     <span style="font-size:11px; width:115px; flex-shrink:0; font-weight:bold; color:#2c3e50;">Primer R (5' ➡ 3'):</span>
-                    <input type="text" id="primerR" value="" placeholder="塩基配列を入力" oninput="calculateTm()">
+                    <input type="text" id="primerR" value="" placeholder="3'側のプライマー配列を入力" style="font-family: 'Courier New', Courier, monospace;" oninput="calculateTm()">
                 </div>
                 <div id="annealHintText" class="dynamic-hint">
                     💡 KOD Oneは、アニーリング基準値(Tm平均)と同じ温度に設定します。
@@ -312,41 +290,59 @@
                 </div>
             </div>
 
-            <div class="hardware-panel">
-                <div class="action-keys">
-                    <button class="hw-btn hw-btn-run" onclick="runPCR()">RUN</button>
-                    <button class="hw-btn hw-btn-pause" data-tooltip="プログラムを一時停止します" onclick="showToast('一時停止します', 'success')">PAUSE</button>
-                    <button class="hw-btn hw-btn-stop" data-tooltip="プログラムを初期化します" onclick="location.reload()">STOP</button>
-                </div>
-                
-                <div class="nav-keys">
-                    <div class="cross-keys">
-                        <div></div>
-                        <button class="hw-btn hw-btn-arrow" onmousedown="event.preventDefault();" onclick="navBtn('UP')">▲</button>
-                        <div></div>
-                        <button class="hw-btn hw-btn-arrow" onmousedown="event.preventDefault();" onclick="navBtn('LEFT')">◀</button>
-                        <button class="hw-btn hw-btn-ent" onmousedown="event.preventDefault();" onclick="navBtn('ENT')">ENT</button>
-                        <button class="hw-btn hw-btn-arrow" onmousedown="event.preventDefault();" onclick="navBtn('RIGHT')">▶</button>
-                        <div></div>
-                        <button class="hw-btn hw-btn-arrow" onmousedown="event.preventDefault();" onclick="navBtn('DOWN')">▼</button>
-                        <div></div>
-                    </div>
-                </div>
+            <div class="hardware-panel" style="position: relative; width: 420px; height: 252px; margin: 0 auto; background: #e8ecef; border: 2px solid #bdc3c7; border-radius: 12px; box-shadow: inset 0 2px 4px rgba(255,255,255,0.8), 0 4px 8px rgba(0,0,0,0.1);">
 
-                <div class="num-pad">
-                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('7')">7</button>
-                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('8')">8</button>
-                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('9')">9</button>
-                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('4')">4</button>
-                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('5')">5</button>
-                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('6')">6</button>
-                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('1')">1</button>
-                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('2')">2</button>
-                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('3')">3</button>
-                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('.')">.</button>
-                    <button class="hw-btn hw-btn-num" onmousedown="event.preventDefault();" onclick="typeNum('0')">0</button>
-                    <button class="hw-btn hw-btn-c" onmousedown="event.preventDefault();" onclick="clearNum()">C</button>
-                </div>
+                <!-- LID HEAT テキスト -->
+                <span style="position: absolute; top: 25px; left: 15px; font-size: 10px; font-weight: bold; color: #2c3e50; background: white; padding: 2px 6px; border-radius: 10px; border: 1px solid #ccc; z-index: 2;">LID HEAT</span>
+                
+                <!-- LID HEATランプ (Tの真下にピンポイント配置) -->
+                <div style="position: absolute; top: 40px; left: 58px; width: 8px; height: 8px; background: #2c3e50; border-radius: 50%; box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);"></div>
+
+                <!-- PAUSE/RUN (実機同様に1つに統合) -->
+                <button class="hw-btn" style="position: absolute; top: 15px; left: 95px; width: 50px; height: 50px; border-radius: 50%; background: #3498db; color: white; font-size: 10px; font-weight: bold; border: 2px solid #2980b9; box-shadow: 0 4px 0 #1f618d; display: flex; flex-direction: column; line-height: 1.1;" onclick="navBtn('PAUSE_RUN')" data-tooltip="一時停止 / 開始します">PAUSE<br>RUN</button>
+
+                <!-- STOP (SELと同じ高さY=80、斜め左上) -->
+                <button class="hw-btn" style="position: absolute; top: 80px; left: 65px; width: 48px; height: 48px; border-radius: 50%; background: #e74c3c; color: white; font-size: 11px; font-weight: bold; border: 2px solid #c0392b; box-shadow: 0 4px 0 #922b21;" onclick="location.reload()" data-tooltip="プログラムを初期化します">STOP</button>
+
+                <!-- EXT (7と同じ高さY=15) -->
+                <button class="hw-btn" style="position: absolute; top: 15px; left: 175px; width: 55px; height: 36px; background: #f0f3f4; color: #2c3e50; font-size: 13px; font-weight: bold; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6; border-radius: 6px;" onmousedown="event.preventDefault();" onclick="navBtn('EXT')">EXT</button>
+
+                <!-- SEL (STOPと同じ高さY=80) -->
+                <button class="hw-btn" style="position: absolute; top: 80px; left: 175px; width: 55px; height: 36px; background: #f0f3f4; color: #2c3e50; font-size: 13px; font-weight: bold; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6; border-radius: 6px; display: flex; flex-direction: column; line-height: 1;" onmousedown="event.preventDefault();" onclick="navBtn('SEL')">SEL<span style="font-size: 10px;">⏏</span></button>
+
+                <!-- 十字キー (42pxの真円、間隔8pxで均等配置、アイコンは太い矢印) -->
+                <!-- ⬆︎: Y=112 -->
+                <button class="hw-btn" style="position: absolute; top: 112px; left: 120px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 16px; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="navBtn('UP')">⬆︎</button>
+
+                <!-- ⬅︎: Y=162 -->
+                <button class="hw-btn" style="position: absolute; top: 162px; left: 70px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 16px; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="navBtn('LEFT')">⬅︎</button>
+
+                <!-- ⬇︎: Y=162 (⬅︎と➡︎の間) -->
+                <button class="hw-btn" style="position: absolute; top: 162px; left: 120px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 16px; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="navBtn('DOWN')">⬇︎</button>
+
+                <!-- ➡︎: Y=162 -->
+                <button class="hw-btn" style="position: absolute; top: 162px; left: 170px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 16px; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="navBtn('RIGHT')">➡︎</button>
+
+                <!-- テンキー (3列4行, 42pxの真円) -->
+                <!-- 1段目 (Y=15) -->
+                <button class="hw-btn" style="position: absolute; top: 15px; left: 250px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('7')">7</button>
+                <button class="hw-btn" style="position: absolute; top: 15px; left: 300px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('8')">8</button>
+                <button class="hw-btn" style="position: absolute; top: 15px; left: 350px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('9')">9</button>
+
+                <!-- 2段目 (Y=75) -->
+                <button class="hw-btn" style="position: absolute; top: 75px; left: 250px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('4')">4</button>
+                <button class="hw-btn" style="position: absolute; top: 75px; left: 300px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('5')">5</button>
+                <button class="hw-btn" style="position: absolute; top: 75px; left: 350px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('6')">6</button>
+
+                <!-- 3段目 (Y=135) -->
+                <button class="hw-btn" style="position: absolute; top: 135px; left: 250px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('1')">1</button>
+                <button class="hw-btn" style="position: absolute; top: 135px; left: 300px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('2')">2</button>
+                <button class="hw-btn" style="position: absolute; top: 135px; left: 350px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('3')">3</button>
+
+                <!-- 4段目 (Y=195) -->
+                <button class="hw-btn" style="position: absolute; top: 195px; left: 250px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 16px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="clearNum()">C</button>
+                <button class="hw-btn" style="position: absolute; top: 195px; left: 300px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('0')">0</button>
+                <button class="hw-btn" style="position: absolute; top: 195px; left: 350px; width: 42px; height: 42px; background: #2980b9; color: white; font-size: 13px; font-weight: bold; border-radius: 6px; border: 1px solid #1f618d; box-shadow: 0 3px 0 #154360;" onmousedown="event.preventDefault();" onclick="navBtn('ENT')">ENT</button>
             </div>
         </div>
     </div>
@@ -394,8 +390,8 @@
                </span></p>
 
             <h3 style="color:#2980b9; border-left:4px solid #3498db; padding-left:10px; margin-bottom:5px;">■ 運転スタートと停止</h3>
-            <p><b>1. 運転スタート：</b>画面内の "RUN" にカーソルを合わせて <b>[ENT] キー</b>を押すか、パネルの緑色の <b>[RUN] ボタン</b>を押します。<br>
-               <b>2. 停止：</b>運転中の一時停止は黄色の <b>[PAUSE] ボタン</b>、完全停止（初期化）は赤色の <b>[STOP] ボタン</b>を押します。<br>
+            <p><b>1. 運転スタート：</b>画面内の "RUN" にカーソルを合わせて <b>[ENT] キー</b>を押すか、パネルの青色の <b>[PAUSE/RUN] ボタン</b>を押します。<br>
+               <b>2. 停止：</b>運転中の一時停止は青色の <b>[PAUSE/RUN] ボタン</b>、完全停止（初期化）は赤色の <b>[STOP] ボタン</b>を押します。<br>
                <span style="background:#fdf2f2; padding:8px; border-radius:4px; display:inline-block; margin-top:5px; border:1px solid #e74c3c; color:#c0392b;">
                    ⚠️ <b>注意</b><br>
                    運転中に停電があると "Power Interrupted!" のメッセージが表示されます。<br>停電復帰後の運転継続はできません。
@@ -467,14 +463,12 @@
         setTimeout(() => { toast.classList.remove('show'); }, 3000);
     }
 
-    // 🏆 アプリ1から自動保存されたデータを読み込み、完全に同期させるロジック
     function importFromApp1() {
         try {
             const dataStr = localStorage.getItem('bio_edu_mm_data');
             if (dataStr) {
                 const data = JSON.parse(dataStr);
                 
-                // 1. 酵素の反映（アプリ1とアプリ2の対応付け）
                 const enzymeMap = {
                     'premix': 'KODOne',
                     'buf5x': 'PrimeSTAR',
@@ -482,23 +476,20 @@
                 };
                 if (data.enzyme && enzymeMap[data.enzyme]) {
                     document.getElementById('enzymeSelect').value = enzymeMap[data.enzyme];
-                    updateRecipe(); // レシピを再生成（ベースとなる標準液量が展開される）
+                    updateRecipe();
                 }
                 
-                // 2. 総液量の反映とスケール計算
                 if (data.totalVol) {
                     const targetVol = parseFloat(data.totalVol);
-                    const defaultVol = (data.enzyme === 'premix') ? 20 : 50; // KOD Oneは20µL, 他は50µLベース
-                    const ratio = targetVol / defaultVol; // 必要な倍率を計算
+                    const defaultVol = (data.enzyme === 'premix') ? 20 : 50;
+                    const ratio = targetVol / defaultVol; 
                     
-                    // 各試薬の入力欄を比率に合わせて自動計算して上書き
                     const inputs = document.querySelectorAll('.reagent-input');
                     inputs.forEach(input => {
                         input.value = (parseFloat(input.value) * ratio).toFixed(2);
                     });
                     calculateVol();
                     
-                    // LCD（サーマルサイクラー）側のVOL設定値も書き換える
                     lcdData.vol = Math.round(targetVol).toString();
                     if(lcdData.view === 'SETUP') renderLCD();
                 }
@@ -677,7 +668,6 @@
         document.getElementById('tmValueDisplay').innerText = `F: ${tmF > 0 ? tmF.toFixed(1) : '--.-'}℃ / R: ${tmR > 0 ? tmR.toFixed(1) : '--.-'}℃`;
         document.getElementById('tmAvgDisplay').innerText = avg > 0 ? `${avg.toFixed(1)} ℃` : "--.- ℃";
 
-        // 入力されたプライマーを保存し、アプリ③へ連携する
         const primerData = {
             primerF: document.getElementById('primerF').value.trim(),
             primerR: document.getElementById('primerR').value.trim()
@@ -686,8 +676,8 @@
     }
 
     let lcdData = {
-        view: 'HOME', // HOME, TEMPLATE, SETUP, PART1, PART2, PART3
-        cursor: 2,    // デフォルトでTemplateに合わせる
+        view: 'HOME', 
+        cursor: 2,    
         editing: false,
         progName: 'ST00',
         vol: "20", pcs: "01",
@@ -757,6 +747,18 @@
                        `PV \n` +
                        `${c_opt(4)}RUN        ${c_opt(5)}Store   ←`;
                 break;
+            case 'STORE_LIST':
+                html = `= Stored Program-1 =\n` +
+                       `${c_opt(0)}${lcdData.progName}   ${c_opt(1)}----\n` +
+                       `  ----     ----\n` +
+                       `${c_opt(2)}RUN   ${c_opt(3)}Edit   ${c_opt(4)}Del.  ←`;
+                break;
+            case 'STORE_CONFIRM':
+                html = `********************\n` +
+                       `Program Name- ${lcdData.progName}\n` +
+                       `Overwrite ?\n` +
+                       `   ${c_opt(0)}Yes   ${c_opt(1)}No`;
+                break;
         }
         screen.innerHTML = `<div class="lcd-content">${html}</div>`;
     }
@@ -800,10 +802,32 @@
     }
 
     function navBtn(dir) {
+        if (dir === 'PAUSE_RUN') {
+            if (lcdData.view === 'PART1' || lcdData.view === 'PART2' || lcdData.view === 'PART3') {
+                runPCR();
+            } else {
+                showToast('一時停止します', 'success');
+            }
+            return;
+        }
+        
+        if (dir === 'EXT') {
+            if(lcdData.editing) return;
+            if(lcdData.view === 'PART3') { lcdData.view = 'PART2'; lcdData.cursor = 0; }
+            else if(lcdData.view === 'PART2') { lcdData.view = 'PART1'; lcdData.cursor = 0; }
+            else if(lcdData.view === 'PART1') { lcdData.view = 'SETUP'; lcdData.cursor = 0; }
+            else if(lcdData.view === 'SETUP') { lcdData.view = 'TEMPLATE'; lcdData.cursor = 7; } 
+            else if(lcdData.view === 'TEMPLATE') { lcdData.view = 'HOME'; lcdData.cursor = 2; }
+            else if(lcdData.view === 'STORE_LIST' || lcdData.view === 'STORE_CONFIRM') { lcdData.view = 'HOME'; lcdData.cursor = 1; }
+            renderLCD();
+            return;
+        }
+
         if(dir === 'ENT') {
             if(lcdData.view === 'HOME') {
                 if(lcdData.cursor === 2) { lcdData.view = 'TEMPLATE'; lcdData.cursor = 7; }
-                else showToast('シミュレーターでは「Template」を選択してください', 'error');
+                else if(lcdData.cursor === 1) { lcdData.view = 'STORE_LIST'; lcdData.cursor = 0; }
+                else showToast('シミュレーターでは「Template」または「StoredPrg」を選択してください', 'error');
             } else if(lcdData.view === 'TEMPLATE') {
                 if(lcdData.cursor === 7) { lcdData.view = 'SETUP'; lcdData.cursor = 0; }
                 else showToast('標準プログラムを編集するため「Edit」を選択してください', 'error');
@@ -822,7 +846,18 @@
                     }
                 } else {
                     if(lcdData.view === 'PART1' && lcdData.cursor === 2) runPCR();
+                    else if(lcdData.view === 'PART1' && lcdData.cursor === 3) { lcdData.view = 'STORE_CONFIRM'; lcdData.cursor = 0; }
                     else if(lcdData.view === 'PART3' && lcdData.cursor === 4) runPCR();
+                    else if(lcdData.view === 'PART3' && lcdData.cursor === 5) { lcdData.view = 'STORE_CONFIRM'; lcdData.cursor = 0; }
+                    else if(lcdData.view === 'STORE_LIST') {
+                        if(lcdData.cursor === 2) runPCR();
+                        else if(lcdData.cursor === 3) { lcdData.view = 'SETUP'; lcdData.cursor = 0; }
+                        else if(lcdData.cursor === 4) { showToast('プログラムを消去しました', 'success'); lcdData.view = 'HOME'; lcdData.cursor = 1; }
+                    }
+                    else if(lcdData.view === 'STORE_CONFIRM') {
+                        if(lcdData.cursor === 0) showToast('プログラムを保存しました', 'success');
+                        lcdData.view = 'HOME'; lcdData.cursor = 1;
+                    }
                     else showToast('この項目はシミュレーターでは機能しません', 'error');
                 }
             }
@@ -842,12 +877,13 @@
             else if(lcdData.view === 'SETUP') { lcdData.view = 'PART3'; lcdData.cursor = 0; } 
             else if(lcdData.view === 'HOME') { lcdData.cursor = Math.max(0, lcdData.cursor - 1); }
             else if(lcdData.view === 'TEMPLATE') { lcdData.cursor = Math.max(0, lcdData.cursor - 1); }
-        } else if (dir === 'DOWN') {
+        } else if (dir === 'DOWN' || dir === 'SEL') {
             if(lcdData.editing) return;
             let max = 0;
             if(lcdData.view==='HOME') max=4; if(lcdData.view==='TEMPLATE') max=7;
             if(lcdData.view==='SETUP') max=1; if(lcdData.view==='PART1') max=3;
             if(lcdData.view==='PART2') max=6; if(lcdData.view==='PART3') max=5;
+            if(lcdData.view==='STORE_LIST') max=4; if(lcdData.view==='STORE_CONFIRM') max=1;
             lcdData.cursor = Math.min(max, lcdData.cursor + 1);
         } else if (dir === 'UP') {
             if(lcdData.editing) return;
