@@ -18,7 +18,6 @@
 
         .main-content { width: 100%; max-width: 1000px; padding: 25px 20px; display: flex; flex-direction: column; align-items: center; gap: 25px; flex: 1; }
 
-        /* 教育パネル */
         .scenario-panel { background: #fff; width: 100%; padding: 0 0 20px 0; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 4px solid #e74c3c; display: flex; flex-direction: column; }
         .scenario-panel h2 { margin: 0 0 15px 0; font-size: 16px; background: #34495e; color: #fff; padding: 12px 25px; display: flex; align-items: center; border-radius: 4px 4px 0 0; }
         .scenario-desc { font-size: 13px; color: #5d6d7e; margin-bottom: 15px; line-height: 1.6; padding: 0 25px; }
@@ -93,18 +92,21 @@
         .lcd-bezel::after { content: "─────── Standard PCR Thermal Cycler ───────"; position: absolute; bottom: 5px; left: 0; width: 100%; text-align: center; color: #eee; font-size: 10px; font-family: 'Times New Roman', serif; font-style: italic; letter-spacing: 1px; }
         
         .lcd-screen { 
-            background: #78a381; width: 100%; height: 130px; border: inset 3px rgba(0,0,0,0.4); padding: 10px 15px; 
+            background: #78a381; width: 100%; height: 175px; border: inset 3px rgba(0,0,0,0.4); padding: 10px 15px; 
             color: #0a1f12; overflow: hidden; display: flex; align-items: flex-start; justify-content: flex-start;
         }
         
-        /* 限界まで文字を大きく (切れないギリギリのサイズ・縮尺) */
         .lcd-content {
-            font-family: 'Courier New', Courier, monospace; font-weight: bold; font-size: 26px; line-height: 1.05; white-space: pre; text-shadow: 0px 0px 1px rgba(0,0,0,0.2); letter-spacing: -1.2px; transform: scaleX(0.95); transform-origin: left top;
+            font-family: 'Courier New', Consolas, 'MS Gothic', monospace; font-weight: bold; font-size: 20px; line-height: 1.2; white-space: pre; text-shadow: 0px 0px 1px rgba(0,0,0,0.2); letter-spacing: 0px;
         }
         
         .lcd-screen .blink { animation: blinker 1s step-end infinite; }
         .lcd-screen .editing { background: #0a1f12; color: #78a381; display: inline-block;}
         @keyframes blinker { 50% { opacity: 0; } }
+
+        .led-blink { background: #e74c3c !important; box-shadow: 0 0 5px #e74c3c !important; animation: led-blinker 1s step-end infinite; }
+        .led-on { background: #e74c3c !important; box-shadow: 0 0 5px #e74c3c !important; }
+        @keyframes led-blinker { 50% { background: #2c3e50 !important; box-shadow: inset 0 1px 2px rgba(0,0,0,0.5) !important; } }
 
         /* モーダル群 */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; justify-content: center; align-items: center; padding: 20px; }
@@ -295,51 +297,40 @@
                 <!-- LID HEAT テキスト -->
                 <span style="position: absolute; top: 25px; left: 15px; font-size: 10px; font-weight: bold; color: #2c3e50; background: white; padding: 2px 6px; border-radius: 10px; border: 1px solid #ccc; z-index: 2;">LID HEAT</span>
                 
-                <!-- LID HEATランプ (Tの真下にピンポイント配置) -->
-                <div style="position: absolute; top: 40px; left: 58px; width: 8px; height: 8px; background: #2c3e50; border-radius: 50%; box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);"></div>
+                <!-- LID HEATランプ (Tの真下にピンポイント配置 -> 指示により少し下へ) -->
+                <div id="lidHeatLed" style="position: absolute; top: 48px; left: 58px; width: 8px; height: 8px; background: #2c3e50; border-radius: 50%; box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);"></div>
 
-                <!-- PAUSE/RUN (実機同様に1つに統合) -->
+                <!-- PAUSE/RUN -->
                 <button class="hw-btn" style="position: absolute; top: 15px; left: 95px; width: 50px; height: 50px; border-radius: 50%; background: #3498db; color: white; font-size: 10px; font-weight: bold; border: 2px solid #2980b9; box-shadow: 0 4px 0 #1f618d; display: flex; flex-direction: column; line-height: 1.1;" onclick="navBtn('PAUSE_RUN')" data-tooltip="一時停止 / 開始します">PAUSE<br>RUN</button>
 
-                <!-- STOP (SELと同じ高さY=80、斜め左上) -->
-                <button class="hw-btn" style="position: absolute; top: 80px; left: 65px; width: 48px; height: 48px; border-radius: 50%; background: #e74c3c; color: white; font-size: 11px; font-weight: bold; border: 2px solid #c0392b; box-shadow: 0 4px 0 #922b21;" onclick="location.reload()" data-tooltip="プログラムを初期化します">STOP</button>
+                <!-- STOP -->
+                <button class="hw-btn" style="position: absolute; top: 80px; left: 65px; width: 48px; height: 48px; border-radius: 50%; background: #e74c3c; color: white; font-size: 11px; font-weight: bold; border: 2px solid #c0392b; box-shadow: 0 4px 0 #922b21;" onclick="pressStop()" data-tooltip="プログラムを初期化します">STOP</button>
 
-                <!-- EXT (7と同じ高さY=15) -->
+                <!-- EXT -->
                 <button class="hw-btn" style="position: absolute; top: 15px; left: 175px; width: 55px; height: 36px; background: #f0f3f4; color: #2c3e50; font-size: 13px; font-weight: bold; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6; border-radius: 6px;" onmousedown="event.preventDefault();" onclick="navBtn('EXT')">EXT</button>
 
-                <!-- SEL (STOPと同じ高さY=80) -->
+                <!-- SEL -->
                 <button class="hw-btn" style="position: absolute; top: 80px; left: 175px; width: 55px; height: 36px; background: #f0f3f4; color: #2c3e50; font-size: 13px; font-weight: bold; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6; border-radius: 6px; display: flex; flex-direction: column; line-height: 1;" onmousedown="event.preventDefault();" onclick="navBtn('SEL')">SEL<span style="font-size: 10px;">⏏</span></button>
 
-                <!-- 十字キー (42pxの真円、間隔8pxで均等配置、アイコンは太い矢印) -->
-                <!-- ⬆︎: Y=112 -->
+                <!-- 十字キー -->
                 <button class="hw-btn" style="position: absolute; top: 112px; left: 120px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 16px; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="navBtn('UP')">⬆︎</button>
-
-                <!-- ⬅︎: Y=162 -->
                 <button class="hw-btn" style="position: absolute; top: 162px; left: 70px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 16px; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="navBtn('LEFT')">⬅︎</button>
-
-                <!-- ⬇︎: Y=162 (⬅︎と➡︎の間) -->
                 <button class="hw-btn" style="position: absolute; top: 162px; left: 120px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 16px; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="navBtn('DOWN')">⬇︎</button>
-
-                <!-- ➡︎: Y=162 -->
                 <button class="hw-btn" style="position: absolute; top: 162px; left: 170px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 16px; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="navBtn('RIGHT')">➡︎</button>
 
-                <!-- テンキー (3列4行, 42pxの真円) -->
-                <!-- 1段目 (Y=15) -->
+                <!-- テンキー -->
                 <button class="hw-btn" style="position: absolute; top: 15px; left: 250px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('7')">7</button>
                 <button class="hw-btn" style="position: absolute; top: 15px; left: 300px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('8')">8</button>
                 <button class="hw-btn" style="position: absolute; top: 15px; left: 350px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('9')">9</button>
 
-                <!-- 2段目 (Y=75) -->
                 <button class="hw-btn" style="position: absolute; top: 75px; left: 250px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('4')">4</button>
                 <button class="hw-btn" style="position: absolute; top: 75px; left: 300px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('5')">5</button>
                 <button class="hw-btn" style="position: absolute; top: 75px; left: 350px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('6')">6</button>
 
-                <!-- 3段目 (Y=135) -->
                 <button class="hw-btn" style="position: absolute; top: 135px; left: 250px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('1')">1</button>
                 <button class="hw-btn" style="position: absolute; top: 135px; left: 300px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('2')">2</button>
                 <button class="hw-btn" style="position: absolute; top: 135px; left: 350px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('3')">3</button>
 
-                <!-- 4段目 (Y=195) -->
                 <button class="hw-btn" style="position: absolute; top: 195px; left: 250px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 16px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="clearNum()">C</button>
                 <button class="hw-btn" style="position: absolute; top: 195px; left: 300px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('0')">0</button>
                 <button class="hw-btn" style="position: absolute; top: 195px; left: 350px; width: 42px; height: 42px; background: #2980b9; color: white; font-size: 13px; font-weight: bold; border-radius: 6px; border: 1px solid #1f618d; box-shadow: 0 3px 0 #154360;" onmousedown="event.preventDefault();" onclick="navBtn('ENT')">ENT</button>
@@ -676,17 +667,26 @@
     }
 
     let lcdData = {
-        view: 'HOME', 
-        cursor: 2,    
+        view: 'HOME', // HOME, TEMPLATE, SETUP, PART1, PART2, PART3
+        cursor: 0,    // 初期カーソルをRun-ProgName(0)に設定
         editing: false,
         progName: 'ST00',
+        saveName: 'ST00',
+        saveNameCursor: 0,
+        selectedStoreSlot: 0,
+        storePage: 0,
+        storedPrograms: ['SK57', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
         vol: "20", pcs: "01",
         p1: { t: "94.0", m: "02:00" },
         p2: { t1: "98.0", m1: "00:10", t2: "60.0", m2: "00:05", t3: "68.0", m3: "00:05", n: "30" },
-        p3: { t1: "68.0", m1: "02:00", t2: "4.0", m2: "∞" }
+        p3: { t1: "68.0", m1: "02:00", t2: "4.0", m2: "∞" },
+        lidTemp: 25.0,
+        lidHeatingDone: false
     };
     
     let rawInput = ""; 
+    let runTimer = null;
+    let lidTimer = null;
 
     window.onload = function() { 
         updateRecipe(); 
@@ -702,9 +702,20 @@
         const c_arr = (idx) => lcdData.cursor === idx ? '<span class="blink">↓</span>' : '↓';
         const c_blank = (idx) => lcdData.cursor === idx ? '<span class="blink">■</span>' : ' ';
 
+        const getStoreName = (idx) => {
+            const realIdx = (lcdData.storePage || 0) * 6 + idx;
+            return lcdData.storedPrograms[realIdx] ? lcdData.storedPrograms[realIdx].padEnd(4, ' ') : '----';
+        };
+
+        const pNum = (lcdData.storePage || 0) + 1;
+
         const v = (idx, origValue, isNumOnly = false) => {
             if(lcdData.cursor === idx && lcdData.editing) {
-                let pad = isNumOnly ? 2 : (origValue.includes(':') ? 4 : 4);
+                if (lcdData.view === 'PART3' && idx === 3 && rawInput === '9999') {
+                     return `<span class="editing">  ∞  </span>`;
+                }
+                let pad = isNumOnly ? 2 : (origValue.includes(':') ? 5 : 4);
+                if(pad === 5 && rawInput.length === 4) return `<span class="editing">${rawInput.slice(0,2)}:${rawInput.slice(2,4)}</span>`;
                 return `<span class="editing">${rawInput.padEnd(pad, '_')}</span>`;
             }
             return origValue;
@@ -730,34 +741,87 @@
                        `                             →`;
                 break;
             case 'PART1':
-                html = `「${lcdData.progName}」SV ${c_arr(0)} ${v(0, lcdData.p1.t)}℃\n` +
-                       `        TM ${c_arr(1)} ${v(1, lcdData.p1.m)}\n` +
-                       `        PV        \n` +
-                       `${c_opt(2)}RUN      ${c_opt(3)}Store  ←→`;
+                html = `「${lcdData.progName}」 SV ${c_arr(0)} ${v(0, lcdData.p1.t)}°\n` +
+                       `         TM ${c_arr(1)} ${v(1, lcdData.p1.m)}\n` +
+                       `         PV   . °\n` +
+                       ` ${c_opt(2)}RUN    ${c_opt(3)}Store   ←→`;
                 break;
             case 'PART2':
-                html = `SV ${c_arr(0)} ${v(0, lcdData.p2.t1)}℃ ${c_arr(1)} ${v(1, lcdData.p2.t2)}℃ ${c_arr(2)} ${v(2, lcdData.p2.t3)}℃\n` +
-                       `TM ${c_arr(3)} ${v(3, lcdData.p2.m1)}  ${c_arr(4)} ${v(4, lcdData.p2.m2)}  ${c_arr(5)} ${v(5, lcdData.p2.m3)}\n` +
-                       `PV >        "        >\n` +
+                html = `SV ${c_arr(0)} ${v(0, lcdData.p2.t1)}° ${c_arr(2)} ${v(2, lcdData.p2.t2)}° ${c_arr(4)} ${v(4, lcdData.p2.t3)}°\n` +
+                       `TM ${c_arr(1)} ${v(1, lcdData.p2.m1)}  ${c_arr(3)} ${v(3, lcdData.p2.m2)}  ${c_arr(5)} ${v(5, lcdData.p2.m3)}\n` +
+                       `PV   . °      . °      . °\n` +
                        ` 1h07m  ${c_blank(6)} N=  /${v(6, lcdData.p2.n, true)}   ←→`;
                 break;
             case 'PART3':
-                html = `SV ${c_arr(0)} ${v(0, lcdData.p3.t1)}℃  ${c_arr(1)} ${v(1, lcdData.p3.t2)}℃\n` +
-                       `TM ${c_arr(2)} ${v(2, lcdData.p3.m1)}   ${c_arr(3)} ${v(3, lcdData.p3.m2)}\n` +
-                       `PV \n` +
-                       `${c_opt(4)}RUN        ${c_opt(5)}Store   ←`;
+                html = `SV ${c_arr(0)} ${v(0, lcdData.p3.t1)}°   ${c_arr(2)} ${v(2, lcdData.p3.t2)}°\n` +
+                       `TM ${c_arr(1)} ${v(1, lcdData.p3.m1)}    ${c_arr(3)} ${v(3, lcdData.p3.m2)}\n` +
+                       `PV   . °       . °\n` +
+                       ` ${c_opt(4)}RUN        ${c_opt(5)}Store   ←`;
                 break;
             case 'STORE_LIST':
-                html = `= Stored Program-1 =\n` +
-                       `${c_opt(0)}${lcdData.progName}   ${c_opt(1)}----\n` +
-                       `  ----     ----\n` +
-                       `${c_opt(2)}RUN   ${c_opt(3)}Edit   ${c_opt(4)}Del.  ←`;
+                let arrwList = pNum === 1 ? '→' : (pNum === 3 ? '←' : '←→');
+                html = `= Stored Program-${pNum} =\n` +
+                       ` ${c_opt(0)}${getStoreName(0)}       ${c_opt(1)}${getStoreName(1)}\n` +
+                       ` ${c_opt(2)}${getStoreName(2)}       ${c_opt(3)}${getStoreName(3)}\n` +
+                       ` ${c_opt(4)}${getStoreName(4)}       ${c_opt(5)}${getStoreName(5)}\n` +
+                       `${c_opt(6)}RUN  ${c_opt(7)}Edit  ${c_opt(8)}Del.  ${arrwList}`;
+                break;
+            case 'STORE_SAVE_SELECT':
+                let arrwSave = pNum === 1 ? '→' : (pNum === 3 ? '←' : '←→');
+                html = `= Stored Program-${pNum} =\n` +
+                       ` ${c_opt(0)}${getStoreName(0)}       ${c_opt(1)}${getStoreName(1)}\n` +
+                       ` ${c_opt(2)}${getStoreName(2)}       ${c_opt(3)}${getStoreName(3)}\n` +
+                       ` ${c_opt(4)}${getStoreName(4)}       ${c_opt(5)}${getStoreName(5)}\n` +
+                       `                  ${arrwSave}`;
+                break;
+            case 'STORE_NAME_INPUT':
+                let nArr = lcdData.saveName.padEnd(4, '0').split('');
+                let nDisp = nArr.map((c, i) => i === lcdData.saveNameCursor ? `<span class="blink">${c}</span>` : c).join('');
+                html = ` ----- Store -----\n` +
+                       ` Program Name- ${nDisp}\n` +
+                       ` ex) AZ09  A→Z or Z→A\n` +
+                       ` Press ↑ / ↓ & No, →→ENT`;
                 break;
             case 'STORE_CONFIRM':
-                html = `********************\n` +
+                html = `----- Store -----\n` +
                        `Program Name- ${lcdData.progName}\n` +
                        `Overwrite ?\n` +
-                       `   ${c_opt(0)}Yes   ${c_opt(1)}No`;
+                       `   ${c_opt(0)} Yes   ${c_opt(1)} No`;
+                break;
+            case 'STORE_DEL_CONFIRM':
+                html = ` ----- Delete -----\n` +
+                       ` Program Name- ${lcdData.storedPrograms[lcdData.selectedStoreSlot]}\n` +
+                       ` Delete ?\n` +
+                       `   ${c_opt(0)} Yes   ${c_opt(1)} No`;
+                break;
+            case 'STANDBY_CONFIRM':
+                html = ` ********************\n` +
+                       `       Standby?\n` +
+                       `    ${c_opt(0)} Yes   ${c_opt(1)} No\n` +
+                       ` ********************`;
+                break;
+            case 'LID_HEATING':
+                let curTemp = lcdData.lidTemp.toFixed(1).padStart(5, ' ');
+                html = ` ********************\n` +
+                       `     Please  Wait\n` +
+                       ` Lid is heating ${curTemp}°\n` +
+                       ` _No  Set Temp. 105.0°\n` +
+                       ` ********************`;
+                break;
+            case 'RUNNING':
+            case 'PAUSE':
+                let stLabel = lcdData.view === 'PAUSE' ? 'PAUSE' : 'RUN  ';
+                let degBlink = lcdData.view === 'RUNNING' ? '<span class="blink">°</span>' : '°';
+                html = `「${lcdData.progName}」 SV ↓ ${lcdData.p1.t}°\n` +
+                       `         TM ↓ ${lcdData.p1.m}\n` +
+                       `         PV ＞ ${lcdData.p1.t}${degBlink}\n` +
+                       ` ${stLabel}   ← →`;
+                break;
+            case 'STOP_CONFIRM':
+                html = ` ********************\n` +
+                       `        Stop ?\n` +
+                       `    ${c_opt(0)} Yes   ${c_opt(1)} No\n` +
+                       ` ********************`;
                 break;
         }
         screen.innerHTML = `<div class="lcd-content">${html}</div>`;
@@ -772,11 +836,11 @@
             return lcdData.cursor === 0 ? t(['p1','t'],'temp') : (lcdData.cursor === 1 ? t(['p1','m'],'time') : null);
         }
         if(lcdData.view === 'PART2') {
-            const m = [t(['p2','t1'],'temp'), t(['p2','t2'],'temp'), t(['p2','t3'],'temp'), t(['p2','m1'],'time'), t(['p2','m2'],'time'), t(['p2','m3'],'time'), t(['p2','n'],'num')];
+            const m = [t(['p2','t1'],'temp'), t(['p2','m1'],'time'), t(['p2','t2'],'temp'), t(['p2','m2'],'time'), t(['p2','t3'],'temp'), t(['p2','m3'],'time'), t(['p2','n'],'num')];
             return m[lcdData.cursor] || null;
         }
         if(lcdData.view === 'PART3') {
-            const m = [t(['p3','t1'],'temp'), t(['p3','t2'],'temp'), t(['p3','m1'],'time'), t(['p3','m2'],'time')];
+            const m = [t(['p3','t1'],'temp'), t(['p3','m1'],'time'), t(['p3','t2'],'temp'), t(['p3','m2'],'time')];
             return m[lcdData.cursor] || null;
         }
         return null;
@@ -787,12 +851,18 @@
         let formatted = val;
         let type = target.type;
         
-        if(type === 'temp') {
+        if (target.path[0] === 'p3' && target.path[1] === 'm2' && val === '9999') {
+            formatted = '∞';
+        } else if(type === 'temp') {
             if(val.length <= 2) formatted = val + ".0";
             else formatted = val.slice(0, -1) + "." + val.slice(-1);
         } else if (type === 'time') {
-            let padded = val.padStart(4, '0');
-            formatted = padded.slice(0,2) + ":" + padded.slice(2,4);
+            if (val === '∞') {
+                formatted = '∞';
+            } else {
+                let padded = val.padStart(4, '0');
+                formatted = padded.slice(0,2) + ":" + padded.slice(2,4);
+            }
         } else {
             formatted = val;
         }
@@ -803,34 +873,93 @@
 
     function navBtn(dir) {
         if (dir === 'PAUSE_RUN') {
-            if (lcdData.view === 'PART1' || lcdData.view === 'PART2' || lcdData.view === 'PART3') {
-                runPCR();
-            } else {
-                showToast('一時停止します', 'success');
+            if (lcdData.view === 'LID_HEATING') return;
+            if (lcdData.view === 'PAUSE') {
+                if (!lcdData.lidHeatingDone) {
+                    resumeLidHeating();
+                } else {
+                    lcdData.view = 'RUNNING';
+                    renderLCD();
+                    runTimer = setTimeout(runPCR, 2000);
+                }
+                return;
+            } else if (lcdData.view === 'RUNNING') {
+                lcdData.view = 'PAUSE';
+                if(runTimer) clearTimeout(runTimer);
+                renderLCD();
+                return;
+            } else if (['PART1', 'PART2', 'PART3', 'HOME', 'STORE_LIST', 'SETUP'].includes(lcdData.view)) {
+                lcdData.view = 'STANDBY_CONFIRM';
+                lcdData.cursor = 1;
+                renderLCD();
+                return;
             }
             return;
         }
         
         if (dir === 'EXT') {
+            if(lcdData.view === 'LID_HEATING') return;
             if(lcdData.editing) return;
             if(lcdData.view === 'PART3') { lcdData.view = 'PART2'; lcdData.cursor = 0; }
             else if(lcdData.view === 'PART2') { lcdData.view = 'PART1'; lcdData.cursor = 0; }
             else if(lcdData.view === 'PART1') { lcdData.view = 'SETUP'; lcdData.cursor = 0; }
-            else if(lcdData.view === 'SETUP') { lcdData.view = 'TEMPLATE'; lcdData.cursor = 7; } 
-            else if(lcdData.view === 'TEMPLATE') { lcdData.view = 'HOME'; lcdData.cursor = 2; }
-            else if(lcdData.view === 'STORE_LIST' || lcdData.view === 'STORE_CONFIRM') { lcdData.view = 'HOME'; lcdData.cursor = 1; }
+            else if(lcdData.view === 'SETUP') { lcdData.view = 'TEMPLATE'; lcdData.cursor = 0; } 
+            else if(lcdData.view === 'TEMPLATE') { lcdData.view = 'HOME'; lcdData.cursor = 0; }
+            else if(lcdData.view === 'STORE_SAVE_SELECT') { lcdData.view = 'PART1'; lcdData.cursor = 3; }
+            else if(lcdData.view === 'STORE_NAME_INPUT') { lcdData.view = 'STORE_SAVE_SELECT'; lcdData.cursor = 0; }
+            else if(lcdData.view === 'STORE_CONFIRM') { lcdData.view = 'STORE_NAME_INPUT'; lcdData.saveNameCursor = 0; }
+            else if(lcdData.view === 'STORE_LIST' || lcdData.view === 'STORE_DEL_CONFIRM') { lcdData.view = 'HOME'; lcdData.cursor = 1; }
+            else if(lcdData.view === 'STANDBY_CONFIRM') { lcdData.view = 'HOME'; lcdData.cursor = 0; }
+            else if(lcdData.view === 'STOP_CONFIRM') { lcdData.view = 'PAUSE'; }
+            renderLCD();
+            return;
+        }
+
+        if (dir === 'SEL') {
+            if(lcdData.view === 'LID_HEATING') return;
+            if(lcdData.editing) return;
+            if(lcdData.view === 'HOME') {
+                lcdData.cursor = lcdData.cursor === 2 ? 1 : 2;
+            } else if (lcdData.view === 'TEMPLATE') {
+                lcdData.cursor = lcdData.cursor === 7 ? 1 : 7;
+            } else if (lcdData.view === 'PART1') {
+                lcdData.cursor = lcdData.cursor === 3 ? 2 : 3;
+            } else if (lcdData.view === 'PART3') {
+                lcdData.cursor = lcdData.cursor === 5 ? 4 : 5;
+            } else if (lcdData.view === 'STORE_SAVE_SELECT') {
+                lcdData.cursor = (lcdData.cursor + 1) % 6;
+            } else if (lcdData.view === 'STORE_LIST') {
+                if (lcdData.cursor <= 5) {
+                    lcdData.cursor = (lcdData.cursor + 1) % 6;
+                } else {
+                    lcdData.cursor = lcdData.cursor === 4 ? 2 : lcdData.cursor + 1;
+                }
+            } else if (lcdData.view === 'STORE_CONFIRM' || lcdData.view === 'STORE_DEL_CONFIRM' || lcdData.view === 'STANDBY_CONFIRM' || lcdData.view === 'STOP_CONFIRM') {
+                lcdData.cursor = lcdData.cursor === 0 ? 1 : 0;
+            }
             renderLCD();
             return;
         }
 
         if(dir === 'ENT') {
             if(lcdData.view === 'HOME') {
-                if(lcdData.cursor === 2) { lcdData.view = 'TEMPLATE'; lcdData.cursor = 7; }
-                else if(lcdData.cursor === 1) { lcdData.view = 'STORE_LIST'; lcdData.cursor = 0; }
+                if(lcdData.cursor === 0) { 
+                    lcdData.view = 'STANDBY_CONFIRM'; lcdData.cursor = 1; 
+                }
+                else if(lcdData.cursor === 2) { lcdData.view = 'TEMPLATE'; lcdData.cursor = 0; }
+                else if(lcdData.cursor === 1) { 
+                    lcdData.view = 'STORE_LIST'; 
+                    lcdData.cursor = 0; 
+                    lcdData.storePage = 0;
+                }
                 else showToast('シミュレーターでは「Template」または「StoredPrg」を選択してください', 'error');
             } else if(lcdData.view === 'TEMPLATE') {
-                if(lcdData.cursor === 7) { lcdData.view = 'SETUP'; lcdData.cursor = 0; }
-                else showToast('標準プログラムを編集するため「Edit」を選択してください', 'error');
+                if(lcdData.cursor === 7) { 
+                    lcdData.view = 'SETUP'; lcdData.cursor = 0; 
+                } else {
+                    const tempNames = ['Incu', 'ST', 'RT', '2S Incu', 'AN', 'TD', '3S Incu'];
+                    showToast(`テンプレート「${tempNames[lcdData.cursor]}」を選択しました。続いて「Edit」を選択して決定してください`, 'success');
+                }
             } else {
                 const target = getTarget();
                 if(target) {
@@ -845,65 +974,231 @@
                         if(rawInput === '∞') rawInput = '';
                     }
                 } else {
-                    if(lcdData.view === 'PART1' && lcdData.cursor === 2) runPCR();
-                    else if(lcdData.view === 'PART1' && lcdData.cursor === 3) { lcdData.view = 'STORE_CONFIRM'; lcdData.cursor = 0; }
-                    else if(lcdData.view === 'PART3' && lcdData.cursor === 4) runPCR();
-                    else if(lcdData.view === 'PART3' && lcdData.cursor === 5) { lcdData.view = 'STORE_CONFIRM'; lcdData.cursor = 0; }
-                    else if(lcdData.view === 'STORE_LIST') {
-                        if(lcdData.cursor === 2) runPCR();
-                        else if(lcdData.cursor === 3) { lcdData.view = 'SETUP'; lcdData.cursor = 0; }
-                        else if(lcdData.cursor === 4) { showToast('プログラムを消去しました', 'success'); lcdData.view = 'HOME'; lcdData.cursor = 1; }
+                    if(lcdData.view === 'PART1' && lcdData.cursor === 2) { lcdData.view = 'STANDBY_CONFIRM'; lcdData.cursor = 1; }
+                    else if(lcdData.view === 'PART1' && lcdData.cursor === 3) { 
+                        lcdData.view = 'STORE_SAVE_SELECT'; 
+                        lcdData.cursor = 0; 
+                        lcdData.storePage = 0; 
+                    }
+                    else if(lcdData.view === 'PART3' && lcdData.cursor === 4) { lcdData.view = 'STANDBY_CONFIRM'; lcdData.cursor = 1; }
+                    else if(lcdData.view === 'PART3' && lcdData.cursor === 5) { 
+                        lcdData.view = 'STORE_SAVE_SELECT'; 
+                        lcdData.cursor = 0; 
+                        lcdData.storePage = 0; 
+                    }
+                    
+                    else if(lcdData.view === 'STORE_SAVE_SELECT') {
+                        lcdData.selectedStoreSlot = (lcdData.storePage || 0) * 6 + lcdData.cursor;
+                        lcdData.view = 'STORE_NAME_INPUT';
+                        lcdData.saveName = lcdData.progName.padEnd(4, '0').substring(0,4);
+                        lcdData.saveNameCursor = 0;
+                    }
+                    else if(lcdData.view === 'STORE_NAME_INPUT') {
+                        lcdData.view = 'STORE_CONFIRM';
+                        lcdData.cursor = 0;
                     }
                     else if(lcdData.view === 'STORE_CONFIRM') {
-                        if(lcdData.cursor === 0) showToast('プログラムを保存しました', 'success');
-                        lcdData.view = 'HOME'; lcdData.cursor = 1;
+                        if(lcdData.cursor === 0) {
+                            showToast(`プログラム「${lcdData.saveName}」を保存しました`, 'success');
+                            lcdData.progName = lcdData.saveName;
+                            lcdData.storedPrograms[lcdData.selectedStoreSlot] = lcdData.saveName;
+                        }
+                        lcdData.view = 'HOME'; lcdData.cursor = 0;
+                    }
+
+                    else if(lcdData.view === 'STORE_LIST') {
+                        if(lcdData.cursor >= 0 && lcdData.cursor <= 5) {
+                            lcdData.selectedStoreSlot = (lcdData.storePage || 0) * 6 + lcdData.cursor;
+                            lcdData.cursor = 6; 
+                            showToast('対象プログラムを選択しました', 'success');
+                        }
+                        else if(lcdData.cursor === 6) {
+                            if(lcdData.storedPrograms[lcdData.selectedStoreSlot]) {
+                                lcdData.progName = lcdData.storedPrograms[lcdData.selectedStoreSlot];
+                                lcdData.view = 'STANDBY_CONFIRM'; lcdData.cursor = 1;
+                            } else showToast('空のスロットです', 'error');
+                        }
+                        else if(lcdData.cursor === 7) {
+                            if(lcdData.storedPrograms[lcdData.selectedStoreSlot]) {
+                                lcdData.progName = lcdData.storedPrograms[lcdData.selectedStoreSlot];
+                                lcdData.view = 'SETUP'; lcdData.cursor = 0;
+                            } else showToast('空のスロットです', 'error');
+                        }
+                        else if(lcdData.cursor === 8) {
+                            if(lcdData.storedPrograms[lcdData.selectedStoreSlot]) {
+                                lcdData.view = 'STORE_DEL_CONFIRM'; lcdData.cursor = 0;
+                            } else showToast('空のスロットです', 'error');
+                        }
+                    }
+                    else if(lcdData.view === 'STORE_DEL_CONFIRM') {
+                        if(lcdData.cursor === 0) {
+                            showToast('プログラムを消去しました', 'success');
+                            lcdData.storedPrograms[lcdData.selectedStoreSlot] = null;
+                        }
+                        lcdData.view = 'STORE_LIST'; lcdData.cursor = 0;
+                    }
+                    else if(lcdData.view === 'STANDBY_CONFIRM') {
+                        if(lcdData.cursor === 1) { // No (すぐ開始)
+                            startLidHeating();
+                        } else { // Yes (待機する)
+                            lcdData.view = 'PAUSE';
+                            renderLCD();
+                        }
+                    }
+                    else if(lcdData.view === 'STOP_CONFIRM') {
+                        if(lcdData.cursor === 0) {
+                            lcdData.view = 'HOME';
+                            lcdData.cursor = 0;
+                            resetSimulation();
+                        } else {
+                            if(!lcdData.lidHeatingDone && lcdData.lidTemp > 0) {
+                                resumeLidHeating();
+                            } else {
+                                lcdData.view = 'PAUSE';
+                            }
+                        }
+                        renderLCD();
                     }
                     else showToast('この項目はシミュレーターでは機能しません', 'error');
                 }
             }
         } else if (dir === 'RIGHT') {
-            if(lcdData.editing) return;
-            if(lcdData.view === 'SETUP') { lcdData.view = 'PART1'; lcdData.cursor = 0; }
+            if(lcdData.view === 'LID_HEATING') {
+                if(lidTimer) clearInterval(lidTimer);
+                finishLidHeating();
+                return;
+            }
+            if(lcdData.view === 'STORE_NAME_INPUT') {
+                lcdData.saveNameCursor = Math.min(3, lcdData.saveNameCursor + 1);
+            } else if(lcdData.view === 'STORE_SAVE_SELECT' || lcdData.view === 'STORE_LIST') {
+                lcdData.storePage = ((lcdData.storePage || 0) + 1) % 3;
+            } else if(lcdData.editing) return;
+            else if(lcdData.view === 'SETUP') { lcdData.view = 'PART1'; lcdData.cursor = 0; }
             else if(lcdData.view === 'PART1') { lcdData.view = 'PART2'; lcdData.cursor = 0; }
             else if(lcdData.view === 'PART2') { lcdData.view = 'PART3'; lcdData.cursor = 0; }
             else if(lcdData.view === 'PART3') { lcdData.view = 'SETUP'; lcdData.cursor = 0; } 
             else if(lcdData.view === 'HOME') { lcdData.cursor = Math.min(4, lcdData.cursor + 1); }
             else if(lcdData.view === 'TEMPLATE') { lcdData.cursor = Math.min(7, lcdData.cursor + 1); }
         } else if (dir === 'LEFT') {
-            if(lcdData.editing) return;
-            if(lcdData.view === 'PART3') { lcdData.view = 'PART2'; lcdData.cursor = 0; }
+            if(lcdData.view === 'STORE_NAME_INPUT') {
+                lcdData.saveNameCursor = Math.max(0, lcdData.saveNameCursor - 1);
+            } else if(lcdData.view === 'STORE_SAVE_SELECT' || lcdData.view === 'STORE_LIST') {
+                lcdData.storePage = ((lcdData.storePage || 0) + 2) % 3;
+            } else if(lcdData.editing) return;
+            else if(lcdData.view === 'PART3') { lcdData.view = 'PART2'; lcdData.cursor = 0; }
             else if(lcdData.view === 'PART2') { lcdData.view = 'PART1'; lcdData.cursor = 0; }
             else if(lcdData.view === 'PART1') { lcdData.view = 'SETUP'; lcdData.cursor = 0; }
             else if(lcdData.view === 'SETUP') { lcdData.view = 'PART3'; lcdData.cursor = 0; } 
             else if(lcdData.view === 'HOME') { lcdData.cursor = Math.max(0, lcdData.cursor - 1); }
             else if(lcdData.view === 'TEMPLATE') { lcdData.cursor = Math.max(0, lcdData.cursor - 1); }
-        } else if (dir === 'DOWN' || dir === 'SEL') {
+        } else if (dir === 'DOWN') {
             if(lcdData.editing) return;
             let max = 0;
             if(lcdData.view==='HOME') max=4; if(lcdData.view==='TEMPLATE') max=7;
             if(lcdData.view==='SETUP') max=1; if(lcdData.view==='PART1') max=3;
             if(lcdData.view==='PART2') max=6; if(lcdData.view==='PART3') max=5;
-            if(lcdData.view==='STORE_LIST') max=4; if(lcdData.view==='STORE_CONFIRM') max=1;
+            if(lcdData.view==='STORE_LIST') max=8; if(lcdData.view==='STORE_CONFIRM' || lcdData.view==='STORE_DEL_CONFIRM' || lcdData.view==='STANDBY_CONFIRM' || lcdData.view==='STOP_CONFIRM') max=1;
             lcdData.cursor = Math.min(max, lcdData.cursor + 1);
         } else if (dir === 'UP') {
-            if(lcdData.editing) return;
-            lcdData.cursor = Math.max(0, lcdData.cursor - 1);
+            if(lcdData.view === 'STORE_NAME_INPUT') {
+                if(lcdData.saveNameCursor < 2) {
+                    let c = lcdData.saveName.charCodeAt(lcdData.saveNameCursor);
+                    c = c === 90 ? 65 : c + 1; 
+                    let arr = lcdData.saveName.split('');
+                    arr[lcdData.saveNameCursor] = String.fromCharCode(c);
+                    lcdData.saveName = arr.join('');
+                }
+            } else if(lcdData.editing) return;
+            else lcdData.cursor = Math.max(0, lcdData.cursor - 1);
         }
         renderLCD();
     }
 
     function typeNum(char) {
+        if(lcdData.view === 'STORE_NAME_INPUT') {
+            if (lcdData.saveNameCursor >= 2 && /[0-9]/.test(char)) {
+                let arr = lcdData.saveName.split('');
+                arr[lcdData.saveNameCursor] = char;
+                lcdData.saveName = arr.join('');
+                lcdData.saveNameCursor = Math.min(3, lcdData.saveNameCursor + 1);
+                renderLCD();
+            }
+            return;
+        }
+
         if(!lcdData.editing) { showToast('ENTキーを押して編集モード(↓点滅)にしてください', 'error'); return; }
         
         let target = getTarget();
         let maxLen = (target && target.type === 'num') ? 2 : 4;
         
         if(rawInput.length < maxLen) rawInput += char.replace('.', '');
+
+        if(lcdData.view === 'PART3' && target && target.path[1] === 'm2' && rawInput === '9999') {
+            rawInput = '∞';
+        }
+
         renderLCD();
     }
 
     function clearNum() {
+        if(lcdData.view === 'STORE_NAME_INPUT') {
+            lcdData.saveNameCursor = 0;
+            renderLCD();
+            return;
+        }
         if(lcdData.editing) { rawInput = ""; renderLCD(); }
+    }
+
+    function pressStop() {
+        if (lcdData.view === 'RUNNING' || lcdData.view === 'PAUSE' || lcdData.view === 'LID_HEATING') {
+            lcdData.view = 'STOP_CONFIRM';
+            lcdData.cursor = 0;
+            if(runTimer) clearTimeout(runTimer);
+            if(lidTimer) clearInterval(lidTimer);
+            renderLCD();
+        } else if (lcdData.view === 'STOP_CONFIRM') {
+            // Nothing to do, handled by ENT key
+        } else {
+            location.reload();
+        }
+    }
+
+    function resumeLidHeating() {
+        lcdData.view = 'LID_HEATING';
+        document.getElementById('lidHeatLed').className = 'led-blink';
+        if (lidTimer) clearInterval(lidTimer);
+        renderLCD();
+        lidTimer = setInterval(() => {
+            lcdData.lidTemp += 3.5; 
+            if (lcdData.lidTemp >= 105.0) {
+                lcdData.lidTemp = 105.0;
+                clearInterval(lidTimer);
+                finishLidHeating();
+            } else {
+                renderLCD();
+            }
+        }, 200);
+    }
+
+    function startLidHeating() {
+        lcdData.lidTemp = 25.0; 
+        resumeLidHeating();
+    }
+
+    function finishLidHeating() {
+        lcdData.lidHeatingDone = true;
+        document.getElementById('lidHeatLed').className = 'led-on';
+        lcdData.view = 'RUNNING';
+        renderLCD();
+        if(runTimer) clearTimeout(runTimer);
+        runTimer = setTimeout(runPCR, 2000);
+    }
+
+    function resetSimulation() {
+        document.getElementById('lidHeatLed').className = '';
+        lcdData.lidHeatingDone = false;
+        if(lidTimer) clearInterval(lidTimer);
+        if(runTimer) clearTimeout(runTimer);
     }
 
     function openStudentManual() { document.getElementById('studentManualModal').style.display = 'flex'; }
@@ -1054,7 +1349,6 @@
         ctx.setLineDash([]);
     }
 
-    // 全パラメーターの厳密な論理判定
     function runPCR() {
         if(lcdData.editing) navBtn('ENT');
 
