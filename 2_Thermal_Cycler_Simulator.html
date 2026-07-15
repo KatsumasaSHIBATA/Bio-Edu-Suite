@@ -197,9 +197,30 @@
             .version-badge { top: 12px; right: 10px; }
 
             /* モバイル向けにパディングを抑え、縦積みを許容 */
-            .machine-scroll-wrapper { width: 100%; margin: 0; padding: 20px 10px 40px 10px; flex-direction: column; align-items: center; }
-            .machine-body { width: 100%; max-width: 500px; margin-bottom: 0; }
-            .assist-panel { width: 100%; max-width: 500px; height: auto; max-height: 600px; }
+            .machine-scroll-wrapper { 
+                width: 100%; 
+                margin: 0; 
+                padding: 20px 0 40px 0; 
+                flex-direction: column; 
+                align-items: flex-start; /* 左端からスクロール開始 */
+                overflow-x: auto; /* 横スクロール許可 */
+                -webkit-overflow-scrolling: touch;
+            }
+            .machine-body { 
+                width: 500px; /* 機器は縮小させない */
+                max-width: none; 
+                margin: 0 15px 20px 15px; 
+                flex-shrink: 0;
+            }
+            .assist-panel { 
+                width: calc(100vw - 30px); /* スマホの画面幅に収める */
+                max-width: 500px; 
+                height: auto; 
+                max-height: 600px; 
+                margin: 0 15px;
+                position: sticky; /* 横スクロールに追従させる */
+                left: 15px;
+            }
 
             .scenario-panel h2 { padding: 12px 15px; margin-top: 0; }
             .scenario-desc, .scenario-inputs { padding: 0 15px; }
@@ -260,11 +281,11 @@
                 </div>
                 <div style="display:flex; gap:5px; margin-bottom:4px; align-items:center;">
                     <span style="font-size:11px; width:115px; flex-shrink:0; font-weight:bold; color:#2c3e50;">Primer F (5' ➡ 3'):</span>
-                    <input type="text" id="primerF" value="" placeholder="塩基配列を入力 (例: ATGC...)" style="font-family: 'Courier New', Courier, monospace;" oninput="calculateTm()">
+                    <input type="text" id="primerF" value="" placeholder="塩基配列を入力" style="font-family: 'Courier New', Courier, monospace;" oninput="calculateTm()">
                 </div>
                 <div style="display:flex; gap:5px; align-items:center;">
                     <span style="font-size:11px; width:115px; flex-shrink:0; font-weight:bold; color:#2c3e50;">Primer R (5' ➡ 3'):</span>
-                    <input type="text" id="primerR" value="" placeholder="塩基配列を入力 (例: ATGC...)" style="font-family: 'Courier New', Courier, monospace;" oninput="calculateTm()">
+                    <input type="text" id="primerR" value="" placeholder="塩基配列を入力" style="font-family: 'Courier New', Courier, monospace;" oninput="calculateTm()">
                 </div>
                 <div id="annealHintText" class="dynamic-hint">
                     💡 KOD Oneは、アニーリング基準値(Tm平均)と同じ温度に設定します。
