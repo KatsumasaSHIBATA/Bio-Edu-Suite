@@ -74,8 +74,8 @@
         .toast.error { background: #e74c3c; }
         .toast.success { background: #27ae60; }
 
-        /* 機器全体を囲むラッパー (影が切れないようにpaddingを十分に取る) */
-        .machine-scroll-wrapper { width: 100%; display: flex; justify-content: center; align-items: flex-start; gap: 20px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 20px 20px 60px 20px;}
+        /* 機器全体を囲むラッパー (影と幅の調整：上部パネルと揃える) */
+        .machine-scroll-wrapper { width: calc(100% + 40px); margin: 0 -20px; padding: 20px 20px 60px 20px; display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
         /* 機器本体の左右を切り落とし (幅を限界値の500pxまで切り詰め) */
         .machine-body { background: #2c3e50; width: 100%; max-width: 500px; min-width: 500px; border-radius: 12px; padding: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.4), inset 0 2px 5px rgba(255,255,255,0.15); border: 1px solid #1a252f; display: flex; flex-direction: column; align-items: center; gap: 15px; margin: 0; flex-shrink: 0;}
@@ -110,17 +110,17 @@
             background: #fff; width: 100%; max-width: 440px; min-width: 360px; border-radius: 12px; padding: 15px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid #e0e6ed; 
             font-size: 12px; color: #2c3e50; display: flex; flex-direction: column; 
-            height: 486px; overflow-y: auto; flex-shrink: 1;
+            height: 486px; overflow-y: auto; flex-shrink: 1; margin: 0;
         }
         .assist-panel::-webkit-scrollbar { width: 6px; }
         .assist-panel::-webkit-scrollbar-thumb { background-color: #bdc3c7; border-radius: 3px; }
         
         /* アシストパネルのタブ */
-        .assist-tabs { display: flex; border-bottom: 2px solid #bdc3c7; margin-bottom: 12px; }
+        .assist-tabs { display: flex; border-bottom: 2px solid #bdc3c7; margin-bottom: 12px; flex-shrink: 0; }
         .assist-tab { flex: 1; background: none; border: none; padding: 10px 5px; font-size: 13px; font-weight: bold; color: #7f8c8d; cursor: pointer; transition: 0.2s; border-bottom: 3px solid transparent; margin-bottom: -2px; }
         .assist-tab.active { color: #2980b9; border-bottom-color: #3498db; }
         .assist-tab:hover:not(.active) { color: #34495e; }
-        .assist-tab-content { display: none; flex-direction: column; }
+        .assist-tab-content { display: none; flex-direction: column; flex: 1; }
         .assist-tab-content.active { display: flex; }
 
         .assist-step {
@@ -149,8 +149,8 @@
         canvas { width: 100%; height: auto; display: block; }
 
         .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        .manual-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-        .manual-table th, .manual-table td { border: 1px solid #bdc3c7; padding: 6px; text-align: left; }
+        .manual-table { width: 100%; border-collapse: collapse; font-size: 11px; white-space: nowrap; }
+        .manual-table th, .manual-table td { border: 1px solid #bdc3c7; padding: 8px; text-align: left; }
         .manual-table th { background: #ecf0f1; color: #2c3e50; font-weight: bold; }
 
         .footer { background: #1a252f; width: 100%; padding: 15px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; margin-top: auto; border-top: 1px solid #2c3e50; }
@@ -166,17 +166,15 @@
             .header h1 { font-size: 18px; padding-right: 60px; }
             .version-badge { top: 12px; right: 10px; }
 
-            .machine-scroll-wrapper { flex-direction: column; align-items: center; justify-content: flex-start; padding-bottom: 15px; padding-left: 10px; padding-right: 10px; }
+            .machine-scroll-wrapper { flex-direction: column; align-items: center; justify-content: flex-start; padding: 15px 10px 40px 10px; width: calc(100% + 20px); margin: 0 -10px; }
             .machine-body { min-width: auto; max-width: 100%; margin: 0; padding: 20px; gap: 15px; } 
-
-            .assist-panel { max-width: 100%; min-width: auto; height: auto; max-height: 600px; }
+            .assist-panel { max-width: 100%; min-width: auto; height: auto; max-height: 600px; margin: 0; }
 
             .scenario-panel h2 { padding: 12px 15px; margin-top: 0; }
             .scenario-desc, .scenario-inputs { padding: 0 15px; }
 
             .modal { padding: 10px; }
             .modal-content { padding: 20px 15px; }
-            .modal-content h2 { font-size: 16px; padding-right: 70px; line-height: 1.4; margin-top: 5px;}
         }
     </style>
 </head>
@@ -201,7 +199,7 @@
         <div class="scenario-inputs">
             
             <div class="input-group" style="grid-column: span 4;">
-                <label>1. 使用酵素 (添付文書) <button class="rationale-btn" onclick="toggleRationale('rat_enz')">?</button></label>
+                <label>1. 使用酵素 <button class="rationale-btn" onclick="toggleRationale('rat_enz')">?</button></label>
                 <div id="rat_enz" class="rationale-text">
                     <strong>【根拠】</strong> 酵素によって「耐熱性(DENAT)」や「合成速度(EXTEND)」が異なります。KOD Oneは超高速、Taqは標準的など、それぞれの特性に合わせたプログラムを組む必要があります。
                 </div>
@@ -225,7 +223,7 @@
             </div>
 
             <div class="input-group" style="grid-column: span 5;">
-                <label>3. プライマーの塩基配列  <button class="rationale-btn" onclick="toggleRationale('rat_pri')">?</button></label>
+                <label>3. プライマーの塩基配列 <button class="rationale-btn" onclick="toggleRationale('rat_pri')">?</button></label>
                 <div id="rat_pri" class="rationale-text">
                     <strong>【根拠】</strong> プライマーがDNAにくっつく温度（Tm値）は、A/T（2重水素結合）とG/C（3重水素結合）の割合で決まります。「ANNEAL温度」はこのTm値を基準に設定し、高すぎるとくっつかず、低すぎると間違った場所にくっつく（非特異的増幅）原因になります。
                 </div>
@@ -288,6 +286,7 @@
             </div>
         </div>
     </div>
+
     <div class="machine-scroll-wrapper">
         <div class="machine-body">
             <div class="machine-vent">
@@ -356,7 +355,7 @@
             <!-- タブ1: 推奨設定 -->
             <div id="tab-recommend" class="assist-tab-content active">
                 <div style="background:#fdfefe; border:1px solid #d5dbdb; padding:10px; border-radius:6px; margin-bottom:15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-                    <strong style="color:#2c3e50; font-size:13px; display:block; margin-bottom:8px; border-bottom: 1px solid #ecf0f1; padding-bottom: 5px; margin-top: 0;">算出された推奨プログラム</strong>
+                    <h3 style="color:#2c3e50; font-size:13px; border-bottom: 1px solid #ecf0f1; padding-bottom: 5px; margin-bottom: 8px; margin-top: 0;">算出された推奨プログラム</h3>
                     <table style="width:100%; font-size:11px; border-collapse:collapse;">
                         <tr style="border-bottom:1px dashed #ecf0f1;">
                             <td style="padding:4px 0; font-weight:bold; vertical-align:top;">1: INIT (初期変性)<br><span style="font-size:10px; color:#7f8c8d; font-weight:normal;">酵素の特性に連動</span></td>
@@ -367,7 +366,7 @@
                             <td id="ast-denat" style="text-align:right; vertical-align:top; color:#e74c3c;">--</td>
                         </tr>
                         <tr style="border-bottom:1px dashed #ecf0f1;">
-                            <td style="padding:4px 0; font-weight:bold; vertical-align:top;">3: アニーリング (ANNEAL)<br><span style="font-size:10px; color:#7f8c8d; font-weight:normal;">塩基配列(Tm値)に連動</span></td>
+                            <td style="padding:4px 0; font-weight:bold; vertical-align:top;">3: ANNEAL(アニーリング)<br><span style="font-size:10px; color:#7f8c8d; font-weight:normal;">塩基配列(Tm値)に連動</span></td>
                             <td id="ast-ann" style="text-align:right; vertical-align:top; color:#e74c3c;">--</td>
                         </tr>
                         <tr style="border-bottom:1px dashed #ecf0f1;">
@@ -387,9 +386,9 @@
 
                 <h3 style="color:#2c3e50; font-size:13px; border-bottom: 1px solid #ecf0f1; padding-bottom: 5px; margin-bottom: 8px; margin-top: 0;">各酵素の公式推奨条件</h3>
                 <div style="font-size: 11px; line-height: 1.5; color: #34495e;">
-                    <p style="color:#e74c3c; font-weight:bold; margin-top:0; margin-bottom:5px;">💡 ヒント: 1 kb = 1000 bp。増幅長を1000で割って時間を計算。</p>
-                    <div class="table-responsive" style="margin-top:5px;">
-                        <table class="manual-table" style="min-width:auto;">
+                    <p style="color:#e74c3c; font-weight:bold; margin-top:0; margin-bottom:5px;">💡 計算のヒント: 1 kb = 1000 bp。増幅長を1000で割って時間を計算。</p>
+                    <div class="table-responsive">
+                        <table class="manual-table">
                             <tr><th>酵素名</th><th>DENAT</th><th>ANNEAL</th><th>EXTEND</th></tr>
                             <tr>
                                 <td style="font-weight:bold; color:#8e44ad;">KOD One</td>
@@ -412,7 +411,7 @@
                         </table>
                     </div>
                     <div style="color:#7f8c8d; margin-top:8px; line-height:1.4; font-size:10px;">
-                        ※1: <b>初期変性(INIT)</b>はDENATと同じ（又は94℃以上）に設定し、約2分加熱。<br>
+                        ※1: <b>初期変性(INIT)</b>はDENATと同じ（または94℃以上）に設定し、約2分加熱。<br>
                         ※2: <b>最終伸長(FINAL)</b>はEXTENDと同じ温度で1〜5分。<br>
                         ※3: <b>保存(HOLD)</b>は反応後DNA分解を防ぐため4.0℃維持。
                     </div>
@@ -422,32 +421,32 @@
             <!-- タブ2: 操作手順 -->
             <div id="tab-manual" class="assist-tab-content" style="display: none;">
                 <div style="background:#f0f8ff; border:1px solid #3498db; padding:8px; border-radius:6px; margin-bottom:10px; font-size:11px; color:#2c3e50;">
-                    <b>【用語】 SV</b>:設定温度 / <b>TM</b>:保持時間 / <b>PV</b>:サンプル温度 / <b>N=</b>:サイクル数
+                    <b>【用語】 SV</b>:設定温度 / <b>TM</b>:保持時間 / <b>PV</b>:サンプル液相当温度 / <b>N=</b>:サイクル数
                 </div>
                 
                 <div class="assist-step">
                     <strong>■ 運転の準備 (HOME / SETUP)</strong>
-                    1. 起動時は左上の "Run-ProgName" にカーソル(■)があります。<br>
-                    2. <b>[▼][▲]</b> または <b>[SEL]</b> キーで "Template" の前にカーソルを移動し、<b>[ENT]</b> を押します。<br>
+                    1. 起動時は "Run-ProgName" にカーソル(■)があります。<br>
+                    2. <b>[▼][▲]</b> または <b>[SEL]</b> キーで "Template" にカーソルを移動し、<b>[ENT]</b> を押します。<br>
                     3. 希望するプログラム（ST等）を選び <b>[ENT]</b> を押します。<br>
                     4. "Edit" を選び <b>[ENT]</b> で条件設定画面へ進み、テンキーでサンプル量と本数を入力します。<br>
-                    5. <b>[→]</b> キーでPART1へ。<br>
+                    5. <b>[→]</b> キーでPART1へ進みます。<br>
                     <span style="color:#e74c3c; font-size:10.5px; font-weight:bold;">⚠️ やけど注意：カバー内面は高温になります。</span>
                 </div>
 
                 <div class="assist-step">
                     <strong>■ プログラムの入力 (PART 1〜3)</strong>
                     1. <b>[→][←]</b> キーでパート画面を切り替えます。<br>
-                    2. <b>[▼][▲]</b> キーで項目を選び(↓点滅)、<b>[ENT]</b> で編集モードへ。<br>
+                    2. <b>[▼][▲]</b> キーで設定項目を選び(↓点滅)、<b>[ENT]</b> で編集モードへ入ります。<br>
                     3. テンキーで数値を入力。（例: 94.5℃なら「9」「4」「5」、2分30秒なら「0」「2」「3」「0」）<br>
                     4. 再度 <b>[ENT]</b> で確定。<b>[C]</b> キーで入力を最初からやり直し。<br>
-                    <span style="color:#d35400;">💡 無限大(∞)の入力: PART3の最後で「9999」と入力。</span>
+                    <span style="color:#d35400;">💡 無限大(∞)の入力: PART3の最後の時間で「9999」と入力。</span>
                 </div>
 
                 <div class="assist-step">
                     <strong>■ 保存(STORE) と 呼出・消去</strong>
                     1. <b>保存:</b> PART1や3で <b>[SEL]</b> で "Store" を選び <b>[ENT]</b>。保存場所を選び <b>[ENT]</b>。<br>
-                    2. <b>名前入力:</b> <b>[↑][↓]</b> で英字、テンキーで数字を入力し <b>[→]</b> で次桁へ。最後は <b>[ENT]</b> で確定。<br>
+                    2. <b>名前入力:</b> <b>[↑][↓]</b> で英字、テンキーで数字を入力し <b>[→]</b> で次桁へ。最後は <b>[ENT]</b> で確定し、OverwriteをYesで確定。<br>
                     3. <b>呼出・消去:</b> HOME画面で "StoredPrg" を選択し、対象プログラムを選び "RUN"、"Edit" または "Del." を選択します。
                 </div>
 
@@ -620,6 +619,7 @@
             ]
         }
     };
+
     function updateRecipe() {
         const val = document.getElementById('enzymeSelect').value;
         const annealHintEl = document.getElementById('annealHintText');
@@ -783,6 +783,7 @@
         renderLCD();
         updateAssistPanel();
     };
+
     function renderLCD() {
         const screen = document.getElementById('lcdScreen');
         let html = '';
@@ -993,6 +994,7 @@
         if(target.path.length === 1) lcdData[target.path[0]] = formatted;
         else if(target.path.length === 2) lcdData[target.path[0]][target.path[1]] = formatted;
     }
+
     function navBtn(dir) {
         if (dir === 'PAUSE_RUN') {
             if (lcdData.view === 'LID_HEATING') return;
@@ -1324,6 +1326,7 @@
     }
 
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
     function parseTemp(valStr) {
         if (!valStr || valStr === "∞") return 0;
         let val = parseFloat(valStr);
@@ -1435,7 +1438,7 @@
 
         const cyc = lcdData.p2.n || "30";
         let maxCycleTemp = Math.max(temps[1], temps[2], temps[3]);
-        let cycleY = getY(maxCycleTemp) - 35; 
+        let cycleY = getY(maxCycleTemp) - 45; // 更に上へ余裕を持たせる
         
         ctx.strokeStyle = '#e67e22';
         ctx.lineWidth = 2;
