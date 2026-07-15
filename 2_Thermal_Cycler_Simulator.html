@@ -9,7 +9,6 @@
 
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
         
-        /* 共通ヘッダー（最大幅1000pxに統一） */
         .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 10; }
         .header { width: 100%; max-width: 1000px; padding: 15px 20px; color: white; display: flex; flex-direction: column; position: relative; }
         .header h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 1px; color: #fff; padding-right: 70px; line-height: 1.3; }
@@ -22,7 +21,6 @@
         .scenario-panel h2 { margin: 0 0 15px 0; font-size: 16px; background: #34495e; color: #fff; padding: 12px 25px; display: flex; align-items: center; border-radius: 4px 4px 0 0; }
         .scenario-desc { font-size: 13px; color: #5d6d7e; margin-bottom: 15px; line-height: 1.6; padding: 0 25px; }
         
-        /* 12カラムグリッド（黄金比レイアウト） */
         .scenario-inputs { display: grid; grid-template-columns: repeat(12, 1fr); gap: 15px; font-size: 12px; padding: 0 25px; }
         
         .rationale-btn { background: #1abc9c; color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; flex-shrink: 0;}
@@ -74,20 +72,18 @@
         .toast.error { background: #e74c3c; }
         .toast.success { background: #27ae60; }
 
-        /* 機器全体を囲むラッパー: 横スクロールとラインの完全一致 */
         .machine-scroll-wrapper { 
-            width: calc(100% + 80px); /* 影のために左右40px広げる */
-            margin: 0 -40px; /* コンテンツ領域を上のパネルと完全に一致させるネガティブマージン */
-            padding: 30px 40px 60px 40px; /* 強力なドロップシャドウが切れないための物理的余白 */
+            width: calc(100% + 80px);
+            margin: 0 -40px; 
+            padding: 30px 40px 60px 40px; 
             display: flex; 
-            justify-content: center; /* 中身の500+20+440=960pxを中央へ配置 */
+            justify-content: center; 
             align-items: flex-start; 
             gap: 20px; 
-            overflow: visible; /* 横スクロールバーを絶対に発生させない */
-            flex-wrap: wrap; /* 画面が狭いときは自然に落ちるようにする */
+            overflow: visible; 
+            flex-wrap: wrap; 
         }
 
-        /* 機器本体 (幅を500px固定にして縮めない) */
         .machine-body { 
             background: #2c3e50; 
             width: 500px; 
@@ -126,7 +122,6 @@
         .led-on { background: #e74c3c !important; box-shadow: 0 0 5px #e74c3c !important; }
         @keyframes led-blinker { 50% { background: #2c3e50 !important; box-shadow: inset 0 1px 2px rgba(0,0,0,0.5) !important; } }
 
-        /* 動的・操作アシストパネル (幅を440px固定にして小さくしない) */
         .assist-panel {
             background: #fff; 
             width: 440px; 
@@ -177,7 +172,6 @@
         .graph-outer { background: #f8f9fa; padding: 20px 10px; border-radius: 6px; border: 1px solid #dee2e6; margin-top: 20px; width: 100%; position: relative; }
         canvas { width: 100%; height: auto; display: block; }
 
-        /* テーブル改行防止と美観向上 */
         .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 5px;}
         .manual-table { width: 100%; border-collapse: collapse; font-size: 11px; white-space: nowrap; }
         .manual-table th, .manual-table td { border: 1px solid #bdc3c7; padding: 6px 8px; text-align: left; }
@@ -185,6 +179,20 @@
 
         .footer { background: #1a252f; width: 100%; padding: 15px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; margin-top: auto; border-top: 1px solid #2c3e50; }
         
+        @media screen and (max-width: 1000px) {
+            .machine-scroll-wrapper { 
+                flex-direction: column; 
+                align-items: center; 
+                width: 100%; 
+                margin: 0; 
+                padding: 20px 10px 40px 10px; 
+                overflow-x: auto; 
+                -webkit-overflow-scrolling: touch;
+            }
+            .assist-panel { order: 1; width: 100%; max-width: 500px; height: auto; max-height: 600px; margin-bottom: 20px;}
+            .machine-body { order: 2; width: 500px; min-width: 500px; margin-bottom: 0; }
+        }
+
         @media screen and (max-width: 768px) {
             .main-content { padding: 10px; }
             .scenario-inputs { grid-template-columns: 1fr; gap: 12px; }
@@ -196,37 +204,27 @@
             .header h1 { font-size: 18px; padding-right: 60px; }
             .version-badge { top: 12px; right: 10px; }
 
-            /* モバイル向けにパディングを抑え、縦積みを許容 */
-            .machine-scroll-wrapper { 
-                width: 100%; 
-                margin: 0; 
-                padding: 20px 0 40px 0; 
-                flex-direction: column; 
-                align-items: flex-start; /* 左端からスクロール開始 */
-                overflow-x: auto; /* 横スクロール許可 */
-                -webkit-overflow-scrolling: touch;
-            }
-            .machine-body { 
-                width: 500px; /* 機器は縮小させない */
-                max-width: none; 
-                margin: 0 15px 20px 15px; 
-                flex-shrink: 0;
-            }
-            .assist-panel { 
-                width: calc(100vw - 30px); /* スマホの画面幅に収める */
-                max-width: 500px; 
-                height: auto; 
-                max-height: 600px; 
-                margin: 0 15px;
-                position: sticky; /* 横スクロールに追従させる */
-                left: 15px;
-            }
-
             .scenario-panel h2 { padding: 12px 15px; margin-top: 0; }
             .scenario-desc, .scenario-inputs { padding: 0 15px; }
 
             .modal { padding: 10px; }
             .modal-content { padding: 20px 15px; }
+        }
+
+        @media screen and (max-width: 520px) {
+            .machine-scroll-wrapper {
+                align-items: flex-start; 
+                padding: 20px 10px; 
+            }
+            .assist-panel { 
+                position: sticky; 
+                left: 10px; 
+                width: calc(100vw - 20px);
+            }
+            .machine-body {
+                margin-left: 10px;
+                margin-right: 10px;
+            }
         }
     </style>
 </head>
@@ -281,11 +279,11 @@
                 </div>
                 <div style="display:flex; gap:5px; margin-bottom:4px; align-items:center;">
                     <span style="font-size:11px; width:115px; flex-shrink:0; font-weight:bold; color:#2c3e50;">Primer F (5' ➡ 3'):</span>
-                    <input type="text" id="primerF" value="" placeholder="塩基配列を入力" style="font-family: 'Courier New', Courier, monospace;" oninput="calculateTm()">
+                    <input type="text" id="primerF" value="" placeholder="塩基配列を入力 (例: ATGC...)" style="font-family: 'Courier New', Courier, monospace;" oninput="calculateTm()">
                 </div>
                 <div style="display:flex; gap:5px; align-items:center;">
                     <span style="font-size:11px; width:115px; flex-shrink:0; font-weight:bold; color:#2c3e50;">Primer R (5' ➡ 3'):</span>
-                    <input type="text" id="primerR" value="" placeholder="塩基配列を入力" style="font-family: 'Courier New', Courier, monospace;" oninput="calculateTm()">
+                    <input type="text" id="primerR" value="" placeholder="塩基配列を入力 (例: ATGC...)" style="font-family: 'Courier New', Courier, monospace;" oninput="calculateTm()">
                 </div>
                 <div id="annealHintText" class="dynamic-hint">
                     💡 KOD Oneは、アニーリング基準値(Tm平均)と同じ温度に設定します。
@@ -475,6 +473,44 @@
                     <b>【用語】 SV</b>:設定温度 / <b>TM</b>:保持時間 / <b>PV</b>:サンプル液相当温度 / <b>N=</b>:サイクル数
                 </div>
                 
+                <div class="assist-step">
+                    <strong>■ 以下のような3ステッププログラムを作成し、運転します。</strong>
+                    <div style="margin-top:5px; margin-bottom:8px; font-size:10px; background:#fff; padding:6px; border-radius:4px; border:1px solid #d5dbdb;">
+                        ★ このプログラムはテンプレート "ST" です。<br>
+                        ★ サンプル量：18 µl ★ 本数：9本 ★ プログラム名：SK57
+                    </div>
+                    <div style="background:#fff; padding:10px; border-radius:4px; border:1px solid #e0e6ed;">
+                        <ul style="list-style-type:none; padding-left:0; margin:0; font-size:11px; line-height:1.6;">
+                            <li style="margin-bottom:10px; padding-left:10px; border-left:3px solid #e74c3c;">
+                                <b>パート 1</b><br>
+                                94.5 ℃、2:30 <span style="color:#e74c3c; font-weight:bold;">[ INIT (初期変性) ]</span>
+                            </li>
+                            <li style="margin-bottom:10px; padding-left:10px; border-left:3px solid #e67e22;">
+                                <b>パート 2</b><br>
+                                <div style="display:flex; align-items:stretch; margin-top:4px;">
+                                    <div style="flex-shrink:0;">
+                                        94.5 ℃、0:15 <span style="color:#e67e22; font-weight:bold;">[ DENAT (変性) ]</span><br>
+                                         ↓<br>
+                                        50.0 ℃、0:15 <span style="color:#e67e22; font-weight:bold;">[ ANNEAL (アニーリング) ]</span><br>
+                                         ↓<br>
+                                        72.0 ℃、0:20 <span style="color:#e67e22; font-weight:bold;">[ EXTEND (伸長) ]</span>
+                                    </div>
+                                    <div style="display:flex; align-items:center; margin-left:10px; color:#e67e22; flex-shrink:1; min-width:0;">
+                                        <div style="border-top:1px solid #e67e22; border-bottom:1px solid #e67e22; border-right:1px solid #e67e22; width:8px; align-self:stretch; margin-right:5px; margin-top:2px; margin-bottom:2px; flex-shrink:0;"></div>
+                                        <div style="font-size:11px; line-height:1.3; flex-shrink:1; min-width:0; word-break:keep-all;">N=33 回の<wbr>繰り返し</div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li style="padding-left:10px; border-left:3px solid #3498db;">
+                                <b>パート 3</b><br>
+                                72.0 ℃、2:00 <span style="color:#2980b9; font-weight:bold;">[ FINAL (最終伸長) ]</span><br>
+                                 ↓<br>
+                                4.0 ℃、∞ <span style="color:#2980b9; font-weight:bold;">[ HOLD (保存) ]</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
                 <div class="assist-step">
                     <strong>■ 運転の準備 (HOME / SETUP)</strong>
                     1. 起動時は左上の "Run-ProgName" にカーソル(■)があります。<br>
@@ -810,6 +846,7 @@
         view: 'HOME', // HOME, TEMPLATE, SETUP, PART1, PART2, PART3
         cursor: 0,    // 初期カーソルをRun-ProgName(0)に設定
         editing: false,
+        justEnteredEdit: false, // 編集モードに入った直後かどうかのフラグ
         progName: 'ST00',
         saveName: 'ST00',
         saveNameCursor: 0,
@@ -1144,6 +1181,7 @@
                         rawInput = "";
                     } else {
                         lcdData.editing = true;
+                        lcdData.justEnteredEdit = true; // ENTを押して編集モードに入った直後フラグを立てる
                         let curVal = target.path.length === 1 ? lcdData[target.path[0]] : lcdData[target.path[0]][target.path[1]];
                         rawInput = curVal.replace(/\.|:/g, '');
                         if(rawInput === '∞') rawInput = '';
@@ -1302,6 +1340,12 @@
         }
 
         if(!lcdData.editing) { showToast('ENTキーを押して編集モード(↓点滅)にしてください', 'error'); return; }
+        
+        // 編集モードに入った直後の最初の入力なら、前の値をクリアする
+        if (lcdData.justEnteredEdit) {
+            rawInput = "";
+            lcdData.justEnteredEdit = false;
+        }
         
         let target = getTarget();
         let maxLen = (target && target.type === 'num') ? 2 : 4;
@@ -1605,3 +1649,4 @@
 
 </body>
 </html>
+```eof
