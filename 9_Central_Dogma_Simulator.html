@@ -72,11 +72,11 @@
         .mRNA-codon { background: #ebf5fb; color: #2980b9; padding: 3px 5px; font-weight: bold; font-size: 11px; border-bottom: 1px solid #dcdde1; letter-spacing: 1px; border-radius: 4px 4px 0 0;}
         .amino-acid { padding: 5px; font-weight: 900; font-size: 15px; color: #2c3e50; min-width: 32px; text-align: center; border-radius: 0 0 4px 4px; }
         
-        /* アミノ酸の性質色 */
-        .aa-nonpolar .amino-acid { background: #fcf3cf; color: #7d6608; }
-        .aa-polar .amino-acid { background: #d5f5e3; color: #145a32; }
-        .aa-acidic .amino-acid { background: #fadbd8; color: #78281f; }
-        .aa-basic .amino-acid { background: #d6eaf8; color: #1b4f72; }
+        /* アミノ酸の性質色（リファレンスシートに完全同期） */
+        .aa-nonpolar .amino-acid { background: #fef3c7; color: #92400e; }
+        .aa-polar .amino-acid { background: #d1fae5; color: #065f46; }
+        .aa-acidic .amino-acid { background: #ffe4e6; color: #9f1239; }
+        .aa-basic .amino-acid { background: #dbeafe; color: #1e40af; }
         .aa-stop .amino-acid { background: #e74c3c; color: white; }
 
         .codon-start { border: 2px solid #27ae60; }
@@ -188,24 +188,16 @@
                 
                 <div id="inputHintDefault" class="bench-tip" style="background:#eafaf1; border-left-color:#27ae60;">
                     <strong>💡 現場のコツ（比較モード）</strong><br>
-                    <strong>2つの塩基配列（野生型と突然変異体）</strong>を同時入力すると、自動で比較モードになり、翻訳時に突然変異箇所を検出してアプリ⑩へ同期します。
+                    <strong>2つの塩基配列（野生型と突然変異体）</strong>を同時入力すると、自動で比較モードになり、翻訳時に変異箇所を検出してアプリ⑩へ同期します。
                 </div>
                 
                 <div id="inputHintCompare" class="bench-tip" style="background:#fdedec; border-left-color:#e74c3c; display:none;">
                     <strong style="color:#c0392b;">🚨 比較解析の注意点（パイプライン連携）</strong><br>
-                    NCBI等から取得したDNAの塩基配列を複数そのまま比較すると、開始位置（UTR）のズレにより、翻訳フレームが狂って<strong>結果が全て突然変異（真っ赤）</strong>になることがあります。<br>
+                    NCBI等から取得したDNAの塩基配列を複数そのまま比較すると、開始位置（UTR）のズレにより、翻訳フレームが狂って<strong>結果が全て変異（真っ赤）</strong>になることがあります。<br>
                     正確に比較するには、必ず<strong>アプリ⑤（DNA Alignment Studio）</strong>でアライメントとトリミングを行ってから、データをここにペーストしてください。
                 </div>
 
                 <!-- Template_Reference_App 準拠のUIにパッチ適用 -->
-                <div class="form-group">
-                    <label>オンラインから取得 (NCBI)</label>
-                    <div class="input-row">
-                        <input type="text" id="ncbiId" class="primer-input" placeholder="ID (例: NM_000518)" onkeypress="if(event.keyCode===13) fetchNCBI()" data-tooltip="NCBIデータベースから指定したIDの塩基配列を取得します">
-                        <button class="btn btn-primary" style="flex: 0 0 auto; white-space: nowrap; padding: 6px 12px; font-size: 12px; border-radius: 4px;" onclick="fetchNCBI()" data-tooltip="NCBIデータベースからデータを取得します">🌐 取得 <span id="apiLoader" class="loader"></span></button>
-                    </div>
-                </div>
-
                 <div class="form-group">
                     <label>生データ (塩基配列 / アミノ酸配列)</label>
                     <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" data-tooltip="FASTA形式のファイルをドラッグ＆ドロップまたはクリックで読み込みます">
@@ -239,7 +231,7 @@
         <!-- 3. 翻訳コントロール＆凡例 -->
         <div class="card" style="border-top-color: #e84393;">
             <div class="card-header" style="background:#34495e;">
-                <span>🥩 3. 翻訳と突然変異の検出</span>
+                <span>🥩 3. 翻訳と変異の検出</span>
                 <button class="rationale-btn" onclick="toggleRationale('rat_translation')">?</button>
                 <div id="rat_translation" class="rationale-text" style="border-color:#e84393;">
                     <strong>【DNAの突然変異がもたらす意味】</strong><br>アミノ酸が「親水性」から「疎水性」などの全く異なる性質に変わると、ポリペプチドの立体構造や機能が崩壊し、疾患の原因となります。
@@ -250,10 +242,10 @@
 
                 <div class="legend-panel">
                     <span style="grid-column: span 2; font-weight: bold; color: #7f8c8d; border-bottom: 1px solid #bdc3c7; padding-bottom: 2px;">🎨 アミノ酸の化学的性質 (性質急変に注意)</span>
-                    <span class="legend-item"><span class="legend-color" style="background:#fcf3cf;"></span>疎水性 (非極性)</span>
-                    <span class="legend-item"><span class="legend-color" style="background:#d5f5e3;"></span>親水性 (極性)</span>
-                    <span class="legend-item"><span class="legend-color" style="background:#fadbd8;"></span>酸性 (-)</span>
-                    <span class="legend-item"><span class="legend-color" style="background:#d6eaf8;"></span>塩基性 (+)</span>
+                    <span class="legend-item"><span class="legend-color" style="background:#fef3c7;"></span>非極性 (疎水性)</span>
+                    <span class="legend-item"><span class="legend-color" style="background:#d1fae5;"></span>極性 (無電荷)</span>
+                    <span class="legend-item"><span class="legend-color" style="background:#ffe4e6;"></span>酸性 (-)</span>
+                    <span class="legend-item"><span class="legend-color" style="background:#dbeafe;"></span>塩基性 (+)</span>
                 </div>
             </div>
         </div>
@@ -270,7 +262,7 @@
             </div>
             <div class="card-body" style="padding:0;">
                 <div class="result-box" id="mrnaResult" style="border-radius:0 0 8px 8px;">
-                    <span style="color:#7f8c8d; padding: 10px;">操作パネルから「転写」を実行してください。</span>
+                    <div style="color:#7f8c8d; padding: 20px; width:100%; text-align:center;">操作パネルから「転写」を実行してください。</div>
                 </div>
             </div>
         </div>
@@ -279,6 +271,7 @@
         <div class="card" style="border-top-color: #27ae60;">
             <div class="card-header" style="background:#34495e; color:#fff;">
                 <span>🥩 翻訳結果 (アミノ酸配列)</span>
+                <button class="btn" style="padding: 2px 8px; font-size: 11px; margin-left: auto; width: auto; flex: 0 0 auto;" onclick="copyAminoAcids()" id="copyAaBtn" disabled data-tooltip="翻訳されたアミノ酸配列をクリップボードにコピーします">📋 コピー</button>
             </div>
             <div class="card-body" style="padding:0;">
                 <div class="codon-container" id="proteinResult" style="border:none; border-bottom: 1px solid #bdc3c7; border-radius:0;">
@@ -385,6 +378,7 @@
         let seqs = parseFasta();
         document.getElementById('posText').innerText = `Sequences: ${seqs.length}`;
         document.getElementById('btnTranslate').disabled = true;
+        document.getElementById('copyAaBtn').disabled = true;
         
         if (seqs.length > 1) {
             document.getElementById('inputHintDefault').style.display = 'none';
@@ -392,31 +386,6 @@
         } else {
             document.getElementById('inputHintDefault').style.display = 'block';
             document.getElementById('inputHintCompare').style.display = 'none';
-        }
-    }
-
-    async function fetchNCBI() {
-        const idInput = document.getElementById('ncbiId').value.trim();
-        if(!idInput) return;
-        
-        document.getElementById('apiLoader').style.display = 'inline-block';
-        document.getElementById('statusText').innerText = `取得中... [${idInput}]`;
-
-        try {
-            const response = await fetch(`https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=${idInput}&rettype=fasta&retmode=text`);
-            if (!response.ok) throw new Error("HTTP " + response.status);
-            const data = await response.text();
-            if (!data || data.includes('Error')) throw new Error("データが見つかりませんでした。");
-            
-            let val = document.getElementById('dnaInput').value;
-            document.getElementById('dnaInput').value = val ? val + '\n' + data : data;
-            updateLength();
-            document.getElementById('statusText').innerText = "データを取得・追加しました。";
-        } catch (error) {
-            showToast("取得エラー:\n" + error.message);
-            document.getElementById('statusText').innerText = "エラー";
-        } finally {
-            document.getElementById('apiLoader').style.display = 'none';
         }
     }
 
@@ -483,26 +452,26 @@
     }
 
     const aminoAcids = {
-        'A': { code3: 'Ala', name: 'Alanine', property: '疎水性 (Non-polar)', groupClass: 'aa-nonpolar' },
-        'R': { code3: 'Arg', name: 'Arginine', property: '塩基性 (Basic, +)', groupClass: 'aa-basic' },
-        'N': { code3: 'Asn', name: 'Asparagine', property: '親水性 (Polar)', groupClass: 'aa-polar' },
-        'D': { code3: 'Asp', name: 'Aspartic acid', property: '酸性 (Acidic, -)', groupClass: 'aa-acidic' },
-        'C': { code3: 'Cys', name: 'Cysteine', property: '親水性 (Polar)', groupClass: 'aa-polar' },
-        'Q': { code3: 'Gln', name: 'Glutamine', property: '親水性 (Polar)', groupClass: 'aa-polar' },
-        'E': { code3: 'Glu', name: 'Glutamic acid', property: '酸性 (Acidic, -)', groupClass: 'aa-acidic' },
-        'G': { code3: 'Gly', name: 'Glycine', property: '疎水性 (Non-polar)', groupClass: 'aa-nonpolar' },
-        'H': { code3: 'His', name: 'Histidine', property: '塩基性 (Basic, +)', groupClass: 'aa-basic' },
-        'I': { code3: 'Ile', name: 'Isoleucine', property: '疎水性 (Non-polar)', groupClass: 'aa-nonpolar' },
-        'L': { code3: 'Leu', name: 'Leucine', property: '疎水性 (Non-polar)', groupClass: 'aa-nonpolar' },
-        'K': { code3: 'Lys', name: 'Lysine', property: '塩基性 (Basic, +)', groupClass: 'aa-basic' },
-        'M': { code3: 'Met', name: 'Methionine', property: '疎水性 (Non-polar)', groupClass: 'aa-nonpolar' },
-        'F': { code3: 'Phe', name: 'Phenylalanine', property: '疎水性 (Non-polar)', groupClass: 'aa-nonpolar' },
-        'P': { code3: 'Pro', name: 'Proline', property: '疎水性 (Non-polar)', groupClass: 'aa-nonpolar' },
-        'S': { code3: 'Ser', name: 'Serine', property: '親水性 (Polar)', groupClass: 'aa-polar' },
-        'T': { code3: 'Thr', name: 'Threonine', property: '親水性 (Polar)', groupClass: 'aa-polar' },
-        'W': { code3: 'Trp', name: 'Tryptophan', property: '疎水性 (Non-polar)', groupClass: 'aa-nonpolar' },
-        'Y': { code3: 'Tyr', name: 'Tyrosine', property: '親水性 (Polar)', groupClass: 'aa-polar' },
-        'V': { code3: 'Val', name: 'Valine', property: '疎水性 (Non-polar)', groupClass: 'aa-nonpolar' },
+        'A': { code3: 'Ala', name: 'Alanine', property: '非極性 (疎水性)', groupClass: 'aa-nonpolar' },
+        'R': { code3: 'Arg', name: 'Arginine', property: '塩基性 (+)', groupClass: 'aa-basic' },
+        'N': { code3: 'Asn', name: 'Asparagine', property: '極性 (無電荷)', groupClass: 'aa-polar' },
+        'D': { code3: 'Asp', name: 'Aspartic acid', property: '酸性 (-)', groupClass: 'aa-acidic' },
+        'C': { code3: 'Cys', name: 'Cysteine', property: '極性 (無電荷)', groupClass: 'aa-polar' },
+        'Q': { code3: 'Gln', name: 'Glutamine', property: '極性 (無電荷)', groupClass: 'aa-polar' },
+        'E': { code3: 'Glu', name: 'Glutamic acid', property: '酸性 (-)', groupClass: 'aa-acidic' },
+        'G': { code3: 'Gly', name: 'Glycine', property: '非極性 (疎水性)', groupClass: 'aa-nonpolar' },
+        'H': { code3: 'His', name: 'Histidine', property: '塩基性 (+)', groupClass: 'aa-basic' },
+        'I': { code3: 'Ile', name: 'Isoleucine', property: '非極性 (疎水性)', groupClass: 'aa-nonpolar' },
+        'L': { code3: 'Leu', name: 'Leucine', property: '非極性 (疎水性)', groupClass: 'aa-nonpolar' },
+        'K': { code3: 'Lys', name: 'Lysine', property: '塩基性 (+)', groupClass: 'aa-basic' },
+        'M': { code3: 'Met', name: 'Methionine', property: '非極性 (疎水性)', groupClass: 'aa-nonpolar' },
+        'F': { code3: 'Phe', name: 'Phenylalanine', property: '非極性 (疎水性)', groupClass: 'aa-nonpolar' },
+        'P': { code3: 'Pro', name: 'Proline', property: '非極性 (疎水性)', groupClass: 'aa-nonpolar' },
+        'S': { code3: 'Ser', name: 'Serine', property: '極性 (無電荷)', groupClass: 'aa-polar' },
+        'T': { code3: 'Thr', name: 'Threonine', property: '極性 (無電荷)', groupClass: 'aa-polar' },
+        'W': { code3: 'Trp', name: 'Tryptophan', property: '非極性 (疎水性)', groupClass: 'aa-nonpolar' },
+        'Y': { code3: 'Tyr', name: 'Tyrosine', property: '極性 (無電荷)', groupClass: 'aa-polar' },
+        'V': { code3: 'Val', name: 'Valine', property: '非極性 (疎水性)', groupClass: 'aa-nonpolar' },
         '*': { code3: 'Ter', name: 'Stop codon', property: '翻訳終了', groupClass: 'aa-stop' },
         'X': { code3: 'Unk', name: 'Unknown', property: '不明', groupClass: 'aa-unknown' } // IUPAC等不明コード対応
     };
@@ -516,7 +485,7 @@
             let len0 = currentMRNAs[0].mrna.length;
             let len1 = currentMRNAs[1].mrna.length;
             if (len0 !== len1) {
-                showToast("⚠️ 警告: 比較する塩基配列の長さが異なります。\n\nアライメント（位置合わせ）されていないため、翻訳フレームがずれて不当に多くの突然変異（真っ赤）が検出される可能性があります。\n\n正確な比較を行うには、先に「アプリ⑤」でアライメントと開始位置のトリミングを行ってください。");
+                showToast("⚠️ 警告: 比較する塩基配列の長さが異なります。\n\nアライメント（位置合わせ）されていないため、翻訳フレームがずれて不当に多くの変異（真っ赤）が検出される可能性があります。\n\n正確な比較を行うには、先に「アプリ⑤」でアライメントと開始位置のトリミングを行ってください。");
             }
         }
 
@@ -561,7 +530,7 @@
             let tooltipText = `残基番号: ${pos}\n${aaData.code3} (${aaData.name})\n${aaData.property}`;
             if(isMutated) {
                 let dWT = aminoAcids[aaWT] || { code3: 'Unk', property: '不明' };
-                tooltipText = `⚠️ 突然変異箇所 (残基 ${pos})\n[野生型] ${dWT.code3} (${dWT.property})\n   ↓\n[突然変異体] ${aaData.code3} (${aaData.property})`;
+                tooltipText = `⚠️ 変異箇所 (残基 ${pos})\n[野生型] ${dWT.code3} (${dWT.property})\n   ↓\n[変異体] ${aaData.code3} (${aaData.property})`;
             }
             if(aaMut !== '?') div.setAttribute('data-tooltip', tooltipText);
 
@@ -584,20 +553,51 @@
             alertBox.style.color = '#c0392b';
             alertBox.innerHTML = `
                 <strong style="color:#c0392b; font-size:13px;">🚨 アミノ酸配列の変化を ${mutPositions.length} 箇所検出しました！</strong><br>
-                突然変異残基番号: ${mutPositions.join(', ')}<br><br>
-                <span style="color:#2c3e50;">この突然変異データは自動的にシステムに保存されました。<br>
+                変異残基番号: ${mutPositions.join(', ')}<br><br>
+                <span style="color:#2c3e50;">この変異データは自動的にシステムに保存されました。<br>
                 続いて <b>アプリ⑩（Protein Structure Explorer）</b> を開き、「変異を同期」ボタンを押して、この性質変化がポリペプチドの立体構造にどのような影響を与えているか確認してください。</span>`;
         } else if (currentMRNAs.length > 1) {
             alertBox.style.display = 'block';
             alertBox.style.borderColor = '#27ae60';
             alertBox.style.background = '#eafaf1';
             alertBox.style.color = '#1e8449';
-            alertBox.innerHTML = `<strong>✅ アミノ酸配列の変化（突然変異）は検出されませんでした。</strong><br>DNAの塩基配列が変化していてもアミノ酸配列が変わらない突然変異である可能性が高いです。`;
+            alertBox.innerHTML = `<strong>✅ アミノ酸配列の変化（変異）は検出されませんでした。</strong><br>DNAの塩基配列において突然変異が起きていてもアミノ酸配列が変わらない（同義置換）可能性が高いです。`;
         } else {
             alertBox.style.display = 'none'; 
         }
 
         document.getElementById('statusText').innerText = "翻訳完了。マウスを乗せてアミノ酸の性質を確認してください。";
+        document.getElementById('copyAaBtn').disabled = false;
+    }
+
+    function copyAminoAcids() {
+        if(!currentMRNAs || currentMRNAs.length === 0) return;
+        
+        let aaText = '';
+        currentMRNAs.forEach((seqObj, index) => {
+            let rna = seqObj.mrna;
+            let aaSeq = '';
+            for(let i=0; i < rna.length - 2; i+=3) {
+                let cod = rna.substring(i, i+3);
+                if(cod.includes('-')) continue;
+                let aa = codonTable[cod] || 'X';
+                aaSeq += aa === '*' ? '*' : aa;
+            }
+            if(index > 0) aaText += '\n\n';
+            aaText += `>${seqObj.name}\n${aaSeq}`;
+        });
+
+        const textarea = document.createElement('textarea');
+        textarea.value = aaText;
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+            document.execCommand('copy');
+            showToast("📋 アミノ酸配列をクリップボードにコピーしました");
+        } catch (err) {
+            showToast("⚠️ コピーに失敗しました");
+        }
+        document.body.removeChild(textarea);
     }
 
     // --- 💡 修正ポイント: ツールチップ見切れ防止（グローバル表示パッチ） ---
