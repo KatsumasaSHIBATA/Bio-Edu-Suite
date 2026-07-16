@@ -155,7 +155,7 @@
                     <label for="dil_mode_conc">濃度測定あり(C1V1)</label>
                 </div>
                 <div id="panel_dil_ratio">
-                    <div class="input-group"><label>DNA原液量</label><input type="number" id="dr_vol" value="5" step="0.1" oninput="calcDilution()"><span>μL</span></div>
+                    <div class="input-group"><label>DNA原液量</label><input type="number" id="dr_vol" value="5" step="0.1" oninput="handleTableInput(this); calcDilution()" onchange="handleTableChange(this); calcDilution()"><span>μL</span></div>
                     <div class="input-group"><label>希釈倍率</label>
                         <select id="dr_ratio" onchange="calcDilution()">
                             <option value="5">5倍</option><option value="10" selected>10倍</option><option value="20">20倍</option>
@@ -220,6 +220,11 @@
                     <label style="font-weight:900;">推奨 PCR総液量</label>
                     <input type="number" id="mm_total_vol" value="30" step="1" style="background:#2c3e50; color:white;" oninput="recalcVolumes()"><span>μL</span>
                 </div>
+                
+                <div class="bench-tip" style="margin-top: 15px;">
+                    <strong>💡 現場のコツ（スケールダウンについて）</strong><br>
+                    標準的なプロトコルでは余裕を持たせた総液量（30µL〜など）を設定しますが、予算が限られる教育現場や大量のサンプルを処理する研究室では、試薬を節約するために「スケールダウン（半量や20µL系への縮小）」を行うことがよくあります。目的の液量に合わせてパラメーターを調整してみましょう。
+                </div>
             </div>
         </div>
     </div>
@@ -259,13 +264,13 @@
                 <tbody id="mm_table">
                     <tr><td>💧 DW (滅菌水)</td><td id="val_1x_water" style="font-weight:bold; color:#2980b9;">13.0</td><td class="mm-result-val" id="val_mm_water">85.8</td></tr>
                     <tr class="row-premix"><td id="lbl_premix">2x KOD Master Mix</td><td id="val_1x_premix">15.0</td><td class="mm-result-val" id="val_mm_premix">99.0</td></tr>
-                    <tr class="row-sep" style="display:none;"><td id="lbl_buffer">10x Buffer</td><td><input type="number" id="val_1x_buf" value="3.0" step="0.1" class="tbl-input" oninput="calcMM()"></td><td class="mm-result-val" id="val_mm_buf">19.8</td></tr>
-                    <tr class="row-sep" style="display:none;"><td>dNTP Mixture</td><td><input type="number" id="val_1x_dntp" value="2.4" step="0.1" class="tbl-input" oninput="calcMM()"></td><td class="mm-result-val" id="val_mm_dntp">15.8</td></tr>
-                    <tr><td>Primer F (10µM)</td><td><input type="number" id="val_1x_fp" value="1.0" step="0.1" class="tbl-input" oninput="calcMM()"></td><td class="mm-result-val" id="val_mm_fp">6.6</td></tr>
-                    <tr><td>Primer R (10µM)</td><td><input type="number" id="val_1x_rp" value="1.0" step="0.1" class="tbl-input" oninput="calcMM()"></td><td class="mm-result-val" id="val_mm_rp">6.6</td></tr>
+                    <tr class="row-sep" style="display:none;"><td id="lbl_buffer">10x Buffer</td><td><input type="number" id="val_1x_buf" value="3.0" step="0.1" class="tbl-input" oninput="handleTableInput(this); calcMM()" onchange="handleTableChange(this); calcMM()"></td><td class="mm-result-val" id="val_mm_buf">19.8</td></tr>
+                    <tr class="row-sep" style="display:none;"><td>dNTP Mixture</td><td><input type="number" id="val_1x_dntp" value="2.4" step="0.1" class="tbl-input" oninput="handleTableInput(this); calcMM()" onchange="handleTableChange(this); calcMM()"></td><td class="mm-result-val" id="val_mm_dntp">15.8</td></tr>
+                    <tr><td>Primer F (10µM)</td><td><input type="number" id="val_1x_fp" value="1.0" step="0.1" class="tbl-input" oninput="handleTableInput(this); calcMM()" onchange="handleTableChange(this); calcMM()"></td><td class="mm-result-val" id="val_mm_fp">6.6</td></tr>
+                    <tr><td>Primer R (10µM)</td><td><input type="number" id="val_1x_rp" value="1.0" step="0.1" class="tbl-input" oninput="handleTableInput(this); calcMM()" onchange="handleTableChange(this); calcMM()"></td><td class="mm-result-val" id="val_mm_rp">6.6</td></tr>
                     <tr class="row-sep" style="display:none;"><td id="lbl_taq">Ex Taq 酵素</td><td><input type="number" id="val_1x_taq" value="0.15" step="0.05" class="tbl-input" oninput="calcMM()"></td><td class="mm-result-val" id="val_mm_taq">1.0</td></tr>
                     <tr style="background:#34495e; color:white;"><td>チューブへの分注量 (MM)</td><td id="val_1x_dist" style="font-weight:bold;">29.0</td><td style="color:#f1c40f;" id="val_mm_total">191.4</td></tr>
-                    <tr><td style="color:#e74c3c;">🦠 DNA (抽出液)</td><td><input type="number" id="val_1x_dna" value="1.0" step="0.1" class="tbl-input" oninput="calcMM()"></td><td style="font-size:10px; color:#7f8c8d;">MMに入れない</td></tr>
+                    <tr><td style="color:#e74c3c;">🦠 DNA (抽出液)</td><td><input type="number" id="val_1x_dna" value="1.0" step="0.1" class="tbl-input" oninput="handleTableInput(this); calcMM()" onchange="handleTableChange(this); calcMM()"></td><td style="font-size:10px; color:#7f8c8d;">MMに入れない</td></tr>
                 </tbody>
             </table>
 
@@ -296,6 +301,26 @@
 <div id="toast" class="toast"></div>
 
 <script>
+    // --- 追加: 入力値のフォーマットとエラーハンドリング ---
+    function handleTableInput(inputEl) {
+        const valStr = inputEl.value;
+        if (valStr.includes('.')) {
+            const decimalPart = valStr.split('.')[1];
+            // 小数第2位以上の入力があり、Taq酵素以外の場合に警告を表示
+            if (decimalPart && decimalPart.length > 1 && inputEl.id !== 'val_1x_taq') {
+                showToast('手動ピペッティングでは誤差が大きいため、0.1µL単位を推奨します', 'error');
+            }
+        }
+    }
+
+    function handleTableChange(inputEl) {
+        let val = parseFloat(inputEl.value);
+        if (!isNaN(val)) {
+            // 自動的に小数第1位にフォーマットする（例: 1 -> 1.0）
+            inputEl.value = val.toFixed(1);
+        }
+    }
+
     // --- アプリ②と共通のポップオーバー制御 ---
     document.addEventListener('click', closeRationale);
     document.addEventListener('touchstart', closeRationale, {passive: true});
