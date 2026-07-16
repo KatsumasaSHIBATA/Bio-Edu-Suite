@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sanger Trace Editor v2.3 | Bio-Edu Suite</title>
+    <title>Sanger Trace Editor v2.4 | Bio-Edu Suite</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         
@@ -145,7 +145,7 @@
     <div class="header">
         <h1>🧬 Sanger Trace Editor</h1>
         <p>Bio-Edu Suite: AB1 Binary Parsing, Trace Visualization & Curation</p>
-        <div class="version-badge">v2.3</div>
+        <div class="version-badge">v2.4</div>
     </div>
 </div>
 
@@ -207,11 +207,11 @@
                         🔍 塩基配列検索
                         <button class="rationale-btn" onclick="toggleRationale('rat_motif')" style="margin-right: 5px;">?</button>
                     </span>
-                    <input type="text" id="searchInput" class="primer-input" placeholder="検索する塩基配列を入力" style="width: 140px; text-transform: uppercase;" onkeypress="if(event.keyCode===13) searchSequence()" disabled>
-                    <button class="btn btn-option" id="btnSearch" style="padding: 4px 8px; font-size: 11px;" onclick="searchSequence()" disabled data-tooltip="入力した塩基配列を波形上で探し、ハイライトします。">✨ 検索</button>
-                    <button class="btn" id="btnClearSearch" style="padding: 4px 8px; font-size: 11px;" onclick="clearSearch()" disabled data-tooltip="ハイライトを解除し、元の表示に戻します。">❌ クリア</button>
+                    <input type="text" id="searchInput" class="primer-input" placeholder="塩基配列を入力" style="width: 140px; text-transform: uppercase;" onkeypress="if(event.keyCode===13) searchSequence()" disabled>
+                    <button class="btn btn-option" id="btnSearch" style="padding: 4px 8px; font-size: 11px;" onclick="searchSequence()" disabled data-tooltip="入力した塩基配列を検索し、強調表示します。">✨ 検索</button>
+                    <button class="btn" id="btnClearSearch" style="padding: 4px 8px; font-size: 11px;" onclick="clearSearch()" disabled data-tooltip="強調表示を解除します。">❌ クリア</button>
                 </div>
-                <span style="font-size: 10px; color: #7f8c8d; line-height: 1.4;">※プライマーの塩基配列等を検索し、黄色くハイライトします。</span>
+                <span style="font-size: 10px; color: #7f8c8d; line-height: 1.4;">※プライマー等を検索し、黄色くハイライトします。</span>
             </div>
 
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; border-left: 2px solid #bdc3c7; padding-left: 10px;">
@@ -231,8 +231,10 @@
             サンガーシーケンスの波形は、反応の特性上、最初と最後の数十〜数百塩基の波形が乱れます。このノイズ領域を残したままFASTAとして保存すると、後段のアライメント解析で致命的なエラーの原因となります。<br><br>
             <strong>【キーボード操作・ショートカット】</strong><br>
             ・一括削除: 波形（塩基）をドラッグで選択し [Backspace] または [Delete]<br>
-            ・ベースコール修正: 塩基を選択し [A][T][G][C][Y][R][N] 等を入力して波形に合わせて上書き<br>
-            ・移動: 矢印キー [↑][↓][←][→]<br><br>
+            ・ベースコール修正: 塩基を選択し [A][T][G][C][Y][R][N] 等を入力<br>
+            ・移動: 矢印キー [↑][↓][←][→]<br>
+            ・やり直し (Undo): [Ctrl]+[Z] または [Cmd]+[Z]<br>
+            ・やり直しの取り消し (Redo): [Ctrl]+[Y] または [Cmd]+[Shift]+[Z]<br><br>
             <strong>【参考：あいまい塩基表（IUPACコード）】</strong><br>
             波形が重なっている（ダブルピーク）部分の修正に使います。<br>
             Y (CかT), R (AかG), N (不明), W (AかT), S (CかG), M (AかC), K (GかT)
@@ -258,7 +260,7 @@
 </div>
 
 <div class="status-bar">
-    <span id="statusText">Status: Please load .ab1 file.</span>
+    <span id="statusText">ステータス: .ab1 ファイルを読み込んでください。</span>
     <span id="fileInfoText">File: - | Base: -</span>
 </div>
 
@@ -322,6 +324,10 @@
     let dragStartIndex = -1;
     let dragEndIndex = -1;
     let isDraggingBases = false;
+    
+    // Undo/Redo State Management
+    let historyStack = [];
+    let historyIndex = -1;
 
     const colorMap = {
         'A': '#27ae60',
@@ -332,13 +338,13 @@
 
     function processFile(file) {
         currentFileName = file.name;
-        document.getElementById('statusText').innerText = "Status: Parsing binary data...";
+        document.getElementById('statusText').innerText = "ステータス: バイナリデータを解析中...";
         
         const reader = new FileReader();
         reader.onload = function(e) {
             try {
                 ab1Data = parseAB1(e.target.result);
-                document.getElementById('statusText').innerText = "Status: Ready. Please check trace and curate.";
+                document.getElementById('statusText').innerText = "ステータス: 準備完了。波形を確認して修正してください。";
                 document.getElementById('fileInfoText').innerText = `File: ${currentFileName}`;
                 
                 document.getElementById('scaleX').disabled = false;
@@ -352,13 +358,50 @@
                 selectedBaseIndex = -1;
                 dragStartIndex = -1;
                 dragEndIndex = -1;
+                
+                historyStack = [];
+                historyIndex = -1;
+                saveHistory();
+
                 redrawAll();
             } catch (err) {
                 showToast("ファイルの解析に失敗しました。正しい .ab1 ファイルか確認してください。");
-                document.getElementById('statusText').innerText = "Status: Error parsing file.";
+                document.getElementById('statusText').innerText = "ステータス: ファイルの解析に失敗しました。";
             }
         };
         reader.readAsArrayBuffer(file);
+    }
+
+    function saveHistory() {
+        if (!ab1Data) return;
+        const snapshot = JSON.stringify(ab1Data.bases);
+        if (historyIndex < historyStack.length - 1) {
+            historyStack = historyStack.slice(0, historyIndex + 1);
+        }
+        historyStack.push(snapshot);
+        historyIndex++;
+        if (historyStack.length > 50) {
+            historyStack.shift();
+            historyIndex--;
+        }
+    }
+
+    function undo() {
+        if (historyIndex > 0) {
+            historyIndex--;
+            ab1Data.bases = JSON.parse(historyStack[historyIndex]);
+            redrawAll();
+            showToast("操作を取り消しました");
+        }
+    }
+
+    function redo() {
+        if (historyIndex < historyStack.length - 1) {
+            historyIndex++;
+            ab1Data.bases = JSON.parse(historyStack[historyIndex]);
+            redrawAll();
+            showToast("操作をやり直しました");
+        }
     }
 
     function parseAB1(arrayBuffer) {
@@ -587,38 +630,47 @@
     }
 
     document.addEventListener('keydown', function(e) {
-        if(e.target.tagName === 'INPUT' || !ab1Data) return;
+        if(!ab1Data) return;
+        
+        // Handle Undo/Redo Shortcuts
+        const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+        const undoTrigger = isMac ? (e.metaKey && e.key === 'z') : (e.ctrlKey && e.key === 'z');
+        const redoTrigger = isMac ? (e.metaKey && e.shiftKey && e.key === 'Z') : (e.ctrlKey && e.key === 'y');
+
+        if (undoTrigger) {
+            e.preventDefault();
+            undo();
+            return;
+        }
+        if (redoTrigger) {
+            e.preventDefault();
+            redo();
+            return;
+        }
+
+        if(e.target.tagName === 'INPUT') return;
         
         let prevent = false;
         let key = e.key.toUpperCase();
+        let changed = false;
 
         if (e.key === 'Backspace' || e.key === 'Delete') {
             if (dragStartIndex !== -1 && dragEndIndex !== -1) {
                 let min = Math.min(dragStartIndex, dragEndIndex);
                 let max = Math.max(dragStartIndex, dragEndIndex);
-                
                 let allDeleted = true;
-                for(let i=min; i<=max; i++) {
-                    if (!ab1Data.bases[i].isDeleted) allDeleted = false;
-                }
-                let targetState = !allDeleted;
-                
-                for(let i=min; i<=max; i++) {
-                    ab1Data.bases[i].isDeleted = targetState;
-                }
+                for(let i=min; i<=max; i++) { if (!ab1Data.bases[i].isDeleted) allDeleted = false; }
+                let target = !allDeleted;
+                for(let i=min; i<=max; i++) { ab1Data.bases[i].isDeleted = target; }
                 selectedBaseIndex = Math.min(ab1Data.bases.length - 1, max + 1);
-                dragStartIndex = -1;
-                dragEndIndex = -1;
-                prevent = true;
-                document.getElementById('statusText').innerText = "Status: Batch edited selected region.";
+                dragStartIndex = -1; dragEndIndex = -1;
+                prevent = true; changed = true;
             } else if (selectedBaseIndex !== -1) {
-                let baseObj = ab1Data.bases[selectedBaseIndex];
-                baseObj.isDeleted = !baseObj.isDeleted; 
-                if(baseObj.isDeleted) selectedBaseIndex = Math.min(ab1Data.bases.length - 1, selectedBaseIndex + 1);
-                prevent = true;
+                ab1Data.bases[selectedBaseIndex].isDeleted = !ab1Data.bases[selectedBaseIndex].isDeleted; 
+                if(ab1Data.bases[selectedBaseIndex].isDeleted) selectedBaseIndex = Math.min(ab1Data.bases.length - 1, selectedBaseIndex + 1);
+                prevent = true; changed = true;
             }
         } else if (selectedBaseIndex !== -1) {
-            let baseObj = ab1Data.bases[selectedBaseIndex];
             if (e.key === 'ArrowRight') {
                 selectedBaseIndex = Math.min(ab1Data.bases.length - 1, selectedBaseIndex + 1);
                 dragStartIndex = -1; dragEndIndex = -1;
@@ -628,17 +680,19 @@
                 dragStartIndex = -1; dragEndIndex = -1;
                 prevent = true;
             } else if (['A','T','G','C','U','N','Y','R','W','S','M','K','B','V','D','H'].includes(key)) {
+                let baseObj = ab1Data.bases[selectedBaseIndex];
                 baseObj.char = key;
                 baseObj.isEdited = true;
                 baseObj.isDeleted = false;
                 selectedBaseIndex = Math.min(ab1Data.bases.length - 1, selectedBaseIndex + 1);
                 dragStartIndex = -1; dragEndIndex = -1;
-                prevent = true;
+                prevent = true; changed = true;
             }
         }
 
         if (prevent) {
             e.preventDefault();
+            if(changed) saveHistory();
             redrawAll();
         }
     });
@@ -652,7 +706,6 @@
         }
 
         ab1Data.bases.forEach(b => b.isHighlight = false);
-
         let validIndices = [];
         let seqStr = "";
         ab1Data.bases.forEach((b, i) => {
@@ -665,11 +718,10 @@
         let matchIdx = seqStr.indexOf(query);
         if(matchIdx !== -1) {
             for(let i=0; i<query.length; i++) {
-                let actualIndex = validIndices[matchIdx + i];
-                ab1Data.bases[actualIndex].isHighlight = true;
+                ab1Data.bases[validIndices[matchIdx + i]].isHighlight = true;
             }
             selectBase(validIndices[matchIdx]);
-            document.getElementById('statusText').innerText = `Status: Highlighted sequence.`;
+            document.getElementById('statusText').innerText = `ステータス: 配列を強調表示しました。`;
         } else {
             showToast("指定された塩基配列が見つかりません。");
         }
@@ -681,7 +733,7 @@
         if(!ab1Data) return;
         ab1Data.bases.forEach(b => b.isHighlight = false);
         redrawAll();
-        document.getElementById('statusText').innerText = "Status: Search cleared.";
+        document.getElementById('statusText').innerText = "ステータス: 検索を解除しました。";
     }
 
     function showToast(msg) {
@@ -704,7 +756,6 @@
             document.execCommand('copy');
             showToast(successMessage);
         } catch (err) {
-            console.error('Fallback: Oops, unable to copy', err);
             showToast("コピーに失敗しました。");
         }
         document.body.removeChild(textArea);
@@ -725,7 +776,7 @@
         a.download = `${headerName}.fasta`; 
         a.click();
         
-        document.getElementById('statusText').innerText = `Status: File saved. Please proceed to DNA Alignment Studio.`;
+        document.getElementById('statusText').innerText = `ステータス: ファイルを保存しました。`;
         showToast("FASTAファイルを保存しました");
     }
 
@@ -739,37 +790,25 @@
         let headerName = currentFileName.replace(/\.ab1$/i, '_curated');
         let output = `>${headerName}\n${seqStr}\n`;
         
-        document.getElementById('statusText').innerText = `Status: Copied to clipboard. Please proceed to DNA Alignment Studio.`;
+        document.getElementById('statusText').innerText = `ステータス: クリップボードにコピーしました。`;
         copyToClipboardFallback(output.trim(), "FASTA形式でコピーしました");
     }
 
     const tooltip = document.getElementById('globalTooltip');
-
     document.body.addEventListener('mouseover', (e) => {
         const target = e.target.closest('[data-tooltip]');
         if (target) {
             const text = target.getAttribute('data-tooltip');
             tooltip.innerHTML = text;
             tooltip.style.display = 'block';
-            
             const rect = target.getBoundingClientRect();
             const ttRect = tooltip.getBoundingClientRect();
-            
             let topPos = rect.top - ttRect.height - 8;
             let leftPos = rect.left + (rect.width / 2);
             let arrowClass = 'show-top'; 
-
-            if (topPos < 0) {
-                topPos = rect.bottom + 8;
-                arrowClass = 'show-bottom'; 
-            }
-            
-            if (leftPos - ttRect.width / 2 < 5) {
-                leftPos = 5 + ttRect.width / 2;
-            } else if (leftPos + ttRect.width / 2 > window.innerWidth - 5) {
-                leftPos = window.innerWidth - ttRect.width / 2 - 5;
-            }
-
+            if (topPos < 0) { topPos = rect.bottom + 8; arrowClass = 'show-bottom'; }
+            if (leftPos - ttRect.width / 2 < 5) leftPos = 5 + ttRect.width / 2;
+            else if (leftPos + ttRect.width / 2 > window.innerWidth - 5) leftPos = window.innerWidth - ttRect.width / 2 - 5;
             tooltip.className = `custom-tooltip ${arrowClass}`;
             tooltip.style.top = topPos + 'px';
             tooltip.style.left = leftPos + 'px';
@@ -782,18 +821,11 @@
         const target = e.target.closest('[data-tooltip]');
         if (target) {
             tooltip.style.opacity = '0';
-            setTimeout(() => {
-                if (tooltip.style.opacity === '0') {
-                    tooltip.style.display = 'none';
-                }
-            }, 200);
+            setTimeout(() => { if (tooltip.style.opacity === '0') tooltip.style.display = 'none'; }, 200);
         }
     });
 
-    document.addEventListener('scroll', () => {
-        tooltip.style.opacity = '0';
-        tooltip.style.display = 'none';
-    }, true);
+    document.addEventListener('scroll', () => { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; }, true);
 </script>
 
 </body>
