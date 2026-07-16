@@ -24,7 +24,7 @@
         /* 根拠表示用スタイル (ポップオーバー化) */
         .rationale-btn { background: #1abc9c; color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; }
         .rationale-btn:hover { background: #16a085; transform: scale(1.1); }
-        .rationale-text { position: absolute; background: #fef9e7; border: 1px solid #f39c12; padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 6px 20px rgba(0,0,0,0.15); z-index: 9000; width: 320px; opacity: 0; visibility: hidden; transition: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55); transform: translateY(-10px); }
+        .rationale-text { position: absolute; background: #fef9e7; border: 1px solid #f39c12; padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 6px 20px rgba(0,0,0,0.15); z-index: 9000; width: 320px; opacity: 0; visibility: hidden; transition: opacity 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55), transform 0.2s; transform: translateY(-10px); }
         .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); }
         .rationale-text strong { color: #d35400; }
 
@@ -212,7 +212,7 @@
             </div>
 
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px; margin-bottom:5px;">
-                <label style="font-size:12px; font-weight:bold; color:#2c3e50;">1. アライメント済みFASTA (塩基配列 / アミノ酸配列) を入力 
+                <label style="font-size:12px; font-weight:bold; color:#2c3e50;">1. アライメント済みFASTAを入力 
                     <button class="rationale-btn" style="background:#e67e22;" onclick="toggleRationale(event, 'rat_seq_type')">?</button>
                 </label>
             </div>
@@ -230,7 +230,7 @@
             </div>
 
             <div style="display:flex; align-items:center; gap:10px; margin-top:5px;">
-                <button class="btn btn-primary" id="btnInit" onclick="initMatrix()" style="flex: 1;" data-tooltip="入力された塩基配列を比較し、距離行列を作成します">🧮 行列作成</button>
+                <button class="btn btn-primary" id="btnInit" onclick="initMatrix()" style="flex: 1;" data-tooltip="入力された塩基配列を比較し、距離行列を作成します">🧮 作成</button>
                 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_matrix')" style="flex-shrink: 0; margin-left: 0;">?</button>
             </div>
 
@@ -246,25 +246,25 @@
                     <h3 style="margin:0; font-size:12px; color:#2c3e50;" id="matrixTitle">📊 2. 現在の距離行列 (不一致率 %)</h3>
                     <button class="rationale-btn" onclick="toggleRationale(event, 'rat_upgma')">?</button>
                 </div>
-                <button class="btn btn-sm" id="btnExportCSV" onclick="exportMatrixCSV()" disabled data-tooltip="現在の距離行列をCSV形式で保存します">📥 CSV</button>
+                <button class="btn btn-sm" id="btnExportCSV" onclick="exportMatrixCSV()" disabled data-tooltip="現在の距離行列をCSV形式で保存します">📥 保存</button>
             </div>
 
             <div id="rat_upgma" class="rationale-text">
                 <strong>【根拠：結合アルゴリズムの違い】</strong><br>
                 ・<strong>平均距離法 (UPGMA法):</strong> 塩基置換速度が一定であると仮定し、単純な平均距離で更新します。共通祖先からの距離が全て揃います。<br>
                 ・<strong>近隣結合法 (NJ法):</strong> 「Q行列」という補正を行い、系統ごとに異なる塩基置換速度を考慮して計算します。<br>
-                ※実際の紙での計算と同じように、計算済みのペアは斜線で消し、新しいグループを右端と下端に書き足して行列を拡張していきます。
+                ※実際の紙での計算と同じように、計算済みのペアは斜線で消し、新しいグループをまとめて行列を更新していきます。
             </div>
             
             <div class="matrix-container" id="matrixContainer">
-                <div style="text-align:center; padding:15px; color:#7f8c8d; font-size:10px;">上の「🧮 行列作成」ボタンを押して行列を作成してください。</div>
+                <div style="text-align:center; padding:15px; color:#7f8c8d; font-size:10px;">上の「🧮 作成」ボタンを押して行列を作成してください。</div>
             </div>
 
             <button class="btn btn-step" id="btnNextStep" onclick="executeCombine()" data-tooltip="選択した2つの分類群を結合し、距離行列を更新します">▶ 結合</button>
 
             <div class="bench-tip">
                 <strong>💡 現場のコツ（MEGAのブラックボックスを開ける）</strong><br>
-                プロ用ソフトは一瞬で計算しますが、<strong>「最も距離が小さいペアが近縁になる」「ペアをまとめた新しい表をどんどん横に書き足していく」</strong>という手計算の裏側を知らないとソフトの奴隷になります。上の表から「一番小さな数字」を探してクリックしてみましょう！<br>
+                プロ用ソフトは一瞬で計算しますが、<strong>「最も距離が小さいペアが近縁になる」「ペアをまとめた新しい表をどんどん更新していく」</strong>という手計算の裏側を知らないとソフトの奴隷になります。上の表から「一番小さな数字」を探してクリックしてみましょう！<br>
                 <span style="color:#7f8c8d;">※最小値（同着）が複数ある場合はどれを選んでも正解です。</span>
             </div>
 
@@ -330,7 +330,7 @@
             <div style="margin-top: 15px; border: 1px solid #bdc3c7; border-radius: 4px; overflow: hidden; background: #fff;">
                 <div style="background: #eaeded; padding: 8px 15px; font-weight: bold; font-size: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #bdc3c7;">
                     <span style="color: #2c3e50;">📋 解析ログ (履歴)</span>
-                    <button class="btn btn-sm" id="btnDownloadLog" onclick="downloadLogCSV()" disabled style="background:#fff; border-color:#bdc3c7; box-shadow:none;" data-tooltip="履歴をCSVで保存します">📥 ブートストラップ結果を保存</button>
+                    <button class="btn btn-sm" id="btnDownloadLog" onclick="downloadLogCSV()" disabled style="background:#fff; border-color:#bdc3c7; box-shadow:none;" data-tooltip="履歴をCSVで保存します">📥 保存</button>
                 </div>
                 <div style="max-height: 200px; overflow-y: auto;">
                     <table class="log-table" style="width: 100%; text-align: left; border-collapse: collapse; font-size: 11px;">
@@ -394,7 +394,7 @@
             </button>
         </div>
 
-        <!-- Step 2: インタラクティブ枝クリック変異カウント検証ゲーム -->
+        <!-- Step 2: インタラクティブ枝クリック突然変異カウント検証ゲーム -->
         <div id="mpStep2" style="display:none;">
             <div class="edu-panel rationale-panel">
                 <strong>👨‍🏫 ステップ2：枝をクリックして「突然変異（色付きの棒）」を置き、最小回数を考えよう！</strong>
@@ -460,7 +460,7 @@
             
             <div id="mpStep2Feedback" class="assist-panel" style="display:none; margin-top:0; margin-bottom:15px;"></div>
             
-            <button id="btnProceedToStep3" class="btn btn-purple" style="background:#bdc3c7; border:none; cursor:not-allowed;" disabled onclick="proceedToMPStep3()" data-tooltip="配列全体で計算された総突然変異数を比較します">
+            <button id="btnProceedToStep3" class="btn btn-purple" style="background:#bdc3c7; border:none; cursor:not-allowed;" disabled onclick="proceedToMPStep3()" data-tooltip="塩基配列全体で計算された総突然変異数を比較します">
                 ▶ Step 3
             </button>
         </div>
@@ -469,7 +469,7 @@
         <div id="mpStep3" style="display:none;">
             <div class="edu-panel rationale-panel">
                 <strong>👨‍🏫 ステップ3：最も最節約的な樹形を選ぶ</strong><br>
-                全座位（配列全体）について計算された総突然変異数が集計され、代表的な座位の突然変異が枝にマッピングされました。<br>
+                全座位（塩基配列全体）について計算された総突然変異数が集計され、代表的な座位の突然変異が枝にマッピングされました。<br>
                 <strong>最も突然変異数が少ない（最節約的な、最も進化の無駄がない）樹形を以下からクリックして選択してください。</strong><br>
                 <span style="font-size:11px; color:#7f8c8d;">※選択肢の配置はランダムにシャッフルされています。<br>※見やすさのため、系統樹の枝上へのマッピングは、発見した情報座位のうち最大5箇所までに省略して表示しています。</span>
             </div>
@@ -490,7 +490,7 @@
     <div class="modal-content" style="max-width: 500px; text-align: center;">
         <h3 class="modal-title" style="color: #c0392b; border-bottom: none;">⚠️ 配列の長さが揃っていません</h3>
         <p style="font-size: 14px; color: #2c3e50; line-height: 1.6; text-align: left;">
-            入力されたFASTAデータの各配列の文字数（長さ）が異なるため、比較計算を開始できません。
+            入力されたFASTAデータの各塩基配列・アミノ酸配列の文字数（長さ）が異なるため、比較計算を開始できません。
         </p>
         <div class="assist-panel" style="text-align: left; background-color: #fef9e7; border-left-color: #f39c12; margin-top: 15px;">
             <div class="assist-title" style="color: #d35400;">💡 解決へのヒント</div>
@@ -563,7 +563,7 @@
         tooltip.style.display = 'none';
     }, true);
 
-    // --- ポップオーバー解説パネル (要素を押し下げない絶対配置) ---
+    // --- ポップオーバー解説パネル (要素を押し下げない絶対配置 + 画面見切れフリップ対応) ---
     function toggleRationale(event, id) {
         event.stopPropagation();
         const el = document.getElementById(id);
@@ -579,8 +579,23 @@
                 document.body.appendChild(el);
             }
             
+            // 一旦座標をリセットして表示し、高さを取得する
+            el.style.top = '0px';
+            el.style.left = '0px';
+            el.classList.add('show');
+            
+            // レイアウト計算のためのリフロー
+            const elHeight = el.offsetHeight;
             const rect = btn.getBoundingClientRect();
-            el.style.top = (rect.bottom + window.scrollY + 10) + 'px';
+            
+            let topPos = rect.bottom + window.scrollY + 10;
+            
+            // 画面下端に見切れる場合はボタンの上側に配置 (Tooltip Flip)
+            if (rect.bottom + elHeight + 20 > window.innerHeight) {
+                topPos = rect.top + window.scrollY - elHeight - 10;
+            }
+            
+            el.style.top = topPos + 'px';
             
             let leftPos = rect.left + window.scrollX - 160 + rect.width / 2;
             if (leftPos + 320 > window.innerWidth) {
@@ -589,7 +604,6 @@
             if (leftPos < 10) leftPos = 10;
             
             el.style.left = leftPos + 'px';
-            el.classList.add('show');
         }
     }
 
@@ -614,7 +628,7 @@
     // 解析ログ用配列
     let analysisLogs = [];
 
-    // 共通のトースト通知
+    // 共通のトースト通知 (alertの代替)
     function showToast(message) {
         const toast = document.getElementById('toast');
         if (!toast) return;
@@ -629,8 +643,8 @@
         distanceMatrix = [];
         stepCount = 0;
         selectedPair = null;
-        document.getElementById('matrixContainer').innerHTML = '<div style="text-align:center; padding:15px; color:#7f8c8d; font-size:10px;">上の「🧮 行列作成」ボタンを押して行列を作成してください。</div>';
-        document.getElementById('statusLog').innerHTML = '[SYSTEM] アルゴリズムを変更しました。「🧮 行列作成」から再計算してください。';
+        document.getElementById('matrixContainer').innerHTML = '<div style="text-align:center; padding:15px; color:#7f8c8d; font-size:10px;">上の「🧮 作成」ボタンを押して行列を作成してください。</div>';
+        document.getElementById('statusLog').innerHTML = '[SYSTEM] アルゴリズムを変更しました。「🧮 作成」から再計算してください。';
         document.getElementById('btnNextStep').style.display = 'none';
         document.getElementById('btnExportCSV').disabled = true;
         document.getElementById('btnSaveImg').disabled = true;
@@ -702,7 +716,7 @@
         });
         if(name) seqs.push({name, seq});
 
-        if(seqs.length < 3) { showToast("⚠️ 3つ以上の配列が必要です。"); return; }
+        if(seqs.length < 3) { showToast("⚠️ 3つ以上の塩基配列/アミノ酸配列が必要です。"); return; }
         let len = seqs[0].seq.length;
         if(!seqs.every(s => s.seq.length === len)) { 
             document.getElementById('errorSuggestModal').style.display = 'flex';
@@ -712,7 +726,7 @@
         originalSeqs = seqs;
         originalNames = seqs.map(s => s.name);
         
-        // 診断用データの収集とパネルHTML生成 (フォントサイズを調整)
+        // 診断用データの収集とパネルHTML生成
         let totalChars = 0;
         let gapChars = 0;
         seqs.forEach(s => {
@@ -787,7 +801,7 @@
     }
 
     function createCSV() {
-        let csv = "Sequence," + originalNames.join(",") + "\n";
+        let csv = "塩基配列/アミノ酸配列," + originalNames.join(",") + "\n";
         for(let i=0; i<originalNames.length; i++) {
             csv += originalNames[i] + ",";
             let rowVals = [];
@@ -940,7 +954,7 @@
         if(name) seqs.push({name, seq});
 
         if(seqs.length < 4) { 
-            showToast("⚠️ 最節約法 (MP法) のシミュレーションには4つ以上の配列が必要です。"); 
+            showToast("⚠️ 最節約法 (MP法) のシミュレーションには4つ以上の塩基配列/アミノ酸配列が必要です。"); 
             return; 
         }
         let len = seqs[0].seq.length;
@@ -1403,7 +1417,7 @@
                     <div class="assist-reason" style="color:#2c3e50;">座位によっては「突然変異数がどの樹形でも同じ」場合と、「特定の系統樹だけで突然変異が少なくて済む（合理的）」場合があります。</div>
                     <div class="assist-fix" style="border-color:#2ecc71; color:#117864;">
                         👉 最小の突然変異数で説明できる系統樹を探索する最節約法 (MP法) の本質が、これで実感できましたね。<br>
-                        準備が整いました。全座位を集計した配列全体のステップに進みましょう！
+                        準備が整いました。全座位を集計した塩基配列全体のステップに進みましょう！
                     </div>
                 </div>
             `;
@@ -1619,7 +1633,7 @@
             feedback.innerHTML = `
                 <div class="assist-item">
                     <div class="assist-title" style="color: #27ae60;">🎉 大正解！最も突然変異数が少ない（最節約的な）樹形を選びました。</div>
-                    <div class="assist-reason" style="color: #2c3e50;">配列全体における突然変異の合計値が最も小さくなる「系統樹 ${index === 1 ? 'I' : index === 2 ? 'II' : 'III'}」が、最も無駄のない進化モデルとして学術的に支持されます。</div>
+                    <div class="assist-reason" style="color: #2c3e50;">塩基配列全体における突然変異の合計値が最も小さくなる「系統樹 ${index === 1 ? 'I' : index === 2 ? 'II' : 'III'}」が、最も無駄のない進化モデルとして学術的に支持されます。</div>
                     <div class="assist-fix" style="border-color: #27ae60; background: #fff; color: #1e8449;">
                         💡 実際の分子系統解析では、何万〜何億サイトにも及ぶ遺伝情報をコンピュータで走査します。<br>
                         しかし裏側で行われているのは、今回のように「情報をもつ座位ごとに最小の突然変異数をカウントし、その和が最も少なくなるモデルを選択する」という、あなたが体験した地道な最節約法 (MP法) のアルゴリズムそのものです！
@@ -1697,16 +1711,20 @@
         let displayMatrix = distanceMatrix;
         if(algo === "NJ") displayMatrix = getNJQMatrix().q;
 
+        // ★ 固定N行N列表示: originalNamesを使用してヘッダーを増殖させずツールチップも削除
         let html = "<table><tr><th></th>";
-        clusters.forEach(c => {
+        for (let i = 0; i < clusters.length; i++) {
+            let c = clusters[i];
             let headerCls = c.active ? 'scientific-name' : 'scientific-name matrix-inactive-header';
-            html += `<th data-tooltip="${formatScientificName(c.name)}"><span class="${headerCls}">${formatScientificName(c.name)}</span></th>`;
-        });
+            let displayName = formatScientificName(originalNames[i]);
+            html += `<th><span class="${headerCls}">${displayName}</span></th>`;
+        }
         html += "</tr>";
         
         for(let i=0; i<clusters.length; i++) {
             let headerCls = clusters[i].active ? 'scientific-name' : 'scientific-name matrix-inactive-header';
-            html += `<tr><th data-tooltip="${formatScientificName(clusters[i].name)}"><span class="${headerCls}">${formatScientificName(clusters[i].name)}</span></th>`;
+            let displayName = formatScientificName(originalNames[i]);
+            html += `<tr><th><span class="${headerCls}">${displayName}</span></th>`;
             for(let j=0; j<clusters.length; j++) {
                 if(i === j) {
                     html += `<td class="matrix-diagonal">-</td>`;
@@ -1746,7 +1764,7 @@
 
         if(isCorrect) {
             selectedPair = {i: i, j: j, dist: distanceMatrix[i][j]};
-            document.getElementById('statusLog').innerHTML = `[正解！] <i class="highlight-step scientific-name" style="color:#f1c40f;">${formatScientificName(clusters[i].name)}</i> と <i class="highlight-step scientific-name" style="color:#f1c40f;">${formatScientificName(clusters[j].name)}</i> が一番近いですね。<br>「▶ 結合」ボタンを押して、計算済みのペアを斜線で消し、新しいグループを書き足しましょう。`;
+            document.getElementById('statusLog').innerHTML = `[正解！] <i class="highlight-step scientific-name" style="color:#f1c40f;">${formatScientificName(clusters[i].name)}</i> と <i class="highlight-step scientific-name" style="color:#f1c40f;">${formatScientificName(clusters[j].name)}</i> が一番近いですね。<br>「▶ 結合」ボタンを押して、計算済みのペアを斜線で消し、新しいグループとして行列を更新しましょう。`;
             document.getElementById('btnNextStep').style.display = 'block';
             document.getElementById('btnNextStep').disabled = false;
             renderMatrix();
@@ -1797,25 +1815,27 @@
 
         let newNode = { name: `(${formatScientificName(c1.name)},${formatScientificName(c2.name)})`, id: nextNodeId++, size: c1.size+c2.size, maxDepth: newMaxDepth, left: c1, right: c2, edge: 0, active: true, minLeafIndex: Math.min(c1.minLeafIndex, c2.minLeafIndex) };
         
-        let newDistRow = [];
+        // ★ N x N の表サイズを維持するためのインプレース行列更新
+        let newDistForI = [];
         for(let k=0; k<n; k++) {
-            let d = 0;
             if (k === i || k === j) {
-                d = 0;
+                newDistForI.push(0);
             } else {
-                d = algo === "UPGMA" 
+                let d = algo === "UPGMA" 
                     ? (distanceMatrix[i][k]*c1.size + distanceMatrix[j][k]*c2.size)/newNode.size 
                     : (distanceMatrix[i][k] + distanceMatrix[j][k] - distanceMatrix[i][j])/2;
+                newDistForI.push(d);
             }
-            newDistRow.push(d);
-            distanceMatrix[k].push(d); 
         }
-        newDistRow.push(0); 
-        distanceMatrix.push(newDistRow); 
         
-        clusters[i].active = false;
+        for(let k=0; k<n; k++) {
+            distanceMatrix[i][k] = newDistForI[k];
+            distanceMatrix[k][i] = newDistForI[k];
+        }
+        distanceMatrix[i][i] = 0;
+        
+        clusters[i] = newNode;
         clusters[j].active = false;
-        clusters.push(newNode);
         
         selectedPair = null;
         document.getElementById('btnNextStep').style.display = 'none';
@@ -1848,7 +1868,7 @@
         } else {
             renderMatrix(); 
             drawTree();
-            document.getElementById('statusLog').innerHTML = `[STEP ${stepCount}] 新しいグループの行列を右・下に拡張し、計算済みのペアを斜線で消しました。<br><b>続けて、有効なセルの中から一番小さい数字をクリックしてください。</b>`;
+            document.getElementById('statusLog').innerHTML = `[STEP ${stepCount}] 新しいグループの距離を行列内でインプレース更新し、計算済みのペアを斜線で消しました。<br><b>続けて、有効なセルの中から一番小さい数字をクリックしてください。</b>`;
         }
     }
 
