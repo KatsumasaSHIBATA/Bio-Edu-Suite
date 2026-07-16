@@ -35,25 +35,12 @@
             color: #7e5109; 
             line-height: 1.5; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
-            position: absolute !important; 
+            position: fixed !important; 
             z-index: 2000 !important;
             width: 300px !important;
             max-width: 90vw;
             margin: 0 !important;
         }
-
-        /* 💡追加: アプリ⑤/⑩由来のUI用クラス */
-        .form-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
-        .form-group label { font-size: 12px; font-weight: 600; color: #7f8c8d; }
-        .input-row { display: flex; gap: 8px; align-items: stretch; width: 100%; }
-        .input-row > input { flex: 1; min-width: 0; }
-        .input-row .btn-primary { flex: 0 0 auto; white-space: nowrap; padding: 6px 12px; font-size: 12px; border-radius: 4px; display: flex; align-items: center; justify-content: center; gap: 5px; }
-        .loader { border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid #fff; border-radius: 50%; width: 12px; height: 12px; animation: spin 1s linear infinite; display: none; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .btn-primary { background: #3498db; color: white; border: 1px solid #2980b9; cursor: pointer; font-weight: bold; transition: 0.2s;}
-        .btn-primary:hover { background: #2980b9; }
-        .slider-container { display: flex; align-items: center; gap: 8px; background: #fdf2e9; padding: 8px 12px; border-radius: 4px; border-left: 3px solid #e67e22; font-size: 12px; font-weight: bold; color: #d35400; white-space: nowrap; }
-        input[type=range] { flex: 1; cursor: pointer; }
 
         /* 設定グループ */
         .settings-group { background: #fdfefe; border: 1px solid #e5e8e8; padding: 15px; border-radius: 6px; margin-bottom: 15px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);}
@@ -116,7 +103,7 @@
         .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px; border-radius: 6px; font-size: 11px; color: #2c3e50; margin-top: 15px; line-height: 1.5; }
         .bench-tip strong { color: #2980b9; font-size: 12px;}
 
-        /* 要素の重なり(z-index)による隠れを防ぐ、JS駆動の動的ツールチップ用スタイル */
+        /* JS駆動の動的ツールチップ用スタイル */
         [data-tooltip] { cursor: pointer; }
         .custom-tooltip {
             position: fixed;
@@ -149,15 +136,27 @@
         .toast.error { background: #e74c3c; }
         .toast.success { background: #27ae60; }
 
+        .form-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+        .form-group label { font-size: 12px; font-weight: 600; color: #7f8c8d; }
+        .input-row { display: flex; gap: 8px; align-items: stretch; width: 100%; }
+        .input-row > input { flex: 1; min-width: 0; }
+        .input-row .btn-primary { flex: 0 0 auto; white-space: nowrap; padding: 6px 12px; font-size: 12px; border-radius: 4px; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .loader { border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid #fff; border-radius: 50%; width: 12px; height: 12px; animation: spin 1s linear infinite; display: none; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .btn-primary { background: #3498db; color: white; border: 1px solid #2980b9; cursor: pointer; font-weight: bold; transition: 0.2s;}
+        .btn-primary:hover { background: #2980b9; }
+
+        .slider-container { display: flex; align-items: center; gap: 8px; background: #fdf2e9; padding: 8px 12px; border-radius: 4px; border-left: 3px solid #e67e22; font-size: 12px; font-weight: bold; color: #d35400; white-space: nowrap; }
+        input[type=range] { flex: 1; cursor: pointer; }
+
         .footer { width: 100%; background: #1a252f; padding: 15px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; margin-top: auto; border-top: 1px solid #2c3e50; }
         
         @media screen and (max-width: 768px) {
             .main-content { grid-template-columns: 1fr; padding: 10px; }
             .gel-card { position: static; }
             .card { min-width: 100% !important; margin-bottom: 10px; }
-            .toolbar-row, .scoring-panel { flex-direction: column; align-items: stretch; gap: 8px; }
             .btn, .search-input, .primer-input { width: 100% !important; justify-content: center; padding: 12px; font-size: 14px; }
-            .slider-container, .slider-group { width: 100%; justify-content: space-between; }
+            .slider-container { width: 100%; justify-content: space-between; }
         }
     </style>
 </head>
@@ -178,7 +177,7 @@
         <div class="card-body">
             
             <div class="settings-group">
-                <h4>1. 鋳型DNA（FASTA）の入力 <button class="rationale-btn" onclick="toggleRationale('rat_fasta')" title="DNAデータとは？">?</button></h4>
+                <h4>1. 鋳型DNA（FASTA）の入力 <button class="rationale-btn" onclick="toggleRationale('rat_fasta')">?</button></h4>
                 <div id="rat_fasta" class="rationale-text">
                     <strong>【根拠】</strong> ここには、抽出液の中に含まれているはずの「元のDNAの塩基配列（ターゲット領域周辺）」を入力します。NCBI等のデータベースから取得したFASTA形式のテキストデータを貼り付けます。
                 </div>
@@ -200,13 +199,13 @@
                     </div>
                 </div>
                 
-                <textarea id="fastaInput" placeholder="FASTA形式の塩基配列を入力してください"></textarea>
+                <textarea id="fastaInput" placeholder="※コピーしたテキストデータ (FASTA等) をここに直接貼り付け (Ctrl+V) てください"></textarea>
             </div>
 
             <div class="settings-group">
-                <h4>2. PCR設定 <button class="rationale-btn" onclick="toggleRationale('rat_pcr')" title="なぜミスマッチを許すの？">?</button></h4>
+                <h4>2. PCR設定 <button class="rationale-btn" onclick="toggleRationale('rat_pcr')">?</button></h4>
                 <div id="rat_pcr" class="rationale-text">
-                    <strong>【根拠：許容率】</strong> プライマーはDNAに100%一致しなくても、突然変異等による多少の塩基配列の違いならくっついて増幅します（特に遠縁の生物種の場合）。これを再現するため、あえて0%〜30%の「遊び（Fuzzy）」を持たせて検索します。
+                    <strong>【根拠：ミスマッチ許容率】</strong> プライマーはDNAに100%一致しなくても、突然変異等による多少の塩基配列の違いならくっついて増幅します（特に遠縁の生物種の場合）。これを再現するため、あえて0%〜30%の「遊び（Fuzzy）」を持たせて検索します。
                 </div>
                 <div class="input-group">
                     <label>Primer F (5' ➡ 3'):</label>
@@ -216,37 +215,47 @@
                     <label>Primer R (5' ➡ 3'):</label>
                     <input type="text" id="primerR" value="" class="mono-input" placeholder="3'側のプライマー配列を入力">
                 </div>
-                <div class="slider-container">
-                    <span>許容率:</span>
-                    <input type="range" id="fuzzyPercent" min="0" max="100" value="20" oninput="updateMismatchVal(this.value)">
-                    <span id="mismatchVal" style="width: 30px; color: #e74c3c; text-align: right;">20%</span>
+                <div style="background: #f8f9f9; padding: 8px 12px; border-radius: 4px; border: 1px solid #dcdde1; display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                    <span style="font-size:12px; font-weight:bold; color:#34495e;">許容率:</span>
+                    <input type="range" id="fuzzyPercent" min="0" max="100" value="20" oninput="updateMismatchVal(this.value)" style="flex: 1; cursor: pointer; margin: 0;">
+                    <span id="mismatchVal" style="width: 35px; color: #e74c3c; text-align: right; font-weight: bold; font-size: 12px;">20%</span>
+                </div>
+                
+                <div class="bench-tip" style="margin-top: 10px;">
+                    <strong>💡 現場のコツ（アニーリング温度と非特異的増幅）</strong><br>
+                    シミュレーターの「許容率」は、実際のPCR機器（サーマルサイクラー）における<strong>「アニーリング温度」</strong>に相当します。温度を低く設定しすぎる（＝許容率を緩める）と、プライマーが目的以外の似た塩基配列にも結合してしまい、無数の不要なバンド（非特異的増幅）が生じてしまいます。スライダーを右に動かして、わざと失敗させてみましょう！
                 </div>
             </div>
             
             <div class="settings-group">
-                <h4>3. RFLP (制限酵素) 設定 <button class="rationale-btn" onclick="toggleRationale('rat_re')" title="なぜ制限酵素で切るの？">?</button></h4>
+                <h4>3. RFLP (制限酵素) 設定 <button class="rationale-btn" onclick="toggleRationale('rat_re')">?</button></h4>
                 <div id="rat_re" class="rationale-text">
                     <strong>【根拠：RFLP法の原理】</strong> PCRで増やしたDNAの長さが同じでも、生物種によって「中の塩基配列」は異なります。特定の塩基配列（例: GGATCC）だけを認識して切る「ハサミ（制限酵素）」を使うことで、塩基配列の違いを「切れた長さの違い」として可視化できます。
                 </div>
                 
                 <div style="display: flex; gap: 8px; margin-bottom: 10px; align-items: center;">
                     <select id="enzymeSelect" onchange="loadEnzymeToEditor()" style="flex: 1;"></select>
-                    <button onclick="deleteEnzyme()" class="del-btn" data-tooltip="選択中の制限酵素を削除" style="white-space: nowrap; flex-shrink: 0;">🗑️</button>
+                    <button onclick="deleteEnzyme()" class="del-btn" data-tooltip="選択中の制限酵素を削除" style="white-space: nowrap; flex-shrink: 0;">🗑️ 削除</button>
                 </div>
                 
                 <div class="enzyme-editor">
                     <span class="enzyme-editor-title">✏️ 酵素の追加・編集 (選択して上書き)</span>
                     <div class="input-row" style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-                        <input type="text" id="customName" placeholder="制限酵素の名前を入力" style="flex: 1.5; min-width: 90px; font-size: 12px; padding: 6px;">
-                        <input type="text" id="customSeq" placeholder="認識する塩基配列を入力" class="mono-input" style="flex: 2; min-width: 120px; font-size: 12px; padding: 6px;">
-                        <input type="number" id="customCut" placeholder="切断位置を入力" style="flex: 1; min-width: 70px; font-size: 12px; padding: 6px;" min="0">
-                        <button onclick="saveEnzyme()" class="add-btn" data-tooltip="入力した情報で制限酵素を保存します" style="white-space: nowrap; flex-shrink: 0;">💾</button>
+                        <input type="text" id="customName" placeholder="名前(例:BamHI)" style="flex: 1.5; min-width: 90px; font-size: 12px; padding: 6px;">
+                        <input type="text" id="customSeq" placeholder="認識配列(例:GGATCC)" class="mono-input" style="flex: 2; min-width: 120px; font-size: 12px; padding: 6px;">
+                        <input type="number" id="customCut" placeholder="位置(例:1)" style="flex: 1; min-width: 70px; font-size: 12px; padding: 6px;" min="0">
+                        <button onclick="saveEnzyme()" class="add-btn" data-tooltip="入力した情報で制限酵素を保存します" style="white-space: nowrap; flex-shrink: 0;">💾 保存</button>
                     </div>
+                </div>
+                
+                <div class="bench-tip" style="margin-top: 10px;">
+                    <strong>💡 現場のコツ（制限酵素のスター活性）</strong><br>
+                    制限酵素は非常にデリケートなタンパク質です。反応させる時間が長すぎたり、酵素の原液を入れすぎたりすると、本来切らないはずの「少しだけ似ている別の塩基配列」まで手当たり次第に切ってしまうことがあります。これを<strong>「スター活性（Star activity）」</strong>と呼び、実験失敗の大きな原因になります。
                 </div>
             </div>
 
             <div class="settings-group">
-                <h4>4. 電気泳動設定 <button class="rationale-btn" onclick="toggleRationale('rat_gel')" title="電気泳動の条件とは？">?</button></h4>
+                <h4>4. 電気泳動設定 <button class="rationale-btn" onclick="toggleRationale('rat_gel')">?</button></h4>
                 <div id="rat_gel" class="rationale-text">
                     <strong>【根拠：ゲル濃度と泳動時間】</strong><br>
                     ・<strong>アガロース濃度：</strong> 濃度が高いと網目が細かくなり、小さいDNA断片の分離が良くなります。低いと大きな断片を分けるのに適しています。<br>
@@ -275,7 +284,7 @@
             </div>
 
             <div class="btn-group">
-                <button onclick="runPipeline()" class="action-btn" data-tooltip="Virtual PCRと制限酵素処理のシミュレーションを実行します">🚀 実行</button>
+                <button onclick="runPipeline()" class="action-btn" data-tooltip="Virtual PCRと制限酵素処理のシミュレーションを実行します">🚀 解析を実行</button>
             </div>
 
         </div>
@@ -364,8 +373,8 @@
             
             if (btn) {
                 const rect = btn.getBoundingClientRect();
-                let topPos = rect.bottom + window.scrollY + 8;
-                let leftPos = rect.left + window.scrollX;
+                let topPos = rect.bottom + 8;
+                let leftPos = rect.left;
                 const elWidth = 300; 
                 if (leftPos + elWidth > window.innerWidth) leftPos = window.innerWidth - elWidth - 10;
                 
@@ -384,11 +393,8 @@
         document.querySelectorAll('.rationale-text').forEach(p => p.style.display = 'none');
     }, true);
 
-    function updateMismatchVal(val) { 
-        document.getElementById('mismatchVal').innerText = val + '%'; 
-    }
 
-    // 💡 JS駆動の動的ツールチップシステム
+    // 💡 完全に重なりを回避する、JS駆動の動的ツールチップシステム
     const tooltip = document.createElement('div');
     tooltip.className = 'custom-tooltip';
     document.body.appendChild(tooltip);
@@ -442,28 +448,8 @@
         tooltip.style.display = 'none';
     }, true);
 
-    // --- NCBI APIから自動取得 ---
-    async function fetchNCBI() {
-        const idInput = document.getElementById('ncbiId').value.trim();
-        if(!idInput) return;
-        
-        const loader = document.getElementById('apiLoader');
-        if(loader) loader.style.display = 'inline-block';
-        
-        try {
-            const response = await fetch(`https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=${idInput}&rettype=fasta&retmode=text`);
-            if (!response.ok) throw new Error("HTTP " + response.status);
-            const data = await response.text();
-            if (!data || data.includes('Error')) throw new Error("データが見つかりませんでした。");
-            
-            let val = document.getElementById('fastaInput').value;
-            document.getElementById('fastaInput').value = val ? val + '\n' + data : data;
-            showToast("NCBIからデータを取得・追加しました。", "success");
-        } catch (error) {
-            showToast("取得エラー:\n" + error.message, "error");
-        } finally {
-            if(loader) loader.style.display = 'none';
-        }
+    function updateMismatchVal(val) { 
+        document.getElementById('mismatchVal').innerText = val + '%'; 
     }
 
     // 📂 ファイル読み込み・ドラッグ＆ドロップ処理
@@ -522,11 +508,11 @@
 
     // 🧬 制限酵素データベース
     let enzymeDB = {
-        "EcoRI":   { seq: "GAATTC", offset: 1},
-        "BamHI":   { seq: "GGATCC", offset: 1},
-        "HindIII": { seq: "AAGCTT", offset: 1},
-        "SmaI":    { seq: "CCCGGG", offset: 3},
-        "AluI":    { seq: "AGCT",   offset: 2}
+        "EcoRI":   { seq: "GAATTC", offset: 1, desc: "絶対的エース" },
+        "BamHI":   { seq: "GGATCC", offset: 1, desc: "大定番" },
+        "HindIII": { seq: "AAGCTT", offset: 1, desc: "超定番" },
+        "SmaI":    { seq: "CCCGGG", offset: 3, desc: "平滑末端の代表格" },
+        "AluI":    { seq: "AGCT",   offset: 2, desc: "4塩基認識" }
     };
 
     window.onload = () => { 
@@ -549,7 +535,7 @@
 
     function renderEnzymeSelect() {
         const select = document.getElementById('enzymeSelect');
-        const currentValue = select.value || "NoCut";
+        const currentValue = select.value || "NoCut"; 
         select.innerHTML = '';
         
         select.innerHTML += '<option value="NoCut">-- 切らない (PCR産物そのまま) --</option>';
@@ -696,23 +682,31 @@
         
         let safeSize = Math.max(minSize, Math.min(size, maxSize));
         
+        // 対数スケールによるサイズベースの相対位置 (0: 2000bp, 1: 50bp)
         let ratio = (Math.log10(maxSize) - Math.log10(safeSize)) / (Math.log10(maxSize) - Math.log10(minSize));
+        
+        // ゲル濃度と時間の影響ファクター
+        // 濃度が高いほど進みにくく、時間が長いほど進む
         let factor = (runTime / 30) * (1.0 / Math.pow(agarose, 1.5));
+        
         let travel = baseMaxTravel * ratio * factor;
         
         return wellPos + travel;
     }
 
     function formatSpeciesName(name) {
+        // 例: "NC_00001.1 Homo sapiens chromosome 1" から "Homo sapiens" の形を探す
+        // 大文字で始まる単語 + (スペースやアンダーバー) + 小文字だけの単語
         const regex = /([A-Z][a-z]+)[_\s]+([a-z]+)/;
         let match = name.match(regex);
         
         if (match) {
             let genus = match[1];
             let species = match[2];
-            return `<i>${genus.charAt(0)}. ${species}</i>`;
+            return `${genus.charAt(0)}. <i>${species}</i>`;
         }
         
+        // パターンが見つからない場合は、最初の単語だけで短く表示するフォールバック
         let parts = name.split(/[_ ]/);
         return parts[0].length > 12 ? parts[0].substring(0, 10) + '..' : parts[0];
     }
@@ -735,7 +729,7 @@
         let tbodyHtml = "", gelHtml = "";
         const ladderSizes = [2000, 1500, 1000, 750, 500, 400, 300, 200, 100];
         
-        let maxBandTop = 0; 
+        let maxBandTop = 0; // スクロール領域動的拡張用
         
         gelHtml += `<div class="lane"><div class="well"></div><div class="lane-title" style="color:#ff9f43;">Marker</div>`;
         ladderSizes.forEach(size => {
@@ -750,6 +744,7 @@
             let amplicon = virtualPCR(sample.seq, pF, pR, fuzzyPercent);
             let pcrStatus = "", fragStr = "", fragments = [];
             
+            // フォーマットした名前と、ツールチップ用の元の完全な名前
             let formattedName = formatSpeciesName(sample.name);
 
             if (amplicon) {
