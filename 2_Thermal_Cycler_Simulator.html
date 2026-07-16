@@ -279,11 +279,11 @@
                 </div>
                 <div style="display:flex; gap:5px; margin-bottom:4px; align-items:center;">
                     <span style="font-size:11px; width:115px; flex-shrink:0; font-weight:bold; color:#2c3e50;">Primer F (5' ➡ 3'):</span>
-                    <input type="text" id="primerF" value="" placeholder="5'側のプライマー配列を入力" style="font-family: 'Courier New', Courier, monospace;" oninput="calculateTm()">
+                    <input type="text" id="primerF" value="" placeholder="5'側プライマー配列を入力" style="font-family: 'Courier New', Courier, monospace;" oninput="calculateTm()">
                 </div>
                 <div style="display:flex; gap:5px; align-items:center;">
                     <span style="font-size:11px; width:115px; flex-shrink:0; font-weight:bold; color:#2c3e50;">Primer R (5' ➡ 3'):</span>
-                    <input type="text" id="primerR" value="" placeholder="3'側のプライマー配列を入力" style="font-family: 'Courier New', Courier, monospace;" oninput="calculateTm()">
+                    <input type="text" id="primerR" value="" placeholder="3'側プライマー配列を入力" style="font-family: 'Courier New', Courier, monospace;" oninput="calculateTm()">
                 </div>
                 <div id="annealHintText" class="dynamic-hint">
                     💡 KOD Oneは、アニーリング基準値(Tm平均)と同じ温度に設定します。
@@ -365,33 +365,33 @@
                 <button class="hw-btn" style="position: absolute; top: 80px; left: 80px; width: 48px; height: 48px; border-radius: 50%; background: #e74c3c; color: white; font-size: 11px; font-weight: bold; border: 2px solid #c0392b; box-shadow: 0 4px 0 #922b21;" onclick="pressStop()" data-tooltip="プログラムを初期化します">STOP</button>
 
                 <!-- EXT -->
-                <button class="hw-btn" style="position: absolute; top: 15px; left: 190px; width: 55px; height: 36px; background: #f0f3f4; color: #2c3e50; font-size: 13px; font-weight: bold; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6; border-radius: 6px;" onmousedown="event.preventDefault();" onclick="navBtn('EXT')">EXT</button>
+                <button class="hw-btn" style="position: absolute; top: 15px; left: 190px; width: 55px; height: 36px; background: #f0f3f4; color: #2c3e50; font-size: 13px; font-weight: bold; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6; border-radius: 6px;" onmousedown="event.preventDefault();" onclick="navBtn('EXT')" data-tooltip="1つ前の画面に戻ります">EXT</button>
 
                 <!-- SEL -->
-                <button class="hw-btn" style="position: absolute; top: 80px; left: 190px; width: 55px; height: 36px; background: #f0f3f4; color: #2c3e50; font-size: 13px; font-weight: bold; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6; border-radius: 6px; display: flex; flex-direction: column; line-height: 1;" onmousedown="event.preventDefault();" onclick="navBtn('SEL')">SEL<span style="font-size: 10px;">⏏</span></button>
+                <button class="hw-btn" style="position: absolute; top: 80px; left: 190px; width: 55px; height: 36px; background: #f0f3f4; color: #2c3e50; font-size: 13px; font-weight: bold; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6; border-radius: 6px; display: flex; flex-direction: column; line-height: 1;" onmousedown="event.preventDefault();" onclick="navBtn('SEL')" data-tooltip="項目の選択・切り替え">SEL<span style="font-size: 10px;">⏏</span></button>
 
                 <!-- 十字キー -->
-                <button class="hw-btn" style="position: absolute; top: 112px; left: 135px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 16px; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="navBtn('UP')">⬆︎</button>
-                <button class="hw-btn" style="position: absolute; top: 162px; left: 85px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 16px; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="navBtn('LEFT')">⬅︎</button>
-                <button class="hw-btn" style="position: absolute; top: 162px; left: 135px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 16px; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="navBtn('DOWN')">⬇︎</button>
-                <button class="hw-btn" style="position: absolute; top: 162px; left: 185px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 16px; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="navBtn('RIGHT')">➡︎</button>
+                <button class="hw-btn" style="position: absolute; top: 112px; left: 135px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 16px; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="navBtn('UP')" data-tooltip="カーソル移動(上)">⬆︎</button>
+                <button class="hw-btn" style="position: absolute; top: 162px; left: 85px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 16px; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="navBtn('LEFT')" data-tooltip="カーソル移動(左)">⬅︎</button>
+                <button class="hw-btn" style="position: absolute; top: 162px; left: 135px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 16px; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="navBtn('DOWN')" data-tooltip="カーソル移動(下)">⬇︎</button>
+                <button class="hw-btn" style="position: absolute; top: 162px; left: 185px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 16px; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="navBtn('RIGHT')" data-tooltip="カーソル移動(右)">➡︎</button>
 
                 <!-- テンキー -->
-                <button class="hw-btn" style="position: absolute; top: 15px; left: 265px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('7')">7</button>
-                <button class="hw-btn" style="position: absolute; top: 15px; left: 315px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('8')">8</button>
-                <button class="hw-btn" style="position: absolute; top: 15px; left: 365px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('9')">9</button>
+                <button class="hw-btn" style="position: absolute; top: 15px; left: 265px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('7')" data-tooltip="数値の入力">7</button>
+                <button class="hw-btn" style="position: absolute; top: 15px; left: 315px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('8')" data-tooltip="数値の入力">8</button>
+                <button class="hw-btn" style="position: absolute; top: 15px; left: 365px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('9')" data-tooltip="数値の入力">9</button>
 
-                <button class="hw-btn" style="position: absolute; top: 75px; left: 265px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('4')">4</button>
-                <button class="hw-btn" style="position: absolute; top: 75px; left: 315px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('5')">5</button>
-                <button class="hw-btn" style="position: absolute; top: 75px; left: 365px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('6')">6</button>
+                <button class="hw-btn" style="position: absolute; top: 75px; left: 265px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('4')" data-tooltip="数値の入力">4</button>
+                <button class="hw-btn" style="position: absolute; top: 75px; left: 315px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('5')" data-tooltip="数値の入力">5</button>
+                <button class="hw-btn" style="position: absolute; top: 75px; left: 365px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('6')" data-tooltip="数値の入力">6</button>
 
-                <button class="hw-btn" style="position: absolute; top: 135px; left: 265px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('1')">1</button>
-                <button class="hw-btn" style="position: absolute; top: 135px; left: 315px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('2')">2</button>
-                <button class="hw-btn" style="position: absolute; top: 135px; left: 365px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('3')">3</button>
+                <button class="hw-btn" style="position: absolute; top: 135px; left: 265px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('1')" data-tooltip="数値の入力">1</button>
+                <button class="hw-btn" style="position: absolute; top: 135px; left: 315px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('2')" data-tooltip="数値の入力">2</button>
+                <button class="hw-btn" style="position: absolute; top: 135px; left: 365px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('3')" data-tooltip="数値の入力">3</button>
 
-                <button class="hw-btn" style="position: absolute; top: 195px; left: 265px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 16px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="clearNum()">C</button>
-                <button class="hw-btn" style="position: absolute; top: 195px; left: 315px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('0')">0</button>
-                <button class="hw-btn" style="position: absolute; top: 195px; left: 365px; width: 42px; height: 42px; background: #2980b9; color: white; font-size: 13px; font-weight: bold; border-radius: 6px; border: 1px solid #1f618d; box-shadow: 0 3px 0 #154360;" onmousedown="event.preventDefault();" onclick="navBtn('ENT')">ENT</button>
+                <button class="hw-btn" style="position: absolute; top: 195px; left: 265px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 16px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="clearNum()" data-tooltip="入力値のクリア">C</button>
+                <button class="hw-btn" style="position: absolute; top: 195px; left: 315px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('0')" data-tooltip="数値の入力">0</button>
+                <button class="hw-btn" style="position: absolute; top: 195px; left: 365px; width: 42px; height: 42px; background: #2980b9; color: white; font-size: 13px; font-weight: bold; border-radius: 6px; border: 1px solid #1f618d; box-shadow: 0 3px 0 #154360;" onmousedown="event.preventDefault();" onclick="navBtn('ENT')" data-tooltip="決定 / 編集モード(↓点滅)の開始・終了">ENT</button>
             </div>
         </div>
 
@@ -570,6 +570,27 @@
         setTimeout(() => { toast.classList.remove('show'); }, 3000);
     }
 
+    function handleVolInput(inputEl) {
+        const valStr = inputEl.value;
+        if (valStr.includes('.')) {
+            const decimalPart = valStr.split('.')[1];
+            if (decimalPart && decimalPart.length > 1) {
+                showToast('手動ピペッティングでは誤差が大きいため、0.1µL単位を推奨します', 'error');
+            }
+        }
+        calculateVol();
+    }
+
+    function handleVolChange(inputEl) {
+        let val = parseFloat(inputEl.value);
+        if (!isNaN(val)) {
+            if (Number.isInteger(val) || val.toString().split('.')[1].length === 1) {
+                inputEl.value = val.toFixed(1);
+            }
+        }
+        calculateVol();
+    }
+
     function importFromApp1() {
         try {
             const dataStr = localStorage.getItem('bio_edu_mm_data');
@@ -729,7 +750,7 @@
         
         let html = '';
         rData.items.forEach(item => {
-            html += `<span>${item.label}</span><input type="number" step="0.01" class="reagent-input" value="${item.default}" oninput="calculateVol()">`;
+            html += `<span>${item.label}</span><input type="number" step="0.1" class="reagent-input" value="${Number(item.default).toFixed(1)}" oninput="handleVolInput(this)" onchange="handleVolChange(this)">`;
         });
         html += `<span class="reagent-total">合計液量:</span><div class="reagent-total" id="rTotal">-- µL</div>`;
         gridEl.innerHTML = html;
@@ -932,16 +953,16 @@
                     let deg = lcdData.view === 'RUNNING' ? '<span class="blink">°</span>' : '°';
                     let stLabel = lcdData.view === 'PAUSE' ? ' PAUSE' : ' RUN  ';
                     let t1_run = lcdData.p1.t.padStart(4, ' ');
-                    html = `「${lcdData.progName}」    SV ↓  ${t1_run}°\n` +
-                           `              TM ↓  ${lcdData.p1.m}\n` +
-                           `              PV       . ${deg}\n` +
+                    html = `「${lcdData.progName}」    SV ↓ ${t1_run}°\n` +
+                           `            TM ↓ ${lcdData.p1.m}\n` +
+                           `            PV     . ${deg}\n` +
                            ` \n` +
                            ` ${stLabel}                             ←→`;
                 } else {
                     let t1_1 = lcdData.p1.t.padStart(4, ' ');
-                    html = `「${lcdData.progName}」    SV ${c_arr(0)}  ${v(0, t1_1)}°\n` +
-                           `              TM ${c_arr(1)}  ${v(1, lcdData.p1.m)}\n` +
-                           `              PV       . °\n` +
+                    html = `「${lcdData.progName}」    SV ${c_arr(0)} ${v(0, t1_1)}°\n` +
+                           `            TM ${c_arr(1)} ${v(1, lcdData.p1.m)}\n` +
+                           `            PV     . °\n` +
                            ` \n` +
                            `   ${c_opt(2)}RUN           ${c_opt(3)}Store         ←→`;
                 }
@@ -951,9 +972,9 @@
                 let t2_1 = lcdData.p2.t1.padStart(4, ' ');
                 let t2_2 = lcdData.p2.t2.padStart(4, ' ');
                 let t2_3 = lcdData.p2.t3.padStart(4, ' ');
-                html = `SV ${c_arr(0)}  ${v(0, t2_1)}°  ${c_arr(2)}  ${v(2, t2_2)}°  ${c_arr(4)}  ${v(4, t2_3)}°\n` +
-                       `TM ${c_arr(1)}  ${v(1, lcdData.p2.m1)}   ${c_arr(3)}  ${v(3, lcdData.p2.m2)}   ${c_arr(5)}  ${v(5, lcdData.p2.m3)}\n` +
-                       `PV       . °          . °          . °\n` +
+                html = `SV ${c_arr(0)} ${v(0, t2_1)}°  ${c_arr(2)} ${v(2, t2_2)}°  ${c_arr(4)} ${v(4, t2_3)}°\n` +
+                       `TM ${c_arr(1)} ${v(1, lcdData.p2.m1)}  ${c_arr(3)} ${v(3, lcdData.p2.m2)}  ${c_arr(5)} ${v(5, lcdData.p2.m3)}\n` +
+                       `PV     . °      . °      . °\n` +
                        ` \n` +
                        ` 1h07m        ${c_blank(6)} N=  /${v(6, lcdData.p2.n.padStart(2,'0'), true)}           ←→`;
                 break;
@@ -962,9 +983,9 @@
                 let t3_1 = lcdData.p3.t1.padStart(4, ' ');
                 let t3_2 = lcdData.p3.t2.padStart(4, ' ');
                 let inf = lcdData.p3.m2 === '∞' ? '  ∞  ' : lcdData.p3.m2.padStart(5, ' '); 
-                html = `SV ${c_arr(0)}  ${v(0, t3_1)}°     ${c_arr(2)}  ${v(2, t3_2)}°\n` +
-                       `TM ${c_arr(1)}  ${v(1, lcdData.p3.m1)}      ${c_arr(3)}  ${v(3, inf)}\n` +
-                       `PV       . °           . °\n` +
+                html = `SV ${c_arr(0)} ${v(0, t3_1)}°     ${c_arr(2)} ${v(2, t3_2)}°\n` +
+                       `TM ${c_arr(1)} ${v(1, lcdData.p3.m1)}     ${c_arr(3)} ${v(3, inf)}\n` +
+                       `PV     . °         . °\n` +
                        ` \n` +
                        `   ${c_opt(4)}RUN           ${c_opt(5)}Store            ←`;
                 break;
@@ -1305,6 +1326,17 @@
             else if(lcdData.view === 'HOME') { lcdData.cursor = Math.max(0, lcdData.cursor - 1); }
             else if(lcdData.view === 'TEMPLATE') { lcdData.cursor = Math.max(0, lcdData.cursor - 1); }
         } else if (dir === 'DOWN') {
+            if(lcdData.view === 'STORE_NAME_INPUT') {
+                if(lcdData.saveNameCursor < 2) {
+                    let c = lcdData.saveName.charCodeAt(lcdData.saveNameCursor);
+                    c = c === 65 ? 90 : c - 1; 
+                    let arr = lcdData.saveName.split('');
+                    arr[lcdData.saveNameCursor] = String.fromCharCode(c);
+                    lcdData.saveName = arr.join('');
+                    renderLCD();
+                }
+                return;
+            }
             if(lcdData.editing) return;
             let max = 0;
             if(lcdData.view==='HOME') max=4; if(lcdData.view==='TEMPLATE') max=7;
@@ -1320,7 +1352,9 @@
                     let arr = lcdData.saveName.split('');
                     arr[lcdData.saveNameCursor] = String.fromCharCode(c);
                     lcdData.saveName = arr.join('');
+                    renderLCD();
                 }
+                return;
             } else if(lcdData.editing) return;
             else lcdData.cursor = Math.max(0, lcdData.cursor - 1);
         }
@@ -1649,4 +1683,3 @@
 
 </body>
 </html>
-```eof
