@@ -62,19 +62,10 @@
         textarea { width: 100%; box-sizing: border-box; border: 1px solid #bdc3c7; border-radius: 4px; padding: 10px; font-family: monospace; font-size: 11px; height: 100px; background: #fafbfc; transition: 0.3s; margin-bottom: 5px; resize: vertical;}
         textarea.dragover { background-color: #e8f8f5; border-color: #1abc9c; }
         
-        /* 酵素編集UI */
-        .enzyme-editor { background: #e8f8f5; padding: 12px; border-radius: 6px; border: 1px dashed #1abc9c; margin-top: 10px;}
-        .enzyme-editor-title { font-size: 11px; font-weight: bold; color: #16a085; display:block; margin-bottom:8px; }
-        
         /* ボタン類 */
         .btn-group { display: flex; gap: 10px; margin-top: 10px; }
         .action-btn { background-color: #e74c3c; color: white; border: none; padding: 12px 20px; font-size: 14px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; flex: 1; box-shadow: 0 3px 0 #c0392b;}
         .action-btn:hover { background-color: #c0392b; transform: translateY(2px); box-shadow: 0 1px 0 #c0392b;}
-        
-        .add-btn { background-color: #27ae60; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; transition: 0.2s;}
-        .add-btn:hover { background-color: #219150; }
-        .del-btn { background-color: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; transition: 0.2s;}
-        .del-btn:hover { background-color: #c0392b; }
 
         /* 結果テーブル */
         table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
@@ -185,7 +176,7 @@
                 <div class="form-group">
                     <label>オンラインから取得 (NCBI)</label>
                     <div class="input-row">
-                        <input type="text" id="ncbiId" class="mono-input" placeholder="ID (例: NM_000518)" onkeypress="if(event.keyCode===13) fetchNCBI()" data-tooltip="NCBIデータベースから指定したIDの塩基配列を取得します">
+                        <input type="text" id="ncbiId" class="mono-input" placeholder="Accession No. を入力" onkeypress="if(event.keyCode===13) fetchNCBI()" data-tooltip="NCBIデータベースから指定したIDの塩基配列を取得します">
                         <button class="btn-primary" onclick="fetchNCBI()" data-tooltip="NCBIデータベースからデータを取得します">🌐 取得 <span id="apiLoader" class="loader"></span></button>
                     </div>
                 </div>
@@ -199,7 +190,7 @@
                     </div>
                 </div>
                 
-                <textarea id="fastaInput" placeholder="※コピーしたテキストデータ (FASTA等) をここに直接貼り付け (Ctrl+V) てください"></textarea>
+                <textarea id="fastaInput" placeholder="FASTA形式などのテキストデータを貼り付け"></textarea>
             </div>
 
             <div class="settings-group">
@@ -209,11 +200,11 @@
                 </div>
                 <div class="input-group">
                     <label>Primer F (5' ➡ 3'):</label>
-                    <input type="text" id="primerF" value="" class="mono-input" placeholder="5'側のプライマー配列を入力">
+                    <input type="text" id="primerF" value="" class="mono-input" placeholder="5'側のプライマー塩基配列を入力">
                 </div>
                 <div class="input-group">
                     <label>Primer R (5' ➡ 3'):</label>
-                    <input type="text" id="primerR" value="" class="mono-input" placeholder="3'側のプライマー配列を入力">
+                    <input type="text" id="primerR" value="" class="mono-input" placeholder="3'側のプライマー塩基配列を入力">
                 </div>
                 <div style="background: #f8f9f9; padding: 8px 12px; border-radius: 4px; border: 1px solid #dcdde1; display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
                     <span style="font-size:12px; font-weight:bold; color:#34495e;">許容率:</span>
@@ -230,22 +221,17 @@
             <div class="settings-group">
                 <h4>3. RFLP (制限酵素) 設定 <button class="rationale-btn" onclick="toggleRationale('rat_re')">?</button></h4>
                 <div id="rat_re" class="rationale-text">
-                    <strong>【根拠：RFLP法の原理】</strong> PCRで増やしたDNAの長さが同じでも、生物種によって「中の塩基配列」は異なります。特定の塩基配列（例: GGATCC）だけを認識して切る「ハサミ（制限酵素）」を使うことで、塩基配列の違いを「切れた長さの違い」として可視化できます。
+                    <strong>【根拠：RFLP法の原理】</strong> PCRで増やしたDNAの長さが同じでも、生物種によって「中の塩基配列」は異なります。特定の塩基配列（例: GGATCC）だけを認識して切る「ハサミ（制限酵素）」を使うことで、塩基配列の違いを「切れた長さの違い」として可視化できます。<br><br>
+                    <strong>【平滑末端 (Blunt end) とは】</strong><br>
+                    DNAの二重鎖を真ん中でスパッと切断した状態です。断面に突出（オーバーハング）がないため、どの平滑末端同士でも結合させやすいという利点があります。一方、 EcoRI のような「粘着末端」は、相補的な塩基配列としか結合できない代わりに、特定の方向に正確に繋ぐことができます。
                 </div>
                 
                 <div style="display: flex; gap: 8px; margin-bottom: 10px; align-items: center;">
-                    <select id="enzymeSelect" onchange="loadEnzymeToEditor()" style="flex: 1;"></select>
-                    <button onclick="deleteEnzyme()" class="del-btn" data-tooltip="選択中の制限酵素を削除" style="white-space: nowrap; flex-shrink: 0;">🗑️ 削除</button>
-                </div>
-                
-                <div class="enzyme-editor">
-                    <span class="enzyme-editor-title">✏️ 酵素の追加・編集 (選択して上書き)</span>
-                    <div class="input-row" style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-                        <input type="text" id="customName" placeholder="名前(例:BamHI)" style="flex: 1.5; min-width: 90px; font-size: 12px; padding: 6px;">
-                        <input type="text" id="customSeq" placeholder="認識配列(例:GGATCC)" class="mono-input" style="flex: 2; min-width: 120px; font-size: 12px; padding: 6px;">
-                        <input type="number" id="customCut" placeholder="位置(例:1)" style="flex: 1; min-width: 70px; font-size: 12px; padding: 6px;" min="0">
-                        <button onclick="saveEnzyme()" class="add-btn" data-tooltip="入力した情報で制限酵素を保存します" style="white-space: nowrap; flex-shrink: 0;">💾 保存</button>
-                    </div>
+                    <button id="btnOpenEnzymeModal" class="btn-primary" style="flex: 1; text-align: left; background: #fff; color: #2c3e50; border-color: #bdc3c7; display: flex; justify-content: space-between;" onclick="openEnzymeModal(event)" data-tooltip="制限酵素データベースから検索・選択します">
+                        <span id="selectedEnzymeLabel">-- 切らない (PCR産物そのまま) --</span>
+                        <span>🔍 選択</span>
+                    </button>
+                    <input type="hidden" id="enzymeSelect" value="NoCut">
                 </div>
                 
                 <div class="bench-tip" style="margin-top: 10px;">
@@ -284,7 +270,7 @@
             </div>
 
             <div class="btn-group">
-                <button onclick="runPipeline()" class="action-btn" data-tooltip="Virtual PCRと制限酵素処理のシミュレーションを実行します">🚀 解析を実行</button>
+                <button onclick="runPipeline()" class="action-btn" data-tooltip="Virtual PCRと制限酵素処理のシミュレーションを実行します">🚀 解析</button>
             </div>
 
         </div>
@@ -349,6 +335,20 @@
 <!-- トースト通知用要素 -->
 <div id="toast" class="toast"></div>
 
+<!-- 制限酵素選択用モーダル (ポップオーバー) -->
+<div id="enzymeModal" class="rationale-text" style="width: 400px; max-width: 95vw; display: none; flex-direction: column; z-index: 2000; padding: 0; box-shadow: 0 4px 20px rgba(0,0,0,0.3); border-radius: 6px; overflow: hidden; max-height: 60vh;">
+    <div style="background: #34495e; color: white; padding: 10px 15px; font-weight: bold; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center;">
+        <span>✂️ 制限酵素データベース</span>
+        <span style="font-size: 10px; font-weight: normal; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px;" id="enzymeCount">0 種</span>
+    </div>
+    <div style="padding: 10px; background: #eaeded; border-bottom: 1px solid #bdc3c7;">
+        <input type="text" id="enzymeSearch" style="padding: 8px 10px; font-family: monospace; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 13px; background: #fff; outline: none; width: 100%; box-sizing: border-box;" placeholder="酵素名または認識塩基配列で検索" oninput="filterEnzymes()">
+    </div>
+    <div id="enzymeListContent" style="padding: 0; font-size: 12px; color: #2c3e50; overflow-y: auto; flex: 1; display: flex; flex-direction: column; min-height: 0; -webkit-overflow-scrolling: touch; background: #fff;">
+        <!-- リストの中身 -->
+    </div>
+</div>
+
 <script>
     function showToast(message, type = 'success') {
         const toast = document.getElementById('toast');
@@ -357,15 +357,20 @@
         setTimeout(() => { toast.classList.remove('show'); }, 3000);
     }
 
-    // 💡 確実に画面上に表示されるポップオーバー（解説パネル）の制御ロジック
+    // 確実に画面上に表示されるポップオーバー（解説パネル）の制御ロジック
     function toggleRationale(id) {
         const el = document.getElementById(id);
         if (!el) return;
         
         const isBlock = (el.style.display === 'block');
-        document.querySelectorAll('.rationale-text').forEach(e => e.style.display = 'none');
+        // モーダル以外のすべてのポップオーバーを閉じる
+        document.querySelectorAll('.rationale-text').forEach(e => {
+            if(e.id !== 'enzymeModal') e.style.display = 'none';
+        });
+        document.getElementById('enzymeModal').style.display = 'none';
         
         if (!isBlock) {
+            // body直下に移動してz-index等の影響をリセット
             if (el.parentNode !== document.body) document.body.appendChild(el);
             
             el.style.display = 'block';
@@ -384,24 +389,30 @@
         }
     }
 
+    // モーダルやポップオーバー外をクリック・スクロール時の処理
     document.addEventListener('mousedown', function(e) {
-        if (!e.target.closest('.rationale-btn') && !e.target.closest('.rationale-text')) {
+        if (!e.target.closest('.rationale-btn') && !e.target.closest('.rationale-text') && !e.target.closest('#btnOpenEnzymeModal')) {
             document.querySelectorAll('.rationale-text').forEach(el => el.style.display = 'none');
         }
     });
-    window.addEventListener('scroll', function() {
+    window.addEventListener('scroll', function(e) {
+        // モーダル内やポップオーバー内のスクロールは無視
+        if (e.target && typeof e.target.closest === 'function' && (e.target.closest('.rationale-text') || e.target.closest('#enzymeModal'))) {
+            return;
+        }
         document.querySelectorAll('.rationale-text').forEach(p => p.style.display = 'none');
     }, true);
 
 
-    // 💡 完全に重なりを回避する、JS駆動の動的ツールチップシステム
+    // 完全に重なりを回避する、JS駆動の動的ツールチップシステム
     const tooltip = document.createElement('div');
     tooltip.className = 'custom-tooltip';
     document.body.appendChild(tooltip);
 
     document.body.addEventListener('mouseover', (e) => {
         const target = e.target.closest('[data-tooltip]');
-        if (target) {
+        // rationale-btn (?) にはツールチップを表示しない
+        if (target && !target.classList.contains('rationale-btn')) {
             tooltip.innerHTML = target.getAttribute('data-tooltip').replace(/\n/g, '<br>');
             tooltip.style.display = 'block';
             
@@ -443,7 +454,10 @@
         }
     });
     
-    document.addEventListener('scroll', () => {
+    document.addEventListener('scroll', (e) => {
+        if (e.target && typeof e.target.closest === 'function' && e.target.closest('#enzymeModal')) {
+            return;
+        }
         tooltip.style.opacity = '0';
         tooltip.style.display = 'none';
     }, true);
@@ -506,17 +520,114 @@
         });
     }
 
-    // 🧬 制限酵素データベース
+    // 🧬 制限酵素データベース (NEBcutter準拠データに基づく完全実装 + 100個目のDpnI)
     let enzymeDB = {
-        "EcoRI":   { seq: "GAATTC", offset: 1 },
-        "BamHI":   { seq: "GGATCC", offset: 1 },
-        "HindIII": { seq: "AAGCTT", offset: 1 },
-        "SmaI":    { seq: "CCCGGG", offset: 3 },
-        "AluI":    { seq: "AGCT",   offset: 2 }
+        "EcoRI": { "site": "GAATTC", "cut_site": 1, "is_blunt": false },
+        "BamHI": { "site": "GGATCC", "cut_site": 1, "is_blunt": false },
+        "HindIII": { "site": "AAGCTT", "cut_site": 1, "is_blunt": false },
+        "NotI": { "site": "GCGGCCGC", "cut_site": 2, "is_blunt": false },
+        "XhoI": { "site": "CTCGAG", "cut_site": 1, "is_blunt": false },
+        "SmaI": { "site": "CCCGGG", "cut_site": 3, "is_blunt": true },
+        "KpnI": { "site": "GGTACC", "cut_site": 5, "is_blunt": false },
+        "PstI": { "site": "CTGCAG", "cut_site": 5, "is_blunt": false },
+        "HaeIII": { "site": "GGCC", "cut_site": 2, "is_blunt": true },
+        "AluI": { "site": "AGCT", "cut_site": 2, "is_blunt": true },
+        "SacI": { "site": "GAGCTC", "cut_site": 5, "is_blunt": false },
+        "SalI": { "site": "GTCGAC", "cut_site": 1, "is_blunt": false },
+        "XbaI": { "site": "TCTAGA", "cut_site": 1, "is_blunt": false },
+        "SpeI": { "site": "ACTAGT", "cut_site": 1, "is_blunt": false },
+        "NheI": { "site": "GCTAGC", "cut_site": 1, "is_blunt": false },
+        "BglII": { "site": "AGATCT", "cut_site": 1, "is_blunt": false },
+        "ClaI": { "site": "ATCGAT", "cut_site": 2, "is_blunt": false },
+        "NcoI": { "site": "CCATGG", "cut_site": 1, "is_blunt": false },
+        "SphI": { "site": "GCATGC", "cut_site": 5, "is_blunt": false },
+        "ApaI": { "site": "GGGCCC", "cut_site": 5, "is_blunt": false },
+        "EcoRV": { "site": "GATATC", "cut_site": 3, "is_blunt": true },
+        "SspI": { "site": "AATATT", "cut_site": 3, "is_blunt": true },
+        "DraI": { "site": "TTTAAA", "cut_site": 3, "is_blunt": true },
+        "MseI": { "site": "TTAA", "cut_site": 1, "is_blunt": false },
+        "TaqI": { "site": "TCGA", "cut_site": 1, "is_blunt": false },
+        "Sau3AI": { "site": "GATC", "cut_site": 0, "is_blunt": false },
+        "MboI": { "site": "GATC", "cut_site": 0, "is_blunt": false },
+        "HinfI": { "site": "GANTC", "cut_site": 1, "is_blunt": false },
+        "RsaI": { "site": "GTAC", "cut_site": 2, "is_blunt": true },
+        "HhaI": { "site": "GCGC", "cut_site": 3, "is_blunt": false },
+        "AvaI": { "site": "CYCGRG", "cut_site": 1, "is_blunt": false },
+        "AflII": { "site": "CTTAAG", "cut_site": 1, "is_blunt": false },
+        "AgeI": { "site": "ACCGGT", "cut_site": 1, "is_blunt": false },
+        "AscI": { "site": "GGCGCGCC", "cut_site": 2, "is_blunt": false },
+        "AvrII": { "site": "CCTAGG", "cut_site": 1, "is_blunt": false },
+        "BclI": { "site": "TGATCA", "cut_site": 1, "is_blunt": false },
+        "BspEI": { "site": "TCCGGA", "cut_site": 1, "is_blunt": false },
+        "BssHII": { "site": "GCGCGC", "cut_site": 1, "is_blunt": false },
+        "DdeI": { "site": "CTNAG", "cut_site": 1, "is_blunt": false },
+        "EaeI": { "site": "YGGCCR", "cut_site": 1, "is_blunt": false },
+        "FseI": { "site": "GGCCGGCC", "cut_site": 6, "is_blunt": false },
+        "HpaI": { "site": "GTTAAC", "cut_site": 3, "is_blunt": true },
+        "MluI": { "site": "ACGCGT", "cut_site": 1, "is_blunt": false },
+        "NaeI": { "site": "GCCGGC", "cut_site": 3, "is_blunt": true },
+        "NarI": { "site": "GGCGCC", "cut_site": 2, "is_blunt": false },
+        "NdeI": { "site": "CATATG", "cut_site": 2, "is_blunt": false },
+        "NsiI": { "site": "ATGCAT", "cut_site": 5, "is_blunt": false },
+        "PacI": { "site": "TTAATTAA", "cut_site": 5, "is_blunt": false },
+        "PmeI": { "site": "GTTTAAAC", "cut_site": 4, "is_blunt": true },
+        "SacII": { "site": "CCGCGG", "cut_site": 4, "is_blunt": false },
+        "SanDI": { "site": "GGGWCCC", "cut_site": 2, "is_blunt": false },
+        "SbfI": { "site": "CCTGCAGG", "cut_site": 6, "is_blunt": false },
+        "ScaI": { "site": "AGTACT", "cut_site": 3, "is_blunt": true },
+        "SfiI": { "site": "GGCCNNNNNGGCC", "cut_site": 8, "is_blunt": false },
+        "SgrAI": { "site": "CRCCGGYG", "cut_site": 2, "is_blunt": false },
+        "StuI": { "site": "AGGCCT", "cut_site": 3, "is_blunt": true },
+        "AatII": { "site": "GACGTC", "cut_site": 5, "is_blunt": false },
+        "Acc65I": { "site": "GGTACC", "cut_site": 1, "is_blunt": false },
+        "AclI": { "site": "AACGTT", "cut_site": 2, "is_blunt": false },
+        "AflIII": { "site": "ACRYGT", "cut_site": 1, "is_blunt": false },
+        "ApaLI": { "site": "GTGCAC", "cut_site": 1, "is_blunt": false },
+        "BsiWI": { "site": "CGTACG", "cut_site": 1, "is_blunt": false },
+        "BspHI": { "site": "TCATGA", "cut_site": 1, "is_blunt": false },
+        "BstBI": { "site": "TTCGAA", "cut_site": 2, "is_blunt": false },
+        "BstZ17I": { "site": "GTATAC", "cut_site": 3, "is_blunt": true },
+        "BtgI": { "site": "CCRYGG", "cut_site": 1, "is_blunt": false },
+        "CspCI": { "site": "CAANNNNNGTGG", "cut_site": -11, "is_blunt": false },
+        "EagI": { "site": "CGGCCG", "cut_site": 1, "is_blunt": false },
+        "EcoO109I": { "site": "RGGNCCY", "cut_site": 2, "is_blunt": false },
+        "FspI": { "site": "TGCGCA", "cut_site": 3, "is_blunt": true },
+        "HpaII": { "site": "CCGG", "cut_site": 1, "is_blunt": false },
+        "KasI": { "site": "GGCGCC", "cut_site": 1, "is_blunt": false },
+        "MfeI": { "site": "CAATTG", "cut_site": 1, "is_blunt": false },
+        "MscI": { "site": "TGGCCA", "cut_site": 3, "is_blunt": true },
+        "MslI": { "site": "CAYNNNNRTG", "cut_site": 5, "is_blunt": true },
+        "MspI": { "site": "CCGG", "cut_site": 1, "is_blunt": false },
+        "NgoMIV": { "site": "GCCGGC", "cut_site": 1, "is_blunt": false },
+        "NspI": { "site": "RCATGY", "cut_site": 5, "is_blunt": false },
+        "PmlI": { "site": "CACGTG", "cut_site": 3, "is_blunt": true },
+        "RsrII": { "site": "CGGWCCG", "cut_site": 2, "is_blunt": false },
+        "SexAI": { "site": "ACCWGGT", "cut_site": 1, "is_blunt": false },
+        "SnaBI": { "site": "TACGTA", "cut_site": 3, "is_blunt": true },
+        "StyI": { "site": "CCWWGG", "cut_site": 1, "is_blunt": false },
+        "XcmI": { "site": "CCANNNNNNNNNTGG", "cut_site": 8, "is_blunt": false },
+        "XmaI": { "site": "CCCGGG", "cut_site": 1, "is_blunt": false },
+        "ZraI": { "site": "GACGTC", "cut_site": 3, "is_blunt": true },
+        "BsaI": { "site": "GGTCTC", "cut_site": 7, "is_blunt": false },
+        "BsmBI": { "site": "CGTCTC", "cut_site": 7, "is_blunt": false },
+        "BbsI": { "site": "GAAGAC", "cut_site": 8, "is_blunt": false },
+        "BtgZI": { "site": "GCGATG", "cut_site": 16, "is_blunt": false },
+        "BsmFI": { "site": "GGGAC", "cut_site": 15, "is_blunt": false },
+        "BspQI": { "site": "GCTCTTC", "cut_site": 8, "is_blunt": false },
+        "BfuAI": { "site": "ACCTGC", "cut_site": 10, "is_blunt": false },
+        "BsaXI": { "site": "ACNNNNNCTCC", "cut_site": -9, "is_blunt": false },
+        "BspMI": { "site": "ACCTGC", "cut_site": 10, "is_blunt": false },
+        "BtsI": { "site": "GCAGTG", "cut_site": 8, "is_blunt": false },
+        "BbvI": { "site": "GCAGC", "cut_site": 13, "is_blunt": false },
+        "BseRI": { "site": "GAGGAG", "cut_site": 16, "is_blunt": false },
+        "BcgI": { "site": "CGANNNNNNTGC", "cut_site": -10, "is_blunt": false },
+        "DpnI": { "site": "GATC", "cut_site": 2, "is_blunt": true } // 100個目の酵素！
     };
 
+    let currentEnzyme = "NoCut";
+
     window.onload = () => { 
-        renderEnzymeSelect(); 
+        updateEnzymeUI();
         loadPrimerData();
     };
 
@@ -533,68 +644,122 @@
         } catch(e) {}
     }
 
-    function renderEnzymeSelect() {
-        const select = document.getElementById('enzymeSelect');
-        const currentValue = select.value || "NoCut"; 
-        select.innerHTML = '';
+    function updateEnzymeUI() {
+        const hiddenInput = document.getElementById('enzymeSelect');
+        const label = document.getElementById('selectedEnzymeLabel');
+        hiddenInput.value = currentEnzyme;
         
-        select.innerHTML += '<option value="NoCut">-- 切らない (PCR産物そのまま) --</option>';
-        for (let name in enzymeDB) {
-            let enz = enzymeDB[name];
-            let displaySeq = enz.seq.slice(0, enz.offset) + "↓" + enz.seq.slice(enz.offset);
-            let desc = enz.desc ? ` (${enz.desc}: ${displaySeq})` : ` (${displaySeq})`;
-            select.innerHTML += `<option value="${name}">${name}${desc}</option>`;
-        }
-        
-        select.value = currentValue;
-        loadEnzymeToEditor();
-    }
-
-    function loadEnzymeToEditor() {
-        const select = document.getElementById('enzymeSelect');
-        const name = select.value;
-        if (enzymeDB[name]) {
-            document.getElementById('customName').value = name;
-            document.getElementById('customSeq').value = enzymeDB[name].seq;
-            document.getElementById('customCut').value = enzymeDB[name].offset;
+        if (currentEnzyme === "NoCut") {
+            label.innerText = "-- 切らない (PCR産物そのまま) --";
+        } else if (enzymeDB[currentEnzyme]) {
+            let enz = enzymeDB[currentEnzyme];
+            let displaySeq = enz.site.slice(0, Math.max(0, enz.cut_site)) + "↓" + enz.site.slice(Math.max(0, enz.cut_site));
+            label.innerText = `${currentEnzyme} (${displaySeq})`;
         } else {
-            document.getElementById('customName').value = "";
-            document.getElementById('customSeq').value = "";
-            document.getElementById('customCut').value = "";
+            label.innerText = "未選択";
         }
     }
 
-    function saveEnzyme() {
-        let name = document.getElementById('customName').value.trim();
-        let seq = document.getElementById('customSeq').value.toUpperCase().replace(/[^ATGC]/g, '');
-        let cut = parseInt(document.getElementById('customCut').value);
-        
-        if(!name || !seq || isNaN(cut) || cut < 0 || cut > seq.length) {
-            showToast("正しい名前、塩基配列（A,T,G,C）、切断位置（数字）を入力してください。", "error");
-            return;
-        }
-        if(name === "NoCut") {
-            showToast("「NoCut」はシステム予約語のため使用できません。", "error");
+    function openEnzymeModal(e) {
+        if (e) e.stopPropagation();
+        const el = document.getElementById('enzymeModal');
+        if (el.style.display === 'flex') {
+            el.style.display = 'none';
             return;
         }
         
-        let desc = enzymeDB[name] ? enzymeDB[name].desc : "";
-        enzymeDB[name] = { seq: seq, offset: cut, desc: desc };
+        // 他のポップオーバーを閉じる
+        document.querySelectorAll('.rationale-text').forEach(node => {
+            if(node.id !== 'enzymeModal') node.style.display = 'none';
+        });
         
-        renderEnzymeSelect();
-        document.getElementById('enzymeSelect').value = name;
-        showToast(`制限酵素「${name}」を保存しました。`, "success");
+        renderEnzymeList(); // 初期描画
+        el.style.display = 'flex';
+        
+        // 座標計算
+        const btnRect = e.target.closest('button').getBoundingClientRect();
+        el.style.position = 'fixed';
+        
+        if (window.innerWidth <= 768) {
+            el.style.top = 'auto';
+            el.style.bottom = '20px';
+            el.style.left = '50%';
+            el.style.transform = 'translateX(-50%)';
+            el.style.width = '95%';
+            el.style.maxHeight = '70vh';
+        } else {
+            el.style.transform = 'none';
+            el.style.width = '400px';
+            
+            let topPos = btnRect.bottom + 8;
+            let leftPos = btnRect.left;
+            
+            const maxAvailableHeight = window.innerHeight - topPos - 10;
+            
+            if (maxAvailableHeight < 300 && btnRect.top > 300) {
+                // 上に開く
+                el.style.top = 'auto';
+                el.style.bottom = (window.innerHeight - btnRect.top + 8) + 'px';
+                el.style.maxHeight = (btnRect.top - 20) + 'px';
+            } else {
+                // 下に開く
+                el.style.bottom = 'auto';
+                el.style.top = topPos + 'px';
+                el.style.maxHeight = Math.max(250, maxAvailableHeight) + 'px';
+            }
+            
+            if (leftPos + 400 > window.innerWidth) {
+                leftPos = window.innerWidth - 420; 
+            }
+            el.style.left = leftPos + 'px';
+        }
+        document.getElementById('enzymeSearch').focus();
     }
 
-    function deleteEnzyme() {
-        const select = document.getElementById('enzymeSelect');
-        const name = select.value;
-        if (!name || name === "NoCut") return;
-        if (confirm(`制限酵素「${name}」を削除しますか？`)) {
-            delete enzymeDB[name];
-            renderEnzymeSelect();
-            showToast(`制限酵素「${name}」を削除しました。`, "success");
+    function renderEnzymeList(filterText = "") {
+        const container = document.getElementById('enzymeListContent');
+        let html = `<div onclick="selectEnzyme('NoCut')" style="padding: 10px 15px; border-bottom: 1px solid #ecf0f1; cursor: pointer; background: ${currentEnzyme === 'NoCut' ? '#d5f5e3' : '#fff'}; color: #34495e; font-weight: bold;">-- 切らない (PCR産物そのまま) --</div>`;
+        
+        let count = 0;
+        const filterUpper = filterText.toUpperCase();
+        
+        // JSONのキーでソートする
+        const sortedKeys = Object.keys(enzymeDB).sort((a, b) => a.localeCompare(b));
+        
+        for (let name of sortedKeys) {
+            let enz = enzymeDB[name];
+            // フィルタリング
+            if (filterUpper) {
+                if (!name.toUpperCase().includes(filterUpper) && !enz.site.includes(filterUpper)) {
+                    continue;
+                }
+            }
+            
+            let isSelected = (currentEnzyme === name);
+            let bg = isSelected ? '#d5f5e3' : (count % 2 === 0 ? '#fff' : '#f8f9f9');
+            let displaySeq = enz.site.slice(0, Math.max(0, enz.cut_site)) + "↓" + enz.site.slice(Math.max(0, enz.cut_site));
+            let bluntBadge = enz.is_blunt ? `<span style="font-size:9px; background:#3498db; color:white; padding:2px 4px; border-radius:3px; margin-left:5px;">平滑末端</span>` : '';
+            
+            html += `<div onclick="selectEnzyme('${name}')" style="padding: 10px 15px; border-bottom: 1px solid #ecf0f1; cursor: pointer; background: ${bg}; display: flex; justify-content: space-between; align-items: center;">
+                <div><strong style="color: #2980b9;">${name}</strong><br><span style="font-family: monospace; color: #7f8c8d; font-size: 11px;">${displaySeq}</span></div>
+                ${bluntBadge}
+            </div>`;
+            count++;
         }
+        
+        container.innerHTML = html;
+        document.getElementById('enzymeCount').innerText = `${Object.keys(enzymeDB).length} 種`;
+    }
+
+    function filterEnzymes() {
+        const text = document.getElementById('enzymeSearch').value;
+        renderEnzymeList(text);
+    }
+
+    function selectEnzyme(name) {
+        currentEnzyme = name;
+        updateEnzymeUI();
+        document.getElementById('enzymeModal').style.display = 'none';
     }
 
     // --- ゲノム・PCR処理ロジック ---
@@ -664,17 +829,49 @@
         return null;
     }
 
+    // 汎用化された切断処理ロジック
     function calculateDigestion(seq, enzymeName) {
         if(enzymeName === "NoCut" || !enzymeDB[enzymeName]) return { cuts: [], fragments: [seq.length] };
-        let target = enzymeDB[enzymeName].seq, offset = enzymeDB[enzymeName].offset, cutPositions = [];
-        let pos = seq.indexOf(target);
-        while (pos !== -1) { cutPositions.push(pos + offset); pos = seq.indexOf(target, pos + 1); }
-        let points = [0, ...cutPositions, seq.length], fragments = [];
-        for (let i = 0; i < points.length - 1; i++) fragments.push(points[i+1] - points[i]);
+        
+        let target = enzymeDB[enzymeName].site;
+        let offset = enzymeDB[enzymeName].cut_site;
+        let cutPositions = [];
+        
+        // 簡易的なIUPACコードの正規表現展開 (N=A|T|G|C, Y=C|T, R=A|G 等)
+        let regexStr = target.replace(/N/g, '[ATGC]')
+                             .replace(/Y/g, '[CT]')
+                             .replace(/R/g, '[AG]')
+                             .replace(/W/g, '[AT]')
+                             .replace(/S/g, '[CG]')
+                             .replace(/M/g, '[AC]')
+                             .replace(/K/g, '[GT]')
+                             .replace(/B/g, '[CGT]')
+                             .replace(/D/g, '[AGT]')
+                             .replace(/H/g, '[ACT]')
+                             .replace(/V/g, '[ACG]');
+        let regex = new RegExp(regexStr, 'g');
+        let match;
+        
+        // indexOf の代わりに RegExp.exec を使用してあいまい塩基対応
+        while ((match = regex.exec(seq)) !== null) {
+            // 切断位置がマイナスの場合（認識配列の外側）も考慮
+            let cutPos = match.index + offset;
+            if (cutPos > 0 && cutPos < seq.length) {
+                cutPositions.push(cutPos);
+            }
+            // 重複マッチを避けるための処理だが、ここでは単純化のためスキップ
+            regex.lastIndex = match.index + 1; 
+        }
+        
+        let points = [0, ...cutPositions, seq.length].sort((a, b) => a - b);
+        let fragments = [];
+        for (let i = 0; i < points.length - 1; i++) {
+            if (points[i+1] - points[i] > 0) fragments.push(points[i+1] - points[i]);
+        }
         return { cuts: cutPositions, fragments: fragments.sort((a, b) => b - a) };
     }
 
-    // 💡 ゲル濃度と泳動時間を加味した対数スケール移動計算
+    // ゲル濃度と泳動時間を加味した対数スケール移動計算
     function calcTopLogScale(size, agarose, runTime) {
         const minSize = 50, maxSize = 2000;
         const wellPos = 25; // ウェルのY座標
@@ -694,7 +891,8 @@
         return wellPos + travel;
     }
 
-    function formatSpeciesName(name) {
+    // 属名（Genus）と種小名をイタリック体（斜体）にする処理 (テーブル用とゲル用で分岐)
+    function formatSpeciesName(name, isShort = false) {
         // 例: "NC_00001.1 Homo sapiens chromosome 1" から "Homo sapiens" の形を探す
         // 大文字で始まる単語 + (スペースやアンダーバー) + 小文字だけの単語
         const regex = /([A-Z][a-z]+)[_\s]+([a-z]+)/;
@@ -703,7 +901,13 @@
         if (match) {
             let genus = match[1];
             let species = match[2];
-            return `${genus.charAt(0)}. <i>${species}</i>`;
+            if (isShort) {
+                // 電気泳動ラベル用：属名の頭文字と種小名を合わせてイタリック体
+                return `<i>${genus.charAt(0)}. ${species}</i>`;
+            } else {
+                // テーブル用：属名と種小名を略さず合わせてイタリック体
+                return `<i>${genus} ${species}</i>`;
+            }
         }
         
         // パターンが見つからない場合は、最初の単語だけで短く表示するフォールバック
@@ -744,8 +948,9 @@
             let amplicon = virtualPCR(sample.seq, pF, pR, fuzzyPercent);
             let pcrStatus = "", fragStr = "", fragments = [];
             
-            // フォーマットした名前と、ツールチップ用の元の完全な名前
-            let formattedName = formatSpeciesName(sample.name);
+            // フォーマットした名前（斜体適用済み）と、ツールチップ用の元の完全な名前
+            let formattedNameTable = formatSpeciesName(sample.name, false);
+            let formattedNameGel = formatSpeciesName(sample.name, true);
 
             if (amplicon) {
                 let isFull = (!pF && !pR) ? " (全塩基配列)" : " bp";
@@ -763,9 +968,9 @@
                 fragStr = `<span style="color:#7f8c8d;">-</span>`;
             }
 
-            tbodyHtml += `<tr><td style="font-weight:bold; color:#2c3e50;" title="${sample.name}">${formattedName}</td><td>${pcrStatus}</td><td>${fragStr}</td></tr>`;
+            tbodyHtml += `<tr><td style="font-weight:bold; color:#2c3e50;" title="${sample.name}">${formattedNameTable}</td><td>${pcrStatus}</td><td>${fragStr}</td></tr>`;
 
-            gelHtml += `<div class="lane"><div class="well"></div><div class="lane-title" title="${sample.name}">${formattedName}</div>`;
+            gelHtml += `<div class="lane"><div class="well"></div><div class="lane-title" title="${sample.name}">${formattedNameGel}</div>`;
             if (amplicon) {
                 fragments.forEach(size => {
                     let topPos = calcTopLogScale(size, agarose, runTime);
@@ -796,6 +1001,32 @@
         }, 50);
 
         showToast("解析が完了しました。電気泳動を開始します。", "success");
+    }
+
+    async function fetchNCBI() {
+        const idInput = document.getElementById('ncbiId').value.trim();
+        if(!idInput) return;
+        
+        const loader = document.getElementById('apiLoader');
+        if(loader) loader.style.display = 'inline-block';
+        showToast(`NCBIから [${idInput}] を取得中...`);
+
+        try {
+            const response = await fetch(`https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=${idInput}&rettype=fasta&retmode=text`);
+            if (!response.ok) throw new Error("HTTP " + response.status);
+            const data = await response.text();
+            if (!data || data.includes('Error')) throw new Error("データが見つかりませんでした。");
+            
+            const textArea = document.getElementById('fastaInput');
+            if (textArea.value !== "") textArea.value += "\n\n";
+            textArea.value += data.trim();
+            
+            showToast(`NCBIからデータを取得しました`, 'success');
+        } catch (error) {
+            showToast("取得エラー: " + error.message, 'error');
+        } finally {
+            if(loader) loader.style.display = 'none';
+        }
     }
 </script>
 
