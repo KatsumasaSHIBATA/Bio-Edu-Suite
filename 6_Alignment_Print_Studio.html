@@ -38,9 +38,6 @@
         .drop-zone.dragover { border-color: #3498db; background: #ebf5fb; color: #3498db; }
         .drop-zone:hover { border-color: #3498db; }
         
-        /* ステータスバーを画面下部に固定し、影をつけてフロート感を出す */
-        .status-bar { background: #34495e; color: white; padding: 6px 15px; font-size: 12px; flex-shrink: 0; display: flex; align-items: center; width: 100%; margin-top: auto; position: sticky; bottom: 0; z-index: 20; box-shadow: 0 -2px 10px rgba(0,0,0,0.15); }
-
         /* トースト通知 */
         #toast { visibility: hidden; min-width: 250px; background-color: #27ae60; color: #fff; text-align: center; border-radius: 4px; padding: 12px 20px; position: fixed; z-index: 1000; left: 50%; bottom: 40px; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); transform: translateX(-50%); opacity: 0; transition: opacity 0.3s, bottom 0.3s; }
         #toast.show { visibility: visible; opacity: 1; bottom: 60px; }
@@ -106,6 +103,7 @@
             white-space: nowrap;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
+        
         .custom-tooltip::after {
             content: '';
             position: absolute;
@@ -141,7 +139,7 @@
         }
     </style>
     <style id="pageOrientationStyle">
-        @media print { @page { size: A4 landscape; margin: 15mm; } }
+        @media print { @page { size: A4 portrait; margin: 15mm; } }
     </style>
 </head>
 <body>
@@ -203,9 +201,9 @@
                 <div class="setting-item" style="border-left: 2px solid #ecf0f1; padding-left: 15px;">
                     <span>📄 用紙の向き:</span>
                     <div class="radio-group" data-tooltip="印刷時（PDF保存時）のA4用紙の向きを指定します">
-                        <input type="radio" id="ori_land" name="orientation" value="landscape" checked onchange="updateOrientation()">
+                        <input type="radio" id="ori_land" name="orientation" value="landscape" onchange="updateOrientation()">
                         <label for="ori_land">横 (A4)</label>
-                        <input type="radio" id="ori_port" name="orientation" value="portrait" onchange="updateOrientation()">
+                        <input type="radio" id="ori_port" name="orientation" value="portrait" checked onchange="updateOrientation()">
                         <label for="ori_port">縦 (A4)</label>
                     </div>
                 </div>
@@ -240,11 +238,6 @@
 
 <!-- ツールチップ要素 (Template_Reference_App v1.6準拠) -->
 <div id="globalTooltip" class="custom-tooltip"></div>
-
-<!-- ステータスバー -->
-<div class="status-bar no-print">
-    <span id="statusText">Status: Standby</span>
-</div>
 
 <!-- 共通フッター -->
 <div class="footer no-print">
@@ -338,7 +331,6 @@
         if(text && text.trim().length > 0) {
             inputText.value = text;
             renderText();
-            document.getElementById('statusText').innerText = "Status: Text pasted";
             showToast("テキストデータを読み込みました");
         }
     });
@@ -384,7 +376,6 @@
             reader.onload = function(e) {
                 inputText.value = e.target.result;
                 renderText();
-                document.getElementById('statusText').innerText = "Status: File loaded (" + file.name + ")";
                 showToast("ファイルを読み込みました");
             };
             reader.readAsText(file);
