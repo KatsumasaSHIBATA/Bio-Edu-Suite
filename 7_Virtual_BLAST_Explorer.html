@@ -245,7 +245,7 @@
                 </div>
 
                 <div class="toolbar-row">
-                    <span class="step-label" style="min-width: 140px; font-size: 12px; color: #5b2c6f; padding-top: 5px;">NCBIインポート <button class="rationale-btn" style="background:#9b59b6;" onclick="toggleRationale('rat_ncbi')">?</button></span>
+                    <span class="step-label" style="min-width: 140px; font-size: 12px; color: #5b2c6f; padding-top: 5px;">NCBI <button class="rationale-btn" style="background:#9b59b6;" onclick="toggleRationale('rat_ncbi')">?</button></span>
                     <div style="display:flex; flex:1; gap:8px; width:100%;">
                         <input type="text" id="ncbiAccession" class="primer-input" style="flex:4; border-color: #c39bd3;" placeholder="Accession No. を入力" onkeypress="if(event.keyCode===13) importFromNCBI()">
                         <button class="btn btn-purple" onclick="importFromNCBI()" style="flex:1; font-size: 13px; padding: 8px; min-width: 80px;" data-tooltip="NCBIからFASTA形式で塩基配列データを取得し、ローカルデータベースに追加します">🌐 取得</button>
