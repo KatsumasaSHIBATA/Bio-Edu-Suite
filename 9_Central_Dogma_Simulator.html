@@ -56,8 +56,8 @@
         textarea { width: 100%; height: 100px; font-family: 'Courier New', Consolas, monospace; font-size: 11px; padding: 8px; border: 1px solid #bdc3c7; border-radius: 4px; resize: vertical; outline: none; background: #fdfefe; }
         textarea:focus { border-color: #3498db; box-shadow: 0 0 0 3px rgba(52,152,219,0.2); }
 
-        /* シミュレーション結果表示エリア */
-        .result-box { background: #1a252f; border-radius: 4px; padding: 12px; color: #ecf0f1; font-family: 'Courier New', Courier, monospace; overflow-x: auto; font-size: 14px; line-height: 1.6; min-height: 80px; max-height: 250px; word-wrap: break-word; white-space: pre-wrap; box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);}
+        /* 💡 修正ポイント: mRNAパネルの「レイアウトシフト」防止（高さを初期状態から完全に固定） */
+        .result-box { background: #1a252f; border-radius: 4px; padding: 12px; color: #ecf0f1; font-family: 'Courier New', Courier, monospace; overflow-x: auto; font-size: 14px; line-height: 1.6; height: 180px; overflow-y: auto; word-wrap: break-word; white-space: pre-wrap; box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);}
         
         /* mRNA 塩基のカラーコーディング */
         .rna-base { font-weight: bold; letter-spacing: 1px; }
@@ -68,9 +68,11 @@
         .rna-gap { color: #7f8c8d; }
 
         .codon-container { display: flex; flex-wrap: wrap; gap: 5px; background: #fff; padding: 15px; border-radius: 4px; border: 1px solid #bdc3c7; max-height: calc(100vh - 400px); min-height: 250px; overflow-y: auto; padding-bottom: 20px; align-content: flex-start;}
-        .codon-box { display: flex; flex-direction: column; align-items: center; border: 1px solid #dcdde1; border-radius: 4px; background: #fdfefe; box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: relative; cursor: default; transition: 0.2s;}
-        .mRNA-codon { background: #ebf5fb; color: #2980b9; padding: 3px 5px; font-weight: bold; font-size: 11px; border-bottom: 1px solid #dcdde1; letter-spacing: 1px; border-radius: 4px 4px 0 0;}
-        .amino-acid { padding: 5px; font-weight: 900; font-size: 15px; color: #2c3e50; min-width: 32px; text-align: center; border-radius: 0 0 4px 4px; }
+        
+        /* 💡 修正ポイント: アミノ酸ブロックの幅を完全に固定し、縦横グリッド状にビシッと揃える */
+        .codon-box { display: flex; flex-direction: column; align-items: center; border: 1px solid #dcdde1; border-radius: 4px; background: #fdfefe; box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: relative; cursor: default; transition: 0.2s; width: 44px; flex-shrink: 0; box-sizing: border-box;}
+        .mRNA-codon { background: #ebf5fb; color: #2980b9; padding: 3px 0; width: 100%; text-align: center; font-weight: bold; font-size: 11px; border-bottom: 1px solid #dcdde1; letter-spacing: 1px; border-radius: 4px 4px 0 0; box-sizing: border-box;}
+        .amino-acid { padding: 5px 0; width: 100%; text-align: center; font-weight: 900; font-size: 15px; color: #2c3e50; border-radius: 0 0 4px 4px; box-sizing: border-box;}
         
         /* アミノ酸の性質色（リファレンスシートに完全同期） */
         .aa-nonpolar .amino-acid { background: #fef3c7; color: #92400e; }
@@ -81,7 +83,9 @@
 
         .codon-start { border: 2px solid #27ae60; }
         .codon-start .mRNA-codon { background: #27ae60; color: white; border-bottom: none; }
-        .codon-stop { border: 1px solid #c0392b; }
+        
+        /* 💡 修正ポイント: ストップコドンは例外として「STOP」が入るため幅を広げる */
+        .codon-stop { border: 1px solid #c0392b; width: 56px; }
         .codon-stop .mRNA-codon { background: #c0392b; color: white; border-bottom: none; }
 
         /* 変異強調スタイル */
@@ -120,7 +124,7 @@
         .rna-N { color: #95a5a6; } /* IUPACコード用 */
         .aa-unknown .amino-acid { background: #e0e0e0; color: #7f8c8d; }
 
-        /* 💡 修正ポイント: スマホ向けレイアウトの修正 (パネルが隠れる問題を解決) */
+        /* スマホ向けレイアウトの修正 (パネルが隠れる問題を解決) */
         @media screen and (max-width: 900px) { 
             .main-content { grid-template-columns: 1fr; padding: 10px; } 
             
@@ -131,7 +135,7 @@
             .codon-container { max-height: none; min-height: 200px; padding-bottom: 10px; }
         }
 
-        /* 💡 修正ポイント: ツールチップ見切れ防止パッチ */
+        /* ツールチップ見切れ防止パッチ */
         .codon-box[data-tooltip]:hover::after,
         .codon-box[data-tooltip]:hover::before { display: none !important; }
         #global-tooltip {
@@ -206,7 +210,8 @@
                     </div>
                 </div>
 
-                <textarea id="dnaInput" placeholder="FASTA形式の塩基配列を入力してください（複数入力で比較モードになります）" data-tooltip="FASTA形式のDNAの塩基配列をここに入力します"></textarea>
+                <!-- 💡 プレースホルダーの汎用化 -->
+                <textarea id="dnaInput" placeholder="FASTA形式の塩基配列を入力してください" data-tooltip="FASTA形式のDNAの塩基配列をここに入力します"></textarea>
             </div>
         </div>
 
@@ -224,7 +229,8 @@
                 </div>
             </div>
             <div class="card-body">
-                <button class="btn btn-action-transcription" onclick="runTranscription()" style="width:100%;" data-tooltip="入力されたDNAの塩基配列をmRNAに転写します">⏬ 転写</button>
+                <!-- 💡 ボタンの簡略化 -->
+                <button class="btn btn-action-transcription" onclick="runTranscription()" style="width:100%;" data-tooltip="入力されたDNAの塩基配列をmRNAに転写します">転写</button>
             </div>
         </div>
 
@@ -238,7 +244,8 @@
                 </div>
             </div>
             <div class="card-body">
-                <button class="btn btn-action-translation" onclick="runTranslation()" id="btnTranslate" style="width:100%;" disabled data-tooltip="転写されたmRNAをアミノ酸配列に翻訳します">⏬ 翻訳</button>
+                <!-- 💡 ボタンの簡略化 -->
+                <button class="btn btn-action-translation" onclick="runTranslation()" id="btnTranslate" style="width:100%;" disabled data-tooltip="転写されたmRNAをアミノ酸配列に翻訳します">翻訳</button>
 
                 <div class="legend-panel">
                     <span style="grid-column: span 2; font-weight: bold; color: #7f8c8d; border-bottom: 1px solid #bdc3c7; padding-bottom: 2px;">🎨 アミノ酸の化学的性質 (性質急変に注意)</span>
@@ -271,7 +278,8 @@
         <div class="card" style="border-top-color: #27ae60;">
             <div class="card-header" style="background:#34495e; color:#fff;">
                 <span>🥩 翻訳結果 (アミノ酸配列)</span>
-                <button class="btn" style="padding: 2px 8px; font-size: 11px; margin-left: auto; width: auto; flex: 0 0 auto;" onclick="copyAminoAcids()" id="copyAaBtn" disabled data-tooltip="翻訳されたアミノ酸配列をクリップボードにコピーします">📋 コピー</button>
+                <!-- 💡 ボタンの簡略化 -->
+                <button class="btn" style="padding: 2px 8px; font-size: 11px; margin-left: auto; width: auto; flex: 0 0 auto;" onclick="copyAminoAcids()" id="copyAaBtn" disabled data-tooltip="翻訳されたアミノ酸配列をクリップボードにコピーします">コピー</button>
             </div>
             <div class="card-body" style="padding:0;">
                 <div class="codon-container" id="proteinResult" style="border:none; border-bottom: 1px solid #bdc3c7; border-radius:0;">
@@ -401,15 +409,25 @@
         if (currentMRNAs.length > 1) {
             let isAligned = currentMRNAs.every(s => s.mrna.length === currentMRNAs[0].mrna.length);
             let warnMsg = isAligned ? "" : `<span style="color:#e74c3c; margin-left:10px;">⚠️ 未アライメント (塩基配列の長さが異なります)</span>`;
-            htmlOutput += `<div style="color:#e67e22; font-weight:bold; margin-bottom:10px;">🔍 比較モード: ${currentMRNAs.length}配列を並行表示しています。${warnMsg}</div>`;
+            htmlOutput += `<div style="color:#e67e22; font-weight:bold; margin-bottom:10px; font-family: 'Segoe UI', sans-serif;">🔍 比較モード: ${currentMRNAs.length}配列を並行表示しています。${warnMsg}</div>`;
         }
         
-        htmlOutput += `<div style="overflow-x: auto; padding-bottom: 10px;">`;
+        // 💡 修正ポイント: CLUSTAL風の等幅・等間隔表示を適用し、コンセンサス行（*）とのズレを完全に防止
+        htmlOutput += `<div style="background: #0b0b0b; padding: 15px; border-radius: 4px; overflow-x: auto; overflow-y: hidden; margin-bottom: 5px;">`;
         
-        currentMRNAs.forEach((seqObj) => {
+        let generateRow = (name, prefix, seqHtml, suffix, info) => {
+            return `<div style="display: flex; align-items: center; height: 26px; white-space: nowrap; font-family: 'Courier New', Consolas, monospace; font-size: 14px;">` +
+                   `<div style="width: 140px; color: #f1c40f; font-size: 12px; font-family: 'Segoe UI', sans-serif; overflow: hidden; text-overflow: ellipsis; text-align: left; margin-right: 15px; flex-shrink: 0;" title="${name}">${name}</div>` +
+                   `<span style="color:#f1c40f; font-weight:bold; width: 30px; text-align: right; margin-right: 8px; flex-shrink: 0;">${prefix}</span>` +
+                   `<span>${seqHtml}</span>` +
+                   `<span style="color:#f1c40f; font-weight:bold; width: 30px; margin-left: 8px; flex-shrink: 0;">${suffix}</span>` +
+                   `<span style="color:#7f8c8d; font-size:11px; font-family: 'Segoe UI', sans-serif; margin-left: 15px; flex-shrink: 0;">${info}</span>` +
+                   `</div>`;
+        };
+
+        let rnaRows = currentMRNAs.map((seqObj) => {
             let displayRNA = seqObj.mrna; 
             let isTruncated = false;
-            
             if(displayRNA.length > 5000) {
                 displayRNA = displayRNA.substring(0, 5000);
                 isTruncated = true;
@@ -423,22 +441,34 @@
                 else if (b === 'G') coloredRNA += '<span class="rna-base rna-G">G</span>';
                 else if (b === 'C') coloredRNA += '<span class="rna-base rna-C">C</span>';
                 else if (b === '-') coloredRNA += '<span class="rna-base rna-gap">-</span>';
-                // IUPACコード（Nなど）の処理を追加
                 else if ('RYMKWSBDHVN'.includes(b)) coloredRNA += `<span class="rna-base rna-N">${b}</span>`;
-                else coloredRNA += b;
+                else coloredRNA += `<span class="rna-base">${b}</span>`;
             }
-                
-            if(isTruncated) coloredRNA += "<span style='color:#7f8c8d;'> ... (省略)</span>";
-            
-            htmlOutput += `<div style="display: flex; align-items: center; margin-bottom: 6px; white-space: nowrap;">`;
-            htmlOutput += `<div style="font-size: 11px; color: #f1c40f; width: 120px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; padding-right: 10px; text-align: right;" title="${seqObj.name}">${seqObj.name}</div>`;
-            htmlOutput += `<div style="background: #0b0b0b; padding: 4px 8px; border-radius: 4px; display: inline-block;">`;
-            htmlOutput += `<span style="color:#f1c40f; font-weight:bold; margin-right: 5px;">5'-</span>`;
-            htmlOutput += `${coloredRNA}`;
-            htmlOutput += `<span style="color:#f1c40f; font-weight:bold; margin-left: 5px;">-3'</span>`;
-            htmlOutput += `<span style="color:#7f8c8d; font-size:10px; margin-left: 10px;">(${seqObj.mrna.length} bp)</span>`;
-            htmlOutput += `</div></div>`;
+            if(isTruncated) coloredRNA += "<span style='color:#7f8c8d; letter-spacing: normal;'> ... (省略)</span>";
+            return { name: seqObj.name, seqHtml: coloredRNA, length: seqObj.mrna.length, raw: displayRNA };
         });
+
+        // 各配列の描画
+        rnaRows.forEach(row => {
+            htmlOutput += generateRow(row.name, "5'-", row.seqHtml, "-3'", `(${row.length} bp)`);
+        });
+
+        // 💡 修正ポイント: 3行目に一致箇所（コンセンサス *）を表示
+        if (currentMRNAs.length > 1) {
+            let consensusHTML = '';
+            let len = Math.max(rnaRows[0].raw.length, rnaRows[1].raw.length);
+            for(let i=0; i<len; i++) {
+                let b1 = rnaRows[0].raw[i];
+                let b2 = rnaRows[1].raw[i];
+                if (b1 && b2 && b1 === b2 && b1 !== '-') {
+                    consensusHTML += `<span class="rna-base" style="color: #ecf0f1;">*</span>`;
+                } else {
+                    // 等幅CSS設定下で幅を完璧に合わせるため、透明なアンダーバーを使用
+                    consensusHTML += `<span class="rna-base" style="color: transparent;">_</span>`; 
+                }
+            }
+            htmlOutput += generateRow("Consensus", "", consensusHTML, "", "");
+        }
         
         htmlOutput += `</div>`;
         
@@ -544,6 +574,31 @@
 
         container.appendChild(frag);
 
+        // 💡 修正ポイント: 右端のガタつき解消（アミノ酸ブロック個数分ピッタリに計算して中央配置）
+        requestAnimationFrame(() => {
+            const boxes = Array.from(container.querySelectorAll('.codon-box:not(.codon-stop)'));
+            if (boxes.length > 0) {
+                const paddingTotal = 30; // padding: 15px * 2 (左右)
+                const boxWidth = 44; // 💡 CSSで固定した幅(44px)を使用し、計算ブレを排除して右端をビシッと揃える
+                const gap = 5; 
+                
+                // containerの親要素の横幅を基準にして入る列数を計算
+                const parentWidth = container.parentElement.clientWidth;
+                const availableWidth = parentWidth - paddingTotal;
+                
+                const maxCols = Math.floor((availableWidth + gap) / (boxWidth + gap));
+                const totalBoxes = container.querySelectorAll('.codon-box').length;
+                const cols = Math.min(maxCols, totalBoxes);
+                
+                const exactWidth = cols * boxWidth + (cols - 1) * gap;
+                
+                // ピッタリの幅に制限して中央配置し、内部は左詰めに
+                container.style.width = (exactWidth + paddingTotal) + 'px';
+                container.style.margin = '0 auto';
+                container.style.justifyContent = 'flex-start';
+            }
+        });
+
         const alertBox = document.getElementById('mutationAlertContainer');
         if (mutPositions.length > 0) {
             localStorage.setItem('bio_edu_suite_mutations', JSON.stringify(mutPositions));
@@ -600,7 +655,7 @@
         document.body.removeChild(textarea);
     }
 
-    // --- 💡 修正ポイント: ツールチップ見切れ防止（グローバル表示パッチ） ---
+    // --- 💡 ツールチップ見切れ防止（グローバル表示パッチ） ---
     document.addEventListener('DOMContentLoaded', () => {
         // グローバルなツールチップ要素を生成してBody直下に追加
         const tooltip = document.createElement('div');
