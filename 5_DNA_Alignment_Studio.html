@@ -59,7 +59,7 @@
         .btn-success { background: #27ae60; color: white; border-color: #1e8449; }
         .btn-success:hover:not(:disabled) { background: #219150; color: white; }
         .btn-option { background: #8e44ad; color: white; border-color: #732d91; padding: 6px 12px; }
-        .btn-option:hover:not(:disabled) { background: #732d91; color: white; box-shadow: 0 2px 5px rgba(142,68,173,0.4); }
+        .btn-option:hover:not(:disabled) { background: #732d91; color: white; }
 
         /* ドラッグ＆ドロップエリア */
         .drop-zone { border: 2px dashed #bdc3c7; border-radius: 6px; padding: 12px 20px; text-align: center; background: #fafbfc; transition: 0.2s; cursor: pointer; flex: 1; max-width: 450px; display: flex; flex-direction: column; justify-content: center; }
@@ -281,6 +281,7 @@
                     <span class="step-label" style="display: flex; align-items: center;">1. データ読込</span>
                     <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px; flex: 1;">
                         <div style="display: flex; flex-direction: row; gap: 8px; flex: 0 0 auto;">
+                            <!-- 💡 検索窓の幅を 180px に拡張しプレースホルダーを見やすく修正 -->
                             <input type="text" id="ncbiId" class="primer-input" style="width: 180px;" placeholder="Accession No. を入力" onkeypress="if(event.keyCode===13) fetchNCBI()">
                             <button class="btn btn-primary" onclick="fetchNCBI()" style="padding: 6px 12px; white-space: nowrap; height: 100%; margin: 0;" data-tooltip="NCBIから塩基配列データを取得します">🌐 取得 <span id="apiLoader" class="loader" style="display:none;"></span></button>
                         </div>
@@ -293,8 +294,8 @@
                 
                 <div class="toolbar-row" id="step2Row" style="transition: opacity 0.3s;">
                     <span class="step-label">2. 両端特定 <button class="rationale-btn" onclick="toggleRationale('rat_step2')">?</button></span>
-                    <div class="primer-label"><span class="color-box-f"></span> Primer F: <input type="text" id="pF" class="primer-input" placeholder="5'側のプライマー塩基配列を入力"></div>
-                    <div class="primer-label"><span class="color-box-r"></span> Primer R: <input type="text" id="pR" class="primer-input" placeholder="3'側のプライマー塩基配列を入力"></div>
+                    <div class="primer-label"><span class="color-box-f"></span> Primer F: <input type="text" id="pF" class="primer-input" placeholder="5'側のプライマー配列を入力"></div>
+                    <div class="primer-label"><span class="color-box-r"></span> Primer R: <input type="text" id="pR" class="primer-input" placeholder="3'側のプライマー配列を入力"></div>
                     <div class="slider-container">許容率: 
                         <input type="range" id="mismatchSlider" min="0" max="50" value="20" oninput="updateMismatchVal(this.value)">
                         <span id="mismatchVal" style="width: 25px; color: #e74c3c;">20%</span>
@@ -307,7 +308,8 @@
                 <div class="toolbar-row">
                     <span class="step-label">3. アライメント <button class="rationale-btn" onclick="toggleRationale('rat_msa')">?</button></span>
                     <div style="display:flex; flex-direction:row; gap:8px; align-items:center; flex-wrap: wrap;">
-                        <button class="btn btn-primary" id="btnOptionMSA" onclick="runMSA()" disabled data-tooltip="チェックされた塩基配列の相同性を比較して整列させます">✨ MSA実行</button>
+                        <!-- 💡 MSA実行ボタンを MSA解除ボタンと同一の btn-option (紫色・影なし) に統一 -->
+                        <button class="btn btn-option" id="btnOptionMSA" onclick="runMSA()" disabled data-tooltip="チェックされた塩基配列の相同性を比較して整列させます">✨ MSA実行</button>
                         <button class="btn btn-option" id="btnResetMSA" onclick="resetMSA()" disabled data-tooltip="実行されたアライメントを解除し、生データの状態に戻します">✨ MSA解除</button>
                         <span style="font-size:9px; color:#c0392b; font-weight:bold;">※段階的MSA: チェックした塩基配列のみが計算対象になります。</span>
                     </div>
@@ -537,7 +539,7 @@
             if(step2Row) step2Row.style.opacity = "0.4";
             
             msaBtn.disabled = selectedCount < 2; 
-            if(!msaBtn.disabled) msaBtn.classList.add('pulse-anim');
+            // 💡 余分なアニメーション追加処理を削除
             document.getElementById('btnExportFasta').disabled = false; 
             document.getElementById('btnExportClustal').disabled = false; 
             document.getElementById('btnCopyFasta').disabled = false; 
@@ -552,8 +554,7 @@
             if(step2Row) step2Row.style.opacity = "1";
             
             msaBtn.disabled = selectedCount < 2; 
-            if (!msaBtn.disabled) msaBtn.classList.add('pulse-anim');
-            else msaBtn.classList.remove('pulse-anim');
+            // 💡 余分なアニメーション追加・削除処理を削除
             
             st.innerText = "生データを読み込みました。プライマー F/Rを入力してノイズ領域を特定するか、自由にカットを行ってください。";
         }
