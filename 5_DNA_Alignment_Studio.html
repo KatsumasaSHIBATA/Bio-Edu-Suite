@@ -279,7 +279,7 @@
                     <span class="step-label" style="display: flex; align-items: center;">1. データ読込</span>
                     <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px; flex: 1;">
                         <div style="display: flex; flex-direction: row; gap: 8px; flex: 0 0 auto;">
-                            <input type="text" id="ncbiId" class="primer-input" style="width: 120px;" placeholder="NCBIのIDを入力" onkeypress="if(event.keyCode===13) fetchNCBI()">
+                            <input type="text" id="ncbiId" class="primer-input" style="width: 120px;" placeholder="Accession No. を入力" onkeypress="if(event.keyCode===13) fetchNCBI()">
                             <button class="btn btn-primary" onclick="fetchNCBI()" style="padding: 6px 12px; white-space: nowrap; height: 100%; margin: 0;" data-tooltip="NCBIから塩基配列データを取得します">🌐 取得 <span id="apiLoader" class="loader" style="display:none;"></span></button>
                         </div>
                         <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" style="margin: 0; min-width: 180px; padding: 8px 15px;">
