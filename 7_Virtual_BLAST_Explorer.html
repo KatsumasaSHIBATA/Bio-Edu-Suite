@@ -1223,10 +1223,10 @@
     function determineSourceType(gene, fallback) {
         if (!gene || gene === '-') return fallback;
         const g = gene.toLowerCase();
-        if (['coi', 'cytb', '12s'].includes(g)) return 'ミトコンドリア (Mitochondrion)';
-        if (['rbcl', 'matk'].includes(g)) return '葉緑体 (Chloroplast)';
-        if (['16s', '18s', 'its'].includes(g)) return '核ゲノム (Genomic)';
-        if (['spike', 'ha', 'gp', 'env', 'capsid', 'e'].includes(g)) return 'ウイルスゲノム (Viral)';
+        if (['coi', 'cytb', '12s'].includes(g)) return 'ミトコンドリア';
+        if (['rbcl', 'matk'].includes(g)) return '葉緑体';
+        if (['16s', '18s', 'its'].includes(g)) return '核ゲノム';
+        if (['spike', 'ha', 'gp', 'env', 'capsid', 'e'].includes(g)) return 'ウイルスゲノム';
         return fallback;
     }
 
