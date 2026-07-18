@@ -1220,6 +1220,16 @@
     let localDB = [];
     const DB_SIZE = 10000000000; 
 
+    function determineSourceType(gene, fallback) {
+        if (!gene || gene === '-') return fallback;
+        const g = gene.toLowerCase();
+        if (['coi', 'cytb', '12s'].includes(g)) return 'ミトコンドリア (Mitochondrion)';
+        if (['rbcl', 'matk'].includes(g)) return '葉緑体 (Chloroplast)';
+        if (['16s', '18s', 'its'].includes(g)) return '核ゲノム (Genomic)';
+        if (['spike', 'ha', 'gp', 'env', 'capsid', 'e'].includes(g)) return 'ウイルスゲノム (Viral)';
+        return fallback;
+    }
+
     function updateDBCount() {
         document.getElementById('dbCountText').innerText = `現在の登録生物種: ${localDB.length} 種`;
     }
@@ -1233,7 +1243,7 @@
             localDB.push({
                 id: item.accession,
                 name: item.scientific_name + " (" + item.name + ")",
-                isMito: item.gene === 'COI' ? 'Mitochondrion' : (item.gene === 'rbcL' ? 'Chloroplast' : 'Genomic/Other'),
+                isMito: determineSourceType(item.gene, 'Genomic/Other'),
                 seqBase: "部分配列",
                 seq: item.sequence,
                 gene: item.gene
@@ -1303,7 +1313,7 @@
                         localDB.push({
                             id: item.accession || '-',
                             name: (item.scientific_name ? item.scientific_name + " (" + item.name + ")" : item.name),
-                            isMito: item.gene === 'COI' ? 'Mitochondrion' : (item.gene === 'rbcL' ? 'Chloroplast' : 'Genomic/Other'),
+                            isMito: determineSourceType(item.gene, 'Genomic/Other'),
                             seqBase: "部分配列",
                             seq: item.sequence,
                             gene: item.gene || '-'
