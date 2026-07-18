@@ -1506,10 +1506,19 @@
     function determineSourceType(gene, fallback) {
         if (!gene || gene === '-') return fallback;
         const g = gene.toLowerCase();
-        if (['coi', 'cytb', '12s'].includes(g)) return 'ミトコンドリア';
-        if (['rbcl', 'matk'].includes(g)) return '葉緑体';
-        if (['16s', '18s', 'its'].includes(g)) return '核ゲノム';
-        if (['spike', 'ha', 'gp', 'env', 'capsid', 'e'].includes(g)) return 'ウイルスゲノム';
+        
+        // ミトコンドリアの主要マーカー
+        if (['coi', 'co1', 'cox1', 'cytb', '12s', 'nd1', 'd-loop'].includes(g)) return 'ミトコンドリア';
+        
+        // 葉緑体の主要マーカー
+        if (['rbcl', 'matk', 'trnl', 'psba', 'trnh'].includes(g)) return '葉緑体';
+        
+        // 核ゲノム・リボソームの主要マーカー
+        if (['16s', '18s', '28s', 'its', 'its1', 'its2', '5.8s'].includes(g)) return '核ゲノム';
+        
+        // ウイルスの主要マーカー
+        if (['spike', 's', 'ha', 'na', 'gp', 'env', 'capsid', 'vp1', 'e', 'pol'].includes(g)) return 'ウイルスゲノム';
+        
         return fallback;
     }
 
