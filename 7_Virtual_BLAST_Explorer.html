@@ -972,7 +972,7 @@
     "scientific_name": "Methanosarcina barkeri",
     "gene": "16S",
     "accession": "AY196682.1",
-    "sequence": "GCTCAGTAACACGTGGATAACCTGCCCTTGGGTCTGGCATAACCCCGGGAAACTGGGGATAATTCCGGATAACGCATATATGCTGGAATGCTTTATGCGTAAAATGGATTCGTCCGCCCAAGGATGGGTCTGCGGCCTATCAGGTAGTAGTGGGTGTAATGTACCTACTAGCCTACAACGGGTACGGGTTGTGAGAGCAAGAGCCCGGAGATGGATTCTGAGACATGAATCCAGGCCCTACGGGGCGCAGCAGGCGCGAAAACTTTACAATGCGGGAAACCGTGATAAGGGGACACCGAGTGCTAGCATCATATGCTGGCTGTCCAGGTGTGTAAACTACACCTGTTAGCAAGGGCCGGGCAAGACCGGTGCCAGCCGCCGCGGTAACACCGGCGGCCCGAGTGGTGATCGTGATTATTGGGTCTAAAGGGTCCGTAGCCGGTTTGGTCAGTCCTCCGGGAAATCTGATAGCTCAACTATTAGGCTTTCGGGGGATACTGCCAGACTTGGAACCGGGAGAGGTAAGAGGTACTACAGGGGTAGGAGTGAAATCTTGTAATCCCTGTGGGACCACCTGTGGCGAAGGCGTCTTACCAGAACGGGTTCGACGGTGAGGGACGAAAGCTGGGGGCACGAACCGGATTAGATACCCGGGTAGTCCCAGCCGTAAACGATGCTCGCTAGGTGTCAGGCATGGCGCGACCGTGTCTGGTGCCGCAGGGAAGCCGTGAAGCGAGCCACCTGGGAAGTACGGCCGCAAGGCTGAAACTTAAAGGAATTGGCGGGGGAGCACAACAACGGGTGGAGCCTGCGGTTTAATTGGACTCAACGCCGGACAACTCACCGGGGACGACAGCAATATGTAGGTCAGGCTGAAGACCTTACCTGAATCGCTGAGAGGAGGTGCATGGCCGTCGCCAGTTCGTACTGTGAAGCATCCTGTTAAGTCAGGCAACGAGCGAGACCCGTGCCCACTGTTACCAGCATATCCTCCGGGATGATGGGTACTCTGTGGGGACCGCCGGTGTTAAATCGGAGGAAGGTGCGGGCCACGGTAGGTCAGTATGCCCCGAATTTCCCGGGCTACACGCGGGCTACAATGAATGGGACAATGGGTCCCTCCCCTGAAAAGGGCTGGTAATCTCACAAACCCATCCTTAGTTCGGATCGAGGGCTGTAACTCGCCCTCGTGAAGCTGGAATCCGTAGTAATCGCGTTTTAATATAGCGCGGTGAATACGTTCCTGCTCCTTGCACACACCG"
+    "sequence": "GCTCAGTAACACGTGGATAACCTGCCCTTGGGTCTGGCATAACCCCGGGAAACTGGGGATAATTCCGGATAACGCATATATGCTGGAATGCTTTATGCGTAAAATGGATTCGTCCGCCCAAGGATGGGTCTGCGGCCTATCAGGTAGTAGTGGGTGTAATGTACCTACTAGCCTACAACGGGTACGGGTTGTGAGAGCAAGAGCCCGGAGATGGATTCTGAGACATGAATCCAGGCCCTACGGGGCGCAGCAGGCGCGAAAACTTTACAATGCGGGAAACCGTGATAAGGGGACACCGAGTGCTAGCATCATATGCTGGCTGTCCAGGTGTGTAAACTACACCTGTTAGCAAGGGCCGGGCAAGACCGGTGCCAGCCGCCGCGGTAACACCGGCGGCCCGAGTGGTGATCGTGATTATTGGGTCTAAAGGGTCCGTAGCCGGTTTGGTCAGTCCTCCGGGAAATCTGATAGCTCAACTATTAGGCTTTCGGGGGATACTGCCAGACTTGGAACCGGGAGAGGTAAGAGGTACTACAGGGGTAGGAGTGAAATCTTGTAATCCCTGTGGGACCACCTGTGGCGAAGGCGTCTTACCAGAACGGGTTCGACGGTGAGGGACGAAAGCTGGGGGCACGAACCGGATTAGATACCCGGGTAGTCCCAGCCGTAAACGATGCTCGCTAGGTGTCAGGCATGGCGCGACCGTGTCTGGTGCCGCAGGGAAGCCGTGAAGCGAGCCACCTGGGAAGTACGGCCGCAAGGCTGAAACTTAAAGGAATTGGCGGGGGAGCACTACAACCGGGTGGAGCCTGCGGTTTAATTGGACTCAACGCCGGACAACTCACCGGGGACGACAGCAATATGTAGGTCAGGCTGAAGACCTTACCTGAATCGCTGAGAGGAGGTGCATGGCCGTCGCCAGTTCGTACTGTGAAGCATCCTGTTAAGTCAGGCAACGAGCGAGACCCGTGCCCACTGTTACCAGCATATCCTCCGGGATGATGGGTACTCTGTGGGGACCGCCGGTGTTAAATCGGAGGAAGGTGCGGGCCACGGTAGGTCAGTATGCCCCGAATTTCCCGGGCTACACGCGGGCTACAATGAATGGGACAATGGGTCCCTCCCCTGAAAAGGGCTGGTAATCTCACAAACCCATCCTTAGTTCGGATCGAGGGCTGTAACTCGCCCTCGTGAAGCTGGAATCCGTAGTAATCGCGTTTTAATATAGCGCGGTGAATACGTTCCTGCTCCTTGCACACACCG"
   },
   {
     "name": "高度好塩菌 (16S)",
@@ -1128,9 +1128,10 @@
             html += `<thead style="position: sticky; top: 0; background: #eaeded; z-index: 10; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
                         <tr style="color: #2c3e50;">
                             <th style="padding: 8px; border-bottom: 1px solid #bdc3c7; white-space: nowrap;">Accession No.</th>
-                            <th style="padding: 8px; border-bottom: 1px solid #bdc3c7;">生物種 (学名)</th>
-                            <th style="padding: 8px; border-bottom: 1px solid #bdc3c7; white-space: nowrap;">データ種別</th>
-                            <th style="padding: 8px; border-bottom: 1px solid #bdc3c7; white-space: nowrap;">配列ベース</th>
+                            <th style="padding: 8px; border-bottom: 1px solid #bdc3c7;">生物種 (和名 / 学名)</th>
+                            <th style="padding: 8px; border-bottom: 1px solid #bdc3c7; white-space: nowrap;">対象遺伝子 (Marker)</th>
+                            <th style="padding: 8px; border-bottom: 1px solid #bdc3c7; white-space: nowrap;">由来 / データ種別</th>
+                            <th style="padding: 8px; border-bottom: 1px solid #bdc3c7; white-space: nowrap; text-align: right;">配列長 (Base)</th>
                         </tr>
                      </thead><tbody>`;
 
@@ -1142,11 +1143,29 @@
                 let idDisplay = db.id;
                 let idLink = idDisplay !== '-' ? `<a href="https://www.ncbi.nlm.nih.gov/nuccore/${idDisplay}" target="_blank" style="color:#2980b9; text-decoration:underline;">${idDisplay}</a>` : '-';
                 
+                // 生物名から遺伝子名を分離して純化する
+                let displayName = db.name;
+                if (db.gene && db.gene !== '-') {
+                    displayName = displayName.replace(` (${db.gene})`, '').replace(`(${db.gene})`, '').trim();
+                }
+
+                // 遺伝子マーカー列 (Top Hitsとデザインを統一)
+                let geneDisplay = db.gene && db.gene !== '-' ? `<span style="background: #eaf2f8; padding: 2px 6px; border-radius: 4px; font-size: 10px; color: #2980b9; font-weight: bold;">${db.gene}</span>` : '-';
+                
+                // 配列長の算出
+                let seqLength = db.seq ? db.seq.length : 0;
+                let baseLabel = db.seqBase;
+                if (baseLabel === 'Unknown' || baseLabel === '部分配列') {
+                    baseLabel = '部分配列';
+                }
+                let lengthDisplay = `${baseLabel} (${seqLength.toLocaleString()} bp)`;
+
                 html += `<tr style="border-bottom:1px solid #ecf0f1; background:${bg};">
                     <td style="padding:8px; font-family:monospace; font-weight:bold;">${idLink}</td>
-                    <td style="padding:8px; font-style:italic; color:#34495e;">${db.name}</td>
+                    <td style="padding:8px; font-style:italic; color:#34495e;">${displayName}</td>
+                    <td style="padding:8px;">${geneDisplay}</td>
                     <td style="padding:8px; color:#34495e;">${db.isMito}</td>
-                    <td style="padding:8px; color:#34495e;">${db.seqBase}</td>
+                    <td style="padding:8px; color:#34495e; text-align: right; font-family: monospace;">${lengthDisplay}</td>
                 </tr>`;
             });
             html += '</tbody></table></div>';
