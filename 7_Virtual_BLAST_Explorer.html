@@ -1825,11 +1825,35 @@
             // クエリがFASTA形式の場合、ヘッダーから遺伝子名を推測するインテリジェント判定
             if(rawInput.startsWith('>')) {
                 let header = rawInput.split('\n')[0].toUpperCase();
+                
+                // 核ゲノム・リボソーム
                 if(header.includes('16S')) queryGene = '16S';
                 else if(header.includes('18S')) queryGene = '18S';
-                else if(header.includes('COI') || header.includes('COX1') || header.includes('CYTOCHROME C OXIDASE')) queryGene = 'COI';
+                else if(header.includes('28S')) queryGene = '28S';
+                else if(header.includes('5.8S')) queryGene = '5.8S';
+                else if(header.includes('ITS2')) queryGene = 'ITS2';
+                else if(header.includes('ITS1')) queryGene = 'ITS1';
                 else if(header.includes('ITS') || header.includes('INTERNAL TRANSCRIBED SPACER')) queryGene = 'ITS';
+                
+                // 動物・ミトコンドリア
+                else if(header.includes('COI') || header.includes('COX1') || header.includes('CO1') || header.includes('CYTOCHROME C OXIDASE')) queryGene = 'COI';
+                else if(header.includes('CYTB') || header.includes('CYTOCHROME B')) queryGene = 'cytb';
+                else if(header.includes('12S')) queryGene = '12S';
+                else if(header.includes('D-LOOP') || header.includes('CONTROL REGION')) queryGene = 'D-loop';
+                else if(header.includes('ND1')) queryGene = 'ND1';
+                
+                // 植物・葉緑体
                 else if(header.includes('RBCL') || header.includes('RIBULOSE-1,5-BISPHOSPHATE')) queryGene = 'rbcL';
+                else if(header.includes('MATK') || header.includes('MATURASE K')) queryGene = 'matK';
+                else if(header.includes('TRNL')) queryGene = 'trnL';
+                else if(header.includes('PSBA')) queryGene = 'psbA';
+                
+                // ウイルス
+                else if(header.includes('SPIKE') || header.includes('SURFACE GLYCOPROTEIN')) queryGene = 'Spike';
+                else if(header.includes('HEMAGGLUTININ')) queryGene = 'HA';
+                else if(header.includes('NEURAMINIDASE')) queryGene = 'NA';
+                else if(header.includes('ENVELOPE')) queryGene = 'env';
+                else if(header.includes('CAPSID') || header.includes('VP1')) queryGene = 'capsid';
             }
             
             let subjGene = res.gene && res.gene !== '-' ? res.gene : "";
