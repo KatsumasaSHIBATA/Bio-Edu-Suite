@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bio-Edu Lab Packs | Bio-Edu Suite</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        
+        /* アプリ⑦の世界観に合わせた背景色とフォント設定 */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
+        
+        /* アプリ⑦の完全再現ヘッダー */
+        .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 30; flex-shrink: 0; }
+        .header { width: 100%; max-width: 1400px; padding: 10px 20px; color: white; display: flex; flex-direction: column; position: relative; }
+        .header h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 1px; color: #fff; }
+        .header p { margin: 5px 0 0 0; font-size: 11px; color: #1abc9c; font-weight: 600; letter-spacing: 0.5px; }
+        
+        .btn-outline { position: absolute; right: 20px; top: 15px; background: transparent; color: #1abc9c; text-decoration: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; transition: 0.2s; border: 1px solid #1abc9c; display: flex; align-items: center; justify-content: center;}
+        .btn-outline:hover { background: #1abc9c; color: #1a252f; }
+
+        .main-content { width: 100%; max-width: 1400px; margin: 0 auto; padding: 40px 20px; flex: 1; }
+
+        /* index.html と完全に一致させた説明文のスタイル */
+        .hero-section { text-align: center; margin-bottom: 40px; padding: 0 20px; }
+        .hero-section p { margin: 0 auto; color: #7f8c8d; font-size: 14px; line-height: 1.6; max-width: 900px; }
+
+        /* パッケージグリッド */
+        .pack-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; margin-bottom: 40px; }
+
+        .card { background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid #ecf0f1; border-top: 4px solid; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+        
+        /* アプリ⑦のカードヘッダーに寄せたスタイル */
+        .card-header { padding: 10px 15px; display: flex; align-items: center; gap: 10px; color: white; position: relative; overflow: hidden; }
+        .card-icon { font-size: 24px; z-index: 1; }
+        .card-title-area { z-index: 1; }
+        .card-title { font-size: 14px; font-weight: bold; margin: 0 0 3px 0; }
+        .card-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+        .tag { font-size: 10px; padding: 2px 6px; border-radius: 3px; font-weight: bold; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);}
+
+        .card-body { padding: 15px; flex: 1; display: flex; flex-direction: column; gap: 10px;}
+        
+        .scenario-box { font-size: 12px; color: #34495e; line-height: 1.5; }
+        .section-title { font-weight: bold; color: #2c3e50; font-size: 12px; border-bottom: 1px solid #bdc3c7; padding-bottom: 4px; margin-top: 5px; display: flex; align-items: center; gap: 5px;}
+
+        .step-list { list-style: none; padding: 0; margin: 0; font-size: 11px; color: #555; }
+        .step-list li { margin-bottom: 8px; padding-left: 18px; position: relative; line-height: 1.5; }
+        .step-list li::before { content: "✓"; position: absolute; left: 0; top: 0; color: #27ae60; font-weight: bold; }
+        .step-highlight { font-weight: bold; color: #d35400; }
+        
+        .app-link { color: #2980b9; font-weight: bold; text-decoration: none; border-bottom: 1px dotted #2980b9; }
+        .app-link:hover { color: #e74c3c; border-bottom-color: #e74c3c; }
+
+        .primer-box { background: #fdfefe; padding: 8px; border-radius: 4px; border: 1px solid #bdc3c7; font-family: 'Courier New', Consolas, monospace; font-size: 10px; margin-top: 5px; color: #2c3e50; word-break: break-all;}
+        .reference-text { text-align: right; margin-top: 6px; font-size: 9px; color: #7f8c8d; font-family: 'Segoe UI', sans-serif;}
+        
+        /* 現場のTips用ボックス */
+        .tips-box { background: #fdfefe; padding: 10px; border-radius: 4px; border: 1px solid #bdc3c7; border-left-width: 4px; font-size: 11px; color: #34495e; line-height: 1.5; }
+
+        .action-area { display: flex; gap: 10px; margin-top: auto; padding-top: 5px;}
+        .btn-download { flex: 1; color: white; text-decoration: none; padding: 10px; text-align: center; border-radius: 4px; font-size: 12px; font-weight: bold; transition: 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center;}
+        .btn-download span { font-size: 10px; color: rgba(255,255,255,0.8); font-weight: normal; margin-top: 2px;}
+        .btn-download:hover { filter: brightness(1.1); }
+        .btn-download:active { transform: translateY(3px); box-shadow: none !important; }
+        
+        /* アプリ⑦に合わせたフッター */
+        .footer { width: 100%; background: #1a252f; padding: 12px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; flex-shrink: 0; margin-top: auto; border-top: 1px solid #2c3e50; }
+
+        @media screen and (max-width: 768px) {
+            .btn-outline { top: 10px; right: 10px; padding: 4px 6px; }
+            .header h1 { font-size: 16px; margin-right: 80px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header-container">
+    <div class="header">
+        <h1>🧬 Bio-Edu Lab Packs</h1>
+        <p>Bio-Edu Suite: Wet & Dry Integrated Packages</p>
+        <a href="./index.html" class="btn-outline">🏠 Portal Home</a>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="hero-section">
+        <p>
+            DNA抽出・PCR（Wet Lab）から、配列解析（Dry Lab）まで。<br>
+            Bio-Edu Suiteの各アプリをパイプラインとして繋ぎ、「実験室の作業」を「データの意味」へと昇華させる実践的パッケージです。
+        </p>
+    </div>
+
+    <div class="pack-grid">
+        
+        <!-- 1. 肉種鑑別パック -->
+        <div class="card" style="border-top-color: #e67e22;">
+            <div class="card-header" style="background: #d35400;">
+                <div class="card-icon">🥩</div>
+                <div class="card-title-area">
+                    <h3 class="card-title">肉種鑑別パック</h3>
+                    <div class="card-tags"><span class="tag">標的: cytb</span><span class="tag">L14816/H15173</span></div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="scenario-box"><strong>【Mission】</strong>謎のパティのDNAを解析し、その正体を特定せよ！</div>
+                
+                <div class="section-title">🧪 実験＆解析 パイプライン</div>
+                <ul class="step-list">
+                    <li><span class="step-highlight">Wet:</span> 肉組織を細切・酵素処理し、DNAを精製。</li>
+                    <li><span class="step-highlight">Dry:</span> <a href="./1_Master_Mix_Studio.html" class="app-link">App①</a>で反応液を設計し、<a href="./2_Thermal_Cycler_Simulator.html" class="app-link">App②</a>で熱プロファイルを最適化。
+                        <div class="primer-box" style="border-left-color: #d35400;">
+                            F: 5'-CCATCCAACATCTCAGCATGATGAAA-3'<br>
+                            R: 5'-CCCCTCAGAATGATATTTGTCCTCA-3'
+                            <div class="reference-text">Kocher <i>et al.</i> (1989) PNAS.</div>
+                        </div>
+                    </li>
+                    <li><span class="step-highlight">Dry:</span> <a href="./7_Virtual_BLAST_Explorer.html" class="app-link">App⑦</a>で全10種のDBと照合。</li>
+                </ul>
+
+                <div class="section-title">💡 現場のTips</div>
+                <div class="tips-box" style="border-left-color: #d35400;">
+                    脂質が強力なPCR阻害剤となります。抽出後の260/280比が1.8付近であることを確認し、低い場合（タンパク質や脂質が残留している場合）はフェノール精製を再実施してください。
+                </div>
+
+                <div class="action-area">
+                    <a href="./cartridges/Cartridge1_Meat_ID.json" download class="btn-download" style="background:#e67e22; border-color:#d35400; box-shadow:0 3px 0 #d35400;">📥 解析DBを取得<span>JSONファイル</span></a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. シーフード偽装パック -->
+        <div class="card" style="border-top-color: #3498db;">
+            <div class="card-header" style="background: #2980b9;">
+                <div class="card-icon">🍣</div>
+                <div class="card-title-area">
+                    <h3 class="card-title">シーフード偽装 鑑定パック</h3>
+                    <div class="card-tags"><span class="tag">標的: COI</span><span class="tag">FishF1/FishR1</span></div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="scenario-box"><strong>【Mission】</strong>白身魚フライはマダイか？代替魚か？DNAで食品偽装を暴け！</div>
+                
+                <div class="section-title">🧪 実験＆解析 パイプライン</div>
+                <ul class="step-list">
+                    <li><span class="step-highlight">Wet:</span> 魚肉片をHotSHOT法にて簡易抽出。</li>
+                    <li><span class="step-highlight">Dry:</span> <a href="./1_Master_Mix_Studio.html" class="app-link">App①</a>と<a href="./2_Thermal_Cycler_Simulator.html" class="app-link">App②</a>で反応系を構築。
+                        <div class="primer-box" style="border-left-color: #2980b9;">
+                            F: 5'-TCAACCAACCACAAAGACATTGGCAC-3'<br>
+                            R: 5'-TAGACTTCTGGGTGGCCAAAGAATCA-3'
+                            <div class="reference-text">Ward <i>et al.</i> (2005) Philos Trans R Soc Lond B.</div>
+                        </div>
+                    </li>
+                    <li><span class="step-highlight">Dry:</span> <a href="./7_Virtual_BLAST_Explorer.html" class="app-link">App⑦</a> で照合し社会問題を議論。</li>
+                </ul>
+
+                <div class="section-title">💡 現場のTips</div>
+                <div class="tips-box" style="border-left-color: #2980b9;">
+                    市販の魚肉加工品に含まれる着色料や添加物がPCRを阻害することがあります。DNAがうまく増幅しない場合は、抽出した反応液を滅菌水で10〜100倍に希釈すると改善しやすくなります。
+                </div>
+
+                <div class="action-area">
+                    <a href="./cartridges/Cartridge2_Seafood_Fraud.json" download class="btn-download" style="background:#3498db; border-color:#2980b9; box-shadow:0 3px 0 #2980b9;">📥 解析DBを取得<span>JSONファイル</span></a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. 人類進化パック -->
+        <div class="card" style="border-top-color: #95a5a6;">
+            <div class="card-header" style="background: #34495e;">
+                <div class="card-icon">🦣</div>
+                <div class="card-title-area">
+                    <h3 class="card-title">人類進化と古代DNAパック</h3>
+                    <div class="card-tags"><span class="tag">標的: cytb</span><span class="tag">L14816/H15173</span></div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="scenario-box"><strong>【Mission】</strong>古代骨のDNAを解析し、ヒトとネアンデルタール人の関係を考察せよ！</div>
+                
+                <div class="section-title">🧪 実験＆解析 パイプライン</div>
+                <ul class="step-list">
+                    <li><span class="step-highlight">Wet:</span> 微量骨粉等の前処理とDNA精製。</li>
+                    <li><span class="step-highlight">Dry:</span> <a href="./1_Master_Mix_Studio.html" class="app-link">App①</a>・<a href="./2_Thermal_Cycler_Simulator.html" class="app-link">App②</a>で低コピーDNAの増幅条件を設計。
+                        <div class="primer-box" style="border-left-color: #34495e;">
+                            F: 5'-CCATCCAACATCTCAGCATGATGAAA-3'<br>
+                            R: 5'-CCCCTCAGAATGATATTTGTCCTCA-3'
+                            <div class="reference-text">Kocher <i>et al.</i> (1989) PNAS.</div>
+                        </div>
+                    </li>
+                    <li><span class="step-highlight">Dry:</span> <a href="./7_Virtual_BLAST_Explorer.html" class="app-link">App⑦</a> で照合。</li>
+                </ul>
+
+                <div class="section-title">💡 現場のTips</div>
+                <div class="tips-box" style="border-left-color: #34495e;">
+                    古代DNA解析において、実験者（現代人）のDNA混入（コンタミネーション）が最大の敵です。実験器具のUV照射や漂白剤による滅菌を徹底し、可能な限り専用スペースで手袋・マスクを着用して操作してください。
+                </div>
+
+                <div class="action-area">
+                    <a href="./cartridges/Cartridge3_Human_Evolution.json" download class="btn-download" style="background:#95a5a6; border-color:#7f8c8d; box-shadow:0 3px 0 #7f8c8d;">📥 解析DBを取得<span>JSONファイル</span></a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. 環境DNA -->
+        <div class="card" style="border-top-color: #27ae60;">
+            <div class="card-header" style="background: #219a52;">
+                <div class="card-icon">💧</div>
+                <div class="card-title-area">
+                    <h3 class="card-title">環境DNA (eDNA) 調査パック</h3>
+                    <div class="card-tags"><span class="tag">標的: 12S</span><span class="tag">MiFish-U</span></div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="scenario-box"><strong>【Mission】</strong>池の水から外来種（ブラックバス等）の存在を証明せよ！</div>
+                
+                <div class="section-title">🧪 実験＆解析 パイプライン</div>
+                <ul class="step-list">
+                    <li><span class="step-highlight">Wet:</span> 環境水のろ過・DNA抽出。</li>
+                    <li><span class="step-highlight">Dry:</span> <a href="./1_Master_Mix_Studio.html" class="app-link">App①</a>と<a href="./2_Thermal_Cycler_Simulator.html" class="app-link">App②</a>でMiFishプライマー条件を構築。
+                        <div class="primer-box" style="border-left-color: #219a52;">
+                            F: 5'-GTCGGTAAAACTCGTGCCAGC-3'<br>
+                            R: 5'-CATAGTGGGGTATCTAATCCCAGTTTG-3'
+                            <div class="reference-text">Miya <i>et al.</i> (2015) R Soc Open Sci.</div>
+                        </div>
+                    </li>
+                    <li><span class="step-highlight">Dry:</span> <a href="./7_Virtual_BLAST_Explorer.html" class="app-link">App⑦</a> でDB照合。</li>
+                </ul>
+
+                <div class="section-title">💡 現場のTips</div>
+                <div class="tips-box" style="border-left-color: #219a52;">
+                    環境水中に含まれる泥の成分（フミン酸・腐植酸など）が強力なPCR阻害剤となります。ろ過後のフィルター膜を十分に洗浄するか、精製したDNA抽出液を希釈して使用してください。
+                </div>
+
+                <div class="action-area">
+                    <a href="./cartridges/Cartridge4_eDNA.json" download class="btn-download" style="background:#27ae60; border-color:#219a52; box-shadow:0 3px 0 #219a52;">📥 解析DBを取得<span>JSONファイル</span></a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. ベクター -->
+        <div class="card" style="border-top-color: #9b59b6;">
+            <div class="card-header" style="background: #8e44ad;">
+                <div class="card-icon">🦟</div>
+                <div class="card-title-area">
+                    <h3 class="card-title">感染症ベクター 特定パック</h3>
+                    <div class="card-tags"><span class="tag">標的: COI</span><span class="tag">LCO1490/HCO2198</span></div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="scenario-box"><strong>【Mission】</strong>検疫で見つかった蚊はデング熱を媒介する種類か？</div>
+                
+                <div class="section-title">🧪 実験＆解析 パイプライン</div>
+                <ul class="step-list">
+                    <li><span class="step-highlight">Wet:</span> 昆虫組織の破砕と核酸抽出。</li>
+                    <li><span class="step-highlight">Dry:</span> <a href="./1_Master_Mix_Studio.html" class="app-link">App①</a>と<a href="./2_Thermal_Cycler_Simulator.html" class="app-link">App②</a>で反応条件を計算。
+                        <div class="primer-box" style="border-left-color: #8e44ad;">
+                            F: 5'-GGTCAACAAATCATAAAGATATTGG-3'<br>
+                            R: 5'-TAAACTTCAGGGTGACCAAAAAATCA-3'
+                            <div class="reference-text">Folmer <i>et al.</i> (1994) Mol Mar Biol Biotechnol.</div>
+                        </div>
+                    </li>
+                    <li><span class="step-highlight">Dry:</span> <a href="./7_Virtual_BLAST_Explorer.html" class="app-link">App⑦</a> でDB照合。</li>
+                </ul>
+
+                <div class="section-title">💡 現場のTips</div>
+                <div class="tips-box" style="border-left-color: #8e44ad;">
+                    昆虫の外骨格（キチン質）は非常に硬く、細胞内からDNAが溶出しにくいという特性があります。ジルコニアビーズ等を用いて、組織を物理的に完全にホモジナイズ（破砕）することが成功の鍵です。
+                </div>
+
+                <div class="action-area">
+                    <a href="./cartridges/Cartridge5_Vectors.json" download class="btn-download" style="background:#9b59b6; border-color:#8e44ad; box-shadow:0 3px 0 #8e44ad;">📥 解析DBを取得<span>JSONファイル</span></a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. 食品媒介寄生虫 -->
+        <div class="card" style="border-top-color: #e74c3c;">
+            <div class="card-header" style="background: #c0392b;">
+                <div class="card-icon">🪱</div>
+                <div class="card-title-area">
+                    <h3 class="card-title">食品媒介寄生虫 鑑別パック</h3>
+                    <div class="card-tags"><span class="tag">標的: COI</span><span class="tag">LCO1490/HCO2198</span></div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="scenario-box"><strong>【Mission】</strong>寄生虫のDNAを解析し、原因食材と虫体の正体を特定せよ！</div>
+                
+                <div class="section-title">🧪 実験＆解析 パイプライン</div>
+                <ul class="step-list">
+                    <li><span class="step-highlight">Wet:</span> 虫体の破砕・プロテアーゼ処理後、スピンカラムで精製。</li>
+                    <li><span class="step-highlight">Dry:</span> <a href="./1_Master_Mix_Studio.html" class="app-link">App①</a>と<a href="./2_Thermal_Cycler_Simulator.html" class="app-link">App②</a>で反応条件をシミュレーション。
+                        <div class="primer-box" style="border-left-color: #c0392b;">
+                            F: 5'-GGTCAACAAATCATAAAGATATTGG-3'<br>
+                            R: 5'-TAAACTTCAGGGTGACCAAAAAATCA-3'
+                            <div class="reference-text">Folmer <i>et al.</i> (1994) Mol Mar Biol Biotechnol.</div>
+                        </div>
+                    </li>
+                    <li><span class="step-highlight">Dry:</span> <a href="./7_Virtual_BLAST_Explorer.html" class="app-link">App⑦</a> で照合。二倍体/三倍体の差を議論。</li>
+                </ul>
+
+                <div class="section-title">💡 現場のTips</div>
+                <div class="tips-box" style="border-left-color: #c0392b;">
+                    蠕虫（寄生虫）の体表を覆う厚いクチクラ層が抽出を物理的に阻害します。ハサミ等で微小に切断したのち、プロテイナーゼKによる長時間の酵素消化（一晩加温など）を行うことが最も重要です。
+                </div>
+
+                <div class="action-area">
+                    <a href="./cartridges/Cartridge6_Parasites.json" download class="btn-download" style="background:#e74c3c; border-color:#c0392b; box-shadow:0 3px 0 #c0392b;">📥 解析DBを取得<span>JSONファイル</span></a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="footer">
+    &copy; 2026 Bio-Edu Suite | Developed for Bioinformatics & Wet-Lab Education
+</div>
+
+</body>
+</html>
