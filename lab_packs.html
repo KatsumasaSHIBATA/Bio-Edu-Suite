@@ -8,16 +8,19 @@
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         
+        html { scroll-behavior: smooth; } /* アンカーリンク用スムーズスクロール */
+
         /* アプリ⑦の世界観に合わせた背景色とフォント設定（変数不使用） */
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
         
         /* アプリ⑦の完全再現ヘッダー */
-        .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 30; flex-shrink: 0; }
+        .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 30; flex-shrink: 0; position: sticky; top: 0;}
         .header { width: 100%; max-width: 1400px; padding: 10px 20px; color: white; display: flex; flex-direction: column; position: relative; }
         .header h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 1px; color: #fff; }
         .header p { margin: 5px 0 0 0; font-size: 11px; color: #1abc9c; font-weight: 600; letter-spacing: 0.5px; }
         
-        .version-badge { position: absolute; right: 20px; top: 15px; background: #34495e; color: #1abc9c; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid #1abc9c; }
+        .btn-outline { position: absolute; right: 20px; top: 15px; background: transparent; color: #1abc9c; text-decoration: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; transition: 0.2s; border: 1px solid #1abc9c; display: flex; align-items: center; justify-content: center;}
+        .btn-outline:hover { background: #1abc9c; color: #1a252f; }
 
         .main-content { width: 100%; max-width: 1400px; margin: 0 auto; padding: 40px 20px; flex: 1; display: flex; flex-direction: column; }
 
@@ -42,6 +45,11 @@
         .card-body { padding: 15px; flex: 1; display: flex; flex-direction: column; gap: 10px;}
         
         .scenario-box { font-size: 12px; color: #34495e; line-height: 1.5; }
+        
+        /* DB情報ボックス（追加） */
+        .db-info { background: #fdfefe; padding: 8px 10px; border-radius: 4px; font-size: 11px; color: #34495e; border: 1px solid #bdc3c7; line-height: 1.5;}
+        .db-info strong { color: #2c3e50; }
+
         .section-title { font-weight: bold; color: #2c3e50; font-size: 12px; border-bottom: 1px solid #bdc3c7; padding-bottom: 4px; margin-top: 5px; display: flex; align-items: center; gap: 5px;}
 
         .step-list { list-style: none; padding: 0; margin: 0; font-size: 11px; color: #555; }
@@ -51,6 +59,10 @@
         
         .app-link { color: #2980b9; font-weight: bold; text-decoration: none; border-bottom: 1px dotted #2980b9; }
         .app-link:hover { color: #e74c3c; border-bottom-color: #e74c3c; }
+
+        /* 抽出法のリンク（追加） */
+        .extraction-link { color: #e74c3c; font-weight: bold; text-decoration: none; border-bottom: 1px dotted #e74c3c; transition: 0.2s; cursor: help; }
+        .extraction-link:hover { color: #c0392b; border-bottom-style: solid; }
 
         .primer-box { background: #fdfefe; padding: 8px; border-radius: 4px; border: 1px solid #bdc3c7; font-family: 'Courier New', Consolas, monospace; font-size: 10px; margin-top: 5px; color: #2c3e50; word-break: break-all;}
         .reference-text { text-align: right; margin-top: 6px; font-size: 9px; color: #7f8c8d; font-family: 'Segoe UI', sans-serif;}
@@ -65,7 +77,7 @@
         .btn-download:hover { filter: brightness(1.1); }
         .btn-download:active { transform: translateY(3px); box-shadow: none !important; }
         
-        /* ツールチップ（ボタンのスリム化用） */
+        /* ツールチップ */
         [data-tooltip] { position: relative; cursor: pointer; }
         [data-tooltip]::before {
             content: attr(data-tooltip);
@@ -84,11 +96,27 @@
         }
         [data-tooltip]:hover::before, [data-tooltip]:hover::after { opacity: 1; visibility: visible; }
 
+        /* Appendix Section（追加） */
+        .appendix-section {
+            margin-bottom: 40px; padding: 25px; background: #fff; border-radius: 8px;
+            border: 1px solid #ecf0f1; border-top: 4px solid #1abc9c;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            scroll-margin-top: 80px; /* ヘッダーの被り防止 */
+        }
+        .appendix-title {
+            color: #2c3e50; font-size: 18px; margin-top: 0; margin-bottom: 20px;
+            padding-bottom: 10px; border-bottom: 2px solid #eaeded;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .appendix-content { font-size: 13px; line-height: 1.6; color: #34495e; }
+        .appendix-content h4 { color: #2c3e50; margin: 15px 0 5px 0; font-size: 14px; }
+        .appendix-content p { margin: 0 0 10px 0; padding-left: 15px; }
+
         /* アプリ⑦に合わせたフッター */
         .footer { width: 100%; background: #1a252f; padding: 12px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; flex-shrink: 0; margin-top: auto; border-top: 1px solid #2c3e50; }
 
         @media screen and (max-width: 768px) {
-            .version-badge { top: 10px; right: 10px; padding: 2px 6px; }
+            .btn-outline { top: 10px; right: 10px; padding: 4px 6px; }
             .header h1 { font-size: 16px; margin-right: 80px; }
         }
     </style>
@@ -105,7 +133,7 @@
 <div class="main-content">
     <div class="hero-section">
         <p>
-            教育現場のための実践的DNA解析パック。予算の制約、授業時間の制限、そして「絶対に失敗させられない」という現場のリアルな課題をクリアしつつ、生徒の探究心を最大限に引き出すためのWet（実験）＆ Dry（解析）統合パッケージです。
+            教育現場のための実践的DNA解析パック。予算の制約、授業時間の制限、そして「絶対に失敗させられない」という現場のリアルな課題をクリアしつつ、安全で確実なDNA抽出法（Wet）と、ブラウザ完結のデータ解析（Dry）を統合した教育パッケージです。
         </p>
     </div>
 
@@ -117,15 +145,22 @@
                 <div class="card-icon">🥩</div>
                 <div class="card-title-area">
                     <h3 class="card-title">肉種鑑別パック</h3>
-                    <div class="card-tags"><span class="tag" style="background:#d35400; color:#fff;">標的: cytb</span><span class="tag" style="background:#d35400; color:#fff;">L14816/H15173</span></div>
+                    <div class="card-tags">
+                        <span class="tag" style="background:rgba(255,255,255,0.2); border-color:rgba(255,255,255,0.4); color:#fff;">標的: cytb</span>
+                        <span class="tag" style="background:rgba(255,255,255,0.2); border-color:rgba(255,255,255,0.4); color:#fff;">L14816/H15173</span>
+                    </div>
                 </div>
             </div>
             <div class="card-body">
                 <div class="scenario-box"><strong>【Mission】</strong>「牛肉100%」と書かれた謎のミンチ肉。本当にウシのDNAしか入っていないのか？食品表示の真偽を特定せよ！</div>
                 
+                <div class="db-info">
+                    <strong>🧬 収録DB (全10種):</strong> ウシ、ブタ、ニワトリ、ヒツジ、ヤギ、ウマ、ジビエ（イノシシ、シカ、ヒグマ、ミンククジラ）
+                </div>
+
                 <div class="section-title">🧪 実験＆解析 パイプライン</div>
                 <ul class="step-list">
-                    <li><span class="step-highlight">Wet:</span> スーパーのひき肉を使用。HotSHOT法で30分以内に抽出完了。</li>
+                    <li><span class="step-highlight">Wet:</span> 推奨: <a href="#appendix" class="extraction-link" title="なぜこの手法？（下部へジャンプ）">煮沸Chelex法</a></li>
                     <li><span class="step-highlight">Dry:</span> <a href="./1_Master_Mix_Studio.html" class="app-link">アプリ①</a>で反応液を設計し、<a href="./2_Thermal_Cycler_Simulator.html" class="app-link">アプリ②</a>で熱プロファイルを最適化。
                         <div class="primer-box" style="border-left-color: #d35400;">
                             F: 5'-CCATCCAACATCTCAGCATGATGAAA-3'<br>
@@ -133,7 +168,7 @@
                             <div class="reference-text">Kocher <i>et al.</i> (1989) PNAS.</div>
                         </div>
                     </li>
-                    <li><span class="step-highlight">Dry:</span> <a href="./7_Virtual_BLAST_Explorer.html" class="app-link">アプリ⑦</a>で全10種のDBと照合。</li>
+                    <li><span class="step-highlight">Dry:</span> <a href="./7_Virtual_BLAST_Explorer.html" class="app-link">アプリ⑦</a>でDBと照合。</li>
                 </ul>
 
                 <div class="tips-box">
@@ -142,7 +177,7 @@
                 </div>
 
                 <div class="action-area">
-                    <a href="./cartridges/Cartridge1_Meat_ID.json" download class="btn-download" style="background:#e67e22; border-color:#d35400; box-shadow:0 3px 0 #d35400;" data-tooltip="全10種の解析データベース（JSON）を取得">📥 ダウンロード</a>
+                    <a href="./cartridges/Cartridge1_Meat_ID.json" download class="btn-download" style="background:#e67e22; border-color:#d35400; box-shadow:0 3px 0 #d35400;" data-tooltip="全10種の解析データベース（JSON）を取得">📥 ダウンロード<span>(JSON)</span></a>
                 </div>
             </div>
         </div>
@@ -153,15 +188,22 @@
                 <div class="card-icon">🍣</div>
                 <div class="card-title-area">
                     <h3 class="card-title">シーフード偽装 鑑定パック</h3>
-                    <div class="card-tags"><span class="tag">標的: COI</span><span class="tag">FishF1/FishR1</span></div>
+                    <div class="card-tags">
+                        <span class="tag" style="background:rgba(255,255,255,0.2); border-color:rgba(255,255,255,0.4); color:#fff;">標的: COI</span>
+                        <span class="tag" style="background:rgba(255,255,255,0.2); border-color:rgba(255,255,255,0.4); color:#fff;">FishF1/FishR1</span>
+                    </div>
                 </div>
             </div>
             <div class="card-body">
                 <div class="scenario-box"><strong>【Mission】</strong>お弁当の「白身魚フライ」や「ネギトロ」は本物か？それとも深海魚や代替魚か？DNAバーコーディングで偽装を暴け！</div>
                 
+                <div class="db-info">
+                    <strong>🧬 収録DB (全14種):</strong> マダイ/ティラピア、クロマグロ/アカマンボウ、シシャモ類、ウナギなど。
+                </div>
+
                 <div class="section-title">🧪 実験＆解析 パイプライン</div>
                 <ul class="step-list">
-                    <li><span class="step-highlight">Wet:</span> 市販の切り身や加工食品からDNAを簡易抽出。</li>
+                    <li><span class="step-highlight">Wet:</span> 推奨: <a href="#appendix" class="extraction-link" title="なぜこの手法？（下部へジャンプ）">HotSHOT法（アルカリ熱抽出）</a></li>
                     <li><span class="step-highlight">Dry:</span> <a href="./1_Master_Mix_Studio.html" class="app-link">アプリ①</a>と<a href="./2_Thermal_Cycler_Simulator.html" class="app-link">アプリ②</a>で反応系を構築。
                         <div class="primer-box" style="border-left-color: #2980b9;">
                             F: 5'-TCAACCAACCACAAAGACATTGGCAC-3'<br>
@@ -178,7 +220,7 @@
                 </div>
 
                 <div class="action-area">
-                    <a href="./cartridges/Cartridge2_Seafood_Fraud.json" download class="btn-download" style="background:#3498db; border-color:#2980b9; box-shadow:0 3px 0 #2980b9;" data-tooltip="全14種の解析データベース（JSON）を取得">📥 ダウンロード</a>
+                    <a href="./cartridges/Cartridge2_Seafood_Fraud.json" download class="btn-download" style="background:#3498db; border-color:#2980b9; box-shadow:0 3px 0 #2980b9;" data-tooltip="全14種の解析データベース（JSON）を取得">📥 ダウンロード<span>(JSON)</span></a>
                 </div>
             </div>
         </div>
@@ -189,15 +231,22 @@
                 <div class="card-icon">🦣</div>
                 <div class="card-title-area">
                     <h3 class="card-title">自分のルーツ探求パック</h3>
-                    <div class="card-tags"><span class="tag">標的: cytb</span><span class="tag">L14816/H15173</span></div>
+                    <div class="card-tags">
+                        <span class="tag" style="background:rgba(255,255,255,0.2); border-color:rgba(255,255,255,0.4); color:#fff;">標的: cytb</span>
+                        <span class="tag" style="background:rgba(255,255,255,0.2); border-color:rgba(255,255,255,0.4); color:#fff;">L14816/H15173</span>
+                    </div>
                 </div>
             </div>
             <div class="card-body">
-                <div class="scenario-box"><strong>【Mission】</strong>自分の細胞からDNAを抽出し、ネアンデルタール人やチンパンジーの塩基配列と比較せよ！私たちは進化のどこにいるのか？</div>
+                <div class="scenario-box"><strong>【Mission】</strong>自分の細胞からDNAを取り出し、ネアンデルタール人やチンパンジーのDNA配列と比較せよ！私たちは進化のどこにいるのか？</div>
                 
+                <div class="db-info">
+                    <strong>🧬 収録DB (全7種):</strong> 現生人類(ヒト)、ネアンデルタール人、デニソワ人、チンパンジー、ボノボ、ゴリラ、オランウータン。
+                </div>
+
                 <div class="section-title">🧪 実験＆解析 パイプライン</div>
                 <ul class="step-list">
-                    <li><span class="step-highlight">Wet:</span> 綿棒で自身の口腔粘膜（頬の内側）を擦り、Chelex樹脂等で煮沸抽出。</li>
+                    <li><span class="step-highlight">Wet:</span> 推奨: <a href="#appendix" class="extraction-link" title="なぜこの手法？（下部へジャンプ）">口腔粘膜スワブのChelex法</a></li>
                     <li><span class="step-highlight">Dry:</span> <a href="./1_Master_Mix_Studio.html" class="app-link">アプリ①</a>・<a href="./2_Thermal_Cycler_Simulator.html" class="app-link">アプリ②</a>でDNAの増幅条件を設計。
                         <div class="primer-box" style="border-left-color: #34495e;">
                             F: 5'-CCATCCAACATCTCAGCATGATGAAA-3'<br>
@@ -205,16 +254,16 @@
                             <div class="reference-text">Kocher <i>et al.</i> (1989) PNAS.</div>
                         </div>
                     </li>
-                    <li><span class="step-highlight">Dry:</span> <a href="./7_Virtual_BLAST_Explorer.html" class="app-link">アプリ⑦</a> で照合し、<a href="./8_Phylogenetic_Tree_Builder.html" class="app-link">アプリ⑧</a>で人類の系統樹を描画。</li>
+                    <li><span class="step-highlight">Dry:</span> <a href="./7_Virtual_BLAST_Explorer.html" class="app-link">アプリ⑦</a> で照合し、<a href="./8_Phylogenetic_Tree_Builder.html" class="app-link">アプリ⑧</a>で系統樹を描画。</li>
                 </ul>
 
                 <div class="tips-box">
                     <strong>👨‍🏫 現場のリアルと工夫</strong>
-                    古代骨からのDNA抽出は教養レベルではコンタミのため100%不可能です。そこで「自分のDNA」を入り口にし、Dry解析で古代人と比較するハイブリッド型にします。※食後は食べ物のDNAが混じるため、採取前のうがいを徹底してください。
+                    古代骨からの抽出は教養レベルではコンタミのため100%不可能です。Dry解析で古代人と比較するハイブリッド型にします。※食後は食べ物のDNAが混じるため、採取前のうがいを徹底してください。
                 </div>
 
                 <div class="action-area">
-                    <a href="./cartridges/Cartridge3_Human_Evolution.json" download class="btn-download" style="background:#95a5a6; border-color:#7f8c8d; box-shadow:0 3px 0 #7f8c8d;" data-tooltip="全7種の解析データベース（JSON）を取得">📥 ダウンロード</a>
+                    <a href="./cartridges/Cartridge3_Human_Evolution.json" download class="btn-download" style="background:#95a5a6; border-color:#7f8c8d; box-shadow:0 3px 0 #7f8c8d;" data-tooltip="全7種の解析データベース（JSON）を取得">📥 ダウンロード<span>(JSON)</span></a>
                 </div>
             </div>
         </div>
@@ -225,16 +274,23 @@
                 <div class="card-icon">💧</div>
                 <div class="card-title-area">
                     <h3 class="card-title">環境DNA (eDNA) 調査パック</h3>
-                    <div class="card-tags"><span class="tag">標的: 12S</span><span class="tag">MiFish-U</span></div>
+                    <div class="card-tags">
+                        <span class="tag" style="background:rgba(255,255,255,0.2); border-color:rgba(255,255,255,0.4); color:#fff;">標的: 12S</span>
+                        <span class="tag" style="background:rgba(255,255,255,0.2); border-color:rgba(255,255,255,0.4); color:#fff;">MiFish-U</span>
+                    </div>
                 </div>
             </div>
             <div class="card-body">
                 <div class="scenario-box"><strong>【Mission】</strong>コップ一杯の水から、そこに潜む外来種（ブラックバス等）の存在を証明し、生態系の危機を可視化せよ！</div>
                 
+                <div class="db-info">
+                    <strong>🧬 収録DB (全6種):</strong> オオサンショウウオ（在来/外来）、ニホンイシガメ、アカミミガメ、ブラックバス、ブルーギル。
+                </div>
+
                 <div class="section-title">🧪 実験＆解析 パイプライン</div>
                 <ul class="step-list">
-                    <li><span class="step-highlight">Wet:</span> 学校の飼育水槽の水等を採取し、沈殿物（ペレット）からDNAを遠心分離で抽出。</li>
-                    <li><span class="step-highlight">Dry:</span> <a href="./1_Master_Mix_Studio.html" class="app-link">アプリ①</a>と<a href="./2_Thermal_Cycler_Simulator.html" class="app-link">アプリ②</a>でMiFishプライマー条件を構築。
+                    <li><span class="step-highlight">Wet:</span> 推奨: <a href="#appendix" class="extraction-link" title="なぜこの手法？（下部へジャンプ）">飼育水ペレットのChelex法</a></li>
+                    <li><span class="step-highlight">Dry:</span> <a href="./1_Master_Mix_Studio.html" class="app-link">アプリ①</a>と<a href="./2_Thermal_Cycler_Simulator.html" class="app-link">アプリ②</a>でMiFish条件を構築。
                         <div class="primer-box" style="border-left-color: #219a52;">
                             F: 5'-GTCGGTAAAACTCGTGCCAGC-3'<br>
                             R: 5'-CATAGTGGGGTATCTAATCCCAGTTTG-3'
@@ -246,11 +302,11 @@
 
                 <div class="tips-box">
                     <strong>👨‍🏫 現場のリアルと工夫</strong>
-                    野外の池の水をろ過するには高価なフィルターが必要で、泥（フミン酸等）によるPCR阻害で失敗しがちです。先生が事前にターゲット魚種を数日飼育した「学校の水槽の水」や「釣具屋の水」を遠心分離して使えば、確実かつ安価に成功します。
+                    野外の池の水をろ過するには高価なフィルターが必要で、泥によるPCR阻害で失敗しがちです。先生が事前にターゲット魚種を飼育した「水槽の水」を遠心分離して使えば、確実かつ安価に成功します。
                 </div>
 
                 <div class="action-area">
-                    <a href="./cartridges/Cartridge4_eDNA.json" download class="btn-download" style="background:#27ae60; border-color:#219a52; box-shadow:0 3px 0 #219a52;" data-tooltip="全6種の解析データベース（JSON）を取得">📥 ダウンロード</a>
+                    <a href="./cartridges/Cartridge4_eDNA.json" download class="btn-download" style="background:#27ae60; border-color:#219a52; box-shadow:0 3px 0 #219a52;" data-tooltip="全6種の解析データベース（JSON）を取得">📥 ダウンロード<span>(JSON)</span></a>
                 </div>
             </div>
         </div>
@@ -261,15 +317,22 @@
                 <div class="card-icon">🦟</div>
                 <div class="card-title-area">
                     <h3 class="card-title">身近な昆虫バーコーディング</h3>
-                    <div class="card-tags"><span class="tag">標的: COI</span><span class="tag">LCO1490/HCO2198</span></div>
+                    <div class="card-tags">
+                        <span class="tag" style="background:rgba(255,255,255,0.2); border-color:rgba(255,255,255,0.4); color:#fff;">標的: COI</span>
+                        <span class="tag" style="background:rgba(255,255,255,0.2); border-color:rgba(255,255,255,0.4); color:#fff;">LCO1490/HCO2198</span>
+                    </div>
                 </div>
             </div>
             <div class="card-body">
                 <div class="scenario-box"><strong>【Mission】</strong>教室にいた羽虫や、家で見つけた謎の虫…この虫の正体をDNAバーコーディングで特定せよ！</div>
                 
+                <div class="db-info">
+                    <strong>🧬 収録DB (全7種):</strong> 蚊（ネッタイシマカ等）、マダニ類、トコジラミ。
+                </div>
+
                 <div class="section-title">🧪 実験＆解析 パイプライン</div>
                 <ul class="step-list">
-                    <li><span class="step-highlight">Wet:</span> 身近な昆虫の「脚1本」を使用し、マイクロペッスル等で物理的に破砕してDNAを抽出。</li>
+                    <li><span class="step-highlight">Wet:</span> 推奨: <a href="#appendix" class="extraction-link" title="なぜこの手法？（下部へジャンプ）">物理破砕＋HotSHOT法</a></li>
                     <li><span class="step-highlight">Dry:</span> <a href="./1_Master_Mix_Studio.html" class="app-link">アプリ①</a>と<a href="./2_Thermal_Cycler_Simulator.html" class="app-link">アプリ②</a>で反応条件を計算。
                         <div class="primer-box" style="border-left-color: #8e44ad;">
                             F: 5'-GGTCAACAAATCATAAAGATATTGG-3'<br>
@@ -282,11 +345,11 @@
 
                 <div class="tips-box">
                     <strong>👨‍🏫 現場のリアルと工夫</strong>
-                    マダニ等の危険なベクターを生徒に野外採集させるのは安全面で困難です。アリやハエ、餌用コオロギ等の安全な昆虫を使用します。虫を丸ごと使うと色素や阻害物質が濃すぎるため、「脚を1本だけ」切って使うのが綺麗なDNAを得る秘訣です。
+                    マダニ等の危険なベクターを生徒に野外採集させるのは安全面で困難です。アリや餌用コオロギ等の安全な昆虫を使用します。丸ごと使うと色素や阻害物質が濃すぎるため、「脚を1本だけ」切って使うのが秘訣です。
                 </div>
 
                 <div class="action-area">
-                    <a href="./cartridges/Cartridge5_Vectors.json" download class="btn-download" style="background:#9b59b6; border-color:#8e44ad; box-shadow:0 3px 0 #8e44ad;" data-tooltip="全7種の解析データベース（JSON）を取得">📥 ダウンロード</a>
+                    <a href="./cartridges/Cartridge5_Vectors.json" download class="btn-download" style="background:#9b59b6; border-color:#8e44ad; box-shadow:0 3px 0 #8e44ad;" data-tooltip="全7種の解析データベース（JSON）を取得">📥 ダウンロード<span>(JSON)</span></a>
                 </div>
             </div>
         </div>
@@ -297,37 +360,68 @@
                 <div class="card-icon">🪱</div>
                 <div class="card-title-area">
                     <h3 class="card-title">食品媒介寄生虫 鑑別パック</h3>
-                    <div class="card-tags"><span class="tag">標的: COI</span><span class="tag">jgLCO/jgHCO</span></div>
+                    <div class="card-tags">
+                        <span class="tag" style="background:rgba(255,255,255,0.2); border-color:rgba(255,255,255,0.4); color:#fff;">標的: COI</span>
+                        <span class="tag" style="background:rgba(255,255,255,0.2); border-color:rgba(255,255,255,0.4); color:#fff;">jgLCO/jgHCO</span>
+                    </div>
                 </div>
             </div>
             <div class="card-body">
-                <div class="scenario-box"><strong>【Mission】</strong>食中毒患者から摘出された寄生虫のDNAを解析し、原因となった食材と虫体の正体（アニサキスか？条虫か？）を特定せよ！</div>
+                <div class="scenario-box"><strong>【Mission】</strong>患者から摘出された寄生虫のDNAを解析し、原因となった食材と虫体の正体（アニサキスか？条虫か？）を特定せよ！</div>
                 
+                <div class="db-info">
+                    <strong>🧬 収録DB (全16種):</strong> アニサキス類、各種条虫（有鉤・無鉤・アジア・日本海裂頭条虫等）、吸虫。
+                </div>
+
                 <div class="section-title">🧪 実験＆解析 パイプライン</div>
                 <ul class="step-list">
-                    <li><span class="step-highlight">Wet:</span> エタノール固定したアニサキス等を使用し、プロテアーゼ処理によりDNA精製。</li>
+                    <li><span class="step-highlight">Wet:</span> 推奨: <a href="#appendix" class="extraction-link" title="なぜこの手法？（下部へジャンプ）">PK＋Chelex法</a></li>
                     <li><span class="step-highlight">Dry:</span> <a href="./1_Master_Mix_Studio.html" class="app-link">アプリ①</a>と<a href="./2_Thermal_Cycler_Simulator.html" class="app-link">アプリ②</a>で反応条件をシミュレーション。
                         <div class="primer-box" style="border-left-color: #c0392b;">
-                            F: 5'-GGTCAACAAATCATAAAGATATTGG-3'<br>
-                            R: 5'-TAAACTTCAGGGTGACCAAAAAATCA-3'
-                            <div class="reference-text">Folmer <i>et al.</i> (1994) Mol Mar Biol Biotechnol.</div>
+                            F: 5'-TITCIACIAAYCATAARGATATTGG-3'<br>
+                            R: 5'-TAIACYTCIGGRTGWCCAAARAAYCA-3'
+                            <div class="reference-text">Geller <i>et al.</i> (2013) Mol Ecol Resour.</div>
                         </div>
                     </li>
-                    <li><span class="step-highlight">Dry:</span> <a href="./3_PCR_RFLP_Simulator.html" class="app-link">アプリ③</a>でPCR-RFLPをシミュレーションし、<a href="./7_Virtual_BLAST_Explorer.html" class="app-link">アプリ⑦</a>で照合。</li>
+                    <li><span class="step-highlight">Dry:</span> <a href="./3_PCR_RFLP_Simulator.html" class="app-link">アプリ③</a>でPCR-RFLP、<a href="./8_Phylogenetic_Tree_Builder.html" class="app-link">アプリ⑧</a>で系統樹作成。</li>
                 </ul>
 
                 <div class="tips-box">
                     <strong>👨‍🏫 現場のリアルと工夫</strong>
-                    新鮮な寄生虫を実習当日に全員分揃えるのは困難です。先生が事前にスーパーの鮮魚からアニサキスを集め、エタノール保存して配布します。抽出時はエタノールを完全に揮発させ、ハサミで微細に切断してから長時間の酵素消化を行うのがポイントです。
+                    新鮮な寄生虫を全員分揃えるのは困難です。先生が事前に鮮魚からアニサキスを集め、エタノール保存して配布します。抽出時はエタノールを完全に揮発させ、ハサミで微細に切断してから酵素消化を行ってください。
                 </div>
 
                 <div class="action-area">
-                    <a href="./cartridges/Cartridge6_Parasites.json" download class="btn-download" style="background:#e74c3c; border-color:#c0392b; box-shadow:0 3px 0 #c0392b;" data-tooltip="全16種の解析データベース（JSON）を取得">📥 ダウンロード</a>
+                    <a href="./cartridges/Cartridge6_Parasites.json" download class="btn-download" style="background:#e74c3c; border-color:#c0392b; box-shadow:0 3px 0 #c0392b;" data-tooltip="全16種の解析データベース（JSON）を取得">📥 ダウンロード<span>(JSON)</span></a>
                 </div>
             </div>
         </div>
 
     </div>
+
+    <!-- Appendix: 抽出法の原理 -->
+    <div id="appendix" class="appendix-section">
+        <h3 class="appendix-title">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
+            【Appendix】ターゲットで変わる！プロのDNA抽出メソッド
+        </h3>
+        <div class="appendix-content">
+            <p>DNA抽出に「これさえあれば完璧」という魔法の薬はありません。科学捜査や食品検査の現場では、ターゲットの細胞の硬さや含まれている成分に合わせて、抽出方法を巧みに使い分けています。各パックで推奨している「教育現場向けの安全・簡便な手法」にも、それぞれ生物学的な明確な理由があります。</p>
+
+            <h4 id="method-chelex">🩸 食肉（牛・豚など） ➡️ 【煮沸Chelex法】</h4>
+            <p>獣肉には血液（ミオグロビンやヘモグロビン）が豊富に含まれています。この血液中の「ヘム鉄」は、DNAを増幅させる酵素（PCRポリメラーゼ）の働きを強力に邪魔してしまいます。そこで、鉄イオンなどをガッチリと吸着して無毒化する特殊なキレート樹脂（Chelex等）を使い、煮沸によって阻害物質を取り除くのが科学捜査のスタンダードです。</p>
+
+            <h4 id="method-hotshot">🐟 シーフード（魚肉） ➡️ 【HotSHOT法（アルカリ熱抽出）】</h4>
+            <p>魚の筋肉組織は、植物の細胞壁のような硬いバリアを持たず、血液量も獣肉ほど多くありません。そのため、高価な試薬や樹脂を使わなくても、強アルカリ（水酸化ナトリウム等）の液に入れて95℃で煮るだけで、一瞬にして細胞がドロドロに溶け、PCRに必要なクリーンなDNAが溶け出してきます。</p>
+
+            <h4 id="method-insect">🦟 昆虫類 ➡️ 【物理破砕 ＋ HotSHOT法】</h4>
+            <p>昆虫を覆う外骨格（キチン質）は非常に硬い多糖類です。タンパク質を溶かす酵素（プロテイナーゼK）を使っても、キチン質の壁には歯が立ちません。そのため、すりこぎ等で物理的にバキバキに砕いたあと、強アルカリと熱で一気に細胞を破壊するのが最も早くて確実な方法です。</p>
+
+            <h4 id="method-parasite">🪱 寄生虫（アニサキス等） ➡️ 【プロテイナーゼK ＋ Chelex法】</h4>
+            <p>寄生虫の表面を覆うクチクラ層は、特殊なコラーゲン（タンパク質）が極めて強固に結びついた構造をしています。この強靭なタンパク質の壁を壊すには、アルカリ煮沸だけでは足りません。強力なタンパク質分解酵素（プロテイナーゼK）を加え、時間をかけてじっくりと組織をバラバラに消化する必要があります。</p>
+        </div>
+    </div>
+
 </div>
 
 <div class="footer">
