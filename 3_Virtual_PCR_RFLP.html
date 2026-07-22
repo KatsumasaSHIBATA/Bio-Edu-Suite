@@ -343,10 +343,25 @@
     </div>
     <div style="padding: 10px; background: #eaeded; border-bottom: 1px solid #bdc3c7;">
         <input type="text" id="enzymeSearch" style="padding: 8px 10px; font-family: monospace; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 13px; background: #fff; outline: none; width: 100%; box-sizing: border-box;" placeholder="酵素名または認識塩基配列で検索" oninput="filterEnzymes()">
+        <div style="margin-top: 8px; display: flex; align-items: center; justify-content: space-between;">
+            <label style="font-size: 11px; font-weight: bold; color: #2c3e50; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                <input type="checkbox" id="filterShortCut" onchange="filterEnzymes()"> ✂️ 4〜5塩基認識で絞り込む
+            </label>
+            <button class="rationale-btn" onclick="toggleRationale('rat_rflp_strategy')">?</button>
+        </div>
     </div>
     <div id="enzymeListContent" style="padding: 0; font-size: 12px; color: #2c3e50; overflow-y: auto; flex: 1; display: flex; flex-direction: column; min-height: 0; -webkit-overflow-scrolling: touch; background: #fff;">
         <!-- リストの中身 -->
     </div>
+</div>
+
+<!-- 隠し解説テキスト（RFLPマーカー探索の極意） -->
+<div id="rat_rflp_strategy" class="rationale-text">
+    <strong>【RFLPマーカー探索の極意】</strong><br><br>
+    <strong>① なぜ4〜5塩基を狙う？</strong><br>
+    EcoR I などの6塩基認識（確率1/4096）は、1,000bpの短いDNAでは「切断部位がない」ことが殆どです。Hinf I や Taq I などの4〜5塩基認識（確率1/256〜1/1024）から試すのが鉄則です。<br><br>
+    <strong>② 当たりパターンの見分け方</strong><br>
+    「全部切れない」「全部同じ長さで切れる」酵素では種を区別できません。種ごとにバンドの数や長さが明確に違うパターンが出る酵素を探しましょう。100bp以下が大量に出る細かすぎる酵素もNGです。
 </div>
 
 <script>
@@ -363,11 +378,16 @@
         if (!el) return;
         
         const isBlock = (el.style.display === 'block');
-        // モーダル以外のすべてのポップオーバーを閉じる
+        
+        // 開こうとしているポップオーバーと、enzymeModal以外のすべてのポップオーバーを閉じる
         document.querySelectorAll('.rationale-text').forEach(e => {
-            if(e.id !== 'enzymeModal') e.style.display = 'none';
+            if(e.id !== 'enzymeModal' && e.id !== id) e.style.display = 'none';
         });
-        document.getElementById('enzymeModal').style.display = 'none';
+        
+        // 酵素モーダル内の?ボタンの場合はモーダルを閉じない
+        if (id !== 'rat_rflp_strategy') {
+            document.getElementById('enzymeModal').style.display = 'none';
+        }
         
         if (!isBlock) {
             // body直下に移動してz-index等の影響をリセット
@@ -380,8 +400,15 @@
                 const rect = btn.getBoundingClientRect();
                 let topPos = rect.bottom + 8;
                 let leftPos = rect.left;
+                
                 const elWidth = 300; 
-                if (leftPos + elWidth > window.innerWidth) leftPos = window.innerWidth - elWidth - 10;
+                // もし画面右端にはみ出る場合は左に寄せる処理
+                if (leftPos + elWidth > window.innerWidth) {
+                    leftPos = window.innerWidth - elWidth - 10;
+                }
+                
+                // 画面左端にはみ出る場合のフォールバック
+                if (leftPos < 10) leftPos = 10;
                 
                 el.style.top = topPos + 'px';
                 el.style.left = leftPos + 'px';
@@ -400,7 +427,10 @@
         if (e.target && typeof e.target.closest === 'function' && (e.target.closest('.rationale-text') || e.target.closest('#enzymeModal'))) {
             return;
         }
-        document.querySelectorAll('.rationale-text').forEach(p => p.style.display = 'none');
+        // スクロール時は酵素モーダル以外のポップオーバーをすべて閉じる
+        document.querySelectorAll('.rationale-text').forEach(p => {
+            if (p.id !== 'enzymeModal') p.style.display = 'none';
+        });
     }, true);
 
 
@@ -722,6 +752,7 @@
         
         let count = 0;
         const filterUpper = filterText.toUpperCase();
+        const isShortCutOnly = document.getElementById('filterShortCut') ? document.getElementById('filterShortCut').checked : false;
         
         // JSONのキーでソートする
         const sortedKeys = Object.keys(enzymeDB).sort((a, b) => a.localeCompare(b));
@@ -731,6 +762,14 @@
             // フィルタリング
             if (filterUpper) {
                 if (!name.toUpperCase().includes(filterUpper) && !enz.site.includes(filterUpper)) {
+                    continue;
+                }
+            }
+            
+            // 4-5塩基フィルター
+            if (isShortCutOnly) {
+                let siteLength = enz.site.replace(/[^A-Z]/g, '').length;
+                if (siteLength < 4 || siteLength > 5) {
                     continue;
                 }
             }
@@ -748,7 +787,8 @@
         }
         
         container.innerHTML = html;
-        document.getElementById('enzymeCount').innerText = `${Object.keys(enzymeDB).length} 種`;
+        // 絞り込まれた現在の表示件数を反映する
+        document.getElementById('enzymeCount').innerText = `${count} 種`;
     }
 
     function filterEnzymes() {
