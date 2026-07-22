@@ -354,45 +354,45 @@
             </div>
         </div>
 
-        <!-- 6. 食品媒介寄生虫 -->
+        <!-- 6. 同胞種(寄生虫) 鑑別パック -->
         <div class="card" style="border-top-color: #e74c3c;">
             <div class="card-header" style="background: #c0392b;">
                 <div class="card-icon">🪱</div>
                 <div class="card-title-area">
-                    <h3 class="card-title">食品媒介寄生虫 鑑別パック</h3>
+                    <h3 class="card-title">同胞種(寄生虫) 鑑別パック</h3>
                     <div class="card-tags">
-                        <span class="tag" style="background:rgba(255,255,255,0.2); border-color:rgba(255,255,255,0.4); color:#fff;">標的: COI</span>
-                        <span class="tag" style="background:rgba(255,255,255,0.2); border-color:rgba(255,255,255,0.4); color:#fff;">jgLCO/jgHCO</span>
+                        <span class="tag" style="background:rgba(255,255,255,0.2); border-color:rgba(255,255,255,0.4); color:#fff;">標的: 核 ITS領域</span>
+                        <span class="tag" style="background:rgba(255,255,255,0.2); border-color:rgba(255,255,255,0.4); color:#fff;">NC5/NC2</span>
                     </div>
                 </div>
             </div>
             <div class="card-body">
-                <div class="scenario-box"><strong>【Mission】</strong>患者から摘出された寄生虫のDNAを解析し、原因となった食材と虫体の正体（アニサキスか？条虫か？）を特定せよ！</div>
+                <div class="scenario-box"><strong>【Mission】</strong>形態では区別不可能なアニサキスやシュードテラノーバの『同胞種』をDNAのハサミ(制限酵素)で切り分けて鑑別し、さらに進化の過程で宿主を乗り換えた「異端児」を系統樹から探し出せ！</div>
                 
                 <div class="db-info">
-                    <strong>🧬 収録DB (全16種):</strong> アニサキス類、各種条虫（有鉤・無鉤・アジア・日本海裂頭条虫等）、吸虫。
+                    <strong>🧬 収録DB (全20種):</strong> アニサキス科コンプリート。<i>A. simplex</i> 同胞種群、<i>Pseudoterranova</i> 同胞種（南極系統・種E含む）、宿主転換した異端児、および近縁属。
                 </div>
 
                 <div class="section-title">🧪 実験＆解析 パイプライン</div>
                 <ul class="step-list">
                     <li><span class="step-highlight">Wet:</span> 推奨: <a href="#appendix" class="extraction-link" title="なぜこの手法？（下部へジャンプ）">PK＋Chelex法</a></li>
-                    <li><span class="step-highlight">Dry:</span> <a href="./1_Master_Mix_Studio.html" class="app-link">アプリ①</a>と<a href="./2_Thermal_Cycler_Simulator.html" class="app-link">アプリ②</a>で反応条件をシミュレーション。
+                    <li><span class="step-highlight">Dry:</span> <a href="./3_PCR_RFLP_Simulator.html" class="app-link">アプリ③</a>で制限酵素（<i>Hinf</i> I 等）を探索し、同胞種を切り分けるRFLPマーカーを自ら「発見」する。
                         <div class="primer-box" style="border-left-color: #c0392b;">
-                            F: 5'-TITCIACIAAYCATAARGATATTGG-3'<br>
-                            R: 5'-TAIACYTCIGGRTGWCCAAARAAYCA-3'
-                            <div class="reference-text">Geller <i>et al.</i> (2013) Mol Ecol Resour.</div>
+                            F (NC5): 5'-GTAGGTGAACCTGCGGAAGGATCATT-3'<br>
+                            R (NC2): 5'-TTAGTTTCTTTTCCTCCGCT-3'
+                            <div class="reference-text">Zhu <i>et al.</i> (2002) Parasitology.</div>
                         </div>
                     </li>
-                    <li><span class="step-highlight">Dry:</span> <a href="./3_PCR_RFLP_Simulator.html" class="app-link">アプリ③</a>でPCR-RFLP、<a href="./8_Phylogenetic_Tree_Builder.html" class="app-link">アプリ⑧</a>で系統樹作成。</li>
+                    <li><span class="step-highlight">Dry:</span> <a href="./8_Phylogenetic_Tree_Builder.html" class="app-link">アプリ⑧</a>で全20種の系統樹を描き、宿主転換の歴史を考察。</li>
                 </ul>
 
                 <div class="tips-box">
-                    <strong>💡 現場のコツ</strong>
-                    新鮮な寄生虫を全員分揃えるのは困難です。先生が事前に鮮魚からアニサキスを集め、エタノール保存して配布します。抽出時はエタノールを完全に揮発させ、ハサミで微細に切断してから酵素消化を行ってください。
+                    <strong>👨‍🏫 現場のリアルと学術の粋</strong>
+                    同胞種鑑別のゴールドスタンダードは「核DNA(ITS)のPCR-RFLP」です。データベースには最新論文(2023)に基づくマニアックな南極種やイルカ寄生種も収録。系統樹を描かせれば「アザラシ由来なのにイルカに浮気した種」を発見させる最高の探究学習が可能です。
                 </div>
 
                 <div class="action-area">
-                    <a href="./cartridges/Cartridge6_Parasites.json" download class="btn-download" style="background:#e74c3c; border-color:#c0392b; box-shadow:0 3px 0 #c0392b;" data-tooltip="全16種の解析データベース（JSON）を取得">📥 ダウンロード<span>(JSON)</span></a>
+                    <a href="./cartridges/Cartridge6_Anisakidae_ITS_Academic.json" download class="btn-download" style="background:#e74c3c; border-color:#c0392b; box-shadow:0 3px 0 #c0392b;" data-tooltip="アニサキス科の最新ITSデータベース（JSON）を取得">📥 ダウンロード<span>(JSON)</span></a>
                 </div>
             </div>
         </div>
