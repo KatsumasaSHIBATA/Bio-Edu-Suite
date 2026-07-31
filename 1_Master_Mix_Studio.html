@@ -5,25 +5,67 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PCR Master Mix Studio v1.0 | Bio-Edu Suite</title>
     <style>
+        /* テーマカラー規格（ガイドライン第3項）。既存のハードコード値と同一値を定義し、
+           見た目を変えずに変数経由でのカラー管理を可能にする */
+        :root {
+            /* 【共通】ベースカラー・ステータスカラー */
+            --primary: #2c3e50;        /* ダークネイビー (主要テキスト) */
+            --secondary: #34495e;      /* ネイビー (サブヘッダー) */
+            --bg-color: #f0f3f4;       /* ライトグレー (背景) */
+            --card-bg: #ffffff;        /* ホワイト (カード背景) */
+            --text-main: #2c3e50;      /* メインテキスト */
+            --text-muted: #7f8c8d;     /* 補足テキスト */
+            --border-color: #bdc3c7;   /* ボーダー */
+            --success: #27ae60;        /* 成功・保存 */
+            --danger: #e74c3c;         /* エラー・警告 */
+            --warning: #f39c12;        /* ヒント・教育ポップオーバー */
+
+            /* 【アプリ個別】フェーズカラー (Phase 1 & 2) */
+            --phase-color: #1abc9c;
+            --phase-color-hover: #16a085;
+        }
+
         *, *::before, *::after { box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        
+
+        /* 改行崩れ・テキスト折り返しの補正（ガイドライン第4項） */
+        body, .card, p, div, .bench-tip, .pro-invite, .rationale-text, .assist-panel { word-break: normal; overflow-wrap: anywhere; line-height: 1.6; }
+        .label-title, .no-wrap { white-space: nowrap; }
+
         /* 共通ヘッダー */
-        .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 10; }
-        .header { width: 100%; max-width: 1000px; padding: 15px 20px; color: white; display: flex; flex-direction: column; position: relative; }
-        .header h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 1px; color: #fff; }
-        .header p { margin: 5px 0 0 0; font-size: 12px; color: #1abc9c; font-weight: 600; }
-        .version-badge { position: absolute; right: 20px; top: 20px; background: #34495e; color: #1abc9c; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid #1abc9c; }
+        .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 30; flex-shrink: 0; position: sticky; top: 0; }
+        .header { width: 100%; max-width: 1400px; padding: 12px 20px; color: white; display: flex; align-items: center; justify-content: space-between; position: relative; }
+        .header h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 1px; color: #fff; white-space: nowrap; }
+        .header p { margin: 4px 0 0 0; font-size: 11px; color: #1abc9c; font-weight: 600; }
+        .version-badge { position: absolute; right: 20px; top: 15px; background: #34495e; color: #1abc9c; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid #1abc9c; }
         
-        .main-content { width: 100%; max-width: 1000px; padding: 20px; display: flex; flex-wrap: wrap; gap: 20px; flex: 1; align-items: flex-start;}
+        .main-content { width: 100%; max-width: 1400px; padding: 20px; display: flex; flex-wrap: wrap; gap: 20px; flex: 1; align-items: flex-start; justify-content: center;}
+        /* ヘッダー(1400px)との整合。カード群はflexの比率(1 : 1.5)を保ったまま上限を設け、余白は中央寄せで吸収する */
+        @media screen and (min-width: 769px) {
+            .main-content > .col-left { max-width: 520px; }
+            .main-content > .card { max-width: 780px; }
+        }
         .card { background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); flex: 1; min-width: 320px; border-top: 4px solid #3498db; display: flex; flex-direction: column; }
         .card-header { background: #34495e; color: white; padding: 12px 18px; font-size: 15px; font-weight: bold; display: flex; align-items: center; gap: 10px; position: relative; border-radius: 4px 4px 0 0; }
         .card-body { padding: 18px; flex: 1; display: flex; flex-direction: column; position: relative; }
         
-        /* 根拠表示用スタイル（アプリ②のポップオーバー方式に統一） */
-        .rationale-btn { background: #1abc9c; color: white; border-radius: 50%; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s;}
-        .rationale-btn:hover { background: #16a085; transform: scale(1.1); }
-        .rationale-text { display: none; position: absolute; z-index: 1000; width: 300px; max-width: 90vw; background: #fef9e7; border: 1px solid #f39c12; padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; margin: 0; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.15); font-weight: normal; }
+        /* 根拠表示用スタイル（ガイドライン第5項① 準拠：クリック駆動・position:fixed・フリップ計算） */
+        .rationale-btn { background: #1abc9c; color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; flex-shrink: 0; }
+        .rationale-btn:hover { transform: scale(1.1); filter: brightness(1.2); }
+        .rationale-text { position: fixed; background: #fef9e7; border: 1px solid #f39c12; padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: 320px; max-width: calc(100vw - 24px); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; font-weight: normal; }
+        .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
+        /* 吹き出しの尻尾（.pop-arrow）。JS が --arrow-left とフリップ方向クラスを設定する */
+        .rationale-text::after {
+            content: ''; position: absolute; width: 10px; height: 10px;
+            background: #fef9e7; transform: rotate(45deg);
+            left: var(--arrow-left, 50%); margin-left: -5px;
+        }
+        .rationale-text.arrow-top::after    { top: -6px; border-left: 1px solid #f39c12; border-top: 1px solid #f39c12; }
+        .rationale-text.arrow-bottom::after { bottom: -6px; border-right: 1px solid #f39c12; border-bottom: 1px solid #f39c12; }
+        /* ヘッダーアイコン（インラインSVG / stroke="currentColor" で見出し色に同期） */
+        .header-icon { width: 20px; height: 20px; vertical-align: -3px; margin-right: 6px; flex-shrink: 0; }
+        .btn-icon { width: 14px; height: 14px; vertical-align: -2px; flex-shrink: 0; }
+        .rationale-text > strong:first-child { color: #d35400; display: block; margin-bottom: 4px; font-size: 12px; }
 
         .input-group { margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; background: #f8f9fa; padding: 8px 12px; border-radius: 6px; border: 1px solid #e0e6ed;}
         .input-group label { font-size: 12px; font-weight: 600; color: #34495e; flex: 1; }
@@ -69,33 +111,26 @@
 
         /* アプリ②共通: ツールチップ */
         [data-tooltip] { position: relative; cursor: pointer; }
-        [data-tooltip]::before {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: 100%; left: 50%; transform: translateX(-50%);
-            background: rgba(44, 62, 80, 0.95); color: white;
-            padding: 6px 10px; border-radius: 4px; font-size: 11px;
-            white-space: nowrap; opacity: 0; pointer-events: none;
-            transition: 0.2s; margin-bottom: 5px; z-index: 200; font-weight: normal; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        [data-tooltip]:hover::before { opacity: 1; transform: translateX(-50%) translateY(-2px); }
+        /* カスタムツールチップ（ガイドライン第5項④ 準拠 / ネイティブ title 属性は使用しない）
+           ※本文が最長52文字の日本語のため nowrap では狭い端末で画面外に溢れる。折り返し＋幅上限で堅牢化 */
+        .custom-tooltip { position: fixed; background: rgba(44, 62, 80, 0.95); color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 11px; pointer-events: none; z-index: 9999; opacity: 0; transition: opacity 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-weight: normal; line-height: 1.4; display: none; white-space: normal; width: max-content; max-width: min(320px, 90vw); text-align: center; box-sizing: border-box; }
+        .custom-tooltip::after { content: ''; position: absolute; border-width: 5px; border-style: solid; left: 50%; transform: translateX(-50%); }
+        .custom-tooltip.show-top::after { top: 100%; border-color: rgba(44, 62, 80, 0.95) transparent transparent transparent; }
+        .custom-tooltip.show-bottom::after { bottom: 100%; border-color: transparent transparent rgba(44, 62, 80, 0.95) transparent; }
 
         /* アプリ②共通: トースト通知 */
-        .toast {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px);
-            background: #34495e; color: white; padding: 12px 24px; border-radius: 6px;
-            font-size: 13px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            opacity: 0; pointer-events: none; transition: 0.3s; z-index: 1000; display: flex; align-items: center; gap: 8px;
-        }
-        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-        .toast.error { background: #e74c3c; }
-        .toast.success { background: #27ae60; }
+        /* トースト通知（ガイドライン第5項⑤ 準拠 / alert() は使用禁止） */
+        #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 12px 24px; border-radius: 30px; font-weight: bold; font-size: 13px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 100000; pointer-events: none; text-align: center; max-width: 90vw; box-sizing: border-box; word-break: auto-phrase; }
+        #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        #toast.error { background: var(--danger); }
+        #toast.warning { background: var(--warning); color: #7e5109; }
+        #toast.info { background: var(--phase-color); }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
         /* --- 📱 スマホ最適化（レスポンシブ・デザイン） --- */
         @media screen and (max-width: 768px) {
             /* 画面の余白を減らして広く使う */
-            .main-content { padding: 10px; flex-direction: column !important; }
+            .main-content { padding: 10px; flex-direction: column !important; justify-content: flex-start; }
             .card { min-width: 100% !important; margin-bottom: 10px; }
             
             /* 横並びのボタンや入力欄を、縦積みの押しやすいサイズに変更 */
@@ -127,19 +162,21 @@
 
 <div class="header-container">
     <div class="header">
-        <h1>🧬 PCR Master Mix Studio</h1>
-        <p>Bio-Edu Suite: Precision Planning & Preparation</p>
+        <div>
+            <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>PCR Master Mix Studio</h1>
+            <p>Bio-Edu Suite: Phase 2 / Precision Planning & Preparation</p>
+        </div>
         <div class="version-badge">v1.0</div>
     </div>
 </div>
 
 <div class="main-content">
     
-    <div style="flex: 1; display: flex; flex-direction: column; gap: 20px; min-width: 320px;">
+    <div class="col-left" style="flex: 1; display: flex; flex-direction: column; gap: 20px; min-width: 320px;">
         
         <div class="card">
             <div class="card-header">💧 1. DNA 希釈計算 
-                <button class="rationale-btn" onclick="toggleRationale('rat_dil')">?</button>
+                <button class="rationale-btn" onclick="toggleRationale(event, 'rat_dil')">?</button>
             </div>
             <div class="card-body">
                 <div id="rat_dil" class="rationale-text">
@@ -188,7 +225,7 @@
 
         <div class="card" style="border-top-color: #9b59b6;">
             <div class="card-header">⚙️ 2. 総液量設定 (Total Vol)
-                <button class="rationale-btn" onclick="toggleRationale('rat_vol')">?</button>
+                <button class="rationale-btn" onclick="toggleRationale(event, 'rat_vol')">?</button>
             </div>
             <div class="card-body">
                 <div id="rat_vol" class="rationale-text">
@@ -231,7 +268,7 @@
 
     <div class="card" style="border-top-color: #1abc9c; flex: 1.5; min-width: 350px;">
         <div class="card-header">🧪 3. Master Mix 計算表
-            <button class="rationale-btn" onclick="toggleRationale('rat_mm')">?</button>
+            <button class="rationale-btn" onclick="toggleRationale(event, 'rat_mm')">?</button>
         </div>
         <div class="card-body">
             <div id="rat_mm" class="rationale-text">
@@ -321,76 +358,116 @@
         }
     }
 
-    // --- アプリ②と共通のポップオーバー制御 ---
-    document.addEventListener('click', closeRationale);
-    document.addEventListener('touchstart', closeRationale, {passive: true});
-
-    function closeRationale(e) {
-        if (!e.target.closest('.rationale-btn') && !e.target.closest('.rationale-text')) {
-            document.querySelectorAll('.rationale-text').forEach(text => text.style.display = 'none');
-        }
-    }
-
-    function toggleRationale(id) {
+    // --- 教育的UIモジュール①: 根拠ポップオーバー（ガイドライン第5項① 準拠 / フリップ計算付き絶対配置） ---
+    function toggleRationale(event, id) {
+        event.stopPropagation();
         const el = document.getElementById(id);
-        const e = window.event || event;
-        const btn = e ? (e.currentTarget || e.target).closest('.rationale-btn') : null;
-        
-        if (e && btn && e.type === 'click') {
-            if (e.clientX !== 0 && e.clientY !== 0) { 
-                const rect = btn.getBoundingClientRect();
-                if (e.clientX < rect.left - 5 || e.clientX > rect.right + 5 ||
-                    e.clientY < rect.top - 5 || e.clientY > rect.bottom + 5) {
-                    return; 
-                }
+        const btn = event.currentTarget;
+        const isShown = el.classList.contains('show');
+
+        // 他のポップオーバーを閉じる
+        document.querySelectorAll('.rationale-text').forEach(e => e.classList.remove('show'));
+
+        if(!isShown) {
+            if (el.parentNode !== document.body) document.body.appendChild(el);
+            el.style.top = '0px'; el.style.left = '0px';
+            el.classList.add('show');
+
+            // フリップ計算による絶対配置
+            const elHeight = el.offsetHeight;
+            const elWidth  = el.offsetWidth;
+            const rect = btn.getBoundingClientRect();
+
+            let topPos = rect.bottom + 10;
+            let arrowClass = 'arrow-top';
+            // 画面下端に見切れる場合は上側に配置
+            if (rect.bottom + elHeight + 20 > window.innerHeight) {
+                topPos = rect.top - elHeight - 10;
+                arrowClass = 'arrow-bottom';
             }
-        }
+            el.style.top = topPos + 'px';
 
-        if(e && e.stopPropagation) e.stopPropagation();
-        if(e && e.preventDefault) e.preventDefault();
+            // 左右位置の調整（幅は固定値ではなく offsetWidth で動的算出）
+            const btnCenter = rect.left + rect.width / 2;
+            let leftPos = btnCenter - elWidth / 2;
+            if (leftPos + elWidth > window.innerWidth - 10) leftPos = window.innerWidth - elWidth - 10;
+            if (leftPos < 10) leftPos = 10;
+            el.style.left = leftPos + 'px';
 
-        const isCurrentlyBlock = (el.style.display === 'block');
-
-        // Close others
-        document.querySelectorAll('.rationale-text').forEach(text => text.style.display = 'none');
-
-        if (!isCurrentlyBlock) {
-            el.style.display = 'block';
-            
-            if (btn) {
-                const btnRect = btn.getBoundingClientRect();
-                // 親要素（.card-body または .card-header）からの相対位置を計算
-                const containerRect = el.parentElement.getBoundingClientRect();
-                
-                let topPos = btnRect.bottom - containerRect.top + 8;
-                let leftPos = btnRect.left - containerRect.left;
-                
-                el.style.top = topPos + 'px';
-                el.style.left = leftPos + 'px';
-                el.style.right = 'auto';
-                el.style.width = '300px';
-
-                // 画面右端の見切れ防止
-                const textRect = el.getBoundingClientRect();
-                if (textRect.right > window.innerWidth - 10) {
-                    el.style.left = 'auto';
-                    el.style.right = '0px';
-                    
-                    if(el.getBoundingClientRect().left < 10) {
-                        el.style.left = '-10px';
-                        el.style.width = (window.innerWidth - 30) + 'px';
-                    }
-                }
-            }
+            // 吹き出しの尻尾をボタン中央へ追従させる（両端12pxは食い込ませない）
+            let arrowLeft = btnCenter - leftPos;
+            if (arrowLeft < 12) arrowLeft = 12;
+            if (arrowLeft > elWidth - 12) arrowLeft = elWidth - 12;
+            el.classList.remove('arrow-top', 'arrow-bottom');
+            el.classList.add(arrowClass);
+            el.style.setProperty('--arrow-left', arrowLeft + 'px');
         }
     }
+
+    // 外部クリック・スクロールで閉じる
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.rationale-text') && !e.target.closest('.rationale-btn')) {
+            document.querySelectorAll('.rationale-text').forEach(el => el.classList.remove('show'));
+        }
+    });
+
+    document.addEventListener('scroll', () => {
+        document.querySelectorAll('.rationale-text').forEach(el => el.classList.remove('show'));
+    }, true);
 
     // --- トースト通知機能 ---
-    function showToast(message, type = 'success') {
+    // --- カスタムツールチップ初期化（ガイドライン第5項④ 準拠 / ネイティブ title 属性は使用禁止） ---
+    function initTooltips() {
+        if (document.getElementById('__bes_tooltip')) return; // 二重初期化を防ぐ
+        const tooltip = document.createElement('div');
+        tooltip.id = '__bes_tooltip';
+        tooltip.className = 'custom-tooltip';
+        document.body.appendChild(tooltip);
+
+        document.body.addEventListener('mouseover', (e) => {
+            const target = e.target.closest('[data-tooltip]');
+            if (target && !target.classList.contains('rationale-btn')) {
+                tooltip.innerHTML = target.getAttribute('data-tooltip');
+                tooltip.style.display = 'block';
+                const rect = target.getBoundingClientRect();
+                const ttRect = tooltip.getBoundingClientRect();
+                let topPos = rect.top - ttRect.height - 8;
+                let leftPos = rect.left + (rect.width / 2);
+                let arrowClass = 'show-top';
+                if (topPos < 0) { topPos = rect.bottom + 8; arrowClass = 'show-bottom'; }
+                if (leftPos - ttRect.width / 2 < 5) leftPos = 5 + ttRect.width / 2;
+                else if (leftPos + ttRect.width / 2 > window.innerWidth - 5) leftPos = window.innerWidth - ttRect.width / 2 - 5;
+                tooltip.className = `custom-tooltip ${arrowClass}`;
+                tooltip.style.top = topPos + 'px';
+                tooltip.style.left = leftPos + 'px';
+                tooltip.style.transform = 'translateX(-50%)';
+                tooltip.style.opacity = '1';
+            }
+        });
+        document.body.addEventListener('mouseout', (e) => {
+            if (e.target.closest('[data-tooltip]')) {
+                tooltip.style.opacity = '0';
+                setTimeout(() => { if (tooltip.style.opacity === '0') tooltip.style.display = 'none'; }, 200);
+            }
+        });
+        document.addEventListener('scroll', () => {
+            tooltip.style.opacity = '0'; tooltip.style.display = 'none';
+        }, true);
+    }
+    // --- トースト通知（ガイドライン第5項⑤ 準拠 / alert() は使用禁止） ---
+    // type: ""(=成功/緑) | "error" | "warning" | "info"。'success' 等の未知値は既定の緑にフォールバックする
+    function showToast(msg, type = "") {
         const toast = document.getElementById('toast');
-        toast.innerText = message;
-        toast.className = 'toast show ' + type;
-        setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        if (!toast) return;
+        toast.innerText = msg;
+        let className = "show";
+        if (type === "error") className += " error";
+        else if (type === "warning") className += " warning";
+        else if (type === "info") className += " info";
+        toast.className = "";
+        void toast.offsetWidth; // リフローを挟み、連続表示でもアニメーションを再生させる
+        toast.className = className;
+        setTimeout(() => { toast.classList.remove("show"); }, 3000);
     }
 
     // --- アプリ②への連携保存機能 (オートセーブ) ---
@@ -407,7 +484,7 @@
         }
     }
 
-    window.onload = () => { updateTotalVol(); };
+    window.onload = () => { initTooltips(); updateTotalVol(); };
 
     function toggleDilutionMode() {
         const isRatio = document.getElementById('dil_mode_ratio').checked;
