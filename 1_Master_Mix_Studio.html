@@ -175,7 +175,7 @@
     <div class="col-left" style="flex: 1; display: flex; flex-direction: column; gap: 20px; min-width: 320px;">
         
         <div class="card">
-            <div class="card-header">💧 1. DNA 希釈計算 
+            <div class="card-header">1. DNA 希釈計算 
                 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_dil')">?</button>
             </div>
             <div class="card-body">
@@ -299,7 +299,7 @@
                     <tr><th>試薬名</th><th>1反応(μL)</th><th id="mm_col_head">MM (x6.6)</th></tr>
                 </thead>
                 <tbody id="mm_table">
-                    <tr><td>💧 DW (滅菌水)</td><td id="val_1x_water" style="font-weight:bold; color:#2980b9;">13.0</td><td class="mm-result-val" id="val_mm_water">85.8</td></tr>
+                    <tr><td>DW (滅菌水)</td><td id="val_1x_water" style="font-weight:bold; color:#2980b9;">13.0</td><td class="mm-result-val" id="val_mm_water">85.8</td></tr>
                     <tr class="row-premix"><td id="lbl_premix">2x KOD Master Mix</td><td id="val_1x_premix">15.0</td><td class="mm-result-val" id="val_mm_premix">99.0</td></tr>
                     <tr class="row-sep" style="display:none;"><td id="lbl_buffer">10x Buffer</td><td><input type="number" id="val_1x_buf" value="3.0" step="0.1" class="tbl-input" oninput="handleTableInput(this); calcMM()" onchange="handleTableChange(this); calcMM()"></td><td class="mm-result-val" id="val_mm_buf">19.8</td></tr>
                     <tr class="row-sep" style="display:none;"><td>dNTP Mixture</td><td><input type="number" id="val_1x_dntp" value="2.4" step="0.1" class="tbl-input" oninput="handleTableInput(this); calcMM()" onchange="handleTableChange(this); calcMM()"></td><td class="mm-result-val" id="val_mm_dntp">15.8</td></tr>
