@@ -42,7 +42,7 @@
         .main-content { width: 100%; max-width: 1400px; padding: 20px; display: flex; flex-wrap: wrap; gap: 20px; flex: 1; align-items: flex-start; justify-content: center;}
         /* ヘッダー(1400px)との整合。カード群はflexの比率(1 : 1.5)を保ったまま上限を設け、余白は中央寄せで吸収する */
         @media screen and (min-width: 769px) {
-            .main-content > .col-left { max-width: 520px; }
+            .main-content > .col-left { max-width: 480px; } /* 少し全体を右に寄せるため左カラムを絞る */
             .main-content > .card { max-width: 780px; }
         }
         .card { background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); flex: 1; min-width: 320px; border-top: 4px solid var(--phase-color); display: flex; flex-direction: column; }
@@ -70,6 +70,9 @@
 
         .input-group { margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; background: #f8f9fa; padding: 8px 12px; border-radius: 6px; border: 1px solid #e0e6ed;}
         .input-group label { font-size: 12px; font-weight: 600; color: #34495e; flex: 1; }
+        /* 単位（ng/μL等）が改行しないように幅を確保し縮小を防ぐ */
+        .input-group span { width: 35px; display: inline-block; text-align: left; margin-left: 5px; flex-shrink: 0; font-size: 13px; color: #34495e; }
+        
         input[type="number"], select { padding: 6px 8px; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 13px; font-weight: bold; color: #2c3e50; outline: none; transition: 0.2s;}
         input[type="number"]:focus, select:focus { border-color: #3498db; box-shadow: 0 0 0 2px rgba(52,152,219,0.2); }
         input[type="number"] { width: 75px; text-align: right; }
@@ -183,7 +186,7 @@
                     <input type="radio" id="dil_mode_ratio" name="dil_mode" checked onchange="toggleDilutionMode()">
                     <label for="dil_mode_ratio">濃度測定なし(比率)</label>
                     <input type="radio" id="dil_mode_conc" name="dil_mode" onchange="toggleDilutionMode()">
-                    <label for="dil_mode_conc">濃度測定あり(C1V1)</label>
+                    <label for="dil_mode_conc">濃度測定あり (C<sub>1</sub>V<sub>1</sub>)</label>
                 </div>
                 <div id="panel_dil_ratio">
                     <div class="calc-panel">
@@ -193,24 +196,25 @@
                         </div>
                         <div class="input-group" style="background:transparent; border:none; padding:0; margin-bottom:0;">
                             <label>希釈倍率</label>
-                            <select id="dr_ratio" onchange="calcDilution()">
+                            <select id="dr_ratio" style="width:90px;" onchange="calcDilution()">
                                 <option value="5">5倍</option><option value="10" selected>10倍</option><option value="20">20倍</option>
                             </select>
+                            <span style="visibility:hidden;">μL</span><!-- 縦位置調整用ダミー -->
                         </div>
                     </div>
                 </div>
                 <div id="panel_dil_conc" style="display: none;">
                     <div class="calc-panel">
                         <div class="input-group" style="background:transparent; border:none; padding:0; margin-bottom:8px;">
-                            <label>現在の濃度(C1)</label>
+                            <label>現在の濃度 (C<sub>1</sub>)</label>
                             <input type="number" id="dc_c1" value="100" step="1" oninput="calcDilution()"><span>ng/μL</span>
                         </div>
                         <div class="input-group" style="background:transparent; border:none; padding:0; margin-bottom:8px;">
-                            <label>目標の濃度(C2)</label>
+                            <label>目標の濃度 (C<sub>2</sub>)</label>
                             <input type="number" id="dc_c2" value="20" step="1" oninput="calcDilution()"><span>ng/μL</span>
                         </div>
                         <div class="input-group" style="background:transparent; border:none; padding:0; margin-bottom:0;">
-                            <label>作りたい量(V2)</label>
+                            <label>作りたい量 (V<sub>2</sub>)</label>
                             <input type="number" id="dc_v2" value="50" step="1" oninput="calcDilution()"><span>μL</span>
                         </div>
                     </div>
@@ -248,15 +252,21 @@
                     </div>
                     <div class="input-group" style="background:transparent; border:none; padding:0; margin-bottom:8px;">
                         <label>制限酵素の数 (+10μL/種)</label>
-                        <select id="vol_re" style="width:75px;" onchange="updateTotalVol()">
-                            <option value="0">0 種</option><option value="1">1 種</option><option value="2" selected>2 種</option>
+                        <select id="vol_re" style="width:90px;" onchange="updateTotalVol(this)">
+                            <option value="0" selected>なし</option>
+                            <option value="1">1 種</option>
+                            <option value="2">2 種</option>
+                            <option value="3">3 種</option>
                         </select>
+                        <span style="visibility:hidden;">μL</span><!-- 縦位置調整用ダミー -->
                     </div>
                     <div class="input-group" style="background:transparent; border:none; padding:0; margin-bottom:0;">
                         <label>シーケンス精製用 (+20μL)</label>
-                        <select id="vol_seq" style="width:75px;" onchange="updateTotalVol()">
-                            <option value="0" selected>なし</option><option value="20">あり</option>
+                        <select id="vol_seq" style="width:90px;" onchange="updateTotalVol(this)">
+                            <option value="0" selected>なし</option>
+                            <option value="20">あり</option>
                         </select>
+                        <span style="visibility:hidden;">μL</span><!-- 縦位置調整用ダミー -->
                     </div>
                 </div>
                 <div class="input-group" style="background:#e8eaed;">
@@ -265,8 +275,9 @@
                 </div>
                 
                 <div class="bench-tip" style="margin-top: 15px;">
-                    <strong><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--warning); margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>現場のコツ（スケールダウンについて）</strong><br>
-                    標準的なプロトコルでは余裕を持たせた総液量（30µL〜など）を設定しますが、予算が限られる教育現場や大量のサンプルを処理する研究室では、試薬を節約するために「スケールダウン（半量や20µL系への縮小）」を行うことがよくあります。目的の液量に合わせてパラメーターを調整してみましょう。
+                    <strong><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--warning); margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>現場のコツ（スケールダウンと酵素処理）</strong><br>
+                    ・<strong>スケールダウン:</strong> 標準的なプロトコルでは余裕を持たせた総液量（30µL〜など）を設定しますが、予算が限られる教育現場や大量のサンプルを処理する研究室では、試薬を節約するために「スケールダウン（半量や20µL系への縮小）」を行うことがよくあります。目的の液量に合わせてパラメーターを調整してみましょう。<br>
+                    ・<strong>制限酵素処理:</strong> 1〜2種（標準）なら1つのチューブ内で同時に処理できますが、3種の場合はバッファーの適合性が難しくなるため、別々のチューブに分注して個別に処理することを推奨します。
                 </div>
             </div>
         </div>
@@ -282,24 +293,32 @@
                 <strong>① 総液量（分母）の罠:</strong> 濃度計算の基準となる「総液量」とは、MMだけの量ではなく、「最後にDNAを加えた後の完全な全量」のことです。<br>
                 <strong>② Primerの独立計算とノイズ回避:</strong> FとRは別々の物質です。濃度が高すぎるとプライマー同士が結合して「プライマーダイマー」というノイズが発生し、本命のDNA増幅を阻害します。これを防ぐため「それぞれ別々に」総液量の1/20〜1/30を入れます。<br>
                 <strong>③ サンプル数の数え方:</strong> 「実サンプル」＋「ポジコン(成功確認)」＋「ネガコン(水・コンタミ確認)」の合計チューブ数を入れます。ネガコンは実験の証明に【必須】です。<br>
-                <strong>④ N+1（10%マージン）:</strong> チップ内側に残る物理的ロスを防ぐため、必ず10%余分に作ります。<br>
+                <strong>④ マージン（N+1）:</strong> チップ内側に残る物理的ロスを防ぐため、必ず余裕を持たせて作ります（標準は10%増し）。<br>
                 <strong>⑤ DNA抽出液の過剰添加:</strong> DNA液（特に粗抽出液）を総液量の20%以上入れると、混雑する不純物やPCR阻害物質により酵素が働きません。<br>
                 <strong>⑥ 酵素(Taq)の入れすぎ:</strong> 酵素の原液には凍結防止のグリセロールが含まれており、これが総液量の5%を超えるとPCR反応を強力に阻害します。
             </div>
             <div class="input-group">
                 <label>使用する酵素</label>
-                <select id="enzyme_type" onchange="changeEnzymeType()">
+                <select id="enzyme_type" style="width:190px;" onchange="changeEnzymeType()">
                     <option value="premix">KOD One (2x Premix)</option>
                     <option value="buf10x">Ex Taq (10x Buffer)</option>
-                    <option value="buf5x">PrimeSTAR GXL (5x Buffer)</option>
+                    <option value="buf5x">PrimeSTAR GXL (5x)</option>
                 </select>
             </div>
-            <div class="input-group" style="background:#e8f8f5;">
+            <div class="input-group" style="background:#e8f8f5; margin-bottom: 8px;">
                 <label>総チューブ数 (実検体＋Control)</label>
                 <input type="number" id="mm_n" value="6" min="1" step="1" oninput="calcMM()">
             </div>
+            <div class="toggle-container" style="margin-bottom: 5px;">
+                <input type="radio" id="margin_10" name="margin_mode" value="1.1" checked onchange="calcMM()">
+                <label for="margin_10">10% (標準)</label>
+                <input type="radio" id="margin_20" name="margin_mode" value="1.2" onchange="calcMM()">
+                <label for="margin_20">20% (少量時)</label>
+                <input type="radio" id="margin_plus1" name="margin_mode" value="plus1" onchange="calcMM()">
+                <label for="margin_plus1">+1本 (固定)</label>
+            </div>
             <div style="font-size: 11px; font-weight: bold; color: #e67e22; text-align: right; margin-bottom: 5px;">
-                10%マージン込: <span id="res_n_total" style="font-size: 14px;">6.6</span> 反応分
+                マージン込: <span id="res_n_total" style="font-size: 14px;">6.6</span> 反応分
             </div>
 
             <table>
@@ -314,7 +333,7 @@
                     <tr><td>Primer F (10µM)</td><td><input type="number" id="val_1x_fp" value="1.0" step="0.1" class="tbl-input" oninput="handleTableInput(this); calcMM()" onchange="handleTableChange(this); calcMM()"></td><td class="mm-result-val" id="val_mm_fp">6.6</td></tr>
                     <tr><td>Primer R (10µM)</td><td><input type="number" id="val_1x_rp" value="1.0" step="0.1" class="tbl-input" oninput="handleTableInput(this); calcMM()" onchange="handleTableChange(this); calcMM()"></td><td class="mm-result-val" id="val_mm_rp">6.6</td></tr>
                     <tr class="row-sep" style="display:none;"><td id="lbl_taq">Ex Taq 酵素</td><td><input type="number" id="val_1x_taq" value="0.15" step="0.05" class="tbl-input" oninput="calcMM()"></td><td class="mm-result-val" id="val_mm_taq">1.0</td></tr>
-                    <tr style="background:#34495e; color:white;"><td>チューブへの分注量 (MM)</td><td id="val_1x_dist" style="font-weight:bold;">29.0</td><td style="color:#f1c40f;" id="val_mm_total">191.4</td></tr>
+                    <tr style="background:#34495e; color:white;"><td>チューブへの分注量 (MM)</td><td id="val_1x_dist" style="font-weight:bold; color:#f1c40f;">29.0</td><td style="color:#f1c40f;" id="val_mm_total">191.4</td></tr>
                     <tr><td style="color:#e74c3c;">DNA (抽出液)</td><td><input type="number" id="val_1x_dna" value="1.0" step="0.1" class="tbl-input" oninput="handleTableInput(this); calcMM()" onchange="handleTableChange(this); calcMM()"></td><td style="font-size:10px; color:#7f8c8d;">MMに入れない</td></tr>
                 </tbody>
             </table>
@@ -526,7 +545,16 @@
         }
     }
 
-    function updateTotalVol() {
+    function updateTotalVol(sourceElement) {
+        // 排他制御：制限酵素とシーケンス精製用は同時に設定しない
+        if (sourceElement) {
+            if (sourceElement.id === 'vol_re' && sourceElement.value !== "0") {
+                document.getElementById('vol_seq').value = "0";
+            } else if (sourceElement.id === 'vol_seq' && sourceElement.value !== "0") {
+                document.getElementById('vol_re').value = "0";
+            }
+        }
+
         const base = parseFloat(document.getElementById('vol_base').value) || 0;
         const reCount = parseFloat(document.getElementById('vol_re').value) || 0;
         const seq = parseFloat(document.getElementById('vol_seq').value) || 0;
@@ -563,7 +591,18 @@
 
     function calcMM() {
         const n = parseInt(document.getElementById('mm_n').value) || 1;
-        const nTotal = n + Math.max(1, n * 0.1);
+        const marginMode = document.querySelector('input[name="margin_mode"]:checked').value;
+        
+        // 動的なマージン（N+1）計算
+        let nTotal = 1;
+        if (marginMode === '1.1') {
+            nTotal = n * 1.1;
+        } else if (marginMode === '1.2') {
+            nTotal = n * 1.2;
+        } else if (marginMode === 'plus1') {
+            nTotal = n + 1;
+        }
+
         document.getElementById('res_n_total').innerText = nTotal.toFixed(1);
         document.getElementById('mm_col_head').innerText = `MM (x${nTotal.toFixed(1)})`;
 
