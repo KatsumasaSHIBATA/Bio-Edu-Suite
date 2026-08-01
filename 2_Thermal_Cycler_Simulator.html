@@ -78,7 +78,7 @@
  .input-group input[type="number"], .input-group input[type="text"] { font-family: monospace; }
  
  .input-help { font-size: 11px; color: #7f8c8d; line-height: 1.4; margin-top: 4px; }
- .dynamic-hint { background: #fdf2e9; color: #d35400; font-size: 11px; font-weight: bold; padding: 6px 8px; border-radius: 4px; margin-top: 5px; line-height: 1.4; text-align: left; }
+ .dynamic-hint { background: #fdf2f2; border: 1px solid #f8d7da; color: #721c24; padding: 10px 12px; border-radius: 6px; font-weight: bold; font-size: 11px; text-align: left; margin-top: 5px; line-height: 1.4; }
 
  .reagent-grid { display: grid; grid-template-columns: 1fr 65px; gap: 4px; align-items: center; font-size: 11px; font-weight: bold; color: #34495e; }
  .reagent-grid input { padding: 4px; text-align: right; font-size: 12px; }
@@ -262,9 +262,9 @@
  padding: 20px 10px; 
  }
  .assist-panel { 
- position: sticky; 
- left: 10px; 
- width: calc(100vw - 20px);
+ position: static; 
+ width: 100%;
+ max-width: 100%;
  }
  .machine-body {
  margin-left: 10px;
@@ -333,7 +333,7 @@
  <input type="text" id="primerR" value="" placeholder="3'側のプライマー配列を入力" style="font-family: 'Courier New', Courier, monospace;" oninput="calculateTm()">
  </div>
  <div id="annealHintText" class="dynamic-hint">
- <svg class="svg-info" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> KOD Oneは、アニーリング基準値(Tm平均)と同じ温度に設定します。
+ KOD Oneは、アニーリング基準値(Tm平均)と同じ温度に設定します。
  </div>
  <div style="font-size:10px; color:#7f8c8d; margin-top:6px; text-align:right;">※ Tm値は塩基配列よりWallace法で算出</div>
  </div>
@@ -350,8 +350,8 @@
  <option value="genomic">ゲノムDNA</option>
  <option value="plasmid">プラスミドDNA</option>
  </select>
- <div id="cycleHintText" class="dynamic-hint" style="background:#e8f8f5; color:#16a085;">
- <svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom;"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg> mtDNAは細胞内に多コピー存在します。増えすぎを防ぐため 25〜30回 が推奨です。
+ <div id="cycleHintText" class="dynamic-hint">
+ mtDNAは細胞内に多コピー存在します。増えすぎを防ぐため 25〜30回 が推奨です。
  </div>
  </div>
 
@@ -1076,17 +1076,15 @@ lcdData.vol = Math.round(targetVol).toString();
  const guideEl = document.getElementById('volGuideText');
  const gridEl = document.getElementById('reagentGrid');
  
- const svgInfo = `<svg class="svg-info" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>`;
-
  if(val === 'KODOne') {
  lcdData.progName = 'ST00';
- annealHintEl.innerHTML = `${svgInfo} KOD Oneは、<b>アニーリング基準値(Tm平均)</b>と同じ温度に設定します。`;
+ annealHintEl.innerHTML = "KOD Oneは、アニーリング基準値(Tm平均)と同じ温度に設定します。";
  } else if(val === 'PrimeSTAR') {
  lcdData.progName = 'PR00';
- annealHintEl.innerHTML = `${svgInfo} Taq系酵素は、<b>アニーリング基準値(Tm平均)</b>を参考にしつつ【55〜60℃】に設定します。`;
+ annealHintEl.innerHTML = "Taq系酵素は、アニーリング基準値(Tm平均)を参考にしつつ【55〜60℃】に設定します。";
  } else if(val === 'ExTaq') {
  lcdData.progName = 'EX00';
- annealHintEl.innerHTML = `${svgInfo} 一般的なTaqは、<b>アニーリング基準値(Tm平均)</b>を参考にしつつ【50〜60℃】に設定します。`;
+ annealHintEl.innerHTML = "一般的なTaqは、アニーリング基準値(Tm平均)を参考にしつつ【50〜60℃】に設定します。";
  }
 
  const rData = recipes[val];
@@ -1116,14 +1114,12 @@ renderLCD();
  function updateCycleHint() {
  const val = document.getElementById('sampleSelect').value;
  const hintEl = document.getElementById('cycleHintText');
- const svgHint = `<svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom;"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>`;
-
  if(val === 'meat_mt') {
- hintEl.innerHTML = `${svgHint} mtDNAは細胞内に多コピー存在します。増えすぎを防ぐため <b>25〜30回</b> が推奨です。`;
+ hintEl.innerHTML = "mtDNAは細胞内に多コピー存在します。増えすぎを防ぐため 25〜30回 が推奨です。";
  } else if(val === 'genomic') {
- hintEl.innerHTML = `${svgHint} ゲノムDNAはターゲットの割合が非常に低いため、<b>30〜35回</b> しっかり回す必要があります。`;
+ hintEl.innerHTML = "ゲノムDNAはターゲットの割合が非常に低いため、30〜35回 しっかり回す必要があります。";
  } else if(val === 'plasmid') {
- hintEl.innerHTML = `${svgHint} プラスミドはターゲット濃度が極めて高いため、<b>20〜25回</b> の少ないサイクルで十分です。`;
+ hintEl.innerHTML = "プラスミドはターゲット濃度が極めて高いため、20〜25回 の少ないサイクルで十分です。";
  }
  updateAssistPanel();
  }
