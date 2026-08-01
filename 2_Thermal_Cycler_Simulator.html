@@ -5,28 +5,67 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thermal Cycler Simulator v2.0 | Bio-Edu Suite</title>
     <style>
+        /* テーマカラー規格（ガイドライン第3項）。既存のハードコード値と同一値を定義し、
+           見た目を変えずに変数経由でのカラー管理を可能にする */
+        :root {
+            /* 【共通】ベースカラー・ステータスカラー */
+            --primary: #2c3e50;        /* ダークネイビー (主要テキスト) */
+            --secondary: #34495e;      /* ネイビー (サブヘッダー) */
+            --bg-color: #f0f3f4;       /* ライトグレー (背景) */
+            --card-bg: #ffffff;        /* ホワイト (カード背景) */
+            --text-main: #2c3e50;      /* メインテキスト */
+            --text-muted: #7f8c8d;     /* 補足テキスト */
+            --border-color: #bdc3c7;   /* ボーダー */
+            --success: #27ae60;        /* 成功・保存 */
+            --danger: #e74c3c;         /* エラー・警告 */
+            --warning: #f39c12;        /* ヒント・教育ポップオーバー */
+
+            /* 【アプリ個別】フェーズカラー (Phase 1 & 2) */
+            --phase-color: #1abc9c;
+            --phase-color-hover: #16a085;
+        }
+
         *, *::before, *::after { box-sizing: border-box; }
 
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
         
-        .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 10; }
-        .header { width: 100%; max-width: 1000px; padding: 15px 20px; color: white; display: flex; flex-direction: column; position: relative; }
-        .header h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 1px; color: #fff; padding-right: 70px; line-height: 1.3; }
-        .header p { margin: 5px 0 0 0; font-size: 12px; color: #1abc9c; font-weight: 600; letter-spacing: 0.5px; }
+        /* 改行崩れ・テキスト折り返しの補正（ガイドライン第4項） */
+        body, .card, p, div, .bench-tip, .pro-invite, .rationale-text, .assist-panel { word-break: normal; overflow-wrap: anywhere; line-height: 1.6; }
+        .label-title, .no-wrap { white-space: nowrap; }
+
+        .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 30; flex-shrink: 0; position: sticky; top: 0; }
+        .header { width: 100%; max-width: 1400px; padding: 12px 20px; color: white; display: flex; align-items: center; justify-content: space-between; position: relative; }
+        .header h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 1px; color: #fff; padding-right: 70px; line-height: 1.3; white-space: nowrap; }
+        .header p { margin: 4px 0 0 0; font-size: 11px; color: #1abc9c; font-weight: 600; letter-spacing: 0.5px; }
         .version-badge { position: absolute; right: 20px; top: 15px; background: #34495e; color: #1abc9c; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid #1abc9c; }
 
-        .main-content { width: 100%; max-width: 1000px; padding: 25px 20px; display: flex; flex-direction: column; align-items: center; gap: 25px; flex: 1; }
+        .main-content { width: 100%; max-width: 1400px; padding: 25px 20px; display: flex; flex-direction: column; align-items: center; gap: 25px; flex: 1; }
 
-        .scenario-panel { background: #fff; width: 100%; padding: 0 0 20px 0; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 4px solid #e74c3c; display: flex; flex-direction: column; }
+        /* ミッション1: カード上部ラインのテーマカラー統一 */
+        .scenario-panel { background: #fff; width: 100%; padding: 0 0 20px 0; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 4px solid var(--phase-color); display: flex; flex-direction: column; }
         .scenario-panel h2 { margin: 0 0 15px 0; font-size: 16px; background: #34495e; color: #fff; padding: 12px 25px; display: flex; align-items: center; border-radius: 4px 4px 0 0; }
         .scenario-desc { font-size: 13px; color: #5d6d7e; margin-bottom: 15px; line-height: 1.6; padding: 0 25px; }
         
         .scenario-inputs { display: grid; grid-template-columns: repeat(12, 1fr); gap: 15px; font-size: 12px; padding: 0 25px; }
         
         .rationale-btn { background: #1abc9c; color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; flex-shrink: 0;}
-        .rationale-btn:hover { background: #16a085; transform: scale(1.1); }
+        .rationale-btn:hover { transform: scale(1.1); filter: brightness(1.2); }
         
-        .rationale-text { display: none; position: absolute; z-index: 1000; width: 300px; max-width: 90vw; background: #fef9e7; border: 1px solid #f39c12; padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; margin: 0; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.15); font-weight: normal; }
+        /* 根拠表示用スタイル（ガイドライン第5項① 準拠：クリック駆動・position:fixed・フリップ計算） */
+        .rationale-text { position: fixed; background: #fef9e7; border: 1px solid #f39c12; padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: 320px; max-width: calc(100vw - 24px); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; font-weight: normal; }
+        .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
+        /* 吹き出しの尻尾（.pop-arrow）。JS が --arrow-left とフリップ方向クラスを設定する */
+        .rationale-text::after {
+            content: ''; position: absolute; width: 10px; height: 10px;
+            background: #fef9e7; transform: rotate(45deg);
+            left: var(--arrow-left, 50%); margin-left: -5px;
+        }
+        .rationale-text.arrow-top::after    { top: -6px; border-left: 1px solid #f39c12; border-top: 1px solid #f39c12; }
+        .rationale-text.arrow-bottom::after { bottom: -6px; border-right: 1px solid #f39c12; border-bottom: 1px solid #f39c12; }
+        /* ヘッダーアイコン（インラインSVG / stroke="currentColor" で見出し色に同期） */
+        .header-icon { width: 20px; height: 20px; vertical-align: -3px; margin-right: 6px; flex-shrink: 0; }
+        .btn-icon { width: 14px; height: 14px; vertical-align: -2px; flex-shrink: 0; }
+        .rationale-text > strong:first-child { color: #d35400; display: block; margin-bottom: 4px; font-size: 12px; }
         
         .input-group { position: relative; background: #fdfefe; padding: 12px; border-radius: 6px; border: 1px solid #d5dbdb; box-shadow: inset 0 1px 3px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 5px; }
         .input-group label { color: #34495e; font-weight: 800; font-size: 12px; margin-bottom: 2px; display: flex; align-items: center; }
@@ -47,30 +86,24 @@
         .tm-display { color: #f1c40f; font-size: 14px; font-weight: 900; white-space: nowrap; margin-bottom: 8px; }
         .tm-avg { background: #27ae60; color: #fff; padding: 6px 15px; border-radius: 4px; font-size: 18px; font-weight: 900; border: 1px solid #2ecc71; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
-        .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 10px; border-radius: 6px; font-size: 11px; color: #2c3e50; margin-top: 15px; line-height: 1.5; font-weight: normal; grid-column: 1 / -1;}
+        /* ミッション3: 角丸（border-radius）のガイドライン統一 */
+        .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 10px; border-radius: 0 4px 4px 0; font-size: 11px; color: #2c3e50; margin-top: 15px; line-height: 1.5; font-weight: normal; grid-column: 1 / -1;}
         .bench-tip strong { color: #2980b9; font-size: 11px;}
 
         [data-tooltip] { position: relative; cursor: pointer; }
-        [data-tooltip]::before {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: 100%; left: 50%; transform: translateX(-50%);
-            background: rgba(44, 62, 80, 0.95); color: white;
-            padding: 6px 10px; border-radius: 4px; font-size: 11px;
-            white-space: nowrap; opacity: 0; pointer-events: none;
-            transition: 0.2s; margin-bottom: 5px; z-index: 200; font-weight: normal; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        [data-tooltip]:hover::before { opacity: 1; transform: translateX(-50%) translateY(-2px); }
+        /* カスタムツールチップ（ガイドライン第5項④ 準拠 / ネイティブ title 属性は使用しない）
+           ※本文が最長52文字の日本語のため nowrap では狭い端末で画面外に溢れる。折り返し＋幅上限で堅牢化 */
+        .custom-tooltip { position: fixed; background: rgba(44, 62, 80, 0.95); color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 11px; pointer-events: none; z-index: 9999; opacity: 0; transition: opacity 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-weight: normal; line-height: 1.4; display: none; white-space: normal; width: max-content; max-width: min(320px, 90vw); text-align: center; box-sizing: border-box; }
+        .custom-tooltip::after { content: ''; position: absolute; border-width: 5px; border-style: solid; left: 50%; transform: translateX(-50%); }
+        .custom-tooltip.show-top::after { top: 100%; border-color: rgba(44, 62, 80, 0.95) transparent transparent transparent; }
+        .custom-tooltip.show-bottom::after { bottom: 100%; border-color: transparent transparent rgba(44, 62, 80, 0.95) transparent; }
 
-        .toast {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px);
-            background: #34495e; color: white; padding: 12px 24px; border-radius: 6px;
-            font-size: 13px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            opacity: 0; pointer-events: none; transition: 0.3s; z-index: 1000; display: flex; align-items: center; gap: 8px;
-        }
-        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-        .toast.error { background: #e74c3c; }
-        .toast.success { background: #27ae60; }
+        /* トースト通知（ガイドライン第5項⑤ 準拠 / alert() は使用禁止） */
+        #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 12px 24px; border-radius: 30px; font-weight: bold; font-size: 13px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 100000; pointer-events: none; text-align: center; max-width: 90vw; box-sizing: border-box; word-break: auto-phrase; }
+        #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        #toast.error { background: var(--danger); }
+        #toast.warning { background: var(--warning); color: #7e5109; }
+        #toast.info { background: var(--phase-color); }
 
         .machine-scroll-wrapper { 
             width: calc(100% + 80px);
@@ -201,7 +234,7 @@
             .tm-container { grid-column: span 1 !important; }
             .bench-tip { grid-column: span 1 !important; }
 
-            .header h1 { font-size: 18px; padding-right: 60px; }
+            .header h1 { font-size: 18px; padding-right: 60px; white-space: normal; }
             .version-badge { top: 12px; right: 10px; }
 
             .scenario-panel h2 { padding: 12px 15px; margin-top: 0; }
@@ -209,6 +242,17 @@
 
             .modal { padding: 10px; }
             .modal-content { padding: 20px 15px; }
+            
+            /* ミッション4: スマホ時の機種選択パネルのレイアウト修復 */
+            .cycler-selector { display: flex; flex-direction: column; align-items: stretch; gap: 8px; }
+            .cycler-selector select { margin-left: 0 !important; }
+            
+            /* ミッション5: スマホ時のアシストパネル（テーブル等）の横スライド撤廃 */
+            .assist-panel th, .assist-panel td {
+                padding: 4px !important;
+                word-break: break-word !important;
+                white-space: normal !important;
+            }
         }
 
         @media screen and (max-width: 520px) {
@@ -232,8 +276,10 @@
 
 <div class="header-container">
     <div class="header">
-        <h1>🧬 Thermal Cycler Simulator</h1>
-        <p>Bio-Edu Suite: PCR Protocol Optimization & Logical Troubleshooting</p>
+        <div>
+            <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>Thermal Cycler Simulator</h1>
+            <p>Bio-Edu Suite: Phase 2 / PCR Protocol Optimization & Logical Troubleshooting</p>
+        </div>
         <div class="version-badge">v2.0</div>
     </div>
 </div>
@@ -241,7 +287,7 @@
 <div class="main-content">
     
     <div class="scenario-panel">
-        <h2>🧬 機器に入力する全パラメーター</h2>
+        <h2>機器に入力する全パラメーター</h2>
         <div class="scenario-desc">
             液晶画面のすべての入力項目（INITからFINALまで）は、以下の要素から論理的に導き出されます。<br>酵素を変更すると、必要な試薬組成や標準液量も変化します。
         </div>
@@ -249,7 +295,7 @@
         <div class="scenario-inputs">
             
             <div class="input-group" style="grid-column: span 4;">
-                <label>1. 使用酵素 <button class="rationale-btn" onclick="toggleRationale('rat_enz')">?</button></label>
+                <label>1. 使用酵素 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_enz')">?</button></label>
                 <div id="rat_enz" class="rationale-text">
                     <strong>【根拠】</strong> 酵素によって「耐熱性(DENAT)」や「合成速度(EXTEND)」が異なります。KOD Oneは超高速、Taqは標準的など、それぞれの特性に合わせたプログラムを組む必要があります。
                 </div>
@@ -262,7 +308,7 @@
             </div>
             
             <div class="input-group" style="grid-column: span 3;">
-                <label>2. 目的の増幅長 (bp) <button class="rationale-btn" onclick="toggleRationale('rat_len')">?</button></label>
+                <label>2. 目的の増幅長 (bp) <button class="rationale-btn" onclick="toggleRationale(event, 'rat_len')">?</button></label>
                 <div id="rat_len" class="rationale-text">
                     <strong>【根拠】</strong> PCRにおける「伸長時間(EXTEND)」を決めるための最重要パラメーターです。酵素が1kb(1000塩基)を合成するのに何秒かかるかを計算し、長さに見合った時間を設定しないと、途中で切れた不完全なDNAになってしまいます。
                 </div>
@@ -273,7 +319,7 @@
             </div>
 
             <div class="input-group" style="grid-column: span 5;">
-                <label>3. プライマーの塩基配列 <button class="rationale-btn" onclick="toggleRationale('rat_pri')">?</button></label>
+                <label>3. プライマーの塩基配列 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_pri')">?</button></label>
                 <div id="rat_pri" class="rationale-text">
                     <strong>【根拠】</strong> プライマーがDNAにくっつく温度（Tm値）は、A/T（2重水素結合）とG/C（3重水素結合）の割合で決まります。「ANNEAL温度」はこのTm値を基準に設定し、高すぎるとくっつかず、低すぎると間違った場所にくっつく（非特異的増幅）原因になります。
                 </div>
@@ -286,13 +332,14 @@
                     <input type="text" id="primerR" value="" placeholder="3'側のプライマー配列を入力" style="font-family: 'Courier New', Courier, monospace;" oninput="calculateTm()">
                 </div>
                 <div id="annealHintText" class="dynamic-hint">
-                    💡 KOD Oneは、アニーリング基準値(Tm平均)と同じ温度に設定します。
+                    <!-- ミッション2: ネイティブ絵文字のSVG化 (インフォメーションアイコン) -->
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> KOD Oneは、アニーリング基準値(Tm平均)と同じ温度に設定します。
                 </div>
                 <div style="font-size:10px; color:#7f8c8d; margin-top:6px; text-align:right;">※ Tm値は塩基配列よりWallace法で算出</div>
             </div>
 
             <div class="input-group" style="grid-column: span 4;">
-                <label>4. 抽出サンプル <button class="rationale-btn" onclick="toggleRationale('rat_sam')">?</button></label>
+                <label>4. 抽出サンプル <button class="rationale-btn" onclick="toggleRationale(event, 'rat_sam')">?</button></label>
                 <div id="rat_sam" class="rationale-text">
                     <strong>【根拠】</strong> 元の細胞に含まれるDNAの「コピー数（存在量）」によって、必要なサイクル数(CYCLE N)が変わります。<br>
                     ・<strong>ミトコンドリアDNA (食肉など)</strong>や<strong>プラスミド</strong>は元から量が多いため、回しすぎるとノイズが出ます。<br>
@@ -304,12 +351,13 @@
                     <option value="plasmid">プラスミドDNA</option>
                 </select>
                 <div id="cycleHintText" class="dynamic-hint" style="background:#e8f8f5; color:#16a085; border-color:#1abc9c;">
-                    💡 mtDNAは細胞内に多コピー存在します。増えすぎを防ぐため 25〜30回 が推奨です。
+                    <!-- ミッション2: ネイティブ絵文字のSVG化 (ライトバルブアイコン) -->
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg> mtDNAは細胞内に多コピー存在します。増えすぎを防ぐため 25〜30回 が推奨です。
                 </div>
             </div>
 
             <div class="input-group" style="grid-column: span 5;">
-                <label style="display: flex; align-items: center; width: 100%;">5. 試薬組成 (反応液量: VOL) <button class="rationale-btn" onclick="toggleRationale('rat_vol')">?</button>
+                <label style="display: flex; align-items: center; width: 100%;">5. 試薬組成 (反応液量: VOL) <button class="rationale-btn" onclick="toggleRationale(event, 'rat_vol')">?</button>
                     <button style="margin-left:auto; background:#3498db; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;" data-tooltip="アプリ1(Master Mix Studio)の計算結果を読み込みます" onclick="importFromApp1()">アプリ同期</button>
                 </label>
                 <div id="rat_vol" class="rationale-text">
@@ -330,15 +378,16 @@
                 <div class="tm-avg" id="tmAvgDisplay">--.- ℃</div>
             </div>
             
+            <!-- ミッション2: ネイティブ絵文字のSVG化 (ライトバルブアイコン) -->
             <div class="bench-tip" style="grid-column: 1 / -1;">
-                <strong>💡 現場のコツ（プログラムの組み方）</strong><br>
+                <strong><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg> 現場のコツ（プログラムの組み方）</strong><br>
                 サーマルサイクラーの設定は「何となく」ではなく、必ず<b>酵素のメーカー指示書（プロトコル）</b>と<b>自分のターゲット長・Tm値</b>を掛け合わせて論理的に決定します。設定ミスは貴重な試薬と時間を無駄にする一番の原因です！
             </div>
         </div>
     </div>
 
-    <!-- 追加: 機種選択ドロップダウン -->
-    <div style="width: 100%; max-width: 500px; margin: 0 auto 15px auto; text-align: center;">
+    <!-- ミッション4: スマホ時の機種選択パネルのレイアウト修復 (.cycler-selector クラスの付与) -->
+    <div class="cycler-selector" style="width: 100%; max-width: 500px; margin: 0 auto 15px auto; text-align: center;">
         <label style="font-size: 12px; font-weight: bold; color: #2c3e50;">使用するサーマルサイクラー機種:</label>
         <select id="cyclerModelSelect" onchange="switchModel(this.value)" style="padding: 6px; font-size: 14px; font-weight: bold; border-radius: 4px; border: 2px solid #bdc3c7; margin-left: 10px;">
             <option value="thermogen">ThermoGen QuickBath (テンキー型)</option>
@@ -399,7 +448,8 @@
 
                 <h3 style="color:#2c3e50; font-size:13px; border-bottom: 1px solid #bdc3c7; padding-bottom: 5px; margin-bottom: 8px; margin-top: 0;">各酵素の公式推奨条件</h3>
                 <div style="font-size: 11px; line-height: 1.5; color: #34495e;">
-                    <p style="color:#e74c3c; font-weight:bold; margin-top:0; margin-bottom:5px;">💡 計算のヒント: 1 kb = 1000 bp。増幅長を1000で割って時間を計算。</p>
+                    <!-- ミッション2: ネイティブ絵文字のSVG化 (インフォメーションアイコン) -->
+                    <p style="color:#e74c3c; font-weight:bold; margin-top:0; margin-bottom:5px;"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> 計算のヒント: 1 kb = 1000 bp。増幅長を1000で割って時間を計算。</p>
                     <div class="table-responsive">
                         <table class="manual-table">
                             <tr><th>酵素名</th><th>DENAT</th><th>ANNEAL</th><th>EXTEND</th></tr>
@@ -491,7 +541,8 @@
                     2. <b>[▼] [▲]</b> キーで設定項目を選び(↓点滅)、<b>[ENT]</b> で編集モードへ入ります。<br>
                     3. テンキーで数値を入力。（例: 94.5℃なら「9」「4」「5」、2分30秒なら「0」「2」「3」「0」）<br>
                     4. 再度 <b>[ENT]</b> で確定。<b>[C]</b> キーで入力を最初からやり直し。<br>
-                    <span style="color:#d35400;">💡 無限大(∞)の入力: PART3の最後の時間で「9999」と入力。</span>
+                    <!-- ミッション2: ネイティブ絵文字のSVG化 (インフォメーションアイコン) -->
+                    <span style="color:#d35400;"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> 無限大(∞)の入力: PART3の最後の時間で「9999」と入力。</span>
                 </div>
 
                 <div class="assist-step">
@@ -563,10 +614,10 @@
                     <button class="hw-btn" style="position: absolute; top: 80px; left: 190px; width: 55px; height: 36px; background: #f0f3f4; color: #2c3e50; font-size: 13px; font-weight: bold; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6; border-radius: 6px; display: flex; flex-direction: column; line-height: 1;" onmousedown="event.preventDefault();" onclick="navBtn('SEL')" data-tooltip="選択切替">SEL<span style="font-size: 10px;">⏏</span></button>
 
                     <!-- 十字キー -->
-                    <button class="hw-btn" style="position: absolute; top: 112px; left: 135px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 16px; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="navBtn('UP')" data-tooltip="上">⬆︎</button>
-                    <button class="hw-btn" style="position: absolute; top: 162px; left: 85px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 16px; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="navBtn('LEFT')" data-tooltip="左">⬅︎</button>
-                    <button class="hw-btn" style="position: absolute; top: 162px; left: 135px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 16px; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="navBtn('DOWN')" data-tooltip="下">⬇︎</button>
-                    <button class="hw-btn" style="position: absolute; top: 162px; left: 185px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 16px; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="navBtn('RIGHT')" data-tooltip="右">➡︎</button>
+                    <button class="hw-btn" style="position: absolute; top: 112px; left: 135px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 16px; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="navBtn('UP')" data-tooltip="上"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 19V5M5 12l7-7 7 7"/></svg>︎</button>
+                    <button class="hw-btn" style="position: absolute; top: 162px; left: 85px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 16px; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="navBtn('LEFT')" data-tooltip="左"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>︎</button>
+                    <button class="hw-btn" style="position: absolute; top: 162px; left: 135px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 16px; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="navBtn('DOWN')" data-tooltip="下"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>︎</button>
+                    <button class="hw-btn" style="position: absolute; top: 162px; left: 185px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 16px; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="navBtn('RIGHT')" data-tooltip="右"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14M12 5l7 7-7 7"/></svg>︎</button>
 
                     <!-- テンキー -->
                     <button class="hw-btn" style="position: absolute; top: 15px; left: 265px; width: 42px; height: 42px; background: #f0f3f4; color: #2c3e50; font-size: 20px; font-weight: bold; border-radius: 50%; border: 1px solid #bdc3c7; box-shadow: 0 3px 0 #95a5a6;" onmousedown="event.preventDefault();" onclick="typeNum('7')" data-tooltip="入力">7</button>
@@ -814,11 +865,58 @@
         }
     };
 
-    function showToast(message, type = 'success') {
+    // --- カスタムツールチップ初期化（ガイドライン第5項④ 準拠 / ネイティブ title 属性は使用禁止） ---
+    function initTooltips() {
+        if (document.getElementById('__bes_tooltip')) return; // 二重初期化を防ぐ
+        const tooltip = document.createElement('div');
+        tooltip.id = '__bes_tooltip';
+        tooltip.className = 'custom-tooltip';
+        document.body.appendChild(tooltip);
+
+        document.body.addEventListener('mouseover', (e) => {
+            const target = e.target.closest('[data-tooltip]');
+            if (target && !target.classList.contains('rationale-btn')) {
+                tooltip.innerHTML = target.getAttribute('data-tooltip');
+                tooltip.style.display = 'block';
+                const rect = target.getBoundingClientRect();
+                const ttRect = tooltip.getBoundingClientRect();
+                let topPos = rect.top - ttRect.height - 8;
+                let leftPos = rect.left + (rect.width / 2);
+                let arrowClass = 'show-top';
+                if (topPos < 0) { topPos = rect.bottom + 8; arrowClass = 'show-bottom'; }
+                if (leftPos - ttRect.width / 2 < 5) leftPos = 5 + ttRect.width / 2;
+                else if (leftPos + ttRect.width / 2 > window.innerWidth - 5) leftPos = window.innerWidth - ttRect.width / 2 - 5;
+                tooltip.className = `custom-tooltip ${arrowClass}`;
+                tooltip.style.top = topPos + 'px';
+                tooltip.style.left = leftPos + 'px';
+                tooltip.style.transform = 'translateX(-50%)';
+                tooltip.style.opacity = '1';
+            }
+        });
+        document.body.addEventListener('mouseout', (e) => {
+            if (e.target.closest('[data-tooltip]')) {
+                tooltip.style.opacity = '0';
+                setTimeout(() => { if (tooltip.style.opacity === '0') tooltip.style.display = 'none'; }, 200);
+            }
+        });
+        document.addEventListener('scroll', () => {
+            tooltip.style.opacity = '0'; tooltip.style.display = 'none';
+        }, true);
+    }
+    // --- トースト通知（ガイドライン第5項⑤ 準拠 / alert() は使用禁止） ---
+    // type: ""(=成功/緑) | "error" | "warning" | "info"。'success' 等の未知値は既定の緑にフォールバックする
+    function showToast(msg, type = "") {
         const toast = document.getElementById('toast');
-        toast.innerText = message;
-        toast.className = 'toast show ' + type;
-        setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        if (!toast) return;
+        toast.innerText = msg;
+        let className = "show";
+        if (type === "error") className += " error";
+        else if (type === "warning") className += " warning";
+        else if (type === "info") className += " info";
+        toast.className = "";
+        void toast.offsetWidth; // リフローを挟み、連続表示でもアニメーションを再生させる
+        toast.className = className;
+        setTimeout(() => { toast.classList.remove("show"); }, 3000);
     }
 
     function handleVolInput(inputEl) {
@@ -882,65 +980,62 @@
         }
     }
 
-    document.addEventListener('click', closeRationale);
-    document.addEventListener('touchstart', closeRationale, {passive: true});
-
-    function closeRationale(e) {
-        if (!e.target.closest('.rationale-btn') && !e.target.closest('.rationale-text')) {
-            document.querySelectorAll('.rationale-text').forEach(text => text.style.display = 'none');
-        }
-    }
-
-    function toggleRationale(id) {
+    // --- 教育的UIモジュール①: 根拠ポップオーバー（ガイドライン第5項① 準拠 / フリップ計算付き絶対配置） ---
+    function toggleRationale(event, id) {
+        event.stopPropagation();
         const el = document.getElementById(id);
-        const e = window.event || event;
-        const btn = e ? (e.currentTarget || e.target).closest('.rationale-btn') : null;
-        
-        if (e && btn && e.type === 'click') {
-            if (e.clientX !== 0 && e.clientY !== 0) { 
-                const rect = btn.getBoundingClientRect();
-                if (e.clientX < rect.left - 5 || e.clientX > rect.right + 5 ||
-                    e.clientY < rect.top - 5 || e.clientY > rect.bottom + 5) {
-                    return; 
-                }
+        const btn = event.currentTarget;
+        const isShown = el.classList.contains('show');
+
+        // 他のポップオーバーを閉じる
+        document.querySelectorAll('.rationale-text').forEach(e => e.classList.remove('show'));
+
+        if(!isShown) {
+            if (el.parentNode !== document.body) document.body.appendChild(el);
+            el.style.top = '0px'; el.style.left = '0px';
+            el.classList.add('show');
+
+            // フリップ計算による絶対配置
+            const elHeight = el.offsetHeight;
+            const elWidth  = el.offsetWidth;
+            const rect = btn.getBoundingClientRect();
+
+            let topPos = rect.bottom + 10;
+            let arrowClass = 'arrow-top';
+            // 画面下端に見切れる場合は上側に配置
+            if (rect.bottom + elHeight + 20 > window.innerHeight) {
+                topPos = rect.top - elHeight - 10;
+                arrowClass = 'arrow-bottom';
             }
-        }
+            el.style.top = topPos + 'px';
 
-        if(e && e.stopPropagation) e.stopPropagation();
-        if(e && e.preventDefault) e.preventDefault();
+            // 左右位置の調整（幅は固定値ではなく offsetWidth で動的算出）
+            const btnCenter = rect.left + rect.width / 2;
+            let leftPos = btnCenter - elWidth / 2;
+            if (leftPos + elWidth > window.innerWidth - 10) leftPos = window.innerWidth - elWidth - 10;
+            if (leftPos < 10) leftPos = 10;
+            el.style.left = leftPos + 'px';
 
-        const isCurrentlyBlock = (el.style.display === 'block');
-
-        document.querySelectorAll('.rationale-text').forEach(text => text.style.display = 'none');
-
-        if (!isCurrentlyBlock) {
-            el.style.display = 'block';
-            
-            if (btn) {
-                const btnRect = btn.getBoundingClientRect();
-                const containerRect = el.parentElement.getBoundingClientRect();
-                
-                let topPos = btnRect.bottom - containerRect.top + 8;
-                let leftPos = btnRect.left - containerRect.left;
-                
-                el.style.top = topPos + 'px';
-                el.style.left = leftPos + 'px';
-                el.style.right = 'auto';
-                el.style.width = '300px';
-
-                const textRect = el.getBoundingClientRect();
-                if (textRect.right > window.innerWidth - 10) {
-                    el.style.left = 'auto';
-                    el.style.right = '0px';
-                    
-                    if(el.getBoundingClientRect().left < 10) {
-                        el.style.left = '-10px';
-                        el.style.width = (window.innerWidth - 30) + 'px';
-                    }
-                }
-            }
+            // 吹き出しの尻尾をボタン中央へ追従させる（両端12pxは食い込ませない）
+            let arrowLeft = btnCenter - leftPos;
+            if (arrowLeft < 12) arrowLeft = 12;
+            if (arrowLeft > elWidth - 12) arrowLeft = elWidth - 12;
+            el.classList.remove('arrow-top', 'arrow-bottom');
+            el.classList.add(arrowClass);
+            el.style.setProperty('--arrow-left', arrowLeft + 'px');
         }
     }
+
+    // 外部クリック・スクロールで閉じる
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.rationale-text') && !e.target.closest('.rationale-btn')) {
+            document.querySelectorAll('.rationale-text').forEach(el => el.classList.remove('show'));
+        }
+    });
+
+    document.addEventListener('scroll', () => {
+        document.querySelectorAll('.rationale-text').forEach(el => el.classList.remove('show'));
+    }, true);
 
     const recipes = {
         KODOne: {
@@ -985,15 +1080,16 @@
         const guideEl = document.getElementById('volGuideText');
         const gridEl = document.getElementById('reagentGrid');
         
+        /* ミッション2: ネイティブ絵文字のSVG化 (インフォメーションアイコン) */
         if(val === 'KODOne') {
             lcdData.progName = 'ST00';
-            annealHintEl.innerHTML = "💡 KOD Oneは、<b>アニーリング基準値(Tm平均)</b>と同じ温度に設定します。";
+            annealHintEl.innerHTML = `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> KOD Oneは、<b>アニーリング基準値(Tm平均)</b>と同じ温度に設定します。`;
         } else if(val === 'PrimeSTAR') {
             lcdData.progName = 'PR00';
-            annealHintEl.innerHTML = "💡 Taq系酵素は、<b>アニーリング基準値(Tm平均)</b>を参考にしつつ【55〜60℃】に設定します。";
+            annealHintEl.innerHTML = `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> Taq系酵素は、<b>アニーリング基準値(Tm平均)</b>を参考にしつつ【55〜60℃】に設定します。`;
         } else if(val === 'ExTaq') {
             lcdData.progName = 'EX00';
-            annealHintEl.innerHTML = "💡 一般的なTaqは、<b>アニーリング基準値(Tm平均)</b>を参考にしつつ【50〜60℃】に設定します。";
+            annealHintEl.innerHTML = `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> 一般的なTaqは、<b>アニーリング基準値(Tm平均)</b>を参考にしつつ【50〜60℃】に設定します。`;
         }
 
         const rData = recipes[val];
@@ -1023,12 +1119,14 @@
     function updateCycleHint() {
         const val = document.getElementById('sampleSelect').value;
         const hintEl = document.getElementById('cycleHintText');
+        
+        /* ミッション2: ネイティブ絵文字のSVG化 (ライトバルブアイコン) */
         if(val === 'meat_mt') {
-            hintEl.innerHTML = "💡 mtDNAは細胞内に多コピー存在します。増えすぎを防ぐため <b>25〜30回</b> が推奨です。";
+            hintEl.innerHTML = `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg> mtDNAは細胞内に多コピー存在します。増えすぎを防ぐため <b>25〜30回</b> が推奨です。`;
         } else if(val === 'genomic') {
-            hintEl.innerHTML = "💡 ゲノムDNAはターゲットの割合が非常に低いため、<b>30〜35回</b> しっかり回す必要があります。";
+            hintEl.innerHTML = `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg> ゲノムDNAはターゲットの割合が非常に低いため、<b>30〜35回</b> しっかり回す必要があります。`;
         } else if(val === 'plasmid') {
-            hintEl.innerHTML = "💡 プラスミドはターゲット濃度が極めて高いため、<b>20〜25回</b> の少ないサイクルで十分です。";
+            hintEl.innerHTML = `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg> プラスミドはターゲット濃度が極めて高いため、<b>20〜25回</b> の少ないサイクルで十分です。`;
         }
         updateAssistPanel();
     }
@@ -1138,6 +1236,7 @@
     let lidTimer = null;
 
     window.onload = function() { 
+        initTooltips(); // ツールチップ初期化を必ず呼ぶ（ガイドライン第6項）
         updateRecipe(); 
         calculateTm(); 
         const hwContainer = document.getElementById('cycler-hardware-container');
@@ -1772,9 +1871,10 @@
         const msgDiv = document.getElementById('runMessage');
         modal.style.display = 'flex';
 
+        /* ミッション2: ネイティブ絵文字のSVG化 (インフォメーションアイコン) */
         if (hints.length > 0) {
             let errorHtml = `<div class="feedback-box"><div class="feedback-title">⚠️ 論理的エラー：設定の科学的根拠を見直してください</div><ul class="hint-list">`;
-            hints.forEach(h => errorHtml += `<li><span class="hint-label">💡 ${h.label} について</span>${h.text}</li>`);
+            hints.forEach(h => errorHtml += `<li><span class="hint-label"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" style="width: 14px; height: 14px; vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>${h.label} について</span>${h.text}</li>`);
             errorHtml += '</ul></div>';
             msgDiv.innerHTML = errorHtml;
         } else {
