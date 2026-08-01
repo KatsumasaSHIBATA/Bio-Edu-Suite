@@ -243,22 +243,31 @@
             .modal { padding: 10px; }
             .modal-content { padding: 20px 15px; }
             
-            /* ミッション4: スマホ時の機種選択パネルのレイアウト修復 */
-            .cycler-selector { display: flex; flex-direction: column; align-items: stretch; gap: 8px; }
-            .cycler-selector select { margin-left: 0 !important; }
+            /* ミッション4: 機種選択パネルの縦並び */
+            .cycler-selector {
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            .cycler-selector select {
+                margin-left: 0 !important;
+            }
             
-            /* ミッション5: スマホ時のアシストパネル（テーブル等）の横スライド撤廃 */
-            .assist-panel th, .assist-panel td {
-                padding: 4px !important;
-                word-break: break-word !important;
-                white-space: normal !important;
+            /* ミッション5: アシストパネル内テーブルのはみ出し撤廃 */
+            .manual-table th, .manual-table td {
+                padding: 4px;
+                word-break: break-word;
+                white-space: normal;
             }
         }
 
         @media screen and (max-width: 520px) {
+            /* ミッション6: スマホ幅フィット（自動スケール） */
             .machine-scroll-wrapper {
                 align-items: flex-start; 
                 padding: 20px 10px; 
+                overflow: hidden; /* 横スクロール防止のため追加 */
             }
             .assist-panel { 
                 position: sticky; 
@@ -268,6 +277,10 @@
             .machine-body {
                 margin-left: 10px;
                 margin-right: 10px;
+                transform: scale(calc((100vw - 20px) / 500));
+                transform-origin: top center;
+                /* スケールによる下部の空き領域を相殺 (サイクラーの高さ約500px基準) */
+                margin-bottom: calc(-500px * (1 - (100vw - 20px) / 500));
             }
         }
     </style>
@@ -331,8 +344,8 @@
                     <span style="font-size:11px; width:115px; flex-shrink:0; font-weight:bold; color:#2c3e50;">Primer R (5' ➡ 3'):</span>
                     <input type="text" id="primerR" value="" placeholder="3'側のプライマー配列を入力" style="font-family: 'Courier New', Courier, monospace;" oninput="calculateTm()">
                 </div>
+                <!-- ミッション2: ネイティブ絵文字のSVG化 (インフォメーションアイコン) -->
                 <div id="annealHintText" class="dynamic-hint">
-                    <!-- ミッション2: ネイティブ絵文字のSVG化 (インフォメーションアイコン) -->
                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> KOD Oneは、アニーリング基準値(Tm平均)と同じ温度に設定します。
                 </div>
                 <div style="font-size:10px; color:#7f8c8d; margin-top:6px; text-align:right;">※ Tm値は塩基配列よりWallace法で算出</div>
@@ -350,8 +363,8 @@
                     <option value="genomic">ゲノムDNA</option>
                     <option value="plasmid">プラスミドDNA</option>
                 </select>
+                <!-- ミッション2: ネイティブ絵文字のSVG化 (ライトバルブアイコン) -->
                 <div id="cycleHintText" class="dynamic-hint" style="background:#e8f8f5; color:#16a085; border-color:#1abc9c;">
-                    <!-- ミッション2: ネイティブ絵文字のSVG化 (ライトバルブアイコン) -->
                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg> mtDNAは細胞内に多コピー存在します。増えすぎを防ぐため 25〜30回 が推奨です。
                 </div>
             </div>
@@ -386,7 +399,7 @@
         </div>
     </div>
 
-    <!-- ミッション4: スマホ時の機種選択パネルのレイアウト修復 (.cycler-selector クラスの付与) -->
+    <!-- ミッション4: 機種選択パネルに .cycler-selector クラスを付与 -->
     <div class="cycler-selector" style="width: 100%; max-width: 500px; margin: 0 auto 15px auto; text-align: center;">
         <label style="font-size: 12px; font-weight: bold; color: #2c3e50;">使用するサーマルサイクラー機種:</label>
         <select id="cyclerModelSelect" onchange="switchModel(this.value)" style="padding: 6px; font-size: 14px; font-weight: bold; border-radius: 4px; border: 2px solid #bdc3c7; margin-left: 10px;">
@@ -532,7 +545,8 @@
                     3. 希望するプログラム（ST等）を選び <b>[ENT]</b> を押します。<br>
                     4. "Edit" を選び <b>[ENT]</b> で条件設定画面へ進み、テンキーでサンプル量と本数を入力します。<br>
                     5. <b>[→]</b> キーでPART1へ進みます。<br>
-                    <span style="color:#e74c3c; font-size:10.5px; font-weight:bold;">⚠️ やけど注意：カバー内面は高温になります。</span>
+                    <!-- ミッション2: ネイティブ絵文字のSVG化 (警告アイコン) -->
+                    <span style="color:#e74c3c; font-size:10.5px; font-weight:bold;"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> やけど注意：カバー内面は高温になります。</span>
                 </div>
 
                 <div class="assist-step">
@@ -1080,7 +1094,7 @@
         const guideEl = document.getElementById('volGuideText');
         const gridEl = document.getElementById('reagentGrid');
         
-        /* ミッション2: ネイティブ絵文字のSVG化 (インフォメーションアイコン) */
+        // ミッション2: ネイティブ絵文字のSVG化 (インフォメーションアイコン)
         if(val === 'KODOne') {
             lcdData.progName = 'ST00';
             annealHintEl.innerHTML = `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> KOD Oneは、<b>アニーリング基準値(Tm平均)</b>と同じ温度に設定します。`;
@@ -1120,7 +1134,7 @@
         const val = document.getElementById('sampleSelect').value;
         const hintEl = document.getElementById('cycleHintText');
         
-        /* ミッション2: ネイティブ絵文字のSVG化 (ライトバルブアイコン) */
+        // ミッション2: ネイティブ絵文字のSVG化 (ライトバルブアイコン)
         if(val === 'meat_mt') {
             hintEl.innerHTML = `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg> mtDNAは細胞内に多コピー存在します。増えすぎを防ぐため <b>25〜30回</b> が推奨です。`;
         } else if(val === 'genomic') {
@@ -1871,16 +1885,15 @@
         const msgDiv = document.getElementById('runMessage');
         modal.style.display = 'flex';
 
-        /* ミッション2: ネイティブ絵文字のSVG化 (インフォメーションアイコン) */
         if (hints.length > 0) {
-            let errorHtml = `<div class="feedback-box"><div class="feedback-title">⚠️ 論理的エラー：設定の科学的根拠を見直してください</div><ul class="hint-list">`;
-            hints.forEach(h => errorHtml += `<li><span class="hint-label"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" style="width: 14px; height: 14px; vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>${h.label} について</span>${h.text}</li>`);
+            let errorHtml = `<div class="feedback-box"><div class="feedback-title"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" style="width: 20px; height: 20px; vertical-align: -4px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> 論理的エラー：設定の科学的根拠を見直してください</div><ul class="hint-list">`;
+            hints.forEach(h => errorHtml += `<li><span class="hint-label"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> ${h.label} について</span>${h.text}</li>`);
             errorHtml += '</ul></div>';
             msgDiv.innerHTML = errorHtml;
         } else {
             msgDiv.innerHTML = `
                 <div class="success-box">
-                    <div class="success-title">🎉 PCRプログラム大成功！</div>
+                    <div class="success-title"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" style="width: 24px; height: 24px; vertical-align: -4px; margin-right: 6px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>PCRプログラム大成功！</div>
                     <div style="font-size:13px; margin-bottom:12px; color:#2c3e50;">全パラメーターが科学的根拠に基づいて設定されました。以下が実行された温度プロファイルです。</div>
                     <div class="graph-outer"><canvas id="finalGraph" width="700" height="300"></canvas></div>
                 </div>`;
