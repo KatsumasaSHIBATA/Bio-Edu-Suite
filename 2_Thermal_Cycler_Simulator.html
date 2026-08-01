@@ -73,7 +73,7 @@
         .input-group input[type="number"], .input-group input[type="text"] { font-family: monospace; }
         
         .input-help { font-size: 11px; color: #7f8c8d; line-height: 1.4; margin-top: 4px; }
-        .dynamic-hint { background: #fdf2e9; color: #d35400; font-size: 11px; font-weight: bold; padding: 6px 8px; border-radius: 4px; border-left: 4px solid #e67e22; margin-top: 5px; line-height: 1.4; }
+        .dynamic-hint { background: #fdf2e9; color: #d35400; font-size: 11px; font-weight: bold; padding: 6px 8px; border-radius: 4px; margin-top: 5px; line-height: 1.4; text-align: center; }
 
         .reagent-grid { display: grid; grid-template-columns: 1fr 65px; gap: 4px; align-items: center; font-size: 11px; font-weight: bold; color: #34495e; }
         .reagent-grid input { padding: 4px; text-align: right; font-size: 12px; }
@@ -327,8 +327,8 @@
                     <option value="genomic">ゲノムDNA</option>
                     <option value="plasmid">プラスミドDNA</option>
                 </select>
-                <div id="cycleHintText" class="dynamic-hint" style="background:#e8f8f5; color:#16a085; border-color:#1abc9c;">
-                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg> mtDNAは細胞内に多コピー存在します。増えすぎを防ぐため 25〜30回 が推奨です。
+                <div id="cycleHintText" class="dynamic-hint" style="background:#e8f8f5; color:#16a085;">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg> mtDNAは細胞内に多コピー存在します。増えすぎを防ぐため 25〜30回 が推奨です。
                 </div>
             </div>
 
@@ -337,8 +337,8 @@
                     <button style="margin-left:auto; background:#3498db; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;" data-tooltip="アプリ1(Master Mix Studio)の計算結果を読み込みます" onclick="importFromApp1()">アプリ同期</button>
                 </label>
                 <div id="rat_vol" class="rationale-text">
-                    <strong>【根拠：なぜVOLを正しく設定するのか？】</strong><br>
-                    PCR機器は、入力された「VOL」の液量に基づいて、ヒーターの加熱・冷却パワー（熱容量）を自動計算しています。ここが間違っていると、設定温度に達するスピードが狂い、実験が失敗します。<br><br>
+                    <strong>【根拠：なぜVOLを正しく設定するのか？】</strong>
+                    PCR機器は、入力された「VOL」の液量に基づいて、ヒーターの加熱・冷却パワー（熱容量）を自動計算しています。ここが間違っていると、設定温度に達するスピードが狂い、実験が失敗します。<br>
                     <strong>【表示が小数点第2位までの理由】</strong><br>
                     アプリ1から読み込んだ「総液量」に基づいて比率（スケール）計算が自動で行われるため、割り切れない細かい数値が出ることがあります。ここでは「計算上の正確な必要量」を可視化するためにあえて小数点第2位まで表示しています。（実際の実験では、これを四捨五入してピペットの目盛りに合わせて測ります）
                 </div>
