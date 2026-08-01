@@ -45,6 +45,9 @@
  .nav-item { padding: 8px 20px 8px 30px; display: flex; align-items: center; gap: 8px; color: #bdc3c7; text-decoration: none; font-size: 13px; transition: 0.2s; border-left: 4px solid transparent;}
  .nav-item:hover { background-color: var(--secondary); color: white; }
  
+ /* ミッション3: サイドバー通知バッジのスタイル追加 */
+ .nav-badge { display: inline-flex; align-items: center; justify-content: center; background: #e74c3c; color: white; font-size: 10px; font-weight: bold; border-radius: 10px; min-width: 16px; height: 16px; padding: 0 4px; margin-left: auto; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+
  /* フェーズごとのカラーテーマ */
  .nav-header.p1 { color: #1abc9c; border-top-color: rgba(26, 188, 156, 0.2); }
  .nav-item.p1:hover, .nav-item.p1.active { color: #1abc9c; border-left-color: #1abc9c; background-color: var(--secondary); font-weight: bold; }
@@ -90,6 +93,7 @@
  }
  .rationale-text.arrow-top::after { top: -6px; border-left: 1px solid #f39c12; border-top: 1px solid #f39c12; }
  .rationale-text.arrow-bottom::after { bottom: -6px; border-right: 1px solid #f39c12; border-bottom: 1px solid #f39c12; }
+ 
  /* ヘッダーアイコン（インラインSVG / stroke="currentColor" で見出し色に同期） */
  .header-icon { width: 20px; height: 20px; vertical-align: -3px; margin-right: 6px; flex-shrink: 0; }
  .btn-icon { width: 14px; height: 14px; vertical-align: -2px; flex-shrink: 0; }
@@ -130,11 +134,16 @@
  .badge { font-size: 11px; font-weight: bold; padding: 4px 8px; border-radius: 12px; display: flex; align-items: center; gap: 4px; }
  .badge.ok { background: #e8f8f5; color: #16a085; border: 1px solid #a3e4d7; }
  .badge.none { background: #f9ebea; color: #c0392b; border: 1px solid #f5b7b1; }
+ /* ミッション3: 新規ステータスバッジ（送信済） */
+ .badge.sent-dna { background: #e8f8f5; color: #1abc9c; border: 1px solid #a3e4d7; }
+ .badge.sent-morph { background: #ebf5fb; color: #3498db; border: 1px solid #d6eaf8; }
+ .badge.sent-integ { background: #f4ecf7; color: #8e44ad; border: 1px solid #e8daef; }
  
  .data-preview { font-size: 11px; color: var(--text-muted); background: #f8f9f9; padding: 8px; border-radius: 4px; margin-bottom: 10px; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
  .card-actions { padding: 15px; background: #fdfefe; border-top: 1px solid #ecf0f1; display: flex; flex-direction: column; gap: 8px; border-radius: 0 0 8px 8px; }
- .action-link { display: block; text-align: center; padding: 8px; border-radius: 4px; font-size: 12px; font-weight: bold; text-decoration: none; transition: 0.2s; border: 1px solid transparent; }
+ /* ミッション1: アクションリンクのフレックス化・全幅Block化 */
+ .action-link { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px; border-radius: 4px; font-size: 12px; font-weight: bold; text-decoration: none; transition: 0.2s; border: 1px solid transparent; width: 100%; box-sizing: border-box; }
  
  /* 出撃リンクカラーの統一 (フェーズのテーマカラーと同期) */
  .link-dna { color: #1abc9c; background: #e8f8f5; border-color: #a3e4d7; }
@@ -455,8 +464,18 @@
  const morphBadge = hasMorph ? `<span class="badge ok">形態データあり</span>` : `<span class="badge none">形態未登録</span>`;
  const dnaBadge = hasDna ? `<span class="badge ok">塩基配列あり</span>` : `<span class="badge none">塩基配列未登録</span>`;
 
+ // ミッション3: 送信済バッジの生成
+ let sentBadges = "";
+ if (sample.sentHistory && Array.isArray(sample.sentHistory)) {
+ if (sample.sentHistory.includes('dna')) sentBadges += `<span class="badge sent-dna">⑧ 送信済</span>`;
+ if (sample.sentHistory.includes('morph')) sentBadges += `<span class="badge sent-morph">⑨ 送信済</span>`;
+ if (sample.sentHistory.includes('integ')) sentBadges += `<span class="badge sent-integ">⑩ 送信済</span>`;
+ }
+
  const card = document.createElement('div');
  card.className = 'sample-card';
+ // ミッション1: アクションボタンのテキスト・SVGアイコン追加
+ // ミッション3: status-badges領域へのバッジ追加
  // ミッション5: data-tooltipのスマート化と用語規格維持
  card.innerHTML = `
  <div class="card-header">
@@ -467,14 +486,14 @@
  <button class="btn-delete" onclick="deleteSample('${sample.id}', event)" data-tooltip="削除する"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
  </div>
  <div class="card-body" onclick="editSample('${sample.id}')">
- <div class="status-badges">${morphBadge}${dnaBadge}</div>
+ <div class="status-badges">${morphBadge}${dnaBadge}${sentBadges}</div>
  ${hasMorph ? `<div class="data-preview" data-tooltip="形態データを編集">${escapeHTML(sample.morphData.substring(0, 30))}...</div>` : ''}
  ${hasDna ? `<div class="data-preview" data-tooltip="塩基配列を編集">${escapeHTML(sample.dnaData.substring(0, 30))}...</div>` : ''}
  </div>
  <div class="card-actions">
- <a href="javascript:dispatchToApp('dna', '${sample.id}')" class="action-link link-dna ${!hasDna ? 'link-disabled' : ''}">DNAラボ (系統樹構築など) へ送る</a>
- <a href="javascript:dispatchToApp('morph', '${sample.id}')" class="action-link link-morph ${!hasMorph ? 'link-disabled' : ''}">形態ラボ (Morphometrics) へ送る</a>
- <a href="javascript:dispatchToApp('integ', '${sample.id}')" class="action-link link-integ ${!(hasMorph && hasDna) ? 'link-disabled' : ''}">統合検証ルームへ</a>
+ <a href="javascript:dispatchToApp('dna', '${sample.id}')" class="action-link link-dna ${!hasDna ? 'link-disabled' : ''}"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>⑧ Phylogenetic Tree Builder へ送信</a>
+ <a href="javascript:dispatchToApp('morph', '${sample.id}')" class="action-link link-morph ${!hasMorph ? 'link-disabled' : ''}"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>⑨ Morphometrics Studio へ送信</a>
+ <a href="javascript:dispatchToApp('integ', '${sample.id}')" class="action-link link-integ ${!(hasMorph && hasDna) ? 'link-disabled' : ''}"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>⑩ Taxonomy Explorer (統合版) へ送信</a>
  </div>
  `;
  grid.appendChild(card);
@@ -638,16 +657,45 @@
  // 【ガイドライン第6項 必須】受け取り側が鮮度を判定できるよう timestamp を必ず埋め込む
  localStorage.setItem('bio_edu_active_sample', JSON.stringify({ ...sample, timestamp: new Date().getTime() }));
 
+ // ミッション3: 送信状態の保存
+ sample.sentHistory = sample.sentHistory || [];
+ if (!sample.sentHistory.includes(type)) {
+ sample.sentHistory.push(type);
+ }
+ saveToStorage();
+ renderSamples();
+
+ // ミッション2: 通知メッセージの改善と転送先ツール名の明記
+ // ミッション3: サイドバーの通知バッジを動的に追加
  let targetUrl = '';
+ let sidebarLinkSelector = '';
  if (type === 'morph') {
  targetUrl = '9_Morphometrics_Studio.html';
- showToast("形態ラボを起動します...", "info");
+ sidebarLinkSelector = 'a[href="9_Morphometrics_Studio.html"]';
+ showToast(`${sample.name} のデータを ⑨ Morphometrics Studio に転送しました`, "info");
  } else if (type === 'dna') {
  targetUrl = '8_Phylogenetic_Tree_Builder.html'; 
- showToast("DNAラボを起動します...", "info");
+ sidebarLinkSelector = 'a[href="8_Phylogenetic_Tree_Builder.html"]';
+ showToast(`${sample.name} のデータを ⑧ Phylogenetic Tree Builder に転送しました`, "info");
  } else if (type === 'integ') {
  targetUrl = '10_integrative_taxonomy_studio.html';
- showToast("統合検証ルームを起動します...", "info");
+ sidebarLinkSelector = 'a[href="10_integrative_taxonomy_studio.html"]';
+ showToast(`${sample.name} のデータを ⑩ Taxonomy Explorer (統合版) に転送しました`, "info");
+ }
+
+ // サイドバーへのバッジ追加ロジック
+ if (sidebarLinkSelector) {
+ const navItem = document.querySelector(sidebarLinkSelector);
+ if (navItem) {
+ let badge = navItem.querySelector('.nav-badge');
+ if (!badge) {
+ badge = document.createElement('span');
+ badge.className = 'nav-badge';
+ badge.innerText = '0';
+ navItem.appendChild(badge);
+ }
+ badge.innerText = parseInt(badge.innerText, 10) + 1;
+ }
  }
 
  if(targetUrl) {
