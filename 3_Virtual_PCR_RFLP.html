@@ -216,7 +216,7 @@
 <div class="main-content">
     
     <div class="card">
-        <div class="card-header">⚙️ in silico 実験設定</div>
+        <div class="card-header"> in silico 実験設定</div>
         <div class="card-body">
             
             <div class="settings-group">
@@ -236,7 +236,7 @@
                 <div class="form-group">
                     <label>生データ (塩基配列)</label>
                     <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-                        <p style="margin: 0; font-size: 12px; color: #7f8c8d; font-weight: bold; pointer-events: none;">📂 ここをクリック、または FASTAデータを ドラッグ＆ドロップ</p>
+                        <p style="margin: 0; font-size: 12px; color: #7f8c8d; font-weight: bold; pointer-events: none;">ここをクリック、または FASTAデータを ドラッグ＆ドロップ</p>
                         <input type="file" id="fileInput" accept=".fasta,.fas,.txt,.seq" multiple style="display: none;" onchange="loadFiles(event)">
                         <div id="fileStatus" class="file-status" style="margin-top: 5px;"></div>
                     </div>
@@ -295,7 +295,7 @@
             <div class="settings-group">
                 <h4>4. 電気泳動設定 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_gel')">?</button></h4>
                 <div id="rat_gel" class="rationale-text">
-                    <strong>【根拠：ゲル濃度と泳動時間】</strong><br>
+                    <strong>【根拠：ゲル濃度と泳動時間】</strong>
                     ・<strong>アガロース濃度：</strong> 濃度が高いと網目が細かくなり、小さいDNA断片の分離が良くなります。低いと大きな断片を分けるのに適しています。<br>
                     ・<strong>泳動時間：</strong> 長く流すほどバンドの間隔が広がり見やすくなりますが、短すぎると分離せず、長すぎるとゲルから抜け落ちてしまいます。
                 </div>
@@ -329,10 +329,10 @@
     </div>
 
     <div class="card gel-card">
-        <div class="card-header">📊 解析結果 ＆ バーチャル電気泳動</div>
+        <div class="card-header">解析結果 ＆ バーチャル電気泳動</div>
         <div class="card-body">
             
-            <h3 style="margin: 0 0 10px 0; font-size:14px; color:#2c3e50;">📋 断片サイズレポート</h3>
+            <h3 style="margin: 0 0 10px 0; font-size:14px; color:#2c3e50;">断片サイズレポート</h3>
             <div style="overflow-x: auto; margin-bottom: 20px;">
                 <table id="resultTable">
                     <thead>
@@ -348,7 +348,7 @@
                 </table>
             </div>
 
-            <h3 style="margin: 0 0 10px 0; font-size:14px; color:#2c3e50;">⚡ アガロースゲル電気泳動 (対数スケール)</h3>
+            <h3 style="margin: 0 0 10px 0; font-size:14px; color:#2c3e50;">アガロースゲル電気泳動 (対数スケール)</h3>
             <div class="gel-panel">
                 <div class="gel" id="virtualGel">
                     <div style="color: #555; display: flex; align-items: center; justify-content: center; width: 100%; height:100%;">
@@ -390,14 +390,14 @@
 <!-- 制限酵素選択用モーダル (ポップオーバー) -->
 <div id="enzymeModal" class="rationale-text" style="width: 400px; max-width: 95vw; display: none; flex-direction: column; z-index: 2000; padding: 0; box-shadow: 0 4px 20px rgba(0,0,0,0.3); border-radius: 6px; overflow: hidden; max-height: 60vh;">
     <div style="background: #34495e; color: white; padding: 10px 15px; font-weight: bold; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center;">
-        <span>✂️ 制限酵素データベース</span>
+        <span>制限酵素データベース</span>
         <span style="font-size: 10px; font-weight: normal; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px;" id="enzymeCount">0 種</span>
     </div>
     <div style="padding: 10px; background: #eaeded; border-bottom: 1px solid #bdc3c7;">
         <input type="text" id="enzymeSearch" style="padding: 8px 10px; font-family: monospace; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 13px; background: #fff; outline: none; width: 100%; box-sizing: border-box;" placeholder="酵素名または認識塩基配列で検索" oninput="filterEnzymes()">
         <div style="margin-top: 8px; display: flex; align-items: center; justify-content: space-between;">
             <label style="font-size: 11px; font-weight: bold; color: #2c3e50; cursor: pointer; display: flex; align-items: center; gap: 5px;">
-                <input type="checkbox" id="filterShortCut" onchange="filterEnzymes()"> ✂️ 4〜5塩基認識で絞り込む
+                <input type="checkbox" id="filterShortCut" onchange="filterEnzymes()"> 4〜5塩基認識で絞り込む
             </label>
             <button class="rationale-btn" onclick="toggleRationale(event, 'rat_rflp_strategy')">?</button>
         </div>
@@ -409,9 +409,9 @@
 
 <!-- 隠し解説テキスト（RFLPマーカー探索の極意） -->
 <div id="rat_rflp_strategy" class="rationale-text">
-    <strong>【根拠：RFLPマーカー探索の極意】</strong><br><br>
+    <strong>【根拠：RFLPマーカー探索の極意】</strong>
     <strong>① なぜ4〜5塩基を狙う？</strong><br>
-    EcoR I などの6塩基認識（確率1/4096）は、1,000bpの短いDNAでは「切断部位がない」ことが殆どです。Hinf I や Taq I などの4〜5塩基認識（確率1/256〜1/1024）から試すのが鉄則です。<br><br>
+    EcoR I などの6塩基認識（確率1/4096）は、1,000bpの短いDNAでは「切断部位がない」ことが殆どです。Hinf I や Taq I などの4〜5塩基認識（確率1/256〜1/1024）から試すのが鉄則です。<br>
     <strong>② 当たりパターンの見分け方</strong><br>
     「全部切れない」「全部同じ長さで切れる」酵素では種を区別できません。種ごとにバンドの数や長さが明確に違うパターンが出る酵素を探しましょう。100bp以下が大量に出る細かすぎる酵素もNGです。
 </div>
