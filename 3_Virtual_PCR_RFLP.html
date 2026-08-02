@@ -5,15 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Virtual PCR & RFLP Simulator v1.3 | Bio-Edu Suite</title>
     <style>
+        /* テーマカラー規格（ガイドライン第3項）。既存のハードコード値と同一値を定義し、
+           見た目を変えずに変数経由でのカラー管理を可能にする */
+        :root {
+            /* 【共通】ベースカラー・ステータスカラー */
+            --primary: #2c3e50;        /* ダークネイビー (主要テキスト) */
+            --secondary: #34495e;      /* ネイビー (サブヘッダー) */
+            --bg-color: #f0f3f4;       /* ライトグレー (背景) */
+            --card-bg: #ffffff;        /* ホワイト (カード背景) */
+            --text-main: #2c3e50;      /* メインテキスト */
+            --text-muted: #7f8c8d;     /* 補足テキスト */
+            --border-color: #bdc3c7;   /* ボーダー */
+            --success: #27ae60;        /* 成功・保存 */
+            --danger: #e74c3c;         /* エラー・警告 */
+            --warning: #f39c12;        /* ヒント・教育ポップオーバー */
+
+            /* 【アプリ個別】フェーズカラー (Phase 1 & 2) */
+            --phase-color: #1abc9c;
+            --phase-color-hover: #16a085;
+        }
+
         *, *::before, *::after { box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
         
         /* 共通ヘッダー */
-        .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 10; }
-        .header { width: 100%; max-width: 1400px; padding: 15px 20px; color: white; display: flex; flex-direction: column; position: relative; }
-        .header h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 1px; color: #fff; }
-        .header p { margin: 5px 0 0 0; font-size: 12px; color: #1abc9c; font-weight: 600; letter-spacing: 0.5px; }
-        .version-badge { position: absolute; right: 20px; top: 20px; background: #34495e; color: #1abc9c; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid #1abc9c; }
+        /* 改行崩れ・テキスト折り返しの補正（ガイドライン第4項） */
+        body, .card, p, div, .bench-tip, .pro-invite, .rationale-text, .assist-panel { word-break: normal; overflow-wrap: anywhere; line-height: 1.6; }
+        .label-title, .no-wrap { white-space: nowrap; }
+
+        .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 30; flex-shrink: 0; position: sticky; top: 0; }
+        .header { width: 100%; max-width: 1400px; padding: 12px 20px; color: white; display: flex; align-items: center; justify-content: space-between; position: relative; }
+        .header h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 1px; color: #fff; white-space: nowrap; }
+        .header p { margin: 4px 0 0 0; font-size: 11px; color: #1abc9c; font-weight: 600; letter-spacing: 0.5px; }
+        .version-badge { position: absolute; right: 20px; top: 15px; background: #34495e; color: #1abc9c; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid #1abc9c; }
 
         /* CSS Gridレイアウト (左: 380px, 右: 残り全て) */
         .main-content { width: 100%; max-width: 1400px; padding: 20px; display: grid; grid-template-columns: 380px 1fr; gap: 20px; align-items: start; flex: 1; }
@@ -23,24 +47,65 @@
         .card-body { padding: 18px; flex: 1; display: flex; flex-direction: column; }
         
         /* 根拠表示用スタイル（確実なポップオーバー化） */
-        .rationale-btn { background: #1abc9c; color: white; border-radius: 50%; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s;}
-        .rationale-btn:hover { background: #16a085; transform: scale(1.1); }
-        .rationale-text { 
-            display: none; 
-            background: #fef9e7; 
-            border: 1px solid #f39c12; 
-            padding: 12px; 
-            border-radius: 6px; 
-            font-size: 11px; 
-            color: #7e5109; 
-            line-height: 1.5; 
+        .rationale-btn { background: #1abc9c; color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; flex-shrink: 0;}
+        .rationale-btn:hover { transform: scale(1.1); filter: brightness(1.2); }
+
+        /* 【③専用・現状維持】#enzymeModal は .rationale-text を土台に流用した「制限酵素データベース」モーダルであり、
+           表示制御(display:flex/none)と座標計算をJS側(openEnzymeModal)で行っている。
+           ガイドライン第0項（破壊なき進化）に基づき、旧 .rationale-text の宣言を一字一句そのまま維持する。 */
+        #enzymeModal {
+            display: none;
+            background: #fef9e7;
+            border: 1px solid #f39c12;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            color: #7e5109;
+            line-height: 1.5;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
-            position: fixed !important; 
+            position: fixed !important;
             z-index: 2000 !important;
             width: 300px !important;
             max-width: 90vw;
             margin: 0 !important;
         }
+
+        /* 教育的UIモジュール①（ガイドライン第5項① 準拠：クリック駆動・position:fixed・フリップ計算）
+           #enzymeModal を除外してスコープすることで、モーダルの挙動に一切影響を与えない。 */
+        .rationale-text:not(#enzymeModal) {
+            background: #fef9e7;
+            border: 1px solid #f39c12;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            color: #7e5109;
+            line-height: 1.5;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
+            position: fixed !important;
+            z-index: 9000 !important;
+            width: 320px !important;
+            max-width: calc(100vw - 24px) !important;
+            margin: 0 !important;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s, transform 0.2s;
+            transform: translateY(-10px);
+            pointer-events: none;
+            box-sizing: border-box;
+        }
+        .rationale-text.show:not(#enzymeModal) { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
+        /* 吹き出しの尻尾（.pop-arrow）。JS が --arrow-left とフリップ方向クラスを設定する */
+        .rationale-text:not(#enzymeModal)::after {
+            content: ''; position: absolute; width: 10px; height: 10px;
+            background: #fef9e7; transform: rotate(45deg);
+            left: var(--arrow-left, 50%); margin-left: -5px;
+        }
+        .rationale-text:not(#enzymeModal).arrow-top::after    { top: -6px; border-left: 1px solid #f39c12; border-top: 1px solid #f39c12; }
+        .rationale-text:not(#enzymeModal).arrow-bottom::after { bottom: -6px; border-right: 1px solid #f39c12; border-bottom: 1px solid #f39c12; }
+        /* ヘッダーアイコン（インラインSVG / stroke="currentColor" で見出し色に同期） */
+        .header-icon { width: 20px; height: 20px; vertical-align: -3px; margin-right: 6px; flex-shrink: 0; }
+        .btn-icon { width: 14px; height: 14px; vertical-align: -2px; flex-shrink: 0; }
+        .rationale-text:not(#enzymeModal) > strong:first-child { color: #d35400; display: block; margin-bottom: 4px; font-size: 12px; }
 
         /* 設定グループ */
         .settings-group { background: #fdfefe; border: 1px solid #e5e8e8; padding: 15px; border-radius: 6px; margin-bottom: 15px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);}
@@ -76,7 +141,8 @@
         .error { color: #e74c3c; font-weight: bold; }
 
         /* 🔬 ゲルデザイン (右パネル) */
-        .gel-card { border-top-color: #9b59b6; display: flex; flex-direction: column; position: sticky; top: 20px; }
+        /* sticky ヘッダー（約82px）の下に潜らないよう追従位置を補正（元: top: 20px） */
+        .gel-card { border-top-color: #9b59b6; display: flex; flex-direction: column; position: sticky; top: 100px; }
         
         .gel-panel { flex: 1; overflow-x: auto; overflow-y: auto; background: #111; padding: 20px; border-radius: 6px; box-shadow: inset 0 8px 16px rgba(0,0,0,0.8); display: flex; flex-direction: column; position: relative; min-height: 550px; }
         .gel { display: inline-flex; min-width: 100%; min-height: 500px; position: relative; padding-top: 10px; border-top: 2px solid #444; padding-bottom: 40px; box-sizing: content-box; }
@@ -96,36 +162,19 @@
 
         /* JS駆動の動的ツールチップ用スタイル */
         [data-tooltip] { cursor: pointer; }
-        .custom-tooltip {
-            position: fixed;
-            background: rgba(44, 62, 80, 0.95);
-            color: white;
-            padding: 6px 10px;
-            border-radius: 4px;
-            font-size: 11px;
-            pointer-events: none;
-            z-index: 9999;
-            opacity: 0;
-            transition: opacity 0.2s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            white-space: pre-wrap;
-            text-align: center;
-        }
-        .custom-tooltip::after {
-            content: ''; position: absolute; left: 50%; transform: translateX(-50%); border: 5px solid transparent;
-        }
-        .custom-tooltip.show-top::after { top: 100%; border-top-color: rgba(44, 62, 80, 0.95); }
-        .custom-tooltip.show-bottom::after { bottom: 100%; border-bottom-color: rgba(44, 62, 80, 0.95); }
+        /* カスタムツールチップ（ガイドライン第5項④ 準拠 / ネイティブ title 属性は使用しない）
+           ※本文が最長52文字の日本語のため nowrap では狭い端末で画面外に溢れる。折り返し＋幅上限で堅牢化 */
+        .custom-tooltip { position: fixed; background: rgba(44, 62, 80, 0.95); color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 11px; pointer-events: none; z-index: 9999; opacity: 0; transition: opacity 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-weight: normal; line-height: 1.4; display: none; white-space: normal; width: max-content; max-width: min(320px, 90vw); text-align: center; box-sizing: border-box; }
+        .custom-tooltip::after { content: ''; position: absolute; border-width: 5px; border-style: solid; left: 50%; transform: translateX(-50%); }
+        .custom-tooltip.show-top::after { top: 100%; border-color: rgba(44, 62, 80, 0.95) transparent transparent transparent; }
+        .custom-tooltip.show-bottom::after { bottom: 100%; border-color: transparent transparent rgba(44, 62, 80, 0.95) transparent; }
 
-        .toast {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px);
-            background: #34495e; color: white; padding: 12px 24px; border-radius: 6px;
-            font-size: 13px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            opacity: 0; pointer-events: none; transition: 0.3s; z-index: 1000; display: flex; align-items: center; gap: 8px;
-        }
-        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-        .toast.error { background: #e74c3c; }
-        .toast.success { background: #27ae60; }
+        /* トースト通知（ガイドライン第5項⑤ 準拠 / alert() は使用禁止） */
+        #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 12px 24px; border-radius: 30px; font-weight: bold; font-size: 13px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 100000; pointer-events: none; text-align: center; max-width: 90vw; box-sizing: border-box; word-break: auto-phrase; }
+        #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        #toast.error { background: var(--danger); }
+        #toast.warning { background: var(--warning); color: #7e5109; }
+        #toast.info { background: var(--phase-color); }
 
         .form-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
         .form-group label { font-size: 12px; font-weight: 600; color: #7f8c8d; }
@@ -144,6 +193,7 @@
         
         @media screen and (max-width: 768px) {
             .main-content { grid-template-columns: 1fr; padding: 10px; }
+            .header h1 { font-size: 16px; margin-right: 40px; white-space: normal; }
             .gel-card { position: static; }
             .card { min-width: 100% !important; margin-bottom: 10px; }
             .btn, .search-input, .primer-input { width: 100% !important; justify-content: center; padding: 12px; font-size: 14px; }
@@ -155,8 +205,10 @@
 
 <div class="header-container">
     <div class="header">
-        <h1>🧬 Virtual PCR & RFLP Simulator</h1>
-        <p>Bio-Edu Suite: In Silico Amplification & Digestion</p>
+        <div>
+            <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>Virtual PCR &amp; RFLP Simulator</h1>
+            <p>Bio-Edu Suite: Phase 2 / In Silico Amplification & Digestion</p>
+        </div>
         <div class="version-badge">v1.3</div>
     </div>
 </div>
@@ -168,7 +220,7 @@
         <div class="card-body">
             
             <div class="settings-group">
-                <h4>1. 鋳型DNA（FASTA）の入力 <button class="rationale-btn" onclick="toggleRationale('rat_fasta')">?</button></h4>
+                <h4>1. 鋳型DNA（FASTA）の入力 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_fasta')">?</button></h4>
                 <div id="rat_fasta" class="rationale-text">
                     <strong>【根拠】</strong> ここには、抽出液の中に含まれているはずの「元のDNAの塩基配列（ターゲット領域周辺）」を入力します。NCBI等のデータベースから取得したFASTA形式のテキストデータを貼り付けます。
                 </div>
@@ -177,7 +229,7 @@
                     <label>オンラインから取得 (NCBI)</label>
                     <div class="input-row">
                         <input type="text" id="ncbiId" class="mono-input" placeholder="Accession No. を入力" onkeypress="if(event.keyCode===13) fetchNCBI()" data-tooltip="NCBIデータベースから指定したIDの塩基配列を取得します">
-                        <button class="btn-primary" onclick="fetchNCBI()" data-tooltip="NCBIデータベースからデータを取得します">🌐 取得 <span id="apiLoader" class="loader"></span></button>
+                        <button class="btn-primary" onclick="fetchNCBI()" data-tooltip="NCBIデータベースからデータを取得します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18z"/></svg> 取得 <span id="apiLoader" class="loader"></span></button>
                     </div>
                 </div>
 
@@ -194,7 +246,7 @@
             </div>
 
             <div class="settings-group">
-                <h4>2. PCR設定 <button class="rationale-btn" onclick="toggleRationale('rat_pcr')">?</button></h4>
+                <h4>2. PCR設定 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_pcr')">?</button></h4>
                 <div id="rat_pcr" class="rationale-text">
                     <strong>【根拠：ミスマッチ許容率】</strong> プライマーはDNAに100%一致しなくても、突然変異等による多少の塩基配列の違いならくっついて増幅します（特に遠縁の生物種の場合）。これを再現するため、あえて0%〜30%の「遊び（Fuzzy）」を持たせて検索します。
                 </div>
@@ -219,7 +271,7 @@
             </div>
             
             <div class="settings-group">
-                <h4>3. RFLP (制限酵素) 設定 <button class="rationale-btn" onclick="toggleRationale('rat_re')">?</button></h4>
+                <h4>3. RFLP (制限酵素) 設定 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_re')">?</button></h4>
                 <div id="rat_re" class="rationale-text">
                     <strong>【根拠：RFLP法の原理】</strong> PCRで増やしたDNAの長さが同じでも、生物種によって「中の塩基配列」は異なります。特定の塩基配列（例: GGATCC）だけを認識して切る「ハサミ（制限酵素）」を使うことで、塩基配列の違いを「切れた長さの違い」として可視化できます。<br><br>
                     <strong>【平滑末端 (Blunt end) とは】</strong><br>
@@ -229,7 +281,7 @@
                 <div style="display: flex; gap: 8px; margin-bottom: 10px; align-items: center;">
                     <button id="btnOpenEnzymeModal" class="btn-primary" style="flex: 1; text-align: left; background: #fff; color: #2c3e50; border-color: #bdc3c7; display: flex; justify-content: space-between;" onclick="openEnzymeModal(event)" data-tooltip="制限酵素データベースから検索・選択します">
                         <span id="selectedEnzymeLabel">-- 切らない (PCR産物そのまま) --</span>
-                        <span>🔍 選択</span>
+                        <span><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg> 選択</span>
                     </button>
                     <input type="hidden" id="enzymeSelect" value="NoCut">
                 </div>
@@ -241,7 +293,7 @@
             </div>
 
             <div class="settings-group">
-                <h4>4. 電気泳動設定 <button class="rationale-btn" onclick="toggleRationale('rat_gel')">?</button></h4>
+                <h4>4. 電気泳動設定 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_gel')">?</button></h4>
                 <div id="rat_gel" class="rationale-text">
                     <strong>【根拠：ゲル濃度と泳動時間】</strong><br>
                     ・<strong>アガロース濃度：</strong> 濃度が高いと網目が細かくなり、小さいDNA断片の分離が良くなります。低いと大きな断片を分けるのに適しています。<br>
@@ -270,7 +322,7 @@
             </div>
 
             <div class="btn-group">
-                <button onclick="runPipeline()" class="action-btn" data-tooltip="Virtual PCRと制限酵素処理のシミュレーションを実行します">🚀 解析</button>
+                <button onclick="runPipeline()" class="action-btn" data-tooltip="Virtual PCRと制限酵素処理のシミュレーションを実行します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 4l14 8-14 8V4z"/></svg> 解析</button>
             </div>
 
         </div>
@@ -347,7 +399,7 @@
             <label style="font-size: 11px; font-weight: bold; color: #2c3e50; cursor: pointer; display: flex; align-items: center; gap: 5px;">
                 <input type="checkbox" id="filterShortCut" onchange="filterEnzymes()"> ✂️ 4〜5塩基認識で絞り込む
             </label>
-            <button class="rationale-btn" onclick="toggleRationale('rat_rflp_strategy')">?</button>
+            <button class="rationale-btn" onclick="toggleRationale(event, 'rat_rflp_strategy')">?</button>
         </div>
     </div>
     <div id="enzymeListContent" style="padding: 0; font-size: 12px; color: #2c3e50; overflow-y: auto; flex: 1; display: flex; flex-direction: column; min-height: 0; -webkit-overflow-scrolling: touch; background: #fff;">
@@ -365,53 +417,78 @@
 </div>
 
 <script>
-    function showToast(message, type = 'success') {
+    // --- トースト通知（ガイドライン第5項⑤ 準拠 / alert() は使用禁止） ---
+    // type: ""(=成功/緑) | "error" | "warning" | "info"。'success' 等の未知値は既定の緑にフォールバックする
+    function showToast(msg, type = "") {
         const toast = document.getElementById('toast');
-        toast.innerText = message;
-        toast.className = 'toast show ' + type;
-        setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        if (!toast) return;
+        toast.innerText = msg;
+        let className = "show";
+        if (type === "error") className += " error";
+        else if (type === "warning") className += " warning";
+        else if (type === "info") className += " info";
+        toast.className = "";
+        void toast.offsetWidth; // リフローを挟み、連続表示でもアニメーションを再生させる
+        toast.className = className;
+        setTimeout(() => { toast.classList.remove("show"); }, 3000);
     }
 
-    // 確実に画面上に表示されるポップオーバー（解説パネル）の制御ロジック
-    function toggleRationale(id) {
+    // 教育的UIモジュール①: 根拠ポップオーバー（ガイドライン第5項① 準拠 / フリップ計算付き絶対配置）
+    // ※ #enzymeModal は同じ .rationale-text クラスを流用した別機能のため、特例処理をすべて温存する
+    function toggleRationale(event, id) {
+        event.stopPropagation();
         const el = document.getElementById(id);
         if (!el) return;
-        
-        const isBlock = (el.style.display === 'block');
-        
+
+        const isShown = el.classList.contains('show');
+
         // 開こうとしているポップオーバーと、enzymeModal以外のすべてのポップオーバーを閉じる
         document.querySelectorAll('.rationale-text').forEach(e => {
-            if(e.id !== 'enzymeModal' && e.id !== id) e.style.display = 'none';
+            if(e.id !== 'enzymeModal' && e.id !== id) e.classList.remove('show');
         });
-        
+
         // 酵素モーダル内の?ボタンの場合はモーダルを閉じない
         if (id !== 'rat_rflp_strategy') {
             document.getElementById('enzymeModal').style.display = 'none';
         }
-        
-        if (!isBlock) {
+
+        if (!isShown) {
             // body直下に移動してz-index等の影響をリセット
             if (el.parentNode !== document.body) document.body.appendChild(el);
-            
-            el.style.display = 'block';
-            let btn = window.event ? window.event.target.closest('.rationale-btn') : null;
-            
+            el.style.top = '0px'; el.style.left = '0px';
+            el.classList.add('show');
+
+            const btn = event.currentTarget;
+
             if (btn) {
+                // フリップ計算による絶対配置
+                const elHeight = el.offsetHeight;
+                const elWidth  = el.offsetWidth;
                 const rect = btn.getBoundingClientRect();
-                let topPos = rect.bottom + 8;
-                let leftPos = rect.left;
-                
-                const elWidth = 300; 
-                // もし画面右端にはみ出る場合は左に寄せる処理
-                if (leftPos + elWidth > window.innerWidth) {
-                    leftPos = window.innerWidth - elWidth - 10;
+
+                let topPos = rect.bottom + 10;
+                let arrowClass = 'arrow-top';
+                // 画面下端に見切れる場合は上側に配置
+                if (rect.bottom + elHeight + 20 > window.innerHeight) {
+                    topPos = rect.top - elHeight - 10;
+                    arrowClass = 'arrow-bottom';
                 }
-                
-                // 画面左端にはみ出る場合のフォールバック
-                if (leftPos < 10) leftPos = 10;
-                
                 el.style.top = topPos + 'px';
+
+                // 左右位置の調整（幅は固定値ではなく offsetWidth で動的算出）
+                const btnCenter = rect.left + rect.width / 2;
+                let leftPos = btnCenter - elWidth / 2;
+                if (leftPos + elWidth > window.innerWidth - 10) leftPos = window.innerWidth - elWidth - 10;
+                if (leftPos < 10) leftPos = 10;
                 el.style.left = leftPos + 'px';
+
+                // 吹き出しの尻尾をボタン中央へ追従させる（両端12pxは食い込ませない）
+                let arrowLeft = btnCenter - leftPos;
+                if (arrowLeft < 12) arrowLeft = 12;
+                if (arrowLeft > elWidth - 12) arrowLeft = elWidth - 12;
+                el.classList.remove('arrow-top', 'arrow-bottom');
+                el.classList.add(arrowClass);
+                el.style.setProperty('--arrow-left', arrowLeft + 'px');
             }
         }
     }
@@ -419,7 +496,11 @@
     // モーダルやポップオーバー外をクリック・スクロール時の処理
     document.addEventListener('mousedown', function(e) {
         if (!e.target.closest('.rationale-btn') && !e.target.closest('.rationale-text') && !e.target.closest('#btnOpenEnzymeModal')) {
-            document.querySelectorAll('.rationale-text').forEach(el => el.style.display = 'none');
+            // enzymeModal は display 制御、それ以外は .show クラス制御（挙動は従来と同一）
+            document.querySelectorAll('.rationale-text').forEach(el => {
+                if (el.id === 'enzymeModal') el.style.display = 'none';
+                else el.classList.remove('show');
+            });
         }
     });
     window.addEventListener('scroll', function(e) {
@@ -429,7 +510,7 @@
         }
         // スクロール時は酵素モーダル以外のポップオーバーをすべて閉じる
         document.querySelectorAll('.rationale-text').forEach(p => {
-            if (p.id !== 'enzymeModal') p.style.display = 'none';
+            if (p.id !== 'enzymeModal') p.classList.remove('show');
         });
     }, true);
 
@@ -700,7 +781,7 @@
         
         // 他のポップオーバーを閉じる
         document.querySelectorAll('.rationale-text').forEach(node => {
-            if(node.id !== 'enzymeModal') node.style.display = 'none';
+            if(node.id !== 'enzymeModal') node.classList.remove('show');
         });
         
         renderEnzymeList(); // 初期描画
@@ -980,7 +1061,7 @@
             let topPos = calcTopLogScale(size, agarose, runTime);
             if (topPos > maxBandTop) maxBandTop = topPos;
             
-            gelHtml += `<div class="band ladder-band" data-top="${topPos}" style="top: 25px;" title="Marker: ${size} bp"><span class="ladder-label">${size}</span></div>`;
+            gelHtml += `<div class="band ladder-band" data-top="${topPos}" style="top: 25px;" data-tooltip="Marker: ${size} bp"><span class="ladder-label">${size}</span></div>`;
         });
         gelHtml += `</div>`;
 
@@ -1008,15 +1089,15 @@
                 fragStr = `<span style="color:#7f8c8d;">-</span>`;
             }
 
-            tbodyHtml += `<tr><td style="font-weight:bold; color:#2c3e50;" title="${sample.name}">${formattedNameTable}</td><td>${pcrStatus}</td><td>${fragStr}</td></tr>`;
+            tbodyHtml += `<tr><td style="font-weight:bold; color:#2c3e50;" data-tooltip="${sample.name}">${formattedNameTable}</td><td>${pcrStatus}</td><td>${fragStr}</td></tr>`;
 
-            gelHtml += `<div class="lane"><div class="well"></div><div class="lane-title" title="${sample.name}">${formattedNameGel}</div>`;
+            gelHtml += `<div class="lane"><div class="well"></div><div class="lane-title" data-tooltip="${sample.name}">${formattedNameGel}</div>`;
             if (amplicon) {
                 fragments.forEach(size => {
                     let topPos = calcTopLogScale(size, agarose, runTime);
                     if (topPos > maxBandTop) maxBandTop = topPos;
                     
-                    gelHtml += `<div class="band" data-top="${topPos}" style="top: 25px;" title="${sample.name}&#10;サイズ: ${size} bp"></div>`;
+                    gelHtml += `<div class="band" data-top="${topPos}" style="top: 25px;" data-tooltip="${sample.name}<br>サイズ: ${size} bp"></div>`;
                 });
             }
             gelHtml += `</div>`;
