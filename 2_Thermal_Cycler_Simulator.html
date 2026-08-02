@@ -56,6 +56,7 @@
  /* 根拠表示用スタイル（ガイドライン第5項① 準拠：クリック駆動・position:fixed・フリップ計算） */
  .rationale-text { position: fixed; background: #fef9e7; border: 1px solid var(--warning); padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: max-content; max-width: min(320px, calc(100vw - 24px)); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; font-weight: normal; }
  .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
+ 
  /* 吹き出しの尻尾（.pop-arrow） */
  .rationale-text::after { content: ''; position: absolute; border-width: 6px; border-style: solid; left: var(--arrow-left, 50%); }
  .rationale-text.arrow-top::after { top: -12px; border-color: transparent transparent #fef9e7 transparent; }
@@ -212,39 +213,39 @@
 
  .footer { background: #1a252f; width: 100%; padding: 15px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; margin-top: auto; border-top: 1px solid #2c3e50; }
  
-@media screen and (max-width: 1000px) {
- .machine-scroll-wrapper { 
-flex-direction: column; 
-align-items: center; 
-width: 100%; 
-margin: 0; 
-padding: 20px 10px 40px 10px; 
-overflow-x: hidden; 
-box-sizing: border-box;
- }
- .assist-panel { order: 1; width: 100%; max-width: 500px; height: auto; max-height: 600px; margin-bottom: 20px;}
- .machine-body { 
- order: 2; 
- width: 100%; 
- min-width: 0; 
- max-width: 500px; 
- margin-bottom: 0; 
- overflow-x: auto; 
- -webkit-overflow-scrolling: touch; 
- display: block; 
- }
- .machine-vent {
- margin-bottom: 15px; 
- min-width: 460px;
- }
- #cycler-hardware-container {
- width: max-content;
- margin: 0 auto;
- }
+ @media screen and (max-width: 1000px) {
+   .machine-scroll-wrapper { 
+     flex-direction: column; 
+     align-items: center; 
+     width: 100%; 
+     margin: 0; 
+     padding: 20px 10px 40px 10px; 
+     overflow-x: hidden; 
+     box-sizing: border-box;
+   }
+   .assist-panel { order: 1; width: 100%; max-width: 500px; height: auto; max-height: 600px; margin-bottom: 20px;}
+   .machine-body { 
+     order: 2; 
+     width: 100%; 
+     min-width: 0; 
+     max-width: 500px; 
+     margin-bottom: 0; 
+     overflow-x: auto; 
+     -webkit-overflow-scrolling: touch; 
+     display: block; 
+   }
+   .machine-vent {
+     margin-bottom: 15px; 
+     min-width: 460px;
+   }
+   #cycler-hardware-container {
+     width: max-content;
+     margin: 0 auto;
+   }
  }
 
  @media screen and (max-width: 768px) {
- .main-content { padding: 10px; }
+   .main-content { padding: 10px; }
    .scenario-inputs { grid-template-columns: 1fr; gap: 12px; }
    
    .input-group[style*="grid-column"] { grid-column: span 1 !important; }
@@ -282,18 +283,18 @@ box-sizing: border-box;
  }
 
  @media screen and (max-width: 520px) {
- .machine-scroll-wrapper {
- align-items: flex-start; 
-padding: 20px 10px; 
-}
- .assist-panel { 
-width: 100%;
- margin: 0;
- }
- .machine-body {
- margin-left: 0;
- margin-right: 0;
- }
+   .machine-scroll-wrapper {
+     align-items: flex-start; 
+     padding: 20px 10px; 
+   }
+   .assist-panel { 
+     width: 100%;
+     margin: 0;
+   }
+   .machine-body {
+     margin-left: 0;
+     margin-right: 0;
+   }
  }
  </style>
 </head>
@@ -921,6 +922,7 @@ width: 100%;
  tooltip.style.opacity = '0'; tooltip.style.display = 'none';
  }, true);
  }
+
  // --- トースト通知（ガイドライン第5項⑤ 準拠 / alert() は使用禁止） ---
  // type: ""(=成功/緑) | "error" | "warning" | "info"。'success' 等の未知値は既定の緑にフォールバックする
  function showToast(msg, type = "") {
