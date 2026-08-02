@@ -212,22 +212,39 @@
 
  .footer { background: #1a252f; width: 100%; padding: 15px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; margin-top: auto; border-top: 1px solid #2c3e50; }
  
- @media screen and (max-width: 1000px) {
-   .machine-scroll-wrapper { 
-     flex-direction: column; 
-     align-items: center; 
-     width: 100%; 
-     margin: 0; 
-     padding: 20px 10px 40px 10px; 
-     overflow-x: hidden; 
-     box-sizing: border-box;
-   }
-   .assist-panel { order: 1; width: 100%; max-width: 500px; height: auto; max-height: 600px; margin-bottom: 20px;}
-   .machine-body { order: 2; width: 500px; min-width: 500px; margin-bottom: 0; max-width: 100%; overflow-x: auto;}
+@media screen and (max-width: 1000px) {
+ .machine-scroll-wrapper { 
+flex-direction: column; 
+align-items: center; 
+width: 100%; 
+margin: 0; 
+padding: 20px 10px 40px 10px; 
+overflow-x: hidden; 
+box-sizing: border-box;
+ }
+ .assist-panel { order: 1; width: 100%; max-width: 500px; height: auto; max-height: 600px; margin-bottom: 20px;}
+ .machine-body { 
+ order: 2; 
+ width: 100%; 
+ min-width: 0; 
+ max-width: 500px; 
+ margin-bottom: 0; 
+ overflow-x: auto; 
+ -webkit-overflow-scrolling: touch; 
+ display: block; 
+ }
+ .machine-vent {
+ margin-bottom: 15px; 
+ min-width: 460px;
+ }
+ #cycler-hardware-container {
+ width: max-content;
+ margin: 0 auto;
+ }
  }
 
  @media screen and (max-width: 768px) {
-   .main-content { padding: 10px; }
+ .main-content { padding: 10px; }
    .scenario-inputs { grid-template-columns: 1fr; gap: 12px; }
    
    .input-group[style*="grid-column"] { grid-column: span 1 !important; }
@@ -265,18 +282,18 @@
  }
 
  @media screen and (max-width: 520px) {
-   .machine-scroll-wrapper {
-     align-items: flex-start; 
-     padding: 20px 10px; 
-   }
-   .assist-panel { 
-     width: 100%;
-     margin: 0;
-   }
-   .machine-body {
-     margin-left: 0;
-     margin-right: 0;
-   }
+ .machine-scroll-wrapper {
+ align-items: flex-start; 
+padding: 20px 10px; 
+}
+ .assist-panel { 
+width: 100%;
+ margin: 0;
+ }
+ .machine-body {
+ margin-left: 0;
+ margin-right: 0;
+ }
  }
  </style>
 </head>
