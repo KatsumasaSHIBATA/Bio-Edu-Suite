@@ -28,6 +28,7 @@
  *, *::before, *::after { box-sizing: border-box; }
  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
  
+ /* 共通ヘッダー */
  /* 改行崩れ・テキスト折り返しの補正（ガイドライン第4項） */
  body, .card, p, div, .bench-tip, .step-up-card, .rationale-text, .assist-panel, .dynamic-hint { word-break: normal; overflow-wrap: anywhere; line-height: 1.6; }
  .label-title, .no-wrap { white-space: nowrap; }
@@ -41,7 +42,6 @@
  /* CSS Gridレイアウト (左: 380px, 右: 残り全て) */
  .main-content { width: 100%; max-width: 1400px; padding: 20px; display: grid; grid-template-columns: 380px 1fr; gap: 20px; align-items: start; flex: 1; }
  
- /* パネルのアクセントラインをテーマカラーに連動化 */
  .card { background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; min-width: 0; display: flex; flex-direction: column; border-top: 4px solid var(--phase-color); }
  .card-header { background: #34495e; color: white; padding: 12px 18px; font-size: 15px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
  .card-body { padding: 18px; flex: 1; display: flex; flex-direction: column; }
@@ -134,8 +134,10 @@
  
  /* ボタン類 */
  .btn-group { display: flex; gap: 10px; margin-top: 10px; }
- .action-btn { background-color: #e74c3c; color: white; border: none; padding: 12px 20px; font-size: 14px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; flex: 1; box-shadow: 0 3px 0 #c0392b;}
- .action-btn:hover { background-color: #c0392b; transform: translateY(2px); box-shadow: 0 1px 0 #c0392b;}
+ 
+ /* 解析ボタン: 赤(警告色)からPrimaryブルーへ刷新 */
+ .action-btn { background-color: #3498db; color: white; border: none; padding: 12px 20px; font-size: 15px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; flex: 1; box-shadow: 0 3px 0 #2980b9; display: flex; justify-content: center; align-items: center;}
+ .action-btn:hover { background-color: #2980b9; transform: translateY(2px); box-shadow: 0 1px 0 #2980b9;}
 
  /* 結果テーブル */
  table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
@@ -281,9 +283,8 @@
  <span id="mismatchVal" style="width: 35px; color: #e74c3c; text-align: right; font-weight: bold; font-size: 12px;">20%</span>
  </div>
  
- <!-- SVGアイコンへの完全移行と改行バグ対応 -->
  <div class="bench-tip" style="margin-top: 10px;">
- <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg> 現場のコツ（アニーリングと非特異的増幅）</strong><br>
+ <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg> 現場のコツ（アニーリング温度と非特異的増幅）</strong><br>
  シミュレーターの「許容率」は、実際のPCR機器（サーマルサイクラー）における<strong>「アニーリング温度」</strong>に相当します。温度を低く設定しすぎる（＝許容率を緩める）と、プライマーが目的以外の似た塩基配列にも結合してしまい、無数の不要なバンド（非特異的増幅）が生じてしまいます。スライダーを右に動かして、わざと失敗させてみましょう！
  </div>
  </div>
@@ -340,7 +341,12 @@
  </div>
 
  <div class="btn-group">
- <button onclick="runPipeline()" class="action-btn" data-tooltip="Virtual PCRと制限酵素処理のシミュレーションを実行します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 4l14 8-14 8V4z"/></svg> 解析</button>
+ <button onclick="runPipeline()" class="action-btn" data-tooltip="Virtual PCRと制限酵素処理のシミュレーションを実行します">
+ <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; width: 18px; height: 18px;" aria-hidden="true" focusable="false">
+ <polygon points="5 3 19 12 5 21 5 3"></polygon>
+ </svg>
+ 解析を実行
+ </button>
  </div>
 
  </div>
@@ -394,6 +400,7 @@
  <line x1="10" y1="14" x2="21" y2="3"></line>
  </svg>
  より高度な解析ツールへ
+ <span>(Step up to Professional Tools)</span>
  </h3>
  <p>
  Bio-Edu Suiteで「PCRとRFLPの原理」を学んだら、次は実際の研究現場で使われているプロフェッショナル向けソフトウェアに挑戦してみましょう。<br>
@@ -773,7 +780,7 @@
  let loaded = false;
  if (data.primerF) { document.getElementById('primerF').value = data.primerF; loaded = true; }
  if (data.primerR) { document.getElementById('primerR').value = data.primerR; loaded = true; }
- if (loaded) showToast("アプリ②のプライマー情報を同期しました", "success");
+ if (loaded) showToast("アプリ②のプライマー情報を同期しました", "info");
  }
  } catch(e) {}
  }
