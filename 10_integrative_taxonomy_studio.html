@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚖️ Integrative Taxonomy Studio | Bio-Edu Suite</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="bio_math_engine.js"></script>
+    <style>
+        :root {
+            --phase-color: #8e44ad;
+            --phase-color-hover: #9b59b6;
+            --phase-color-light: #9b59b6;
+            --phase-color-bg: #f4ecf7;
+            
+            --primary: #2c3e50;
+            --secondary: #34495e;
+            --bg-color: #f0f3f4;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border-color: #bdc3c7;
+            
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
+
+        /* 改行崩れ・テキスト折り返しの補正（ガイドライン第4項） */
+        body, .card, p, div, .bench-tip, .pro-invite, .rationale-text, .assist-panel { word-break: normal; overflow-wrap: anywhere; line-height: 1.6; }
+        .label-title, .no-wrap { white-space: nowrap; }
+
+        .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid var(--phase-color); display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 30; flex-shrink: 0; position: sticky; top: 0;}
+        .header { width: 100%; max-width: 1400px; padding: 12px 20px; color: white; display: flex; align-items: center; justify-content: space-between; position: relative; }
+        .header h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 1px; color: #fff; }
+        .header p { margin: 4px 0 0 0; font-size: 11px; color: var(--phase-color-light); font-weight: 600; letter-spacing: 0.5px; }
+        
+        .version-badge { background: var(--secondary); color: var(--phase-color); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid var(--phase-color); }
+
+        .main-content { width: 100%; max-width: 1400px; margin: 20px auto; padding: 0 20px; display: flex; flex-direction: column; gap: 20px; flex: 1; }
+        
+        /* Toggle Switch UI */
+        .view-toggle { display: flex; justify-content: center; gap: 15px; margin: 10px 0; }
+        .toggle-btn { padding: 10px 24px; border-radius: 30px; font-weight: bold; border: 2px solid var(--phase-color); background: white; color: var(--phase-color); cursor: pointer; transition: 0.3s; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .toggle-btn.active { background: var(--phase-color); color: white; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); }
+
+        /* Shared Card Styles */
+        .card { background: var(--card-bg); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; border-top: 4px solid var(--phase-color); width: 100%; }
+        .card-header { background: var(--secondary); color: white; padding: 12px 18px; font-size: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; border-radius: 4px 4px 0 0; }
+        .card-body { padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+
+        /* Educational UI Modules (3種の神器) */
+        .rationale-panel { background-color: var(--phase-color-bg); border-left: 4px solid var(--phase-color); padding: 15px; border-radius: 4px; font-size: 13px; color: #5b2c6f; line-height: 1.6; }
+        .rationale-panel strong { color: var(--phase-color); font-size: 14px;}
+        
+        .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px; border-radius: 0 4px 4px 0; font-size: 11px; color: var(--text-main); line-height: 1.5; margin-bottom: 10px; }
+        .bench-tip strong { color: #2980b9; font-size: 12px; display: block; margin-bottom: 4px;}
+        
+        .step-up-panel { background:#f4f6f7; border:1px solid #bdc3c7; padding:10px; border-radius:4px; font-size:11px; color:#2c3e50; line-height:1.5; margin-bottom:10px; }
+        .step-up-panel strong { color: #34495e; font-size: 12px; display: block; margin-bottom: 4px; }
+
+        /* Popover & Tooltip */
+        .rationale-btn { background: var(--phase-color); color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; flex-shrink: 0; }
+        .rationale-btn:hover { transform: scale(1.1); filter: brightness(1.2); }
+        
+        .rationale-text { position: fixed; background: #fef9e7; border: 1px solid #f39c12; padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: 320px; max-width: calc(100vw - 24px); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; }
+        .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
+        /* 吹き出しの尻尾（.pop-arrow）。JS が --arrow-left とフリップ方向クラスを設定する */
+        .rationale-text::after {
+            content: ''; position: absolute; width: 10px; height: 10px;
+            background: #fef9e7; transform: rotate(45deg);
+            left: var(--arrow-left, 50%); margin-left: -5px;
+        }
+        .rationale-text.arrow-top::after    { top: -6px; border-left: 1px solid #f39c12; border-top: 1px solid #f39c12; }
+        .rationale-text.arrow-bottom::after { bottom: -6px; border-right: 1px solid #f39c12; border-bottom: 1px solid #f39c12; }
+        /* ヘッダーアイコン（インラインSVG / stroke="currentColor" で見出し色に同期） */
+        .header-icon { width: 20px; height: 20px; vertical-align: -3px; margin-right: 6px; flex-shrink: 0; }
+        .btn-icon { width: 14px; height: 14px; vertical-align: -2px; flex-shrink: 0; }
+        .rationale-text strong { color: #d35400; display: block; margin-bottom: 4px; font-size: 12px; }
+
+        /* カスタムツールチップ（ガイドライン第5項④ 準拠 / ネイティブ title 属性は使用しない）
+           ※本文が最長52文字の日本語のため nowrap では狭い端末で画面外に溢れる。折り返し＋幅上限で堅牢化 */
+        .custom-tooltip { position: fixed; background: rgba(44, 62, 80, 0.95); color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 11px; pointer-events: none; z-index: 9999; opacity: 0; transition: opacity 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-weight: normal; line-height: 1.4; display: none; white-space: normal; width: max-content; max-width: min(320px, 90vw); text-align: center; box-sizing: border-box; }
+        .custom-tooltip::after { content: ''; position: absolute; border-width: 5px; border-style: solid; left: 50%; transform: translateX(-50%); }
+        .custom-tooltip.show-top::after { top: 100%; border-color: rgba(44, 62, 80, 0.95) transparent transparent transparent; }
+        .custom-tooltip.show-bottom::after { bottom: 100%; border-color: transparent transparent rgba(44, 62, 80, 0.95) transparent; }
+
+        /* Toast Notification */
+        /* トースト通知（ガイドライン第5項⑤ 準拠 / alert() は使用禁止） */
+        #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 12px 24px; border-radius: 30px; font-weight: bold; font-size: 13px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 100000; pointer-events: none; text-align: center; max-width: 90vw; box-sizing: border-box; word-break: auto-phrase; }
+        #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        #toast.error { background: var(--danger); }
+        #toast.warning { background: var(--warning); color: #7e5109; }
+        #toast.info { background: var(--phase-color); }
+
+        #view-static { display: flex; flex-direction: column; gap: 20px; width: 100%; }
+        .viewer-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; min-height: 500px; flex: 1;}
+        .viewer-pane { display: flex; flex-direction: column; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
+        .viewer-header { background: #fdfefe; color: var(--secondary); padding: 10px 15px; font-size: 13px; font-weight: bold; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .dot-grid-bg { background-image: radial-gradient(#bdc3c7 1px, transparent 1px); background-size: 20px 20px; background-color: #ffffff; }
+        
+        .node-circle { transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
+        .node-label { font-size: 11px; font-family: 'Segoe UI', Tahoma, sans-serif; pointer-events: none; transition: all 0.2s; font-weight: bold;}
+        .link { fill: none; stroke: #bdc3c7; stroke-width: 2px; transition: all 0.2s ease; }
+        .dimmed { opacity: 0.15 !important; filter: grayscale(100%); transition: all 0.2s; }
+        .highlighted circle { stroke: #2c3e50 !important; stroke-width: 3px !important; transform-box: fill-box; transform-origin: center;}
+        .highlighted text { font-weight: 900; fill: #c0392b; font-size: 14px; text-shadow: 2px 2px 0 #fff, -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff; z-index: 10; }
+        path.highlighted-link { stroke: var(--phase-color) !important; stroke-width: 4px !important; }
+
+        .detail-panel { height: 80px; background: #fff; border: 2px dashed var(--border-color); border-radius: 6px; display: flex; align-items: center; justify-content: center; padding: 15px; transition: 0.3s; margin-top: 5px;}
+        .detail-content { width: 100%; display: none; align-items: center; gap: 15px; font-size: 13px; }
+        
+        #view-dynamic { display: flex; gap: 20px; width: 100%; align-items: start; }
+        .left-pane { width: 420px; flex-shrink: 0; display: flex; flex-direction: column; gap: 20px; }
+        .right-pane { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        
+        .data-table-container { max-height: 250px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 4px; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        th { background: #eaeded; padding: 8px; text-align: left; position: sticky; top: 0; z-index: 5; border-bottom: 1px solid var(--border-color); }
+        td { padding: 8px; border-bottom: 1px solid #ecf0f1; }
+        tr:hover td { background: #f8f9f9; }
+
+        .btn-group { display: flex; flex-direction: column; gap: 12px; margin-top: 5px; }
+        .btn-morph { background-color: #e74c3c; color: white; box-shadow: 0 3px 0 #c0392b; font-size: 14px; padding: 10px; border:none; border-radius:4px; font-weight:bold; cursor:pointer; transition:0.2s;}
+        .btn-morph:hover:not(:disabled) { background-color: #c0392b; transform: translateY(2px); box-shadow: 0 1px 0 #c0392b;}
+        .btn-dna { background-color: #3498db; color: white; box-shadow: 0 3px 0 #2980b9; font-size: 14px; padding: 10px; border:none; border-radius:4px; font-weight:bold; cursor:pointer; transition:0.2s;}
+        .btn-dna:hover:not(:disabled) { background-color: #2980b9; transform: translateY(2px); box-shadow: 0 1px 0 #2980b9;}
+        .btn-morph:disabled, .btn-dna:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .visualization-card { display: flex; flex-direction: column; height: 600px; }
+        .canvas-container { flex: 1; background: #fff; position: relative; border-radius: 0 0 8px 8px; overflow: hidden; border: 1px solid #ecf0f1; border-top: none; }
+        canvas { display: block; width: 100%; height: 100%; }
+        .space-label { position: absolute; top: 20px; left: 20px; background: rgba(255,255,255,0.9); padding: 10px 15px; border-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); font-weight: bold; color: var(--text-main); z-index: 20; transition: 0.3s; border-left: 4px solid var(--phase-color); pointer-events: none; }
+        .space-label span { font-size: 11px; color: var(--text-muted); display: block; font-weight: normal; margin-top: 2px;}
+        .canvas-tooltip { position: absolute; background: rgba(44, 62, 80, 0.95); color: #fff; padding: 8px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 25; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+
+        .footer { width: 100%; background: #1a252f; padding: 12px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; margin-top: auto; border-top: 1px solid #2c3e50; flex-shrink: 0; }
+
+        @media screen and (max-width: 900px) {
+            .viewer-container { display: flex; flex-direction: column; }
+            #view-dynamic { flex-direction: column; }
+            .left-pane { width: 100%; }
+            .visualization-card { height: 500px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="toast"></div>
+<div id="custom-tooltip" class="custom-tooltip"></div>
+
+<!-- ヘッダー -->
+<div class="header-container">
+    <div class="header">
+        <div>
+            <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3v18M8 21h8M4 7h16"/><path d="M4 7l-2 5h4z"/><path d="M20 7l-2 5h4z"/></svg>Integrative Taxonomy Studio</h1>
+            <p>Bio-Edu Suite: Phase 4 / Unified Taxonomy Explorer & Evo-Morph Simulator</p>
+        </div>
+        <div class="version-badge">v6.0</div>
+    </div>
+</div>
+
+<div class="main-content">
+    
+    <!-- トグルスイッチ -->
+    <div class="view-toggle">
+        <button id="btn-static" class="toggle-btn active" onclick="switchMainView('static')"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3v18M8 21h8M4 7h16"/><path d="M4 7l-2 5h4z"/><path d="M20 7l-2 5h4z"/></svg> 比較ビュー(Static)</button>
+        <button id="btn-dynamic" class="toggle-btn" onclick="switchMainView('dynamic')"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="6" cy="7" r="1.5"/><circle cx="17" cy="6" r="1.5"/><circle cx="12" cy="13" r="1.5"/><circle cx="7" cy="18" r="1.5"/><circle cx="18" cy="17" r="1.5"/></svg> 遷移ビュー(Dynamic)</button>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- View: Static (比較ビュー)                  -->
+    <!-- ========================================== -->
+    <div id="view-static">
+        <div class="card" style="box-shadow: none;">
+            <div class="card-body" style="padding-bottom: 0;">
+                
+                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                    <span style="font-weight: bold; color: var(--primary);">分析概要 (Integrative Taxonomy)</span>
+                    <button class="rationale-btn" onclick="toggleRationale(event, 'rat_taxonomy')">?</button>
+                </div>
+                
+                <!-- 💡 根拠 -->
+                <div id="rat_taxonomy" class="rationale-text">
+                    <strong>形態による分類と、分子系統樹は一致するか？</strong>
+                    ダッシュボードに登録された生データ（チェーンコードと塩基配列）を読み込み、ブラウザ内でリアルタイムに「形態空間のPCA」と「分子系統樹」を構築しました。点や枝にマウスカーソルを合わせると、両者が連動します。<br>
+                    <span style="color:#d35400; font-weight:bold;">※ もし形態は全く違うのに、系統樹では同じ枝から分かれている生物がいれば、それは異なる環境へ「適応放散」した証拠かもしれません。</span>
+                </div>
+
+                <!-- 🧪 現場のコツ (Bench Tip) -->
+                <div class="bench-tip">
+                    <strong>🧪 現場のコツ (Bench Tip)</strong>
+                    PCA散布図を見るときは、必ず『寄与率（Variance）』を確認しよう。PC1とPC2の合計が低い場合、2次元平面では表現しきれていない重要な次元（見えない違い）が隠れている可能性がある。
+                </div>
+
+                <!-- 🔗 Step up to professional tools -->
+                <div class="step-up-panel">
+                    <strong>🔗 Step up to professional tools</strong>
+                    実際のDNAアラインメントや系統樹構築には、『MEGA』や『ClustalW』が使われる。また、このアプリのk-meansをさらに発展させ、確率的にグループ分けを行う『混合分布モデル（Mclust）』をR言語で実行してみよう。
+                </div>
+                
+                <div class="detail-panel" id="detail-panel">
+                    <span style="color: #7f8c8d; font-weight: bold;" id="detail-placeholder">グラフ上のプロットや系統樹の枝にカーソルを合わせると、詳細情報が表示されます。</span>
+                    <div class="detail-content" id="detail-content">
+                        <div style="background:var(--phase-color); color:white; padding:8px 12px; border-radius:4px; font-weight:bold; font-size:14px;" id="det-name">Sample Name</div>
+                        <div style="flex:1;">
+                            <span style="color:#7f8c8d; font-size:11px;">Sample ID:</span> <span id="det-id" style="font-family:monospace; font-weight:bold;">---</span><br>
+                            <span style="color:#7f8c8d; font-size:11px;">塩基配列長:</span> <span id="det-dna" style="font-weight:bold;">---</span> bp | 
+                            <span style="color:#7f8c8d; font-size:11px;">形態データ:</span> <span id="det-morph" style="font-weight:bold;">---</span> coords
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="viewer-container">
+            <!-- PCA ペイン -->
+            <div class="viewer-pane">
+                <div class="viewer-header">
+                    <span style="display:flex; align-items:center;">
+                        形態空間 (EFA ➔ PCA Scatter Plot)
+                        <button class="rationale-btn" onclick="toggleRationale(event, 'rat_efa')">?</button>
+                    </span>
+                    <span style="font-size:10px; color:#7f8c8d; font-weight:normal;">※形態の変異</span>
+                </div>
+                <div id="rat_efa" class="rationale-text">
+                    <strong>Kuhl & Giardina (1982) の楕円フーリエ解析</strong>
+                    入力されたチェーンコードから積分計算でフーリエ係数(a, b, c, d)を算出し、主成分分析(PCA)で次元縮約を行います。第1調和楕円に基づく数学的に厳密な標準化により、画像の回転や大きさに依存しない純粋な「形態の変異」だけを抽出してプロットしています。
+                </div>
+                <div id="pca-svg-container" class="dot-grid-bg" style="width: 100%; height: 100%; position: relative; min-height: 400px;">
+                    <div id="pca-loading" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-weight:bold; color:#bdc3c7;">計算待機中...</div>
+                </div>
+            </div>
+            
+            <!-- 分子系統樹 ペイン -->
+            <div class="viewer-pane">
+                <div class="viewer-header">
+                    <span style="display:flex; align-items:center;">
+                        分子系統樹 (k-mer UPGMA Dendrogram)
+                        <button class="rationale-btn" onclick="toggleRationale(event, 'rat_tree')">?</button>
+                    </span>
+                    <span style="font-size:10px; color:#7f8c8d; font-weight:normal;">※進化の歴史</span>
+                </div>
+                <div id="rat_tree" class="rationale-text">
+                    <strong>階層的クラスタリング (Lance-Williams公式)</strong>
+                    塩基配列から3塩基ごとの出現頻度（3-mer頻度ベクトル）を計算して距離行列を作成し、群平均法(UPGMA)による階層的クラスタリングを実行しています。枝の高さが実際の遺伝的距離を表しています。
+                </div>
+                <div id="tree-svg-container" style="width: 100%; height: 100%; position: relative; background: #fff; min-height: 400px;">
+                    <div id="tree-loading" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-weight:bold; color:#bdc3c7;">計算待機中...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- View: Dynamic (遷移ビュー)                 -->
+    <!-- ========================================== -->
+    <div id="view-dynamic" style="display:none;">
+        <div class="left-pane">
+            <div class="card">
+                <div class="card-header">
+                    <span>データソース (ダッシュボード連携)</span>
+                </div>
+                <div class="card-body">
+                    <p style="margin:0; font-size:12px; color:var(--text-muted);">
+                        ダッシュボードから「形態データ」と「塩基配列」の両方を持つサンプルを抽出し、解析しました。
+                    </p>
+                    <div class="data-table-container">
+                        <table id="dataTable">
+                            <thead>
+                                <tr>
+                                    <th>Sample ID</th>
+                                    <th style="text-align:center;">形態</th>
+                                    <th style="text-align:center;">塩基配列</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dataTableBody">
+                                <tr><td colspan="3" style="text-align:center; padding:15px; color:#95a5a6;">データ待機中...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span>空間遷移シミュレーター</span>
+                </div>
+                <div class="card-body">
+                    <div class="btn-group">
+                        <button class="btn-morph" id="btnMorphView" onclick="switchDynamicView('morph')" disabled>
+                            形態空間
+                        </button>
+                        <button class="btn-dna" id="btnDnaView" onclick="switchDynamicView('dna')" disabled>
+                            塩基配列空間
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-pane card visualization-card">
+            <div class="card-header">
+                <span>PCA散布図とK-meansクラスタリング</span>
+                <button class="rationale-btn" onclick="toggleRationale(event, 'popPca')">?</button>
+            </div>
+            
+            <div id="popPca" class="rationale-text">
+                <strong>PCAとK-meansクラスタリング</strong>
+                膨大なデータ（EFAによる標準化された形のパラメータや、塩基配列のk-mer頻度）から最も特徴的な分散を捉える軸を計算し2次元平面に圧縮します。さらに、K-means法により数学的な距離に基づいて集団を3つのクラスタに分類（色分け）し、目視では判別し難い隠蔽種や形態の変異を客観的に評価します。
+            </div>
+
+            <div class="canvas-container" id="canvasWrapper">
+                <div class="space-label" id="spaceLabel" style="display:none;">
+                    空間未定義
+                    <span>-</span>
+                </div>
+                <canvas id="simCanvas"></canvas>
+                <div id="canvasTooltip" class="canvas-tooltip"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="footer">&copy; 2026 Bio-Edu Suite | Advanced Bioinformatics & Wet-Lab Emulator</div>
+
+<script>
+    // ==========================================
+    // UI Utility Functions (Toast, Tooltip & Popover)
+    // ==========================================
+    // --- トースト通知（ガイドライン第5項⑤ 準拠 / alert() は使用禁止） ---
+    // type: ""(=成功/緑) | "error" | "warning" | "info"。'success' 等の未知値は既定の緑にフォールバックする
+    function showToast(msg, type = "") {
+        const toast = document.getElementById('toast');
+        if (!toast) return;
+        toast.innerText = msg;
+        let className = "show";
+        if (type === "error") className += " error";
+        else if (type === "warning") className += " warning";
+        else if (type === "info") className += " info";
+        toast.className = "";
+        void toast.offsetWidth; // リフローを挟み、連続表示でもアニメーションを再生させる
+        toast.className = className;
+        setTimeout(() => { toast.classList.remove("show"); }, 3000);
+    }
+
+    const tooltip = document.getElementById('custom-tooltip');
+    document.body.addEventListener('mouseover', (e) => {
+        const target = e.target.closest('[data-tooltip]');
+        if (target && !target.classList.contains('rationale-btn')) {
+            tooltip.innerHTML = target.getAttribute('data-tooltip');
+            tooltip.style.display = 'block';
+            
+            const rect = target.getBoundingClientRect();
+            const ttRect = tooltip.getBoundingClientRect();
+            let topPos = rect.top - ttRect.height - 8;
+            let leftPos = rect.left + (rect.width / 2);
+            let arrowClass = 'show-top'; 
+
+            if (topPos < 0) {
+                topPos = rect.bottom + 8;
+                arrowClass = 'show-bottom'; 
+            }
+            if (leftPos - ttRect.width / 2 < 5) leftPos = 5 + ttRect.width / 2;
+            else if (leftPos + ttRect.width / 2 > window.innerWidth - 5) leftPos = window.innerWidth - ttRect.width / 2 - 5;
+
+            tooltip.className = `custom-tooltip ${arrowClass}`;
+            tooltip.style.top = topPos + 'px';
+            tooltip.style.left = leftPos + 'px';
+            tooltip.style.transform = `translateX(-50%)`;
+            tooltip.style.opacity = '1';
+        }
+    });
+
+    document.body.addEventListener('mouseout', (e) => {
+        if (e.target.closest('[data-tooltip]')) {
+            tooltip.style.opacity = '0';
+            setTimeout(() => { if (tooltip.style.opacity === '0') tooltip.style.display = 'none'; }, 200);
+        }
+    });
+
+    function toggleRationale(event, id) {
+        event.stopPropagation();
+        const el = document.getElementById(id);
+        const btn = event.currentTarget;
+        const isShown = el.classList.contains('show');
+        
+        document.querySelectorAll('.rationale-text').forEach(e => e.classList.remove('show'));
+        
+        if(!isShown) {
+            if (el.parentNode !== document.body) document.body.appendChild(el);
+            el.style.top = '0px'; el.style.left = '0px'; el.classList.add('show');
+            
+            const elHeight = el.offsetHeight;
+            const elWidth  = el.offsetWidth;
+            const rect = btn.getBoundingClientRect();
+
+            let topPos = rect.bottom + 10;
+            let arrowClass = 'arrow-top';
+            // 画面下端に見切れる場合は上側に配置
+            if (rect.bottom + elHeight + 20 > window.innerHeight) {
+                topPos = rect.top - elHeight - 10;
+                arrowClass = 'arrow-bottom';
+            }
+            el.style.top = topPos + 'px';
+
+            // 左右位置の調整（幅は固定値ではなく offsetWidth で動的算出）
+            const btnCenter = rect.left + rect.width / 2;
+            let leftPos = btnCenter - elWidth / 2;
+            if (leftPos + elWidth > window.innerWidth - 10) leftPos = window.innerWidth - elWidth - 10;
+            if (leftPos < 10) leftPos = 10;
+            el.style.left = leftPos + 'px';
+
+            // 吹き出しの尻尾をボタン中央へ追従させる（両端12pxは食い込ませない）
+            let arrowLeft = btnCenter - leftPos;
+            if (arrowLeft < 12) arrowLeft = 12;
+            if (arrowLeft > elWidth - 12) arrowLeft = elWidth - 12;
+            el.classList.remove('arrow-top', 'arrow-bottom');
+            el.classList.add(arrowClass);
+            el.style.setProperty('--arrow-left', arrowLeft + 'px');
+        }
+    }
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.rationale-text') && !e.target.closest('.rationale-btn')) {
+            document.querySelectorAll('.rationale-text').forEach(el => el.classList.remove('show'));
+        }
+    });
+    
+    document.addEventListener('scroll', () => {
+        document.querySelectorAll('.rationale-text').forEach(el => el.classList.remove('show'));
+        if(tooltip) { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; }
+    }, true);
+
+
+    // ==========================================
+    // Global State
+    // ==========================================
+    let sharedValidSamples = [];
+    
+    // Static View State
+    let pcaData_Static = null; 
+    let treeData_Static = null;
+    const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+
+    // Dynamic View State
+    let parsedData = []; 
+    let morphResult_Dynamic = null; 
+    let dnaResult_Dynamic = null;   
+    let currentDynamicView = null; 
+    let drawState = { points: [], scaleX: null, scaleY: null };
+    const colorPalette = ['#e74c3c', '#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e67e22'];
+
+    window.onload = () => {
+        loadAndValidateSharedData();
+        initDynamicCanvasEvents();
+    };
+
+    function switchMainView(view) {
+        const staticBtn = document.getElementById('btn-static');
+        const dynamicBtn = document.getElementById('btn-dynamic');
+        const staticView = document.getElementById('view-static');
+        const dynamicView = document.getElementById('view-dynamic');
+
+        if(view === 'static') {
+            staticBtn.classList.add('active');
+            dynamicBtn.classList.remove('active');
+            staticView.style.display = 'flex';
+            dynamicView.style.display = 'none';
+            
+            if (sharedValidSamples.length >= 3 && pcaData_Static && treeData_Static) {
+                document.getElementById('pca-svg-container').innerHTML = '';
+                document.getElementById('tree-svg-container').innerHTML = '';
+                drawStaticPCA();
+                drawStaticTree();
+                setupStaticInteractivity();
+            }
+        } else {
+            dynamicBtn.classList.add('active');
+            staticBtn.classList.remove('active');
+            staticView.style.display = 'none';
+            dynamicView.style.display = 'flex';
+
+            if (morphResult_Dynamic || dnaResult_Dynamic) {
+                let pcaData = currentDynamicView === 'morph' ? morphResult_Dynamic.pca : dnaResult_Dynamic.pca;
+                let assignments = currentDynamicView === 'morph' ? morphResult_Dynamic.clusters : dnaResult_Dynamic.clusters;
+                if(pcaData) renderDynamicCanvas(pcaData, assignments);
+            }
+        }
+    }
+
+    function loadAndValidateSharedData() {
+        try {
+            const dataStr = localStorage.getItem('bio_edu_samples');
+            
+            if (!dataStr) {
+                handleDataError("データがありません。ダッシュボードからサンプルを選択してください。");
+                return;
+            }
+
+            let rawSamples = JSON.parse(dataStr);
+            if (!Array.isArray(rawSamples)) rawSamples = [rawSamples];
+
+            const now = new Date().getTime();
+            const savedTime = rawSamples.timestamp || (rawSamples[0] && rawSamples[0].timestamp) || 0;
+            const isStaleData = (now - savedTime) > (60 * 60 * 1000); 
+            const hasDemo = rawSamples.some(s => s.id && String(s.id).startsWith('DEMO'));
+
+            if (isStaleData && hasDemo) {
+                localStorage.removeItem('bio_edu_samples');
+                handleDataError("古いキャッシュデータを破棄しました。ダッシュボードから再度選択してください。", "warning");
+                return;
+            }
+
+            sharedValidSamples = rawSamples.filter(s => {
+                const m = (s.morphData || "").trim();
+                const d = (s.dnaData || s.dnaSequence || "").trim();
+                return (m.length > 5) && (d.length > 10 && /[ATGC]/i.test(d));
+            });
+
+            if (sharedValidSamples.length < 3) {
+                handleDataError('解析には形態と塩基配列の両方を持つサンプルが3つ以上必要です');
+            } else {
+                // Initialize both Views
+                runStaticIntegration();
+                prepareAndRunDynamicSimulation();
+                
+                if (hasDemo) {
+                    setTimeout(() => { showToast("デモデータを展開しました", "warning"); }, 500);
+                } else {
+                    setTimeout(() => { showToast('ダッシュボードから学習データを引き継ぎました', 'info'); }, 500);
+                }
+            }
+        } catch (e) {
+            console.error("Data Load Error:", e);
+            handleDataError('データの読み込みに失敗しました');
+        }
+    }
+
+    function handleDataError(msg, type="error") {
+        showToast(msg, type);
+        const pcaLoader = document.getElementById('pca-loading');
+        const treeLoader = document.getElementById('tree-loading');
+        if(pcaLoader) pcaLoader.innerText = "データ不足";
+        if(treeLoader) treeLoader.innerText = "データ不足";
+        document.getElementById('dataTableBody').innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--danger);">${msg}</td></tr>`;
+    }
+
+    // ==========================================
+    // Static View Logic
+    // ==========================================
+    function runStaticIntegration() {
+        const pcaLoader = document.getElementById('pca-loading');
+        const treeLoader = document.getElementById('tree-loading');
+        if(pcaLoader) pcaLoader.innerText = "PCA計算中...";
+        if(treeLoader) treeLoader.innerText = "系統樹構築中...";
+        
+        setTimeout(() => {
+            // A. 形態空間 (bio_math_engine.js)
+            pcaData_Static = computeMorphologyPCA(sharedValidSamples.map(s => s.morphData));
+            if(pcaLoader) pcaLoader.style.display = 'none';
+            drawStaticPCA();
+
+            // B. 分子系統樹 (bio_math_engine.js)
+            treeData_Static = computeGeneticTree(sharedValidSamples);
+            if(treeLoader) treeLoader.style.display = 'none';
+            drawStaticTree();
+
+            setupStaticInteractivity();
+        }, 100);
+    }
+
+    function drawStaticPCA() {
+        const container = document.getElementById('pca-svg-container');
+        if(!container || !pcaData_Static) return;
+        const width = container.clientWidth, height = container.clientHeight;
+        const margin = {top: 30, right: 30, bottom: 40, left: 40};
+        const iw = width - margin.left - margin.right, ih = height - margin.top - margin.bottom;
+
+        const svg = d3.select("#pca-svg-container").append("svg")
+            .attr("width", width).attr("height", height)
+            .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+        let xExt = d3.extent(pcaData_Static.scores, d => d[0]);
+        let yExt = d3.extent(pcaData_Static.scores, d => d[1]);
+        let xPad = (xExt[1] - xExt[0])*0.1 || 1, yPad = (yExt[1] - yExt[0])*0.1 || 1;
+
+        const xScale = d3.scaleLinear().domain([xExt[0]-xPad, xExt[1]+xPad]).range([0, iw]);
+        const yScale = d3.scaleLinear().domain([yExt[0]-yPad, yExt[1]+yPad]).range([ih, 0]);
+
+        svg.append("g").attr("transform", `translate(0,${ih/2})`).call(d3.axisBottom(xScale).ticks(5)).selectAll(".domain, line").attr("stroke", "#bdc3c7");
+        svg.append("g").attr("transform", `translate(${iw/2},0)`).call(d3.axisLeft(yScale).ticks(5)).selectAll(".domain, line").attr("stroke", "#bdc3c7");
+        svg.selectAll("text").attr("fill", "#7f8c8d");
+
+        const nodes = svg.selectAll(".node-pca")
+            .data(sharedValidSamples)
+            .enter().append("g")
+            .attr("class", "node node-pca")
+            .attr("id", d => `pca-${d.id}`)
+            .attr("transform", (d, i) => `translate(${xScale(pcaData_Static.scores[i][0])},${yScale(pcaData_Static.scores[i][1])})`);
+
+        nodes.append("circle")
+            .attr("class", "node-circle")
+            .attr("r", 7)
+            .attr("fill", (d, i) => colorScale(i))
+            .attr("stroke", "#fff").attr("stroke-width", 1.5)
+            .attr("data-id", d => d.id);
+            
+        nodes.append("text").attr("class", "node-label").attr("dy", "-12px").attr("text-anchor", "middle").attr("fill", "#34495e").text(d => d.name);
+    }
+
+    function drawStaticTree() {
+        const container = document.getElementById('tree-svg-container');
+        if(!container || !treeData_Static) return;
+        const width = container.clientWidth, height = container.clientHeight;
+        const margin = {top: 30, right: 120, bottom: 40, left: 40};
+
+        const svg = d3.select("#tree-svg-container").append("svg")
+            .attr("width", width).attr("height", height)
+            .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+        const root = d3.hierarchy(treeData_Static, d => {
+            let children = [];
+            if(d.left) children.push(d.left);
+            if(d.right) children.push(d.right);
+            return children.length > 0 ? children : null;
+        });
+
+        d3.cluster().size([height - margin.top - margin.bottom, width - margin.left - margin.right])(root);
+        const maxDist = root.data.height || 1;
+        const plotWidth = width - margin.left - margin.right;
+        root.each(d => { d.y = plotWidth * (1 - (d.data.height / maxDist)); });
+
+        svg.selectAll(".link")
+            .data(root.links()).enter().append("path").attr("class", "link")
+            .attr("id", d => d.target.children ? null : `link-${d.target.data.data.id}`)
+            .attr("d", d => `M${d.source.y},${d.source.x} V${d.target.x} H${d.target.y}`);
+
+        const node = svg.selectAll(".node-tree")
+            .data(root.descendants()).enter().append("g").attr("class", "node node-tree")
+            .attr("id", d => d.children ? null : `tree-${d.data.data.id}`)
+            .attr("transform", d => `translate(${d.y},${d.x})`);
+
+        node.filter(d => !d.children).append("circle")
+            .attr("class", "node-circle").attr("r", 6)
+            .attr("fill", d => colorScale(sharedValidSamples.findIndex(s => s.id === d.data.data.id)))
+            .attr("stroke", "#fff").attr("stroke-width", 1.5).attr("data-id", d => d.data.data.id);
+
+        node.filter(d => !d.children).append("text")
+            .attr("class", "node-label").attr("dy", "0.31em").attr("x", 12).attr("text-anchor", "start").attr("fill", "#34495e")
+            .text(d => d.data.data.name);
+            
+        const xAx = d3.scaleLinear().domain([maxDist, 0]).range([0, plotWidth]);
+        svg.append("g").attr("transform", `translate(0,${height - margin.top - margin.bottom + 15})`)
+           .call(d3.axisBottom(xAx).ticks(5)).selectAll(".domain, line").attr("stroke", "#bdc3c7");
+    }
+
+    function setupStaticInteractivity() {
+        const panel = document.getElementById('detail-panel');
+        const content = document.getElementById('detail-content');
+        const placeholder = document.getElementById('detail-placeholder');
+
+        d3.selectAll(".node-pca circle, .node-tree circle")
+            .on("mouseover", function(event) {
+                const id = d3.select(this).attr("data-id");
+                if(!id) return;
+                const sample = sharedValidSamples.find(s => s.id === id);
+                if(!sample) return;
+
+                d3.selectAll(".node-pca, .node-tree, .link").classed("dimmed", true);
+                d3.select(`#pca-${id}`).classed("dimmed", false).classed("highlighted", true);
+                d3.select(`#pca-${id} circle`).attr("r", 10);
+                
+                d3.select(`#tree-${id}`).classed("dimmed", false).classed("highlighted", true);
+                d3.select(`#tree-${id} circle`).attr("r", 9);
+                d3.select(`#tree-${id} text`).attr("x", 15);
+                
+                d3.select(`#link-${id}`).classed("dimmed", false).classed("highlighted-link", true);
+                
+                let curr = d3.select(`#tree-${id}`).datum();
+                while(curr && curr.parent) {
+                    d3.selectAll(".link").filter(l => l.target === curr).classed("dimmed", false).classed("highlighted-link", true);
+                    curr = curr.parent;
+                }
+
+                placeholder.style.display = 'none';
+                content.style.display = 'flex';
+                document.getElementById('det-name').innerText = sample.name;
+                document.getElementById('det-name').style.background = colorScale(sharedValidSamples.indexOf(sample));
+                document.getElementById('det-id').innerText = sample.id;
+                document.getElementById('det-dna').innerText = (sample.dnaData || sample.dnaSequence || "").length;
+                document.getElementById('det-morph').innerText = (sample.morphData || "").split(/\s+/).length;
+                panel.style.borderColor = colorScale(sharedValidSamples.indexOf(sample));
+                panel.style.background = '#fef9e7';
+            })
+            .on("mouseout", function() {
+                d3.selectAll(".node-pca, .node-tree, .link").classed("dimmed", false).classed("highlighted", false).classed("highlighted-link", false);
+                d3.selectAll(".node-pca circle").attr("r", 7);
+                d3.selectAll(".node-tree circle").attr("r", 6);
+                d3.selectAll(".node-tree text").attr("x", 12);
+                
+                placeholder.style.display = 'block';
+                content.style.display = 'none';
+                panel.style.borderColor = 'var(--border-color)';
+                panel.style.background = '#fff';
+            });
+    }
+
+    // ==========================================
+    // Dynamic View Logic
+    // ==========================================
+    function prepareAndRunDynamicSimulation() {
+        parsedData = [];
+        let html = "";
+        sharedValidSamples.forEach(s => {
+            parsedData.push({
+                id: s.id,
+                name: s.name || "Unknown",
+                morphRaw: (s.morphData || "").trim(),
+                dnaRaw: (s.dnaData || s.dnaSequence || "").trim()
+            });
+            html += `<tr><td>${s.name || s.id.substring(0,8)}</td><td style="text-align:center; color:var(--success); font-weight:bold;">[OK]</td><td style="text-align:center; color:var(--success); font-weight:bold;">[OK]</td></tr>`;
+        });
+        document.getElementById('dataTableBody').innerHTML = html;
+
+        setTimeout(() => {
+            try {
+                // bio_math_engine.js functions
+                morphResult_Dynamic = processMorphology(parsedData.map(d => d.morphRaw));
+                dnaResult_Dynamic = processGenetics(parsedData.map(d => d.dnaRaw));
+
+                document.getElementById('btnMorphView').disabled = false;
+                document.getElementById('btnDnaView').disabled = false;
+
+                switchDynamicView('morph');
+            } catch (e) {
+                console.error("Simulation Error:", e);
+                showToast("動的シミュレーションの計算に失敗しました", 'error');
+            }
+        }, 150);
+    }
+
+    function switchDynamicView(mode) {
+        currentDynamicView = mode;
+        const btnMorph = document.getElementById('btnMorphView');
+        const btnDna = document.getElementById('btnDnaView');
+        const label = document.getElementById('spaceLabel');
+
+        let pcaData = mode === 'morph' ? morphResult_Dynamic.pca : dnaResult_Dynamic.pca;
+        let assignments = mode === 'morph' ? morphResult_Dynamic.clusters : dnaResult_Dynamic.clusters;
+        let pcaColor = mode === 'morph' ? '#e74c3c' : '#3498db';
+        
+        if (mode === 'morph') {
+            btnMorph.style.opacity = '1'; btnMorph.style.transform = 'translateY(2px)'; btnMorph.style.boxShadow = 'none';
+            btnDna.style.opacity = '0.7'; btnDna.style.transform = 'none'; btnDna.style.boxShadow = '0 3px 0 #2980b9';
+            label.innerHTML = `形態空間 <br><span>PC1: ${pcaData.varianceRatios[0].toFixed(1)}% / PC2: ${pcaData.varianceRatios[1].toFixed(1)}%</span>`;
+            label.style.borderLeftColor = pcaColor;
+            label.style.display = 'block';
+        } else {
+            btnDna.style.opacity = '1'; btnDna.style.transform = 'translateY(2px)'; btnDna.style.boxShadow = 'none';
+            btnMorph.style.opacity = '0.7'; btnMorph.style.transform = 'none'; btnMorph.style.boxShadow = '0 3px 0 #c0392b';
+            label.innerHTML = `塩基配列空間 <br><span>PC1: ${pcaData.varianceRatios[0].toFixed(1)}% / PC2: ${pcaData.varianceRatios[1].toFixed(1)}%</span>`;
+            label.style.borderLeftColor = pcaColor;
+            label.style.display = 'block';
+        }
+
+        if (document.getElementById('view-dynamic').style.display !== 'none') {
+            renderDynamicCanvas(pcaData, assignments);
+        }
+    }
+
+    function renderDynamicCanvas(pcaData, assignments) {
+        const canvas = document.getElementById('simCanvas');
+        const wrapper = document.getElementById('canvasWrapper');
+        canvas.width = wrapper.clientWidth;
+        canvas.height = wrapper.clientHeight;
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width, height = canvas.height;
+        ctx.clearRect(0, 0, width, height);
+        
+        let padding = 60;
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        pcaData.scores.forEach(p => {
+            if(p[0] < minX) minX = p[0]; if(p[0] > maxX) maxX = p[0];
+            if(p[1] < minY) minY = p[1]; if(p[1] > maxY) maxY = p[1];
+        });
+        let rangeX = maxX - minX || 1; let rangeY = maxY - minY || 1;
+        minX -= rangeX*0.1; maxX += rangeX*0.1;
+        minY -= rangeY*0.1; maxY += rangeY*0.1;
+        
+        const scaleX = (val) => padding + (val - minX) / (maxX - minX) * (width - 2*padding);
+        const scaleY = (val) => height - padding - (val - minY) / (maxY - minY) * (height - 2*padding);
+        
+        drawState.scaleX = scaleX; drawState.scaleY = scaleY;
+        drawState.pcaData = pcaData; drawState.assignments = assignments;
+        drawState.points = [];
+
+        // 軸
+        ctx.strokeStyle = '#ecf0f1'; ctx.setLineDash([4, 4]); ctx.beginPath();
+        let zeroX = scaleX(0), zeroY = scaleY(0);
+        if(zeroY > padding && zeroY < height - padding) { ctx.moveTo(padding, zeroY); ctx.lineTo(width-padding, zeroY); }
+        if(zeroX > padding && zeroX < width - padding) { ctx.moveTo(zeroX, padding); ctx.lineTo(zeroX, height-padding); }
+        ctx.stroke(); ctx.setLineDash([]);
+        ctx.strokeStyle = '#bdc3c7'; ctx.beginPath();
+        ctx.moveTo(padding, height-padding); ctx.lineTo(width-padding, height-padding);
+        ctx.moveTo(padding, height-padding); ctx.lineTo(padding, padding);
+        ctx.stroke();
+
+        // KMeans 中心
+        let k_clusters = Math.min(3, pcaData.scores.length);
+        for(let c=0; c<k_clusters; c++) {
+            let sumX=0, sumY=0, count=0;
+            pcaData.scores.forEach((sc, i) => { if(assignments[i] === c) { sumX+=sc[0]; sumY+=sc[1]; count++; } });
+            if(count > 0) {
+                let cx = scaleX(sumX/count), cy = scaleY(sumY/count);
+                ctx.strokeStyle = colorPalette[c % colorPalette.length]; ctx.lineWidth = 3; ctx.beginPath();
+                ctx.moveTo(cx - 10, cy - 10); ctx.lineTo(cx + 10, cy + 10);
+                ctx.moveTo(cx + 10, cy - 10); ctx.lineTo(cx - 10, cy + 10);
+                ctx.stroke();
+            }
+        }
+
+        // ノード
+        pcaData.scores.forEach((p, i) => {
+            let cx = scaleX(p[0]), cy = scaleY(p[1]);
+            let color = colorPalette[assignments[i] % colorPalette.length] || '#333';
+            drawState.points.push({ x: cx, y: cy, idx: i, color: color });
+            
+            ctx.fillStyle = color; ctx.beginPath(); ctx.arc(cx, cy, 8, 0, Math.PI*2); ctx.fill();
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+        });
+    }
+
+    function drawEFAShape(ctx, coeffs, cx, cy, radius) {
+        let points = 100, shapeX = [], shapeY = [];
+        let minX=Infinity, maxX=-Infinity, minY=Infinity, maxY=-Infinity;
+        
+        for (let i = 0; i <= points; i++) {
+            let t = i / points, x = 0, y = 0;
+            for (let n = 1; n <= coeffs.a.length; n++) {
+                let theta = 2 * n * Math.PI * t;
+                x += coeffs.a[n-1] * Math.cos(theta) + coeffs.b[n-1] * Math.sin(theta);
+                y += coeffs.c[n-1] * Math.cos(theta) + coeffs.d[n-1] * Math.sin(theta);
+            }
+            shapeX.push(x); shapeY.push(y);
+            if(x < minX) minX = x; if(x > maxX) maxX = x;
+            if(y < minY) minY = y; if(y > maxY) maxY = y;
+        }
+
+        let rangeX = maxX - minX || 1, rangeY = maxY - minY || 1;
+        let scale = (radius * 1.5) / Math.max(rangeX, rangeY);
+
+        ctx.beginPath();
+        for (let i = 0; i <= points; i++) {
+            let px = cx + shapeX[i]*scale, py = cy + shapeY[i]*scale;
+            if(i===0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        ctx.closePath(); ctx.fillStyle = "rgba(255, 255, 255, 0.9)"; ctx.fill();
+        ctx.strokeStyle = "#2c3e50"; ctx.lineWidth = 1.5; ctx.stroke();
+    }
+
+    function initDynamicCanvasEvents() {
+        const canvas = document.getElementById('simCanvas');
+        const tooltip = document.getElementById('canvasTooltip');
+        let hoveredIdx = -1;
+
+        canvas.addEventListener('mousemove', (e) => {
+            if(!drawState.points.length || document.getElementById('view-dynamic').style.display === 'none') return;
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+            
+            let found = -1;
+            for(let i=0; i<drawState.points.length; i++) {
+                let pt = drawState.points[i];
+                let dist = Math.sqrt(Math.pow(mx - pt.x, 2) + Math.pow(my - pt.y, 2));
+                if(dist <= 15) { found = i; break; }
+            }
+
+            if(found !== hoveredIdx) {
+                hoveredIdx = found;
+                renderDynamicCanvas(drawState.pcaData, drawState.assignments);
+                const ctx = canvas.getContext('2d');
+                
+                if(found !== -1) {
+                    let pt = drawState.points[found];
+                    
+                    if (currentDynamicView === 'morph' && morphResult_Dynamic && morphResult_Dynamic.pca.coeffsList) {
+                        let coeffs = morphResult_Dynamic.pca.coeffsList[pt.idx];
+                        if(coeffs) drawEFAShape(ctx, coeffs, pt.x, pt.y - 30, 25);
+                    }
+
+                    ctx.fillStyle = pt.color; ctx.beginPath(); ctx.arc(pt.x, pt.y, 12, 0, Math.PI*2); ctx.fill();
+                    ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.stroke();
+                    
+                    let data = parsedData[pt.idx];
+                    let sc = drawState.pcaData.scores[pt.idx];
+                    let cluster = drawState.assignments[pt.idx];
+                    tooltip.innerHTML = `サンプル: ${data.name}<br><span style="font-size:10px;font-weight:normal;">PC1: ${sc[0].toFixed(2)} / PC2: ${sc[1].toFixed(2)}<br>クラスタ: ${cluster}</span>`;
+                    tooltip.style.left = (mx + 15) + 'px';
+                    tooltip.style.top = (my - 50) + 'px';
+                    tooltip.style.opacity = 1;
+                } else {
+                    tooltip.style.opacity = 0;
+                }
+            }
+        });
+
+        canvas.addEventListener('mouseout', () => {
+            if(hoveredIdx !== -1) {
+                hoveredIdx = -1;
+                renderDynamicCanvas(drawState.pcaData, drawState.assignments);
+                tooltip.style.opacity = 0;
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            if (document.getElementById('view-static').style.display !== 'none' && sharedValidSamples.length >= 3 && pcaData_Static && treeData_Static) {
+                document.getElementById('pca-svg-container').innerHTML = '';
+                document.getElementById('tree-svg-container').innerHTML = '';
+                drawStaticPCA();
+                drawStaticTree();
+                setupStaticInteractivity();
+            } else if (document.getElementById('view-dynamic').style.display !== 'none' && currentDynamicView) {
+                renderDynamicCanvas(drawState.pcaData, drawState.assignments);
+            }
+        });
+    }
+</script>
+</body>
+</html>
