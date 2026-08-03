@@ -158,7 +158,6 @@ input[type="file"] { display: none; }
  @media screen and (max-width: 900px) {
  .main-content { padding: 10px; }
  .toolbar-row { flex-direction: column; align-items: stretch; gap: 8px; }
- .btn, .primer-input { width: 100% !important; justify-content: center; }
  .header h1 { font-size: 16px; margin-right: 40px; }
  .version-badge { top: 10px; right: 10px; padding: 2px 6px; }
  .editor-toolbar { padding: 10px !important; }
@@ -214,6 +213,7 @@ input[type="file"] { display: none; }
 
  <div class="toolbar-row">
  <span class="step-label">2. 表示調整</span>
+ <div style="display: flex; gap: 12px; flex-wrap: wrap;">
  <div class="slider-group">
  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="18 8 22 12 18 16"></polyline><polyline points="6 8 2 12 6 16"></polyline><line x1="2" y1="12" x2="22" y2="12"></line></svg> 幅 (X): <input type="range" id="scaleX" min="0.5" max="3" step="0.1" value="1.0" oninput="redrawAll()" disabled>
  </div>
@@ -221,12 +221,13 @@ input[type="file"] { display: none; }
  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="8 18 12 22 16 18"></polyline><polyline points="8 6 12 2 16 6"></polyline><line x1="12" y1="2" x2="12" y2="22"></line></svg> 高さ (Y): <input type="range" id="scaleY" min="0.5" max="5" step="0.1" value="1.5" oninput="redrawAll()" disabled>
  </div>
  </div>
+ </div>
  
 <div class="toolbar-row">
  <span class="step-label">3. 保存 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_export')">?</button></span>
- <div style="display: flex; gap: 8px; flex-wrap: wrap; flex: 1; max-width: 450px;">
- <button class="btn btn-success" id="btnExport" onclick="exportFasta()" disabled style="flex: 1; min-width: 160px;" data-tooltip="波形データから抽出した塩基配列をFASTA形式でファイルとして保存します。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg> FASTA保存</button>
- <button class="btn" id="btnCopyFasta" onclick="copyFasta()" disabled style="flex: 1; min-width: 160px;" data-tooltip="波形データから抽出した塩基配列をFASTA形式でクリップボードにコピーします。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6v3H9zM8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg> FASTAコピー</button>
+ <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+ <button class="btn btn-success" id="btnExport" onclick="exportFasta()" disabled style="min-width: 140px; padding: 8px 16px;" data-tooltip="波形データから抽出した塩基配列をFASTA形式でファイルとして保存します。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg> FASTA保存</button>
+ <button class="btn" id="btnCopyFasta" onclick="copyFasta()" disabled style="min-width: 140px; padding: 8px 16px;" data-tooltip="波形データから抽出した塩基配列をFASTA形式でクリップボードにコピーします。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6v3H9zM8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg> FASTAコピー</button>
  </div>
  </div>
  </div>
@@ -238,14 +239,14 @@ input[type="file"] { display: none; }
 <div class="editor-toolbar" style="padding: 8px 15px; background: #ecf0f1; border-bottom: 1px solid #bdc3c7; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
  
  <div style="display: flex; flex-direction: column; gap: 5px;">
- <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
+ <div style="display: flex; gap: 4px; flex-wrap: nowrap; align-items: center; flex: 1; min-width: 200px;">
  <span style="font-size: 12px; font-weight: bold; color: #34495e; display: flex; align-items: center;">
  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" style="margin-right: 4px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> 塩基配列検索
  <button class="rationale-btn" onclick="toggleRationale(event, 'rat_motif')" style="margin-right: 5px;">?</button>
  </span>
- <input type="text" id="searchInput" class="primer-input" placeholder="塩基配列を入力" style="width: 140px; text-transform: uppercase;" onkeypress="if(event.keyCode===13) searchSequence()" disabled>
- <button class="btn btn-option" id="btnSearch" style="padding: 4px 8px; font-size: 11px;" onclick="searchSequence()" disabled data-tooltip="入力した塩基配列を検索し、強調表示します。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z"/></svg> 検索</button>
- <button class="btn" id="btnClearSearch" style="padding: 4px 8px; font-size: 11px;" onclick="clearSearch()" disabled data-tooltip="強調表示を解除します。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg> クリア</button>
+ <input type="text" id="searchInput" class="primer-input" placeholder="塩基配列を入力" style="flex: 1; min-width: 80px; text-transform: uppercase;" onkeypress="if(event.keyCode===13) searchSequence()" disabled>
+ <button class="btn btn-primary" id="btnSearch" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;" onclick="searchSequence()" disabled data-tooltip="入力した塩基配列を検索し、強調表示します。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z"/></svg> 検索</button>
+ <button class="btn" id="btnClearSearch" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;" onclick="clearSearch()" disabled data-tooltip="強調表示を解除します。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg> クリア</button>
  </div>
  <span style="font-size: 10px; color: #7f8c8d; line-height: 1.4;">※プライマー等を検索し、黄色くハイライトします。</span>
  </div>
@@ -253,7 +254,7 @@ input[type="file"] { display: none; }
  <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; border-left: 2px solid #bdc3c7; padding-left: 10px;">
  <span style="font-size: 12px; font-weight: bold; color: #c0392b; display: flex; align-items: center;">
  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" style="margin-right: 4px;"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg> 手動カット
- <button class="rationale-btn" onclick="toggleRationale(event, 'rat_step3')" style="background: #e74c3c; margin-right: 5px;">?</button>
+ <button class="rationale-btn" onclick="toggleRationale(event, 'rat_step3')" style="margin-right: 5px;">?</button>
  </span>
  </div>
  </div>
