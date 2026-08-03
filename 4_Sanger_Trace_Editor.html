@@ -1,831 +1,914 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sanger Trace Editor v2.4 | Bio-Edu Suite</title>
-    <style>
-        *, *::before, *::after { box-sizing: border-box; }
-        
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
-        
-        .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 30; flex-shrink: 0; }
-        .header { width: 100%; max-width: 1400px; padding: 10px 20px; color: white; display: flex; flex-direction: column; position: relative; }
-        .header h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 1px; color: #fff; }
-        .header p { margin: 4px 0 0 0; font-size: 11px; color: #1abc9c; font-weight: 600; letter-spacing: 0.5px; }
-        .version-badge { position: absolute; right: 20px; top: 15px; background: #34495e; color: #1abc9c; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid #1abc9c; }
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Sanger Trace Editor v2.4 | Bio-Edu Suite</title>
+ <style>
+ /* テーマカラー規格（ガイドライン第3項）。既存のハードコード値と同一値を定義し、
+ 見た目を変えずに変数経由でのカラー管理を可能にする */
+ :root {
+ /* 【共通】ベースカラー・ステータスカラー */
+ --primary: #2c3e50; /* ダークネイビー (主要テキスト) */
+ --secondary: #34495e; /* ネイビー (サブヘッダー) */
+ --bg-color: #f0f3f4; /* ライトグレー (背景) */
+ --card-bg: #ffffff; /* ホワイト (カード背景) */
+ --text-main: #2c3e50; /* メインテキスト */
+ --text-muted: #7f8c8d; /* 補足テキスト */
+ --border-color: #bdc3c7; /* ボーダー */
+ --success: #27ae60; /* 成功・保存 */
+ --danger: #e74c3c; /* エラー・警告 */
+ --warning: #f39c12; /* ヒント・教育ポップオーバー */
 
-        .main-content { width: 100%; max-width: 1400px; margin: 0 auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; flex: 1; }
-        
-        .card { background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; border-top: 4px solid #3498db; flex-shrink: 0; }
-        .card-header { background: #34495e; color: white; padding: 10px 18px; font-size: 14px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
-        .card-body { padding: 15px; display: flex; flex-direction: column; gap: 12px; }
+ /* 【アプリ個別】フェーズカラー (Phase 1 & 2) */
+ --phase-color: #1abc9c;
+ --phase-color-hover: #16a085;
+ }
 
-        .rationale-btn { background: #1abc9c; color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; }
-        .rationale-btn:hover { background: #16a085; transform: scale(1.1); }
-        .rationale-text {
-            display: none;
-            position: absolute !important;
-            z-index: 2000 !important;
-            width: 320px !important;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
-            border: 1px solid #f39c12 !important;
-            background-color: #fef9e7 !important;
-            color: #7e5109 !important;
-            margin: 0 !important;
-            padding: 10px !important;
-            border-radius: 4px !important;
-            line-height: 1.5 !important;
-            font-size: 11px !important;
-        }
-        .rationale-text strong { color: #7e5109 !important; display: block !important; margin-bottom: 6px !important; font-size: 13px !important; }
+ /* インラインSVGアイコン用 共通カラークラス */
+ .svg-hint { color: var(--warning); }
+ .svg-info { color: inherit; }
+ .svg-danger { color: var(--danger); }
 
-        .toolbar-row { display: flex; width: 100%; gap: 15px; align-items: center; flex-wrap: wrap; }
-        .step-label { font-size: 13px; font-weight: bold; color: #7f8c8d; min-width: 80px; display: flex; align-items: center; }
+ *, *::before, *::after { box-sizing: border-box; }
+ 
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
+ 
+/* 改行崩れ・テキスト折り返しの補正（ガイドライン第4項） */
+ body, .card, p, div, .bench-tip, .step-up-card, .rationale-text, .assist-panel { word-break: normal; overflow-wrap: anywhere; line-height: 1.6; }
+ .label-title, .no-wrap { white-space: nowrap; }
 
-        .btn { background: #fdfefe; border: 1px solid #bdc3c7; padding: 6px 12px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 5px; border-radius: 4px; font-weight: bold; transition: all 0.2s; color: #2c3e50; white-space: nowrap; }
-        .btn:hover:not(:disabled) { background: #eaf2f8; border-color: #3498db; color: #2980b9; }
-        .btn:disabled { color: #a0a0a0; cursor: not-allowed; background: #f4f6f6; border-color: #dcdde1; opacity: 0.7; }
-        
-        .btn-primary { background: #3498db; color: white; border-color: #2980b9; }
-        .btn-primary:hover:not(:disabled) { background: #2980b9; color: white; }
-        .btn-success { background: #27ae60; color: white; border-color: #1e8449; }
-        .btn-success:hover:not(:disabled) { background: #219150; color: white; }
-        .btn-option { background: #8e44ad; color: white; border-color: #732d91; font-size: 11px; padding: 6px 12px; }
-        .btn-option:hover:not(:disabled) { background: #732d91; color: white; box-shadow: 0 2px 5px rgba(142,68,173,0.4); }
-        
-        .primer-input { padding: 5px 8px; font-family: monospace; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 12px; width: 140px; background: #fafafa; }
-        .primer-input:focus { outline: none; border-color: #3498db; background: #fff; box-shadow: 0 0 3px rgba(52,152,219,0.3); }
+ .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 30; flex-shrink: 0; position: sticky; top: 0; }
+ .header { width: 100%; max-width: 1400px; padding: 12px 20px; color: white; display: flex; align-items: center; justify-content: space-between; position: relative; }
+ .header h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 1px; color: #fff; white-space: nowrap; }
+ .header p { margin: 4px 0 0 0; font-size: 11px; color: #1abc9c; font-weight: 600; letter-spacing: 0.5px; }
+ .version-badge { position: absolute; right: 20px; top: 15px; background: #34495e; color: #1abc9c; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid #1abc9c; }
 
-        .divider { width: 1px; height: 24px; background: #dcdde1; margin: 0 5px; }
-        .slider-group { display: flex; align-items: center; gap: 8px; background: #f8f9f9; padding: 6px 12px; border-radius: 4px; border: 1px solid #dcdde1; font-size: 11px; font-weight: bold; color: #34495e; }
-        input[type=range] { width: 80px; cursor: pointer; }
+ .main-content { width: 100%; max-width: 1400px; margin: 0 auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; flex: 1; }
+ 
+.card { background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; border-top: 4px solid var(--phase-color); flex-shrink: 0; }
+ .card-header { background: #34495e; color: white; padding: 10px 18px; font-size: 14px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+ .card-body { padding: 15px; display: flex; flex-direction: column; gap: 12px; }
 
-        .drop-zone { border: 2px dashed #bdc3c7; border-radius: 6px; padding: 12px 20px; text-align: center; background: #fafbfc; transition: 0.2s; cursor: pointer; flex: 1; max-width: 450px; display: flex; flex-direction: column; justify-content: center; }
-        .drop-zone:hover, .drop-zone.dragover { background: #e8f8f5; border-color: #1abc9c; }
-        .drop-zone p { margin: 0; font-size: 12px; color: #7f8c8d; font-weight: bold; pointer-events: none;}
+ .rationale-btn { background: #1abc9c; color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; }
+ .rationale-btn:hover { transform: scale(1.1); filter: brightness(1.2); }
+ /* 根拠表示用スタイル（ガイドライン第5項① 準拠：クリック駆動・position:fixed・フリップ計算） */
+ .rationale-text {
+ position: fixed !important;
+ z-index: 9000 !important;
+ width: 320px !important;
+ max-width: calc(100vw - 24px) !important;
+ box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
+ border: 1px solid #f39c12 !important;
+ background-color: #fef9e7 !important;
+ color: #7e5109 !important;
+ margin: 0 !important;
+ padding: 10px !important;
+ border-radius: 4px !important;
+ line-height: 1.5 !important;
+ font-size: 11px !important;
+ opacity: 0;
+ visibility: hidden;
+ transition: opacity 0.2s, transform 0.2s;
+ transform: translateY(-10px);
+ pointer-events: none;
+ box-sizing: border-box;
+ }
+ .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
+ /* 吹き出しの尻尾（.pop-arrow）。JS が --arrow-left とフリップ方向クラスを設定する */
+ .rationale-text::after {
+ content: ''; position: absolute; width: 10px; height: 10px;
+ background: #fef9e7; transform: rotate(45deg);
+ left: var(--arrow-left, 50%); margin-left: -5px;
+ }
+ .rationale-text.arrow-top::after { top: -6px; border-left: 1px solid #f39c12; border-top: 1px solid #f39c12; }
+ .rationale-text.arrow-bottom::after { bottom: -6px; border-right: 1px solid #f39c12; border-bottom: 1px solid #f39c12; }
+ /* ヘッダーアイコン（インラインSVG / stroke="currentColor" で見出し色に同期） */
+ .header-icon { width: 20px; height: 20px; vertical-align: -3px; margin-right: 6px; flex-shrink: 0; }
+ .btn-icon { width: 14px; height: 14px; vertical-align: -2px; flex-shrink: 0; }
+ .rationale-text strong { color: #d35400 !important; display: block !important; margin-bottom: 6px !important; font-size: 12px !important; }
 
-        .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 10px 15px; font-size: 11px; color: #2c3e50; line-height: 1.5; }
-        .bench-tip strong { color: #2980b9; font-size: 11px; }
-        .keyboard-hints { background: #fff8e1; padding: 6px 15px; font-size: 11px; color: #d35400; border: 1px solid #f5b041; border-radius: 4px; font-weight: 500; margin-bottom: 5px; display: flex; justify-content: space-between;}
-        .mega-invite { background: #fff8e1; border: 1px solid #f5b041; padding: 8px 15px; font-size: 11px; color: #7e5109; line-height: 1.5; display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;}
+ .toolbar-row { display: flex; width: 100%; gap: 15px; align-items: center; flex-wrap: wrap; }
+ .step-label { font-size: 13px; font-weight: bold; color: #7f8c8d; min-width: 80px; display: flex; align-items: center; }
 
-        .trace-card { flex: 1; display: flex; flex-direction: column; min-height: 500px; border-top-color: #9b59b6; }
-        .trace-outer-container { flex: 1; overflow-x: auto; overflow-y: hidden; background: white; position: relative; display: flex; flex-direction: column; min-height: 400px; user-select: none; }
-        .trace-inner { position: relative; min-height: 100%; min-width: 100%; flex: 1; display: flex; flex-direction: column;}
-        
-        .bases-layer { position: absolute; top: 0; left: 0; height: 30px; background: rgba(236, 240, 241, 0.8); border-bottom: 1px solid #bdc3c7; width: 100%; z-index: 10; display: flex; }
-        .canvas-layer { position: absolute; top: 30px; left: 0; height: calc(100% - 30px); background: #fff; z-index: 1; }
-        
-        .base-char { position: absolute; top: 0; width: 20px; text-align: center; margin-left: -10px; font-family: monospace; font-size: 14px; font-weight: 900; line-height: 30px; cursor: pointer; user-select: none; transition: 0.1s; border-radius: 2px;}
-        .base-char:hover { background: #bdc3c7; }
-        .base-char.selected { background: #8e44ad; color: #fff !important; box-shadow: 0 0 0 2px #732d91; z-index: 20;}
-        .base-char.deleted { text-decoration: line-through; color: #95a5a6 !important; opacity: 0.5; }
-        .base-char.edited { border-bottom: 3px solid #e74c3c; background: #fadbd8; }
-        .base-char.highlight { background: #f1c40f !important; color: #34495e !important; box-shadow: inset 0 0 0 2px #f39c12;}
+ .btn { background: #fdfefe; border: 1px solid #bdc3c7; padding: 6px 12px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 5px; border-radius: 4px; font-weight: bold; transition: all 0.2s; color: #2c3e50; white-space: nowrap; }
+ .btn:hover:not(:disabled) { background: #eaf2f8; border-color: #3498db; color: #2980b9; }
+ .btn:disabled { color: #a0a0a0; cursor: not-allowed; background: #f4f6f6; border-color: #dcdde1; opacity: 0.7; }
+ 
+.btn-primary { background: #3498db; color: white; border-color: #2980b9; }
+ .btn-primary:hover:not(:disabled) { background: #2980b9; color: white; }
+ .btn-success { background: #27ae60; color: white; border-color: #1e8449; }
+ .btn-success:hover:not(:disabled) { background: #219150; color: white; }
+ .btn-option { background: #8e44ad; color: white; border-color: #732d91; font-size: 11px; padding: 6px 12px; }
+ .btn-option:hover:not(:disabled) { background: #732d91; color: white; box-shadow: 0 2px 5px rgba(142,68,173,0.4); }
+ 
+.primer-input { padding: 5px 8px; font-family: monospace; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 12px; width: 140px; background: #fafafa; }
+ .primer-input:focus { outline: none; border-color: #3498db; background: #fff; box-shadow: 0 0 3px rgba(52,152,219,0.3); }
 
-        .c-A { color: #27ae60; } .c-T { color: #e74c3c; } .c-G { color: #2c3e50; } .c-C { color: #2980b9; }
-        .c-N, .c-Y, .c-R, .c-W, .c-S, .c-M, .c-K, .c-B, .c-V, .c-D, .c-H, .c-U { color: #8e44ad; }
+ .divider { width: 1px; height: 24px; background: #dcdde1; margin: 0 5px; }
+ .slider-group { display: flex; align-items: center; gap: 8px; background: #f8f9f9; padding: 6px 12px; border-radius: 4px; border: 1px solid #dcdde1; font-size: 11px; font-weight: bold; color: #34495e; }
+ input[type=range] { width: 80px; cursor: pointer; }
 
-        #toast { visibility: hidden; min-width: 250px; background-color: #27ae60; color: #fff; text-align: center; border-radius: 4px; padding: 12px 20px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); transform: translateX(-50%); opacity: 0; transition: opacity 0.3s, bottom 0.3s; }
-        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+ .drop-zone { border: 2px dashed #bdc3c7; border-radius: 6px; padding: 12px 20px; text-align: center; background: #fafbfc; transition: 0.2s; cursor: pointer; flex: 1; max-width: 450px; display: flex; flex-direction: column; justify-content: center; }
+ .drop-zone:hover, .drop-zone.dragover { background: #e8f8f5; border-color: #1abc9c; }
+ .drop-zone p { margin: 0; font-size: 12px; color: #7f8c8d; font-weight: bold; pointer-events: none;}
 
-        .status-bar { background: #2c3e50; color: white; padding: 8px 20px; font-size: 12px; display: flex; justify-content: space-between; font-weight: 600; letter-spacing: 0.5px; z-index: 30; flex-shrink: 0; margin-top: auto; position: sticky; bottom: 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.15);}
-        .footer { background: #1a252f; padding: 10px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; flex-shrink: 0; }
-        
-        input[type="file"] { display: none; }
+ .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px 15px; border-radius: 0 4px 4px 0; font-size: 12px; color: var(--text-main); line-height: 1.6; margin: 15px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+ .bench-tip strong { color: #2980b9; display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 13px; }
+ .keyboard-hints { background: #fff8e1; padding: 6px 15px; font-size: 11px; color: #d35400; border: 1px solid #f5b041; border-radius: 4px; font-weight: 500; margin-bottom: 5px; display: flex; justify-content: space-between;}
 
-        @media screen and (max-width: 900px) {
-            .main-content { padding: 10px; }
-            .toolbar-row { flex-direction: column; align-items: stretch; gap: 8px; }
-            .btn, .primer-input { width: 100% !important; justify-content: center; }
-            .header h1 { font-size: 16px; margin-right: 40px; }
-            .version-badge { top: 10px; right: 10px; padding: 2px 6px; }
-            .mega-invite { display: block; padding: 12px; line-height: 1.6; }
-            .mega-invite strong { display: block; margin-bottom: 6px; font-size: 12px; }
-            .editor-toolbar { padding: 10px !important; }
-            .editor-toolbar > div:nth-child(2) { border-left: none !important; padding-left: 0 !important; border-top: 1px dashed #bdc3c7; padding-top: 8px; margin-top: 5px; width: 100%; }
-        }
+ /* CSS実装: プロツールへの誘い (.step-up-card) */
+ .step-up-card { background: #f8f9fa; border: 1px solid #d1d5db; padding: 20px; border-radius: 8px; margin-top: 25px; color: #2c3e50; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+ .step-up-card h3 { color: #2c3e50; margin-top: 0; font-size: 15px; display: flex; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 12px; }
+ .step-up-card h3 svg { margin-right: 8px; width: 20px; height: 20px; flex-shrink: 0; }
+ .step-up-card h3 span { font-size: 0.8em; opacity: 0.7; margin-left: 8px; font-weight: normal; }
+ .step-up-card p { margin: 0; font-size: 13px; line-height: 1.6; }
+ .step-up-card p span { display: block; margin-top: 4px; }
+ .step-up-card p span:first-of-type { margin-top: 6px; }
 
-        .custom-tooltip {
-            position: fixed;
-            background: rgba(44, 62, 80, 0.95);
-            color: #fff;
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            pointer-events: none;
-            z-index: 9999;
-            opacity: 0;
-            transition: opacity 0.2s;
-            white-space: nowrap;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        .custom-tooltip::after {
-            content: '';
-            position: absolute;
-            border-width: 6px;
-            border-style: solid;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-        .custom-tooltip.show-top::after {
-            top: 100%;
-            border-color: rgba(44, 62, 80, 0.95) transparent transparent transparent;
-        }
-        .custom-tooltip.show-bottom::after {
-            bottom: 100%;
-            border-color: transparent transparent rgba(44, 62, 80, 0.95) transparent;
-        }
-    </style>
+ .trace-card { flex: 1; display: flex; flex-direction: column; min-height: 500px; }
+ .trace-outer-container { flex: 1; overflow-x: auto; overflow-y: hidden; background: white; position: relative; display: flex; flex-direction: column; min-height: 400px; user-select: none; }
+ .trace-inner { position: relative; min-height: 100%; min-width: 100%; flex: 1; display: flex; flex-direction: column;}
+ 
+.bases-layer { position: absolute; top: 0; left: 0; height: 30px; background: rgba(236, 240, 241, 0.8); border-bottom: 1px solid #bdc3c7; width: 100%; z-index: 10; display: flex; }
+ .canvas-layer { position: absolute; top: 30px; left: 0; height: calc(100% - 30px); background: #fff; z-index: 1; }
+ 
+.base-char { position: absolute; top: 0; width: 20px; text-align: center; margin-left: -10px; font-family: monospace; font-size: 14px; font-weight: 900; line-height: 30px; cursor: pointer; user-select: none; transition: 0.1s; border-radius: 2px;}
+ .base-char:hover { background: #bdc3c7; }
+ .base-char.selected { background: #8e44ad; color: #fff !important; box-shadow: 0 0 0 2px #732d91; z-index: 20;}
+ .base-char.deleted { text-decoration: line-through; color: #95a5a6 !important; opacity: 0.5; }
+ .base-char.edited { border-bottom: 3px solid #e74c3c; background: #fadbd8; }
+ .base-char.highlight { background: #f1c40f !important; color: #34495e !important; box-shadow: inset 0 0 0 2px #f39c12;}
+
+ .c-A { color: #27ae60; } .c-T { color: #e74c3c; } .c-G { color: #2c3e50; } .c-C { color: #2980b9; }
+ .c-N, .c-Y, .c-R, .c-W, .c-S, .c-M, .c-K, .c-B, .c-V, .c-D, .c-H, .c-U { color: #8e44ad; }
+
+ /* トースト通知（ガイドライン第5項⑤ 準拠 / alert() は使用禁止） */
+ #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 12px 24px; border-radius: 30px; font-weight: bold; font-size: 13px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 100000; pointer-events: none; text-align: center; max-width: 90vw; box-sizing: border-box; word-break: auto-phrase; }
+ #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+ #toast.error { background: var(--danger); }
+ #toast.warning { background: var(--warning); color: #7e5109; }
+ #toast.info { background: var(--phase-color); }
+
+ .status-bar { background: #2c3e50; color: white; padding: 8px 20px; font-size: 12px; display: flex; justify-content: space-between; font-weight: 600; letter-spacing: 0.5px; z-index: 30; flex-shrink: 0; margin-top: auto; position: sticky; bottom: 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.15);}
+ .footer { background: #1a252f; padding: 10px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; flex-shrink: 0; }
+ 
+input[type="file"] { display: none; }
+
+ @media screen and (max-width: 900px) {
+ .main-content { padding: 10px; }
+ .toolbar-row { flex-direction: column; align-items: stretch; gap: 8px; }
+ .btn, .primer-input { width: 100% !important; justify-content: center; }
+ .header h1 { font-size: 16px; margin-right: 40px; }
+ .version-badge { top: 10px; right: 10px; padding: 2px 6px; }
+ .editor-toolbar { padding: 10px !important; }
+ .editor-toolbar > div:nth-child(2) { border-left: none !important; padding-left: 0 !important; border-top: 1px dashed #bdc3c7; padding-top: 8px; margin-top: 5px; width: 100%; }
+ }
+
+ /* カスタムツールチップ（ガイドライン第5項④ 準拠 / ネイティブ title 属性は使用しない）
+ ※本文が最長52文字の日本語のため nowrap では狭い端末で画面外に溢れる。折り返し＋幅上限で堅牢化 */
+ .custom-tooltip { position: fixed; background: rgba(44, 62, 80, 0.95); color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 11px; pointer-events: none; z-index: 9999; opacity: 0; transition: opacity 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-weight: normal; line-height: 1.4; display: none; white-space: normal; width: max-content; max-width: min(320px, 90vw); text-align: center; box-sizing: border-box; }
+ .custom-tooltip::after { content: ''; position: absolute; border-width: 5px; border-style: solid; left: 50%; transform: translateX(-50%); }
+ .custom-tooltip.show-top::after { top: 100%; border-color: rgba(44, 62, 80, 0.95) transparent transparent transparent; }
+ .custom-tooltip.show-bottom::after { bottom: 100%; border-color: transparent transparent rgba(44, 62, 80, 0.95) transparent; }
+ </style>
 </head>
 <body>
 
 <div class="header-container">
-    <div class="header">
-        <h1>🧬 Sanger Trace Editor</h1>
-        <p>Bio-Edu Suite: AB1 Binary Parsing, Trace Visualization & Curation</p>
-        <div class="version-badge">v2.4</div>
-    </div>
+ <div class="header">
+ <div>
+ <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>Sanger Trace Editor</h1>
+ <p>Bio-Edu Suite: Phase 2 / AB1 Binary Parsing, Trace Visualization & Curation</p>
+ </div>
+ <div class="version-badge">v2.4</div>
+ </div>
 </div>
 
 <div class="main-content">
-    
-    <div class="card">
-        <div class="card-header">⚙️ in silico 生データ品質管理パネル</div>
-        <div class="card-body">
-            
-            <div id="rat_ab1" class="rationale-text popover-panel">
-                <strong>【根拠：なぜ波形（.ab1）を直接見るのか？】</strong>
-                シーケンサーはDNAの末端に付いた「4色の蛍光色素」をカメラで読み取り、波形(Trace)として出力します。機械が自動で波形から塩基（A,T,G,C）を判定しますが、波形が乱れた場所では間違えたり「N（判読不能）」と判定したりします。<br>
-                <strong>「機械を100%信用せず、生データ（波形）を人間の目で確認して手動で修正(キュレーション)する」</strong>のが、論文を書くための絶対条件です。
-            </div>
-            <div id="rat_export" class="rationale-text popover-panel">
-                <strong>【根拠：なぜFASTA形式で保存するのか？】</strong>
-                FASTA形式は、塩基配列をコンピューターで扱うための世界標準フォーマットです。多重整列（MSA）やBLAST検索など、次のステップの解析ソフト（DNA Alignment Studio等）へデータを引き継ぐために使用します。
-            </div>
+ 
+<div class="card">
+ <div class="card-header">in silico 生データ品質管理パネル</div>
+ <div class="card-body">
+ 
+<div id="rat_ab1" class="rationale-text popover-panel">
+ <strong>【根拠：なぜ波形（.ab1）を直接見るのか？】</strong>
+ シーケンサーはDNAの末端に付いた「4色の蛍光色素」をカメラで読み取り、波形(Trace)として出力します。機械が自動で波形から塩基（A,T,G,C）を判定しますが、波形が乱れた場所では間違えたり「N（判読不能）」と判定したりします。
+ 「機械を100%信用せず、生データ（波形）を人間の目で確認して手動で修正(キュレーション)する」のが、論文を書くための絶対条件です。
+ </div>
+ <div id="rat_export" class="rationale-text popover-panel">
+ <strong>【根拠：なぜFASTA形式で保存するのか？】</strong>
+ FASTA形式は、塩基配列をコンピューターで扱うための世界標準フォーマットです。多重整列（MSA）やBLAST検索など、次のステップの解析ソフト（DNA Alignment Studio等）へデータを引き継ぐために使用します。
+ </div>
 
-            <div class="toolbar-row" style="align-items: stretch;">
-                <span class="step-label" style="display: flex; align-items: center;">1. データ読込 <button class="rationale-btn" onclick="toggleRationale('rat_ab1')">?</button></span>
-                
-                <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px; flex: 1;">
-                    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" style="margin: 0; min-width: 180px; padding: 8px 15px;">
-                        <p>📂 ここをクリック、または 生データ(.ab1) をドラッグ＆ドロップ</p>
-                        <input type="file" id="fileInput" accept=".ab1" onchange="handleFileSelect(event)">
-                    </div>
-                </div>
-            </div>
+ <div class="toolbar-row" style="align-items: stretch;">
+ <span class="step-label" style="display: flex; align-items: center;">1. データ読込 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_ab1')">?</button></span>
+ 
+<div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px; flex: 1;">
+ <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" style="margin: 0; min-width: 180px; padding: 8px 15px;">
+ <p>ここをクリック、または 生データ(.ab1) をドラッグ＆ドロップ</p>
+ <input type="file" id="fileInput" accept=".ab1" onchange="handleFileSelect(event)">
+ </div>
+ </div>
+ </div>
 
-            <div class="toolbar-row">
-                <span class="step-label">2. 表示調整</span>
-                <div class="slider-group">
-                    ↔️ 幅 (X): <input type="range" id="scaleX" min="0.5" max="3" step="0.1" value="1.0" oninput="redrawAll()" disabled>
-                </div>
-                <div class="slider-group">
-                    ↕️ 高さ (Y): <input type="range" id="scaleY" min="0.5" max="5" step="0.1" value="1.5" oninput="redrawAll()" disabled>
-                </div>
-            </div>
-            
-            <div class="toolbar-row">
-                <span class="step-label">3. 保存 <button class="rationale-btn" onclick="toggleRationale('rat_export')">?</button></span>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap; flex: 1; max-width: 450px;">
-                    <button class="btn btn-success" id="btnExport" onclick="exportFasta()" disabled style="flex: 1; min-width: 160px;" data-tooltip="波形データから抽出した塩基配列をFASTA形式でファイルとして保存します。">💾 FASTA保存</button>
-                    <button class="btn" id="btnCopyFasta" onclick="copyFasta()" disabled style="flex: 1; min-width: 160px;" data-tooltip="波形データから抽出した塩基配列をFASTA形式でクリップボードにコピーします。">📋 FASTAコピー</button>
-                </div>
-            </div>
-        </div>
-    </div>
+ <div class="toolbar-row">
+ <span class="step-label">2. 表示調整</span>
+ <div class="slider-group">
+ <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="18 8 22 12 18 16"></polyline><polyline points="6 8 2 12 6 16"></polyline><line x1="2" y1="12" x2="22" y2="12"></line></svg> 幅 (X): <input type="range" id="scaleX" min="0.5" max="3" step="0.1" value="1.0" oninput="redrawAll()" disabled>
+ </div>
+ <div class="slider-group">
+ <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="8 18 12 22 16 18"></polyline><polyline points="8 6 12 2 16 6"></polyline><line x1="12" y1="2" x2="12" y2="22"></line></svg> 高さ (Y): <input type="range" id="scaleY" min="0.5" max="5" step="0.1" value="1.5" oninput="redrawAll()" disabled>
+ </div>
+ </div>
+ 
+<div class="toolbar-row">
+ <span class="step-label">3. 保存 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_export')">?</button></span>
+ <div style="display: flex; gap: 8px; flex-wrap: wrap; flex: 1; max-width: 450px;">
+ <button class="btn btn-success" id="btnExport" onclick="exportFasta()" disabled style="flex: 1; min-width: 160px;" data-tooltip="波形データから抽出した塩基配列をFASTA形式でファイルとして保存します。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg> FASTA保存</button>
+ <button class="btn" id="btnCopyFasta" onclick="copyFasta()" disabled style="flex: 1; min-width: 160px;" data-tooltip="波形データから抽出した塩基配列をFASTA形式でクリップボードにコピーします。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6v3H9zM8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg> FASTAコピー</button>
+ </div>
+ </div>
+ </div>
+ </div>
 
-    <div class="card trace-card">
-        <div class="card-header">📊 波形ビュアー</div>
-        
-        <div class="editor-toolbar" style="padding: 8px 15px; background: #ecf0f1; border-bottom: 1px solid #bdc3c7; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
-            
-            <div style="display: flex; flex-direction: column; gap: 5px;">
-                <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
-                    <span style="font-size: 12px; font-weight: bold; color: #34495e; display: flex; align-items: center;">
-                        🔍 塩基配列検索
-                        <button class="rationale-btn" onclick="toggleRationale('rat_motif')" style="margin-right: 5px;">?</button>
-                    </span>
-                    <input type="text" id="searchInput" class="primer-input" placeholder="塩基配列を入力" style="width: 140px; text-transform: uppercase;" onkeypress="if(event.keyCode===13) searchSequence()" disabled>
-                    <button class="btn btn-option" id="btnSearch" style="padding: 4px 8px; font-size: 11px;" onclick="searchSequence()" disabled data-tooltip="入力した塩基配列を検索し、強調表示します。">✨ 検索</button>
-                    <button class="btn" id="btnClearSearch" style="padding: 4px 8px; font-size: 11px;" onclick="clearSearch()" disabled data-tooltip="強調表示を解除します。">❌ クリア</button>
-                </div>
-                <span style="font-size: 10px; color: #7f8c8d; line-height: 1.4;">※プライマー等を検索し、黄色くハイライトします。</span>
-            </div>
+ <div class="card trace-card">
+ <div class="card-header">波形ビュアー</div>
+ 
+<div class="editor-toolbar" style="padding: 8px 15px; background: #ecf0f1; border-bottom: 1px solid #bdc3c7; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+ 
+ <div style="display: flex; flex-direction: column; gap: 5px;">
+ <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
+ <span style="font-size: 12px; font-weight: bold; color: #34495e; display: flex; align-items: center;">
+ <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" style="margin-right: 4px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> 塩基配列検索
+ <button class="rationale-btn" onclick="toggleRationale(event, 'rat_motif')" style="margin-right: 5px;">?</button>
+ </span>
+ <input type="text" id="searchInput" class="primer-input" placeholder="塩基配列を入力" style="width: 140px; text-transform: uppercase;" onkeypress="if(event.keyCode===13) searchSequence()" disabled>
+ <button class="btn btn-option" id="btnSearch" style="padding: 4px 8px; font-size: 11px;" onclick="searchSequence()" disabled data-tooltip="入力した塩基配列を検索し、強調表示します。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z"/></svg> 検索</button>
+ <button class="btn" id="btnClearSearch" style="padding: 4px 8px; font-size: 11px;" onclick="clearSearch()" disabled data-tooltip="強調表示を解除します。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg> クリア</button>
+ </div>
+ <span style="font-size: 10px; color: #7f8c8d; line-height: 1.4;">※プライマー等を検索し、黄色くハイライトします。</span>
+ </div>
 
-            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; border-left: 2px solid #bdc3c7; padding-left: 10px;">
-                <span style="font-size: 12px; font-weight: bold; color: #c0392b; display: flex; align-items: center;">
-                    ✂️ 手動カット
-                    <button class="rationale-btn" onclick="toggleRationale('rat_step3')" style="background: #e74c3c; margin-right: 5px;">?</button>
-                </span>
-            </div>
-        </div>
+ <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; border-left: 2px solid #bdc3c7; padding-left: 10px;">
+ <span style="font-size: 12px; font-weight: bold; color: #c0392b; display: flex; align-items: center;">
+ <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" style="margin-right: 4px;"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg> 手動カット
+ <button class="rationale-btn" onclick="toggleRationale(event, 'rat_step3')" style="background: #e74c3c; margin-right: 5px;">?</button>
+ </span>
+ </div>
+ </div>
 
-        <div id="rat_motif" class="rationale-text popover-panel">
-            <strong>【根拠：なぜ波形の中で塩基配列を検索するのか？】</strong>
-            自分がPCRで使った「プライマーの塩基配列」を検索して見つけ出し、そこから外側がノイズであることを特定するためです。また、開始コドンや制限酵素部位など、特定の塩基配列が正しく読まれているか確認する際にも役立ちます。
-        </div>
-        <div id="rat_step3" class="rationale-text popover-panel">
-            <strong>【根拠：なぜノイズをカットするのか？】</strong><br>
-            サンガーシーケンスの波形は、反応の特性上、最初と最後の数十〜数百塩基の波形が乱れます。このノイズ領域を残したままFASTAとして保存すると、後段のアライメント解析で致命的なエラーの原因となります。<br><br>
-            <strong>【キーボード操作・ショートカット】</strong><br>
-            ・一括削除: 波形（塩基）をドラッグで選択し [Backspace] または [Delete]<br>
-            ・ベースコール修正: 塩基を選択し [A][T][G][C][Y][R][N] 等を入力<br>
-            ・移動: 矢印キー [↑][↓][←][→]<br>
-            ・やり直し (Undo): [Ctrl]+[Z] または [Cmd]+[Z]<br>
-            ・やり直しの取り消し (Redo): [Ctrl]+[Y] または [Cmd]+[Shift]+[Z]<br><br>
-            <strong>【参考：あいまい塩基表（IUPACコード）】</strong><br>
-            波形が重なっている（ダブルピーク）部分の修正に使います。<br>
-            Y (CかT), R (AかG), N (不明), W (AかT), S (CかG), M (AかC), K (GかT)
-        </div>
+ <div id="rat_motif" class="rationale-text popover-panel">
+ <strong>【根拠：なぜ波形の中で塩基配列を検索するのか？】</strong>
+ 自分がPCRで使った「プライマーの塩基配列」を検索して見つけ出し、そこから外側がノイズであることを特定するためです。また、開始コドンや制限酵素部位など、特定の塩基配列が正しく読まれているか確認する際にも役立ちます。
+ </div>
+ <div id="rat_step3" class="rationale-text popover-panel">
+ <strong>【根拠：なぜノイズをカットするのか？】</strong>
+ サンガーシーケンスの波形は、反応の特性上、最初と最後の数十〜数百塩基の波形が乱れます。このノイズ領域を残したままFASTAとして保存すると、後段のアライメント解析で致命的なエラーの原因となります。<br><br>
+ <strong>【キーボード操作・ショートカット】</strong>
+ ・一括削除: 波形（塩基）をドラッグで選択し [Backspace] または [Delete]<br>
+ ・ベースコール修正: 塩基を選択し [A][T][G][C][Y][R][N] 等を入力<br>
+ ・移動: 矢印キー [↑][↓][←][→]<br>
+ ・やり直し (Undo): [Ctrl]+[Z] または [Cmd]+[Z]<br>
+ ・やり直しの取り消し (Redo): [Ctrl]+[Y] または [Cmd]+[Shift]+[Z]<br><br>
+ <strong>【参考：あいまい塩基表（IUPACコード）】</strong>
+ 波形が重なっている（ダブルピーク）部分の修正に使います。<br>
+ Y (CかT), R (AかG), N (不明), W (AかT), S (CかG), M (AかC), K (GかT)
+ </div>
 
-        <div class="bench-tip" style="border-radius: 0; border-left: none; border-bottom: 1px solid #dcdde1; border-top: none; margin: 0;">
-            <strong>💡 現場のコツ（解析ミッション）</strong><br>
-            波形の両端にある「山が重なってグチャグチャな部分（ノイズ）」をドラッグして削り落とし、中央の「ピークが独立してクッキリ立っている領域」だけを残して精度の高い塩基配列データを作成しましょう！
-        </div>
+ <div class="bench-tip" style="margin: 0;">
+ <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg> 現場のコツ（解析ミッション）</strong>
+ 波形の両端にある「山が重なってグチャグチャな部分（ノイズ）」をドラッグして削り落とし、中央の「ピークが独立してクッキリ立っている領域」だけを残して精度の高い塩基配列データを作成しましょう！
+ </div>
 
-        <div class="trace-outer-container" id="traceContainer">
-            <div class="trace-inner" id="traceInner">
-                <div class="bases-layer" id="basesLayer"></div>
-                <canvas class="canvas-layer" id="traceCanvas"></canvas>
-            </div>
-        </div>
-    </div>
+ <div class="trace-outer-container" id="traceContainer">
+ <div class="trace-inner" id="traceInner">
+ <div class="bases-layer" id="basesLayer"></div>
+ <canvas class="canvas-layer" id="traceCanvas"></canvas>
+ </div>
+ </div>
+ </div>
 
-    <div class="mega-invite">
-        <strong style="white-space: nowrap; flex-shrink: 0;">🔗 Step up to professional tools:</strong>
-        <span>本当の研究で大量の波形データを扱う場合や、より高度な波形解析（ヘテロ接合の自動判定など）を行うには、このアプリの簡易機能ではなく、<b>「SnapGene」</b>や<b>「FinchTV」</b>などのプロフェッショナル向け波形ビューアソフトウェアを使いましょう。</span>
-    </div>
+ <div class="step-up-card">
+ <h3>
+ <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+ <polyline points="15 3 21 3 21 9"></polyline>
+ <line x1="10" y1="14" x2="21" y2="3"></line>
+ </svg>
+ より高度な解析ツールへ
+ <span>(Step up to Professional Tools)</span>
+ </h3>
+ <p>
+ Bio-Edu Suiteで「波形データ(.ab1)のキュレーション」を学んだら、次は実際の研究現場で使われているプロフェッショナル向けソフトウェアに挑戦してみましょう。<br>
+ <span>・ <strong>SnapGene (Viewer) / FinchTV</strong> ： 大量の波形データの管理や、ヘテロ接合体の自動判定など、より高度な生データ解析が可能です。</span>
+ </p>
+ </div>
 </div>
 
 <div class="status-bar">
-    <span id="statusText">ステータス: .ab1 ファイルを読み込んでください。</span>
-    <span id="fileInfoText">File: - | Base: -</span>
+ <span id="statusText">ステータス: .ab1 ファイルを読み込んでください。</span>
+ <span id="fileInfoText">File: - | Base: -</span>
 </div>
 
 <div class="footer">
-    Bio-Edu Suite &copy; 2026 | Developed for Bioinformatics & Wet-Lab Education
+ Bio-Edu Suite &copy; 2026 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
 <div id="toast">メッセージ</div>
 <div id="globalTooltip" class="custom-tooltip"></div>
 
 <script>
-    function toggleRationale(id) {
-        const e = window.event;
-        const el = document.getElementById(id);
-        const isShowing = el.style.display === 'block';
-        
-        document.querySelectorAll('.rationale-text').forEach(e => e.style.display = 'none');
-        
-        if(!isShowing) {
-            el.style.display = 'block';
-            if (e && e.target) {
-                const btnRect = e.target.getBoundingClientRect();
-                let topPos = btnRect.bottom + window.scrollY + 8;
-                let leftPos = btnRect.left + window.scrollX - 150 + (btnRect.width / 2);
-                
-                if (leftPos < 10) leftPos = 10;
-                if (leftPos + 320 > window.innerWidth) leftPos = window.innerWidth - 330;
-                
-                el.style.top = topPos + 'px';
-                el.style.left = leftPos + 'px';
-            }
-        }
-        if(e) e.stopPropagation();
-    }
+ // --- 教育的UIモジュール①: 根拠ポップオーバー（ガイドライン第5項① 準拠 / フリップ計算付き絶対配置） ---
+ function toggleRationale(event, id) {
+ event.stopPropagation();
+ const el = document.getElementById(id);
+ const btn = event.currentTarget;
+ const isShown = el.classList.contains('show');
 
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('.rationale-text') && !e.target.closest('.rationale-btn')) {
-            document.querySelectorAll('.rationale-text').forEach(node => node.style.display = 'none');
-        }
-    });
+ // 他のポップオーバーを閉じる
+ document.querySelectorAll('.rationale-text').forEach(e => e.classList.remove('show'));
 
-    const dropZone = document.getElementById('dropZone');
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dropZone.addEventListener(eventName, preventDefaults, false);
-    });
-    function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
-    dropZone.addEventListener('dragover', () => dropZone.classList.add('dragover'));
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-    dropZone.addEventListener('drop', (e) => {
-        dropZone.classList.remove('dragover');
-        if(e.dataTransfer.files.length > 0) processFile(e.dataTransfer.files[0]);
-    });
+ if(!isShown) {
+ if (el.parentNode !== document.body) document.body.appendChild(el);
+ el.style.top = '0px'; el.style.left = '0px';
+ el.classList.add('show');
 
-    function handleFileSelect(e) {
-        if(e.target.files.length > 0) processFile(e.target.files[0]);
-    }
+ // フリップ計算による絶対配置
+ const elHeight = el.offsetHeight;
+ const elWidth = el.offsetWidth;
+ const rect = btn.getBoundingClientRect();
 
-    let ab1Data = null; 
-    let currentFileName = "";
-    let selectedBaseIndex = -1;
-    let dragStartIndex = -1;
-    let dragEndIndex = -1;
-    let isDraggingBases = false;
-    
-    // Undo/Redo State Management
-    let historyStack = [];
-    let historyIndex = -1;
+ let topPos = rect.bottom + 10;
+ let arrowClass = 'arrow-top';
+ // 画面下端に見切れる場合は上側に配置
+ if (rect.bottom + elHeight + 20 > window.innerHeight) {
+ topPos = rect.top - elHeight - 10;
+ arrowClass = 'arrow-bottom';
+ }
+ el.style.top = topPos + 'px';
 
-    const colorMap = {
-        'A': '#27ae60',
-        'T': '#e74c3c',
-        'G': '#2c3e50',
-        'C': '#2980b9' 
-    };
+ // 左右位置の調整（幅は固定値ではなく offsetWidth で動的算出）
+ const btnCenter = rect.left + rect.width / 2;
+ let leftPos = btnCenter - elWidth / 2;
+ if (leftPos + elWidth > window.innerWidth - 10) leftPos = window.innerWidth - elWidth - 10;
+ if (leftPos < 10) leftPos = 10;
+ el.style.left = leftPos + 'px';
 
-    function processFile(file) {
-        currentFileName = file.name;
-        document.getElementById('statusText').innerText = "ステータス: バイナリデータを解析中...";
-        
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                ab1Data = parseAB1(e.target.result);
-                document.getElementById('statusText').innerText = "ステータス: 準備完了。波形を確認して修正してください。";
-                document.getElementById('fileInfoText').innerText = `File: ${currentFileName}`;
-                
-                document.getElementById('scaleX').disabled = false;
-                document.getElementById('scaleY').disabled = false;
-                document.getElementById('searchInput').disabled = false;
-                document.getElementById('btnSearch').disabled = false;
-                document.getElementById('btnClearSearch').disabled = false;
-                document.getElementById('btnExport').disabled = false;
-                document.getElementById('btnCopyFasta').disabled = false;
+ // 吹き出しの尻尾をボタン中央へ追従させる（両端12pxは食い込ませない）
+ let arrowLeft = btnCenter - leftPos;
+ if (arrowLeft < 12) arrowLeft = 12;
+ if (arrowLeft > elWidth - 12) arrowLeft = elWidth - 12;
+ el.classList.remove('arrow-top', 'arrow-bottom');
+ el.classList.add(arrowClass);
+ el.style.setProperty('--arrow-left', arrowLeft + 'px');
+ }
+ }
 
-                selectedBaseIndex = -1;
-                dragStartIndex = -1;
-                dragEndIndex = -1;
-                
-                historyStack = [];
-                historyIndex = -1;
-                saveHistory();
+ // 外部クリック・スクロールで閉じる
+ document.addEventListener('click', (e) => {
+ if (!e.target.closest('.rationale-text') && !e.target.closest('.rationale-btn')) {
+ document.querySelectorAll('.rationale-text').forEach(el => el.classList.remove('show'));
+ }
+ });
 
-                redrawAll();
-            } catch (err) {
-                showToast("ファイルの解析に失敗しました。正しい .ab1 ファイルか確認してください。");
-                document.getElementById('statusText').innerText = "ステータス: ファイルの解析に失敗しました。";
-            }
-        };
-        reader.readAsArrayBuffer(file);
-    }
+ document.addEventListener('scroll', () => {
+ document.querySelectorAll('.rationale-text').forEach(el => el.classList.remove('show'));
+ }, true);
 
-    function saveHistory() {
-        if (!ab1Data) return;
-        const snapshot = JSON.stringify(ab1Data.bases);
-        if (historyIndex < historyStack.length - 1) {
-            historyStack = historyStack.slice(0, historyIndex + 1);
-        }
-        historyStack.push(snapshot);
-        historyIndex++;
-        if (historyStack.length > 50) {
-            historyStack.shift();
-            historyIndex--;
-        }
-    }
+ const dropZone = document.getElementById('dropZone');
+ ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+ dropZone.addEventListener(eventName, preventDefaults, false);
+ });
+ function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+ dropZone.addEventListener('dragover', () => dropZone.classList.add('dragover'));
+ dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+ dropZone.addEventListener('drop', (e) => {
+ dropZone.classList.remove('dragover');
+ if(e.dataTransfer.files.length > 0) processFile(e.dataTransfer.files[0]);
+ });
 
-    function undo() {
-        if (historyIndex > 0) {
-            historyIndex--;
-            ab1Data.bases = JSON.parse(historyStack[historyIndex]);
-            redrawAll();
-            showToast("操作を取り消しました");
-        }
-    }
+ function handleFileSelect(e) {
+ if(e.target.files.length > 0) processFile(e.target.files[0]);
+ }
 
-    function redo() {
-        if (historyIndex < historyStack.length - 1) {
-            historyIndex++;
-            ab1Data.bases = JSON.parse(historyStack[historyIndex]);
-            redrawAll();
-            showToast("操作をやり直しました");
-        }
-    }
+ let ab1Data = null; 
+let currentFileName = "";
+ let selectedBaseIndex = -1;
+ let dragStartIndex = -1;
+ let dragEndIndex = -1;
+ let isDraggingBases = false;
+ 
+// Undo/Redo State Management
+ let historyStack = [];
+ let historyIndex = -1;
 
-    function parseAB1(arrayBuffer) {
-        const dv = new DataView(arrayBuffer);
-        const magic = String.fromCharCode(dv.getUint8(0), dv.getUint8(1), dv.getUint8(2), dv.getUint8(3));
-        if (magic !== 'ABIF') throw new Error("Invalid format");
+ const colorMap = {
+ 'A': '#27ae60',
+ 'T': '#e74c3c',
+ 'G': '#2c3e50',
+ 'C': '#2980b9' 
+};
 
-        const dirOffset = dv.getInt32(26);
-        const dirCount = dv.getInt32(18);     
-        const dirEntrySize = dv.getInt16(16); 
+ function processFile(file) {
+ currentFileName = file.name;
+ document.getElementById('statusText').innerText = "ステータス: バイナリデータを解析中...";
+ 
+const reader = new FileReader();
+ reader.onload = function(e) {
+ try {
+ ab1Data = parseAB1(e.target.result);
+ document.getElementById('statusText').innerText = "ステータス: 準備完了。波形を確認して修正してください。";
+ document.getElementById('fileInfoText').innerText = `File: ${currentFileName}`;
+ 
+document.getElementById('scaleX').disabled = false;
+ document.getElementById('scaleY').disabled = false;
+ document.getElementById('searchInput').disabled = false;
+ document.getElementById('btnSearch').disabled = false;
+ document.getElementById('btnClearSearch').disabled = false;
+ document.getElementById('btnExport').disabled = false;
+ document.getElementById('btnCopyFasta').disabled = false;
 
-        let dirs = [];
-        for (let i = 0; i < dirCount; i++) {
-            let offset = dirOffset + i * dirEntrySize;
-            let name = String.fromCharCode(dv.getUint8(offset), dv.getUint8(offset+1), dv.getUint8(offset+2), dv.getUint8(offset+3));
-            let tag = dv.getInt32(offset+4);
-            let numElems = dv.getInt32(offset+12);
-            let dataSize = dv.getInt32(offset+16);
-            let dataOffset = dv.getInt32(offset+20);
-            if (dataSize <= 4) dataOffset = offset+20;
-            dirs.push({ name, tag, numElems, dataOffset });
-        }
+ selectedBaseIndex = -1;
+ dragStartIndex = -1;
+ dragEndIndex = -1;
+ 
+historyStack = [];
+ historyIndex = -1;
+ saveHistory();
 
-        const getDir = (n, t) => dirs.find(d => d.name === n && d.tag === t);
+ redrawAll();
+ } catch (err) {
+ showToast("ファイルの解析に失敗しました。正しい .ab1 ファイルか確認してください。");
+ document.getElementById('statusText').innerText = "ステータス: ファイルの解析に失敗しました。";
+ }
+ };
+ reader.readAsArrayBuffer(file);
+ }
 
-        let fwoDir = getDir('FWO_', 1);
-        let fwo = "GATC"; 
-        if (fwoDir) {
-            fwo = "";
-            for(let i=0; i<fwoDir.numElems; i++) fwo += String.fromCharCode(dv.getUint8(fwoDir.dataOffset + i));
-        }
+ function saveHistory() {
+ if (!ab1Data) return;
+ const snapshot = JSON.stringify(ab1Data.bases);
+ if (historyIndex < historyStack.length - 1) {
+ historyStack = historyStack.slice(0, historyIndex + 1);
+ }
+ historyStack.push(snapshot);
+ historyIndex++;
+ if (historyStack.length > 50) {
+ historyStack.shift();
+ historyIndex--;
+ }
+ }
 
-        let pbasDir = getDir('PBAS', 2) || getDir('PBAS', 1);
-        let plocDir = getDir('PLOC', 2) || getDir('PLOC', 1);
+ function undo() {
+ if (historyIndex > 0) {
+ historyIndex--;
+ ab1Data.bases = JSON.parse(historyStack[historyIndex]);
+ redrawAll();
+ showToast("操作を取り消しました");
+ }
+ }
 
-        if (!pbasDir || !plocDir) throw new Error("Base call data missing");
+ function redo() {
+ if (historyIndex < historyStack.length - 1) {
+ historyIndex++;
+ ab1Data.bases = JSON.parse(historyStack[historyIndex]);
+ redrawAll();
+ showToast("操作をやり直しました");
+ }
+ }
 
-        let bases = [];
-        for(let i=0; i<pbasDir.numElems; i++) {
-            bases.push({
-                char: String.fromCharCode(dv.getUint8(pbasDir.dataOffset + i)),
-                loc: dv.getInt16(plocDir.dataOffset + i * 2),
-                isDeleted: false,
-                isEdited: false,
-                isHighlight: false
-            });
-        }
+ function parseAB1(arrayBuffer) {
+ const dv = new DataView(arrayBuffer);
+ const magic = String.fromCharCode(dv.getUint8(0), dv.getUint8(1), dv.getUint8(2), dv.getUint8(3));
+ if (magic !== 'ABIF') throw new Error("Invalid format");
 
-        let traces = { A: [], T: [], G: [], C: [] };
-        let maxVal = 0;
-        let traceLength = 0;
+ const dirOffset = dv.getInt32(26);
+ const dirCount = dv.getInt32(18); 
+const dirEntrySize = dv.getInt16(16); 
 
-        for (let i = 0; i < 4; i++) {
-            let dataDir = getDir('DATA', 9 + i);
-            if (dataDir) {
-                let baseChar = fwo[i];
-                let arr = new Int16Array(dataDir.numElems);
-                for (let j = 0; j < dataDir.numElems; j++) {
-                    let val = dv.getInt16(dataDir.dataOffset + j * 2);
-                    arr[j] = val;
-                    if (val > maxVal) maxVal = val;
-                }
-                traces[baseChar] = arr;
-                if (dataDir.numElems > traceLength) traceLength = dataDir.numElems;
-            }
-        }
+let dirs = [];
+ for (let i = 0; i < dirCount; i++) {
+ let offset = dirOffset + i * dirEntrySize;
+ let name = String.fromCharCode(dv.getUint8(offset), dv.getUint8(offset+1), dv.getUint8(offset+2), dv.getUint8(offset+3));
+ let tag = dv.getInt32(offset+4);
+ let numElems = dv.getInt32(offset+12);
+ let dataSize = dv.getInt32(offset+16);
+ let dataOffset = dv.getInt32(offset+20);
+ if (dataSize <= 4) dataOffset = offset+20;
+ dirs.push({ name, tag, numElems, dataOffset });
+ }
 
-        return { bases, traces, maxVal, traceLength };
-    }
+ const getDir = (n, t) => dirs.find(d => d.name === n && d.tag === t);
 
-    function redrawAll() {
-        if(!ab1Data) return;
-        const scaleX = parseFloat(document.getElementById('scaleX').value);
-        const scaleY = parseFloat(document.getElementById('scaleY').value);
-        
-        const container = document.getElementById('traceInner');
-        const canvas = document.getElementById('traceCanvas');
-        const basesLayer = document.getElementById('basesLayer');
-        
-        const baseWidth = 2.0; 
-        const totalWidth = Math.min(ab1Data.traceLength * baseWidth * scaleX, 30000); 
-        
-        container.style.width = totalWidth + 'px';
-        canvas.width = totalWidth;
-        
-        let clientH = container.clientHeight;
-        if (clientH < 100) { clientH = 400; } 
-        canvas.height = clientH - 30; 
-        
-        drawTraces(canvas, scaleX, scaleY, baseWidth);
-        renderBases(basesLayer, scaleX, baseWidth);
-    }
+ let fwoDir = getDir('FWO_', 1);
+ let fwo = "GATC"; 
+if (fwoDir) {
+ fwo = "";
+ for(let i=0; i<fwoDir.numElems; i++) fwo += String.fromCharCode(dv.getUint8(fwoDir.dataOffset + i));
+ }
 
-    function drawTraces(canvas, scaleX, scaleY, baseWidth) {
-        const ctx = canvas.getContext('2d');
-        const w = canvas.width;
-        const h = canvas.height;
-        ctx.clearRect(0, 0, w, h);
+ let pbasDir = getDir('PBAS', 2) || getDir('PBAS', 1);
+ let plocDir = getDir('PLOC', 2) || getDir('PLOC', 1);
 
-        const dataLen = ab1Data.traceLength;
-        const drawScaleY = (h * 0.9) / (ab1Data.maxVal / scaleY);
+ if (!pbasDir || !plocDir) throw new Error("Base call data missing");
 
-        ctx.beginPath();
-        ctx.strokeStyle = 'rgba(189, 195, 199, 0.4)';
-        ctx.lineWidth = 1;
-        ab1Data.bases.forEach(b => {
-            if(!b.isDeleted) {
-                let x = b.loc * baseWidth * scaleX;
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, h);
-            }
-        });
-        ctx.stroke();
+ let bases = [];
+ for(let i=0; i<pbasDir.numElems; i++) {
+ bases.push({
+ char: String.fromCharCode(dv.getUint8(pbasDir.dataOffset + i)),
+ loc: dv.getInt16(plocDir.dataOffset + i * 2),
+ isDeleted: false,
+ isEdited: false,
+ isHighlight: false
+ });
+ }
 
-        let minSel = dragStartIndex !== -1 ? Math.min(dragStartIndex, dragEndIndex) : selectedBaseIndex;
-        let maxSel = dragStartIndex !== -1 ? Math.max(dragStartIndex, dragEndIndex) : selectedBaseIndex;
+ let traces = { A: [], T: [], G: [], C: [] };
+ let maxVal = 0;
+ let traceLength = 0;
 
-        if (minSel !== -1 && maxSel !== -1) {
-            let bMin = ab1Data.bases[minSel];
-            let bMax = ab1Data.bases[maxSel];
-            let startX = bMin.loc * baseWidth * scaleX;
-            let endX = bMax.loc * baseWidth * scaleX;
-            
-            ctx.fillStyle = 'rgba(142, 68, 173, 0.15)'; 
-            ctx.fillRect(startX - 10, 0, (endX - startX) + 20, h);
-            
-            ctx.beginPath();
-            ctx.moveTo(startX, 0);
-            ctx.lineTo(startX, h);
-            if (minSel !== maxSel) {
-                ctx.moveTo(endX, 0);
-                ctx.lineTo(endX, h);
-            }
-            ctx.strokeStyle = 'rgba(115, 45, 145, 0.9)';
-            ctx.setLineDash([5, 5]); 
-            ctx.lineWidth = 1.5;
-            ctx.stroke();
-            ctx.setLineDash([]); 
-        }
+ for (let i = 0; i < 4; i++) {
+ let dataDir = getDir('DATA', 9 + i);
+ if (dataDir) {
+ let baseChar = fwo[i];
+ let arr = new Int16Array(dataDir.numElems);
+ for (let j = 0; j < dataDir.numElems; j++) {
+ let val = dv.getInt16(dataDir.dataOffset + j * 2);
+ arr[j] = val;
+ if (val > maxVal) maxVal = val;
+ }
+ traces[baseChar] = arr;
+ if (dataDir.numElems > traceLength) traceLength = dataDir.numElems;
+ }
+ }
 
-        ['G', 'A', 'T', 'C'].forEach(base => {
-            const arr = ab1Data.traces[base];
-            if(!arr) return;
-            
-            ctx.beginPath();
-            ctx.strokeStyle = colorMap[base];
-            ctx.lineWidth = 1.5;
-            
-            for(let i=0; i<dataLen; i++) {
-                let x = i * baseWidth * scaleX;
-                if (x > w) break;
-                let y = h - (arr[i] * drawScaleY);
-                if(i===0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-            }
-            ctx.stroke();
-        });
-    }
+ return { bases, traces, maxVal, traceLength };
+ }
 
-    function renderBases(container, scaleX, baseWidth) {
-        container.innerHTML = '';
-        const frag = document.createDocumentFragment();
+ function redrawAll() {
+ if(!ab1Data) return;
+ const scaleX = parseFloat(document.getElementById('scaleX').value);
+ const scaleY = parseFloat(document.getElementById('scaleY').value);
+ 
+const container = document.getElementById('traceInner');
+ const canvas = document.getElementById('traceCanvas');
+ const basesLayer = document.getElementById('basesLayer');
+ 
+const baseWidth = 2.0; 
+const totalWidth = Math.min(ab1Data.traceLength * baseWidth * scaleX, 30000); 
 
-        ab1Data.bases.forEach((b, index) => {
-            let x = b.loc * baseWidth * scaleX;
-            let div = document.createElement('div');
-            
-            let classes = ['base-char', `c-${b.char}`];
-            if(b.isDeleted) classes.push('deleted');
-            if(b.isEdited) classes.push('edited');
-            if(b.isHighlight) classes.push('highlight');
-            
-            let isSelected = false;
-            if (dragStartIndex !== -1 && dragEndIndex !== -1) {
-                const min = Math.min(dragStartIndex, dragEndIndex);
-                const max = Math.max(dragStartIndex, dragEndIndex);
-                if (index >= min && index <= max) isSelected = true;
-            } else if (index === selectedBaseIndex) {
-                isSelected = true;
-            }
-            if(isSelected) classes.push('selected');
-            
-            div.className = classes.join(' ');
-            div.style.left = x + 'px';
-            div.innerText = b.char;
-            div.dataset.index = index;
+container.style.width = totalWidth + 'px';
+ canvas.width = totalWidth;
+ 
+let clientH = container.clientHeight;
+ if (clientH < 100) { clientH = 400; } 
+canvas.height = clientH - 30; 
 
-            div.onmousedown = (e) => {
-                isDraggingBases = true;
-                dragStartIndex = index;
-                dragEndIndex = index;
-                selectedBaseIndex = index;
-                redrawAll();
-            };
-            div.onmouseenter = (e) => {
-                if (isDraggingBases) {
-                    dragEndIndex = index;
-                    selectedBaseIndex = index;
-                    redrawAll();
-                }
-            };
+drawTraces(canvas, scaleX, scaleY, baseWidth);
+ renderBases(basesLayer, scaleX, baseWidth);
+ }
 
-            frag.appendChild(div);
-        });
+ function drawTraces(canvas, scaleX, scaleY, baseWidth) {
+ const ctx = canvas.getContext('2d');
+ const w = canvas.width;
+ const h = canvas.height;
+ ctx.clearRect(0, 0, w, h);
 
-        container.appendChild(frag);
-    }
+ const dataLen = ab1Data.traceLength;
+ const drawScaleY = (h * 0.9) / (ab1Data.maxVal / scaleY);
 
-    document.addEventListener('mouseup', () => {
-        isDraggingBases = false;
-    });
+ ctx.beginPath();
+ ctx.strokeStyle = 'rgba(189, 195, 199, 0.4)';
+ ctx.lineWidth = 1;
+ ab1Data.bases.forEach(b => {
+ if(!b.isDeleted) {
+ let x = b.loc * baseWidth * scaleX;
+ ctx.moveTo(x, 0);
+ ctx.lineTo(x, h);
+ }
+ });
+ ctx.stroke();
 
-    function selectBase(index) {
-        selectedBaseIndex = index;
-        dragStartIndex = -1;
-        dragEndIndex = -1;
-        redrawAll(); 
-        
-        const container = document.getElementById('traceContainer');
-        const scaleX = parseFloat(document.getElementById('scaleX').value);
-        const baseWidth = 2.0;
-        let x = ab1Data.bases[index].loc * baseWidth * scaleX;
-        
-        let minScroll = x - container.clientWidth / 2;
-        container.scrollTo({ left: Math.max(0, minScroll), behavior: 'smooth' });
-    }
+ let minSel = dragStartIndex !== -1 ? Math.min(dragStartIndex, dragEndIndex) : selectedBaseIndex;
+ let maxSel = dragStartIndex !== -1 ? Math.max(dragStartIndex, dragEndIndex) : selectedBaseIndex;
 
-    document.addEventListener('keydown', function(e) {
-        if(!ab1Data) return;
-        
-        // Handle Undo/Redo Shortcuts
-        const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-        const undoTrigger = isMac ? (e.metaKey && e.key === 'z') : (e.ctrlKey && e.key === 'z');
-        const redoTrigger = isMac ? (e.metaKey && e.shiftKey && e.key === 'Z') : (e.ctrlKey && e.key === 'y');
+ if (minSel !== -1 && maxSel !== -1) {
+ let bMin = ab1Data.bases[minSel];
+ let bMax = ab1Data.bases[maxSel];
+ let startX = bMin.loc * baseWidth * scaleX;
+ let endX = bMax.loc * baseWidth * scaleX;
+ 
+ctx.fillStyle = 'rgba(142, 68, 173, 0.15)'; 
+ctx.fillRect(startX - 10, 0, (endX - startX) + 20, h);
+ 
+ctx.beginPath();
+ ctx.moveTo(startX, 0);
+ ctx.lineTo(startX, h);
+ if (minSel !== maxSel) {
+ ctx.moveTo(endX, 0);
+ ctx.lineTo(endX, h);
+ }
+ ctx.strokeStyle = 'rgba(115, 45, 145, 0.9)';
+ ctx.setLineDash([5, 5]); 
+ctx.lineWidth = 1.5;
+ ctx.stroke();
+ ctx.setLineDash([]); 
+}
 
-        if (undoTrigger) {
-            e.preventDefault();
-            undo();
-            return;
-        }
-        if (redoTrigger) {
-            e.preventDefault();
-            redo();
-            return;
-        }
+ ['G', 'A', 'T', 'C'].forEach(base => {
+ const arr = ab1Data.traces[base];
+ if(!arr) return;
+ 
+ctx.beginPath();
+ ctx.strokeStyle = colorMap[base];
+ ctx.lineWidth = 1.5;
+ 
+for(let i=0; i<dataLen; i++) {
+ let x = i * baseWidth * scaleX;
+ if (x > w) break;
+ let y = h - (arr[i] * drawScaleY);
+ if(i===0) ctx.moveTo(x, y);
+ else ctx.lineTo(x, y);
+ }
+ ctx.stroke();
+ });
+ }
 
-        if(e.target.tagName === 'INPUT') return;
-        
-        let prevent = false;
-        let key = e.key.toUpperCase();
-        let changed = false;
+ function renderBases(container, scaleX, baseWidth) {
+ container.innerHTML = '';
+ const frag = document.createDocumentFragment();
 
-        if (e.key === 'Backspace' || e.key === 'Delete') {
-            if (dragStartIndex !== -1 && dragEndIndex !== -1) {
-                let min = Math.min(dragStartIndex, dragEndIndex);
-                let max = Math.max(dragStartIndex, dragEndIndex);
-                let allDeleted = true;
-                for(let i=min; i<=max; i++) { if (!ab1Data.bases[i].isDeleted) allDeleted = false; }
-                let target = !allDeleted;
-                for(let i=min; i<=max; i++) { ab1Data.bases[i].isDeleted = target; }
-                selectedBaseIndex = Math.min(ab1Data.bases.length - 1, max + 1);
-                dragStartIndex = -1; dragEndIndex = -1;
-                prevent = true; changed = true;
-            } else if (selectedBaseIndex !== -1) {
-                ab1Data.bases[selectedBaseIndex].isDeleted = !ab1Data.bases[selectedBaseIndex].isDeleted; 
-                if(ab1Data.bases[selectedBaseIndex].isDeleted) selectedBaseIndex = Math.min(ab1Data.bases.length - 1, selectedBaseIndex + 1);
-                prevent = true; changed = true;
-            }
-        } else if (selectedBaseIndex !== -1) {
-            if (e.key === 'ArrowRight') {
-                selectedBaseIndex = Math.min(ab1Data.bases.length - 1, selectedBaseIndex + 1);
-                dragStartIndex = -1; dragEndIndex = -1;
-                prevent = true;
-            } else if (e.key === 'ArrowLeft') {
-                selectedBaseIndex = Math.max(0, selectedBaseIndex - 1);
-                dragStartIndex = -1; dragEndIndex = -1;
-                prevent = true;
-            } else if (['A','T','G','C','U','N','Y','R','W','S','M','K','B','V','D','H'].includes(key)) {
-                let baseObj = ab1Data.bases[selectedBaseIndex];
-                baseObj.char = key;
-                baseObj.isEdited = true;
-                baseObj.isDeleted = false;
-                selectedBaseIndex = Math.min(ab1Data.bases.length - 1, selectedBaseIndex + 1);
-                dragStartIndex = -1; dragEndIndex = -1;
-                prevent = true; changed = true;
-            }
-        }
+ ab1Data.bases.forEach((b, index) => {
+ let x = b.loc * baseWidth * scaleX;
+ let div = document.createElement('div');
+ 
+let classes = ['base-char', `c-${b.char}`];
+ if(b.isDeleted) classes.push('deleted');
+ if(b.isEdited) classes.push('edited');
+ if(b.isHighlight) classes.push('highlight');
+ 
+let isSelected = false;
+ if (dragStartIndex !== -1 && dragEndIndex !== -1) {
+ const min = Math.min(dragStartIndex, dragEndIndex);
+ const max = Math.max(dragStartIndex, dragEndIndex);
+ if (index >= min && index <= max) isSelected = true;
+ } else if (index === selectedBaseIndex) {
+ isSelected = true;
+ }
+ if(isSelected) classes.push('selected');
+ 
+div.className = classes.join(' ');
+ div.style.left = x + 'px';
+ div.innerText = b.char;
+ div.dataset.index = index;
 
-        if (prevent) {
-            e.preventDefault();
-            if(changed) saveHistory();
-            redrawAll();
-        }
-    });
+ div.onmousedown = (e) => {
+ isDraggingBases = true;
+ dragStartIndex = index;
+ dragEndIndex = index;
+ selectedBaseIndex = index;
+ redrawAll();
+ };
+ div.onmouseenter = (e) => {
+ if (isDraggingBases) {
+ dragEndIndex = index;
+ selectedBaseIndex = index;
+ redrawAll();
+ }
+ };
 
-    function searchSequence() {
-        if(!ab1Data) return;
-        let query = document.getElementById('searchInput').value.toUpperCase().replace(/[^ATGCUNYRWSMKBVDH]/g, '');
-        if(!query) {
-            clearSearch();
-            return;
-        }
+ frag.appendChild(div);
+ });
 
-        ab1Data.bases.forEach(b => b.isHighlight = false);
-        let validIndices = [];
-        let seqStr = "";
-        ab1Data.bases.forEach((b, i) => {
-            if(!b.isDeleted) {
-                seqStr += b.char;
-                validIndices.push(i);
-            }
-        });
+ container.appendChild(frag);
+ }
 
-        let matchIdx = seqStr.indexOf(query);
-        if(matchIdx !== -1) {
-            for(let i=0; i<query.length; i++) {
-                ab1Data.bases[validIndices[matchIdx + i]].isHighlight = true;
-            }
-            selectBase(validIndices[matchIdx]);
-            document.getElementById('statusText').innerText = `ステータス: 配列を強調表示しました。`;
-        } else {
-            showToast("指定された塩基配列が見つかりません。");
-        }
-        redrawAll();
-    }
-    
-    function clearSearch() {
-        document.getElementById('searchInput').value = '';
-        if(!ab1Data) return;
-        ab1Data.bases.forEach(b => b.isHighlight = false);
-        redrawAll();
-        document.getElementById('statusText').innerText = "ステータス: 検索を解除しました。";
-    }
+ document.addEventListener('mouseup', () => {
+ isDraggingBases = false;
+ });
 
-    function showToast(msg) {
-        const toast = document.getElementById("toast");
-        toast.innerText = msg;
-        toast.className = "show";
-        setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
-    }
+ function selectBase(index) {
+ selectedBaseIndex = index;
+ dragStartIndex = -1;
+ dragEndIndex = -1;
+ redrawAll(); 
 
-    function copyToClipboardFallback(text, successMessage) {
-        if(text === "") { showToast("対象が選択されていません"); return; }
-        const textArea = document.createElement("textarea");
-        textArea.value = text;
-        textArea.style.position = "fixed";
-        textArea.style.left = "-9999px";
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        try {
-            document.execCommand('copy');
-            showToast(successMessage);
-        } catch (err) {
-            showToast("コピーに失敗しました。");
-        }
-        document.body.removeChild(textArea);
-    }
+const container = document.getElementById('traceContainer');
+ const scaleX = parseFloat(document.getElementById('scaleX').value);
+ const baseWidth = 2.0;
+ let x = ab1Data.bases[index].loc * baseWidth * scaleX;
+ 
+let minScroll = x - container.clientWidth / 2;
+ container.scrollTo({ left: Math.max(0, minScroll), behavior: 'smooth' });
+ }
 
-    function exportFasta() {
-        if(!ab1Data) return;
-        let seqStr = "";
-        ab1Data.bases.forEach(b => {
-            if(!b.isDeleted) seqStr += b.char;
-        });
-        
-        let headerName = currentFileName.replace(/\.ab1$/i, '_curated');
-        let output = `>${headerName}\n${seqStr}\n`;
-        
-        const a = document.createElement('a'); 
-        a.href = URL.createObjectURL(new Blob([output], { type: 'text/plain' }));
-        a.download = `${headerName}.fasta`; 
-        a.click();
-        
-        document.getElementById('statusText').innerText = `ステータス: ファイルを保存しました。`;
-        showToast("FASTAファイルを保存しました");
-    }
+ document.addEventListener('keydown', function(e) {
+ if(!ab1Data) return;
+ 
+// Handle Undo/Redo Shortcuts
+ const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+ const undoTrigger = isMac ? (e.metaKey && e.key === 'z') : (e.ctrlKey && e.key === 'z');
+ const redoTrigger = isMac ? (e.metaKey && e.shiftKey && e.key === 'Z') : (e.ctrlKey && e.key === 'y');
 
-    function copyFasta() {
-        if(!ab1Data) return;
-        let seqStr = "";
-        ab1Data.bases.forEach(b => {
-            if(!b.isDeleted) seqStr += b.char;
-        });
-        
-        let headerName = currentFileName.replace(/\.ab1$/i, '_curated');
-        let output = `>${headerName}\n${seqStr}\n`;
-        
-        document.getElementById('statusText').innerText = `ステータス: クリップボードにコピーしました。`;
-        copyToClipboardFallback(output.trim(), "FASTA形式でコピーしました");
-    }
+ if (undoTrigger) {
+ e.preventDefault();
+ undo();
+ return;
+ }
+ if (redoTrigger) {
+ e.preventDefault();
+ redo();
+ return;
+ }
 
-    const tooltip = document.getElementById('globalTooltip');
-    document.body.addEventListener('mouseover', (e) => {
-        const target = e.target.closest('[data-tooltip]');
-        if (target) {
-            const text = target.getAttribute('data-tooltip');
-            tooltip.innerHTML = text;
-            tooltip.style.display = 'block';
-            const rect = target.getBoundingClientRect();
-            const ttRect = tooltip.getBoundingClientRect();
-            let topPos = rect.top - ttRect.height - 8;
-            let leftPos = rect.left + (rect.width / 2);
-            let arrowClass = 'show-top'; 
-            if (topPos < 0) { topPos = rect.bottom + 8; arrowClass = 'show-bottom'; }
-            if (leftPos - ttRect.width / 2 < 5) leftPos = 5 + ttRect.width / 2;
-            else if (leftPos + ttRect.width / 2 > window.innerWidth - 5) leftPos = window.innerWidth - ttRect.width / 2 - 5;
-            tooltip.className = `custom-tooltip ${arrowClass}`;
-            tooltip.style.top = topPos + 'px';
-            tooltip.style.left = leftPos + 'px';
-            tooltip.style.transform = `translateX(-50%)`;
-            tooltip.style.opacity = '1';
-        }
-    });
+ if(e.target.tagName === 'INPUT') return;
+ 
+let prevent = false;
+ let key = e.key.toUpperCase();
+ let changed = false;
 
-    document.body.addEventListener('mouseout', (e) => {
-        const target = e.target.closest('[data-tooltip]');
-        if (target) {
-            tooltip.style.opacity = '0';
-            setTimeout(() => { if (tooltip.style.opacity === '0') tooltip.style.display = 'none'; }, 200);
-        }
-    });
+ if (e.key === 'Backspace' || e.key === 'Delete') {
+ if (dragStartIndex !== -1 && dragEndIndex !== -1) {
+ let min = Math.min(dragStartIndex, dragEndIndex);
+ let max = Math.max(dragStartIndex, dragEndIndex);
+ let allDeleted = true;
+ for(let i=min; i<=max; i++) { if (!ab1Data.bases[i].isDeleted) allDeleted = false; }
+ let target = !allDeleted;
+ for(let i=min; i<=max; i++) { ab1Data.bases[i].isDeleted = target; }
+ selectedBaseIndex = Math.min(ab1Data.bases.length - 1, max + 1);
+ dragStartIndex = -1; dragEndIndex = -1;
+ prevent = true; changed = true;
+ } else if (selectedBaseIndex !== -1) {
+ ab1Data.bases[selectedBaseIndex].isDeleted = !ab1Data.bases[selectedBaseIndex].isDeleted; 
+if(ab1Data.bases[selectedBaseIndex].isDeleted) selectedBaseIndex = Math.min(ab1Data.bases.length - 1, selectedBaseIndex + 1);
+ prevent = true; changed = true;
+ }
+ } else if (selectedBaseIndex !== -1) {
+ if (e.key === 'ArrowRight') {
+ selectedBaseIndex = Math.min(ab1Data.bases.length - 1, selectedBaseIndex + 1);
+ dragStartIndex = -1; dragEndIndex = -1;
+ prevent = true;
+ } else if (e.key === 'ArrowLeft') {
+ selectedBaseIndex = Math.max(0, selectedBaseIndex - 1);
+ dragStartIndex = -1; dragEndIndex = -1;
+ prevent = true;
+ } else if (['A','T','G','C','U','N','Y','R','W','S','M','K','B','V','D','H'].includes(key)) {
+ let baseObj = ab1Data.bases[selectedBaseIndex];
+ baseObj.char = key;
+ baseObj.isEdited = true;
+ baseObj.isDeleted = false;
+ selectedBaseIndex = Math.min(ab1Data.bases.length - 1, selectedBaseIndex + 1);
+ dragStartIndex = -1; dragEndIndex = -1;
+ prevent = true; changed = true;
+ }
+ }
 
-    document.addEventListener('scroll', () => { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; }, true);
+ if (prevent) {
+ e.preventDefault();
+ if(changed) saveHistory();
+ redrawAll();
+ }
+ });
+
+ function searchSequence() {
+ if(!ab1Data) return;
+ let query = document.getElementById('searchInput').value.toUpperCase().replace(/[^ATGCUNYRWSMKBVDH]/g, '');
+ if(!query) {
+ clearSearch();
+ return;
+ }
+
+ ab1Data.bases.forEach(b => b.isHighlight = false);
+ let validIndices = [];
+ let seqStr = "";
+ ab1Data.bases.forEach((b, i) => {
+ if(!b.isDeleted) {
+ seqStr += b.char;
+ validIndices.push(i);
+ }
+ });
+
+ let matchIdx = seqStr.indexOf(query);
+ if(matchIdx !== -1) {
+ for(let i=0; i<query.length; i++) {
+ ab1Data.bases[validIndices[matchIdx + i]].isHighlight = true;
+ }
+ selectBase(validIndices[matchIdx]);
+ document.getElementById('statusText').innerText = `ステータス: 配列を強調表示しました。`;
+ } else {
+ showToast("指定された塩基配列が見つかりません。");
+ }
+ redrawAll();
+ }
+ 
+function clearSearch() {
+ document.getElementById('searchInput').value = '';
+ if(!ab1Data) return;
+ ab1Data.bases.forEach(b => b.isHighlight = false);
+ redrawAll();
+ document.getElementById('statusText').innerText = "ステータス: 検索を解除しました。";
+ }
+
+ // --- トースト通知（ガイドライン第5項⑤ 準拠 / alert() は使用禁止） ---
+ // type: ""(=成功/緑) | "error" | "warning" | "info"。'success' 等の未知値は既定の緑にフォールバックする
+ function showToast(msg, type = "") {
+ const toast = document.getElementById('toast');
+ if (!toast) return;
+ toast.innerText = msg;
+ let className = "show";
+ if (type === "error") className += " error";
+ else if (type === "warning") className += " warning";
+ else if (type === "info") className += " info";
+ toast.className = "";
+ void toast.offsetWidth; // リフローを挟み、連続表示でもアニメーションを再生させる
+ toast.className = className;
+ setTimeout(() => { toast.classList.remove("show"); }, 3000);
+ }
+
+ function copyToClipboardFallback(text, successMessage) {
+ if(text === "") { showToast("対象が選択されていません"); return; }
+ const textArea = document.createElement("textarea");
+ textArea.value = text;
+ textArea.style.position = "fixed";
+ textArea.style.left = "-9999px";
+ document.body.appendChild(textArea);
+ textArea.focus();
+ textArea.select();
+ try {
+ document.execCommand('copy');
+ showToast(successMessage);
+ } catch (err) {
+ showToast("コピーに失敗しました。");
+ }
+ document.body.removeChild(textArea);
+ }
+
+ function exportFasta() {
+ if(!ab1Data) return;
+ let seqStr = "";
+ ab1Data.bases.forEach(b => {
+ if(!b.isDeleted) seqStr += b.char;
+ });
+ 
+let headerName = currentFileName.replace(/\.ab1$/i, '_curated');
+ let output = `>${headerName}\n${seqStr}\n`;
+ 
+const a = document.createElement('a'); 
+a.href = URL.createObjectURL(new Blob([output], { type: 'text/plain' }));
+ a.download = `${headerName}.fasta`; 
+a.click();
+ 
+document.getElementById('statusText').innerText = `ステータス: ファイルを保存しました。`;
+ showToast("FASTAファイルを保存しました");
+ }
+
+ function copyFasta() {
+ if(!ab1Data) return;
+ let seqStr = "";
+ ab1Data.bases.forEach(b => {
+ if(!b.isDeleted) seqStr += b.char;
+ });
+ 
+let headerName = currentFileName.replace(/\.ab1$/i, '_curated');
+ let output = `>${headerName}\n${seqStr}\n`;
+ 
+document.getElementById('statusText').innerText = `ステータス: クリップボードにコピーしました。`;
+ copyToClipboardFallback(output.trim(), "FASTA形式でコピーしました");
+ }
+
+ const tooltip = document.getElementById('globalTooltip');
+ document.body.addEventListener('mouseover', (e) => {
+ const target = e.target.closest('[data-tooltip]');
+ if (target) {
+ const text = target.getAttribute('data-tooltip');
+ tooltip.innerHTML = text;
+ tooltip.style.display = 'block';
+ const rect = target.getBoundingClientRect();
+ const ttRect = tooltip.getBoundingClientRect();
+ let topPos = rect.top - ttRect.height - 8;
+ let leftPos = rect.left + (rect.width / 2);
+ let arrowClass = 'show-top'; 
+if (topPos < 0) { topPos = rect.bottom + 8; arrowClass = 'show-bottom'; }
+ if (leftPos - ttRect.width / 2 < 5) leftPos = 5 + ttRect.width / 2;
+ else if (leftPos + ttRect.width / 2 > window.innerWidth - 5) leftPos = window.innerWidth - ttRect.width / 2 - 5;
+ tooltip.className = `custom-tooltip ${arrowClass}`;
+ tooltip.style.top = topPos + 'px';
+ tooltip.style.left = leftPos + 'px';
+ tooltip.style.transform = `translateX(-50%)`;
+ tooltip.style.opacity = '1';
+ }
+ });
+
+ document.body.addEventListener('mouseout', (e) => {
+ const target = e.target.closest('[data-tooltip]');
+ if (target) {
+ tooltip.style.opacity = '0';
+ setTimeout(() => { if (tooltip.style.opacity === '0') tooltip.style.display = 'none'; }, 200);
+ }
+ });
+
+ document.addEventListener('scroll', () => { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; }, true);
 </script>
 
 </body>
