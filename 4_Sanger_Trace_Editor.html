@@ -238,7 +238,7 @@
                 <div style="display: flex; gap: 4px; flex-wrap: nowrap; align-items: center; flex: 1; min-width: 200px;">
                     <span style="font-size: 12px; font-weight: bold; color: var(--secondary); display: flex; align-items: center; white-space: nowrap;">
                         <svg class="btn-icon" style="margin-right: 4px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        塩基配列検索
+                        モチーフ検索
                         <button class="rationale-btn" onclick="toggleRationale(event, 'rat_motif')" style="margin-left: 5px; margin-right: 5px;">?</button>
                     </span>
                     <input type="text" id="searchInput" class="primer-input" placeholder="塩基配列を入力" style="flex: 1; min-width: 80px; text-transform: uppercase;" onkeypress="if(event.keyCode===13) searchSequence()" disabled>
@@ -251,7 +251,7 @@
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; border-left: 2px solid var(--border-color); padding-left: 10px;">
                 <span style="font-size: 12px; font-weight: bold; color: var(--danger); display: flex; align-items: center; white-space: nowrap;">
                     <svg class="btn-icon" style="margin-right: 4px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg>
-                    手動カット
+                    範囲カット・操作
                     <button class="rationale-btn" onclick="toggleRationale(event, 'rat_step3')" style="margin-left: 5px;">?</button>
                 </span>
             </div>
