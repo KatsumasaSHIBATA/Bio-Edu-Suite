@@ -238,7 +238,7 @@
 
                 <!-- 右側：保存 -->
                 <div style="display: flex; flex: 1; justify-content: flex-end; align-items: center; gap: 8px; flex-wrap: wrap;">
-                    <span class="step-label">4. 保存 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_export')">?</button></span>
+                    <span class="step-label" style="min-width: auto; margin-right: 4px;">4. 保存 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_export')">?</button></span>
                     <button class="btn btn-success" id="btnExport" onclick="exportFasta()" disabled style="min-width: 140px; padding: 8px 16px;" data-tooltip="波形データから抽出した塩基配列をFASTA形式でファイルとして保存します。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg> FASTA保存</button>
                     <button class="btn" id="btnCopyFasta" onclick="copyFasta()" disabled style="min-width: 140px; padding: 8px 16px;" data-tooltip="波形データから抽出した塩基配列をFASTA形式でクリップボードにコピーします。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6v3H9zM8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg> FASTAコピー</button>
                 </div>
@@ -690,6 +690,7 @@
             div.dataset.index = index;
 
             div.onmousedown = (e) => {
+                isDraggingBases = true;
                 if (e.shiftKey && selectedBaseIndex !== -1) {
                     dragStartIndex = selectedBaseIndex;
                     dragEndIndex = index;
@@ -699,7 +700,6 @@
                     dragEndIndex = index;
                     selectedBaseIndex = index;
                 }
-                isDraggingBases = true;
                 redrawAll();
                 updateStatusBar(selectedBaseIndex);
             };
@@ -859,7 +859,7 @@
         updateStatusBar(index);
     }
 
-    function updateStatusBar(index) {
+    function updateStatusBar(index, customActionMsg = "") {
         if (!ab1Data || index < 0 || index >= ab1Data.bases.length) return;
         let b = ab1Data.bases[index];
         let loc = b.loc;
@@ -876,15 +876,23 @@
             'H': ['A', 'C', 'T'], 'V': ['A', 'C', 'G'], 'N': ['A', 'T', 'G', 'C']
         };
         
+        let baseDesc = "";
         if (['A', 'T', 'G', 'C'].includes(char)) {
-             statusMsg = `[正常塩基 ${char}] シグナル強度: A=${signalA}, T=${signalT}, G=${signalG}, C=${signalC}`;
+             baseDesc = `正常塩基 ${char}`;
         } else if (char === 'N') {
-             statusMsg = `[判読不能 N] シグナル強度: A=${signalA}, T=${signalT}, G=${signalG}, C=${signalC} - 再確認または削除を推奨`;
+             baseDesc = `判読不能 N`;
         } else if (iupacMap[char]) {
              let bases = iupacMap[char];
-             statusMsg = `[曖昧塩基 ${char} (ピーク混在: ${bases.join('/')})] シグナル強度: A=${signalA}, T=${signalT}, G=${signalG}, C=${signalC}`;
+             baseDesc = `曖昧塩基 ${char} (ピーク混在: ${bases.join('/')})`;
         } else {
-             statusMsg = `[塩基 ${char}] シグナル強度: A=${signalA}, T=${signalT}, G=${signalG}, C=${signalC}`;
+             baseDesc = `塩基 ${char}`;
+        }
+
+        if (customActionMsg) {
+            statusMsg = `${customActionMsg} | [${baseDesc}] シグナル強度: A=${signalA}, T=${signalT}, G=${signalG}, C=${signalC}`;
+        } else {
+            statusMsg = `[${baseDesc}] シグナル強度: A=${signalA}, T=${signalT}, G=${signalG}, C=${signalC}`;
+            if (char === 'N') statusMsg += " - 再確認または削除を推奨";
         }
         
         document.getElementById('statusText').innerText = `ステータス: 選択位置 ${index + 1} | ${statusMsg}`;
@@ -904,6 +912,7 @@
         let prevent = false;
         let key = e.key.toUpperCase();
         let changed = false;
+        let actionMsg = "";
 
         if (e.key === 'Backspace' || e.key === 'Delete') {
             if (dragStartIndex !== -1 && dragEndIndex !== -1) {
@@ -916,8 +925,10 @@
                 selectedBaseIndex = Math.min(ab1Data.bases.length - 1, max + 1);
                 dragStartIndex = -1; dragEndIndex = -1;
                 prevent = true; changed = true;
+                actionMsg = target ? "選択範囲の塩基を削除しました。" : "選択範囲の塩基を復元しました。";
             } else if (selectedBaseIndex !== -1) {
                 ab1Data.bases[selectedBaseIndex].isDeleted = !ab1Data.bases[selectedBaseIndex].isDeleted; 
+                actionMsg = ab1Data.bases[selectedBaseIndex].isDeleted ? "塩基を削除しました。" : "塩基を復元しました。";
                 if(ab1Data.bases[selectedBaseIndex].isDeleted) selectedBaseIndex = Math.min(ab1Data.bases.length - 1, selectedBaseIndex + 1);
                 prevent = true; changed = true;
             }
@@ -935,6 +946,21 @@
                 baseObj.char = key;
                 baseObj.isEdited = true;
                 baseObj.isDeleted = false;
+                
+                const iupacMapLocal = {
+                    'R': 'A/Gのヘテロ', 'Y': 'C/Tのヘテロ', 'S': 'G/Cのヘテロ', 'W': 'A/Tのヘテロ',
+                    'K': 'G/Tのヘテロ', 'M': 'A/Cのヘテロ', 'B': 'C/G/Tの混在', 'D': 'A/G/Tの混在',
+                    'H': 'A/C/Tの混在', 'V': 'A/C/Gの混在', 'N': '判読不能'
+                };
+                
+                if (['A', 'T', 'G', 'C'].includes(key)) {
+                    actionMsg = `「${key}」を入力しました`;
+                } else if (iupacMapLocal[key]) {
+                    actionMsg = `「${key}」(${iupacMapLocal[key]}) を入力しました`;
+                } else {
+                    actionMsg = `「${key}」を入力しました`;
+                }
+
                 selectedBaseIndex = Math.min(ab1Data.bases.length - 1, selectedBaseIndex + 1);
                 dragStartIndex = -1; dragEndIndex = -1;
                 prevent = true; changed = true;
@@ -943,24 +969,30 @@
 
         if (prevent) {
             e.preventDefault();
-            if(changed) saveHistory();
-            redrawAll();
+            if(changed) {
+                saveHistory();
+                runQC(true); // 自動再評価
+            } else {
+                redrawAll();
+            }
             if (selectedBaseIndex !== -1) {
-                updateStatusBar(selectedBaseIndex);
+                updateStatusBar(selectedBaseIndex, actionMsg);
             }
         }
     });
 
-    function runQC() {
+    function runQC(silent = false) {
         if (!ab1Data) return;
         const iupac = ['N', 'R', 'Y', 'S', 'W', 'K', 'M', 'B', 'D', 'H', 'V'];
         let nCount = 0;
         let iupacCount = 0;
+        let firstIssueIndex = -1;
         
-        ab1Data.bases.forEach(b => {
+        ab1Data.bases.forEach((b, index) => {
             let charUpper = b.char.toUpperCase();
             if (!b.isDeleted && iupac.includes(charUpper)) {
                 b.isQCWarning = true;
+                if (firstIssueIndex === -1) firstIssueIndex = index;
                 if (charUpper === 'N') {
                     nCount++;
                 } else {
@@ -972,16 +1004,21 @@
         });
         redrawAll();
         
-        let totalCount = nCount + iupacCount;
-        let statusStr = "";
-        if (totalCount > 0) {
-            showToast(`${totalCount}個の低品質/曖昧塩基を検出しました。`, "warning");
-            statusStr = `ステータス: QC完了。N塩基 ${nCount}件、ダブルピーク等 ${iupacCount}件を確認してください。`;
-        } else {
-            showToast("曖昧な塩基は見つかりませんでした。", "success");
-            statusStr = `ステータス: QC完了。問題のある塩基は検出されませんでした。`;
+        if (!silent) {
+            let totalCount = nCount + iupacCount;
+            let statusStr = "";
+            if (totalCount > 0) {
+                showToast(`${totalCount}個の低品質/曖昧塩基を検出しました。`, "warning");
+                statusStr = `ステータス: QC完了。N塩基 ${nCount}件、ダブルピーク等 ${iupacCount}件を確認してください。`;
+                if (firstIssueIndex !== -1) {
+                    selectBase(firstIssueIndex);
+                }
+            } else {
+                showToast("曖昧な塩基は見つかりませんでした。", "success");
+                statusStr = `ステータス: QC完了。問題のある塩基は検出されませんでした。`;
+            }
+            document.getElementById('statusText').innerText = statusStr;
         }
-        document.getElementById('statusText').innerText = statusStr;
     }
 
     function searchSequence() {
