@@ -37,7 +37,7 @@
         
         .card { background: var(--card-bg); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; border-top: 4px solid var(--phase-color); flex-shrink: 0; }
         .card-header { background: var(--secondary); color: white; padding: 10px 18px; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;}
-        .card-body { padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .card-body { padding: 15px; display: flex; flex-direction: column; gap: 16px; }
 
         /* 根拠表示用スタイル */
         .rationale-btn { background: var(--phase-color); color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; }
@@ -109,7 +109,7 @@
         input[type="file"] { display: none; }
 
         .primer-input { 
-            padding: 5px 8px; 
+            padding: 8px 12px; 
             font-family: 'Courier New', Consolas, monospace; 
             letter-spacing: 1px;
             font-weight: 600;
@@ -279,14 +279,14 @@
                     ・<strong>CLUSTAL:</strong> 突然変異が視覚的にわかりやすい、人間（論文の読者）が読むための表示形式です。次のアプリ「Alignment Print Studio」で美しく印刷できます。
                 </div>
 
-                <div class="toolbar-row" style="align-items: stretch; margin-top: 8px;">
-                    <span class="step-label" style="display: flex; align-items: center;">1. データ読込</span>
+                <div class="toolbar-row" style="align-items: flex-start;">
+                    <span class="step-label" style="display: flex; align-items: center; margin-top: 14px;">1. データ読込</span>
                     <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px; flex: 1;">
-                        <div style="display: flex; flex-direction: row; gap: 8px; flex: 0 0 auto;">
+                        <div style="display: flex; flex-direction: row; gap: 8px; flex: 0 0 auto; align-items: center; margin-top: 6px;">
                             <input type="text" id="ncbiId" class="primer-input" style="width: 180px;" placeholder="Accession No. を入力" onkeypress="if(event.keyCode===13) fetchNCBI()">
                             <button class="btn btn-primary" onclick="fetchNCBI()" data-tooltip="NCBIから塩基配列データを取得します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18z"/></svg> 取得 <span id="apiLoader" class="loader" style="display:none;"></span></button>
                         </div>
-                        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" style="margin: 0; min-width: 180px; padding: 8px 15px;">
+                        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" style="margin: 0; min-width: 180px; padding: 12px 15px;">
                             <p>ここをクリック、または 生データ(FASTA) をドラッグ＆ドロップ</p>
                             <input type="file" id="fileInput" accept=".fasta,.fas,.txt,.seq" multiple onchange="handleFiles(event)">
                         </div>
@@ -313,17 +313,17 @@
                     </div>
                 </div>
                 
-                <div class="toolbar-row">
+                <div class="toolbar-row" style="align-items: flex-start;">
                     <!-- 💡 項目4 と 項目5 を左右入れ替え -->
-                    <span class="step-label">4. プライマー設計 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_design')">?</button></span>
-                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; flex: 1;">
+                    <span class="step-label" style="margin-top: 10px;">4. プライマー設計 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_design')">?</button></span>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; flex: 1; margin-top: 2px;">
                         <button class="btn btn-success" id="btnConserved" onclick="toggleConservedRegions()" disabled data-tooltip="塩基配列間で保存されている領域を強調表示します">保存領域</button>
                         <span style="font-size: 10px; color: var(--text-muted); line-height: 1.4;">※塩基配列をドラッグ(長押し選択)で設計ナビが起動します。</span>
                     </div>
 
-                    <div class="divider"></div>
+                    <div class="divider" style="height: auto; align-self: stretch;"></div>
                     
-                    <span class="step-label">5. 保存 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_export')">?</button></span>
+                    <span class="step-label" style="margin-top: 10px;">5. 保存 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_export')">?</button></span>
                     <div class="export-grid">
                         <button class="btn btn-success" id="btnExportFasta" onclick="exportFastaAll()" disabled data-tooltip="FASTA形式でファイルとして保存します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg> FASTA保存</button>
                         <button class="btn" id="btnCopyFasta" onclick="copyFastaAll()" disabled data-tooltip="FASTA形式でクリップボードにコピーします"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6v3H9zM8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg> FASTAコピー</button>
@@ -418,7 +418,7 @@
 </div>
 
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v3.14 | Sequence Curation & Pipeline Hub
+    &copy;2026 Bio-Edu Suite v1.0 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
 <div id="toast">メッセージ</div>
