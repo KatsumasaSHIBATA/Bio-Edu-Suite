@@ -1,1511 +1,1466 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
- <meta charset="UTF-8">
- <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>DNA Alignment & Editing Studio v3.14 | Bio-Edu Suite</title>
- <style>
- :root {
- --primary: #2c3e50;
- --secondary: #34495e;
- --bg-color: #f0f3f4;
- --card-bg: #ffffff;
- --text-main: #2c3e50;
- --text-muted: #7f8c8d;
- --border-color: #bdc3c7;
- --success: #27ae60;
- --danger: #e74c3c;
- --warning: #f39c12;
- --phase-color: #1abc9c;
- --phase-color-hover: #16a085;
- }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNA Alignment & Editing Studio v3.14 | Bio-Edu Suite</title>
+    <style>
+        /* テーマカラー規格（ガイドライン第3項） */
+        :root {
+            --primary: #2c3e50;        
+            --secondary: #34495e;      
+            --bg-color: #f0f3f4;       
+            --card-bg: #ffffff;        
+            --text-main: #2c3e50;      
+            --text-muted: #7f8c8d;     
+            --border-color: #bdc3c7;   
+            --success: #27ae60;        
+            --danger: #e74c3c;         
+            --warning: #f39c12;        
+            --phase-color: #1abc9c;
+            --phase-color-hover: #16a085;
+        }
 
- *, *::before, *::after { box-sizing: border-box; }
- body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Noto Sans JP'; font-size: 14px; background-color: var(--bg-color); color: var(--text-main); margin: 0; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; line-height: 1.6; }
- body, .card, p, div, .bench-tip, .step-up-card, .rationale-text, .assist-panel { word-break: normal; overflow-wrap: anywhere; line-height: 1.6; }
- .label-title, .no-wrap { white-space: nowrap; }
+        *, *::before, *::after { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Noto Sans JP'; background-color: var(--bg-color); color: var(--text-main); margin: 0; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
+        
+        body, .card, p, div, .bench-tip, .mega-invite, .rationale-text, .assist-panel { word-break: normal; overflow-wrap: anywhere; line-height: 1.6; }
+        .label-title, .no-wrap { white-space: nowrap; }
 
- .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid var(--phase-color); display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 30; flex-shrink: 0; position: sticky; top: 0; }
- .header { width: 100%; max-width: 1400px; padding: 12px 20px; color: white; display: flex; align-items: center; justify-content: space-between; position: relative; }
- .header h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 1px; color: #fff; white-space: nowrap; }
- .header p { margin: 4px 0 0 0; font-size: 11px; color: var(--phase-color); font-weight: 600; letter-spacing: 0.5px; }
- .version-badge { position: absolute; right: 20px; top: 15px; background: var(--secondary); color: var(--phase-color); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid var(--phase-color); }
+        .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid var(--phase-color); display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 30; flex-shrink: 0; position: sticky; top: 0; }
+        .header { width: 100%; max-width: 1400px; padding: 12px 20px; color: white; display: flex; align-items: center; justify-content: space-between; position: relative; }
+        .header h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 1px; color: #fff; white-space: nowrap; }
+        .header p { margin: 4px 0 0 0; font-size: 11px; color: var(--phase-color); font-weight: 600; letter-spacing: 0.5px; }
+        .version-badge { position: absolute; right: 20px; top: 15px; background: #34495e; color: var(--phase-color); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid var(--phase-color); }
 
- .main-content { width: 100%; max-width: 1400px; margin: 0 auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; flex: 1; }
- .card { background: var(--card-bg); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; border-top: 4px solid var(--phase-color); flex-shrink: 0; }
- .card-header { background: var(--secondary); color: white; padding: 10px 18px; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;}
- .card-body { padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .main-content { width: 100%; max-width: 1400px; margin: 0 auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; flex: 1; }
+        
+        .card { background: var(--card-bg); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; border-top: 4px solid var(--phase-color); flex-shrink: 0; }
+        .card-header { background: var(--secondary); color: white; padding: 10px 18px; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;}
+        .card-body { padding: 15px; display: flex; flex-direction: column; gap: 10px; }
 
- .rationale-btn { background: var(--phase-color); color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; flex-shrink: 0; }
- .rationale-btn:hover { transform: scale(1.1); filter: brightness(1.2); }
- 
- .rationale-text { position: fixed; background: #fef9e7; border: 1px solid var(--warning); padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: max-content; max-width: min(320px, calc(100vw - 24px)); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; }
- .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
- .rationale-text strong { color: #d35400; display: inline-block; margin-right: 4px; margin-bottom: 0; font-size: 12px; }
- .rationale-text::after { content: ''; position: absolute; border-width: 6px; border-style: solid; left: var(--arrow-left, 50%); }
- .rationale-text.arrow-top::after { top: -12px; border-color: transparent transparent #fef9e7 transparent; }
- .rationale-text.arrow-bottom::after { bottom: -12px; border-color: #fef9e7 transparent transparent transparent; }
- .rationale-text::before { content: ''; position: absolute; border-width: 7px; border-style: solid; left: calc(var(--arrow-left, 50%) - 1px); }
- .rationale-text.arrow-top::before { top: -14px; border-color: transparent transparent var(--warning) transparent; }
- .rationale-text.arrow-bottom::before { bottom: -14px; border-color: var(--warning) transparent transparent transparent; }
+        /* 根拠表示用スタイル */
+        .rationale-btn { background: var(--phase-color); color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; }
+        .rationale-btn:hover { transform: scale(1.1); filter: brightness(1.2); }
+        
+        .rationale-text {
+            background: #fef9e7;
+            border: 1px solid var(--warning);
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #7e5109;
+            line-height: 1.5;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
+            position: fixed !important;
+            z-index: 9000 !important;
+            width: max-content !important;
+            max-width: min(320px, calc(100vw - 24px)) !important;
+            margin: 0 !important;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s, transform 0.2s;
+            transform: translateY(-10px);
+            pointer-events: none;
+            box-sizing: border-box;
+        }
+        .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
+        .rationale-text::after {
+            content: ''; position: absolute; width: 10px; height: 10px;
+            background: #fef9e7; transform: rotate(45deg);
+            left: var(--arrow-left, 50%); margin-left: -5px;
+        }
+        .rationale-text.arrow-top::after    { top: -6px; border-left: 1px solid var(--warning); border-top: 1px solid var(--warning); }
+        .rationale-text.arrow-bottom::after { bottom: -6px; border-right: 1px solid var(--warning); border-bottom: 1px solid var(--warning); }
+        .rationale-text > strong:first-child { color: #d35400; display: inline-block; margin-bottom: 4px; font-size: 12px; }
 
- .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px 15px; border-radius: 0 4px 4px 0; font-size: 12px; color: var(--text-main); line-height: 1.6; margin: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
- .bench-tip strong { color: #2980b9; display: inline-block; margin-bottom: 0; font-size: 13px; }
+        .header-icon { width: 20px; height: 20px; vertical-align: -3px; margin-right: 6px; flex-shrink: 0; }
+        .btn-icon { width: 14px; height: 14px; vertical-align: -2px; flex-shrink: 0; }
 
- .step-up-card { background: #f8f9fa; border: 1px solid #d1d5db; padding: 20px; border-radius: 8px; margin-top: 25px; color: #2c3e50; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
- .step-up-card h3 { color: #2c3e50; margin-top: 0; font-size: 15px; display: flex; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 12px; }
- .step-up-card h3 svg { margin-right: 8px; width: 20px; height: 20px; flex-shrink: 0; }
- .step-up-card h3 span { font-size: 0.8em; opacity: 0.7; margin-left: 8px; font-weight: normal; }
- .step-up-card p { margin: 0; font-size: 13px; line-height: 1.6; }
- .step-up-card p span { display: block; margin-top: 4px; }
- .step-up-card p span:first-of-type { margin-top: 6px; }
+        .toolbar-row { display: flex; width: 100%; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .step-label { font-size: 13px; font-weight: bold; color: var(--text-muted); min-width: 80px; display: flex; align-items: center; }
 
- .header-icon { width: 20px; height: 20px; vertical-align: -3px; margin-right: 6px; flex-shrink: 0; }
- .btn-icon { width: 14px; height: 14px; vertical-align: -2px; flex-shrink: 0; }
- .svg-hint { color: var(--warning); }
- .svg-info { color: inherit; }
- .svg-danger { color: var(--danger); }
+        /* ガイドライン準拠のボタン指定 */
+        .btn { background: #fdfefe; border: 1px solid var(--border-color); padding: 8px 16px; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; gap: 5px; border-radius: 4px; font-weight: bold; transition: all 0.2s; color: var(--text-main); white-space: nowrap; justify-content: center; width: fit-content; box-shadow: none; }
+        .btn:hover:not(:disabled) { background: #eaf2f8; border-color: #3498db; color: #2980b9; }
+        .btn:disabled { color: #a0a0a0; cursor: not-allowed; background: #f4f6f6; border-color: #dcdde1; opacity: 0.7; }
+        
+        .btn-primary { background: #3498db; color: white; border-color: #2980b9; }
+        .btn-primary:hover:not(:disabled) { background: #2980b9; color: white; }
+        .btn-success { background: var(--success); color: white; border-color: #1e8449; }
+        .btn-success:hover:not(:disabled) { background: #219150; color: white; }
+        .btn-option { background: var(--secondary); color: white; border-color: var(--primary); }
+        .btn-option:hover:not(:disabled) { background: var(--primary); color: white; }
 
- .toolbar-row { display: flex; width: 100%; gap: 12px; align-items: center; flex-wrap: wrap; }
- .step-label { font-size: 13px; font-weight: bold; color: var(--text-muted); min-width: 80px; display: flex; align-items: center; }
+        /* 4つのボタンを均等幅(165px)でGrid配置 */
+        .export-grid {
+            display: grid;
+            grid-template-columns: 165px 165px;
+            gap: 8px;
+        }
+        .export-grid .btn {
+            width: 100%;
+            margin: 0;
+        }
 
- .btn { background: #fdfefe; border: 1px solid var(--border-color); padding: 8px 16px; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; gap: 5px; border-radius: 4px; font-weight: bold; transition: all 0.2s; color: var(--text-main); white-space: nowrap; justify-content: center; width: fit-content; box-shadow: none; }
- .btn:hover:not(:disabled) { background: #eaf2f8; border-color: #3498db; color: #2980b9; box-shadow: 0 2px 4px rgba(0,0,0,0.1); filter: brightness(1.05); }
- .btn:active:not(:disabled) { transform: scale(0.98); }
- .btn:disabled { color: #a0a0a0; cursor: not-allowed; background: #f4f6f6; border-color: #dcdde1; opacity: 0.6; filter: grayscale(50%); box-shadow: none; }
- 
- .btn-primary { background: #3498db; color: white; border-color: #2980b9; }
- .btn-primary:hover:not(:disabled) { background: #2980b9; color: white; }
- .btn-success { background: var(--success); color: white; border-color: #1e8449; }
- .btn-success:hover:not(:disabled) { background: #219150; color: white; }
+        .drop-zone { border: 2px dashed var(--border-color); border-radius: 6px; padding: 12px 20px; text-align: center; background: #fafbfc; transition: 0.2s; cursor: pointer; flex: 1; max-width: 450px; display: flex; flex-direction: column; justify-content: center; }
+        .drop-zone:hover, .drop-zone.dragover { background: #e8f8f5; border-color: var(--phase-color); }
+        .drop-zone p { margin: 0; font-size: 12px; color: var(--text-muted); font-weight: bold; pointer-events: none;}
+        input[type="file"] { display: none; }
 
- .drop-zone { border: 2px dashed var(--border-color); border-radius: 8px; padding: 16px; text-align: center; background: #f8f9fa; transition: 0.2s; cursor: pointer; flex: 1; max-width: 450px; display: flex; flex-direction: column; justify-content: center; }
- .drop-zone:hover, .drop-zone.dragover { background: #e8f8f5; border-color: var(--phase-color); }
- .drop-zone p { margin: 0; font-size: 12px; color: var(--text-muted); font-weight: bold; pointer-events: none;}
- input[type="file"] { display: none; }
+        .primer-input { 
+            padding: 5px 8px; 
+            font-family: 'Courier New', Consolas, monospace; 
+            letter-spacing: 1px;
+            font-weight: 600;
+            border: 1px solid var(--border-color); 
+            border-radius: 4px; 
+            font-size: 12px; 
+            background: #fafafa; 
+        }
+        .primer-input:focus { outline: none; border-color: #3498db; background: #fff; box-shadow: 0 0 3px rgba(52,152,219,0.3); }
+        .primer-label { font-size: 11px; font-weight: bold; color: var(--secondary); display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+        .color-box-f { display: inline-block; width: 10px; height: 10px; background: #3498db; border-radius: 2px; }
+        .color-box-r { display: inline-block; width: 10px; height: 10px; background: #e74c3c; border-radius: 2px; }
 
- .primer-input { padding: 5px 8px; font-family: 'Courier New', Consolas, monospace; letter-spacing: 1px; font-weight: 600; border: 1px solid var(--border-color); border-radius: 4px; font-size: 12px; width: 120px; max-width: 200px; background: #fafafa; }
- .primer-input:focus { outline: none; border-color: var(--phase-color); background: #fff; box-shadow: 0 0 0 2px rgba(26, 188, 156, 0.2); }
- .primer-label { font-size: 11px; font-weight: bold; color: var(--secondary); display: flex; align-items: center; gap: 5px; white-space: nowrap; }
- .color-box-f { display: inline-block; width: 10px; height: 10px; background: #3498db; border-radius: 2px; }
- .color-box-r { display: inline-block; width: 10px; height: 10px; background: var(--danger); border-radius: 2px; }
+        .slider-container { display: flex; align-items: center; gap: 8px; background: #f8f9f9; padding: 4px 10px; border-radius: 4px; border: 1px solid #dcdde1; font-size: 11px; font-weight: bold; color: var(--secondary); white-space: nowrap; }
+        input[type=range] { width: 60px; margin: 0; cursor: pointer; }
+        .divider { width: 1px; height: 24px; background: #dcdde1; margin: 0 5px; }
 
- .slider-container { display: flex; align-items: center; gap: 8px; background: #f8f9f9; padding: 4px 10px; border-radius: 4px; border: 1px solid #dcdde1; font-size: 11px; font-weight: bold; color: var(--secondary); white-space: nowrap; }
- input[type=range] { width: 60px; margin: 0; cursor: pointer; }
- .divider { width: 1px; height: 24px; background: #dcdde1; margin: 0 5px; }
+        .editor-card { flex: 1; display: flex; flex-direction: column; min-height: 500px; position: relative;}
+        .editor-container { flex: 1; overflow: auto; background: white; display: flex; position: relative; user-select: none; font-family: 'Courier New', Consolas, monospace; }
+        
+        .names-column { width: 280px; background: #f8f9f9; border-right: 2px solid var(--border-color); flex-shrink: 0; z-index: 10; position: sticky; left: 0; box-shadow: 2px 0 5px rgba(0,0,0,0.03); }
+        .name-header { height: 32px; background: #eaeded; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; padding-left: 15px; font-size: 11px; font-weight: bold; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Noto Sans JP'; }
+        .name-cell { height: 36px; padding: 0 8px; border-bottom: 1px solid #ecf0f1; display: flex; align-items: center; gap: 3px; background: #fff; transition: background 0.2s; }
+        .name-cell:hover { background: #fdfefe; }
+        .name-cell.primer-row { background: #f0f8ff; border-left: 3px solid #3498db; }
+        
+        .seq-name-input { flex: 1; min-width: 0; padding: 5px; font-size: 12px; border: 1px solid transparent; border-radius: 3px; color: var(--text-main); font-weight: 600; font-family: 'Courier New', Consolas, monospace; background: transparent; transition: all 0.2s; }
+        .seq-name-input:hover { border-color: #dcdde1; background: #fff; }
+        .seq-name-input:focus { outline: none; border-color: #3498db; background: #fff; box-shadow: 0 0 3px rgba(52,152,219,0.2); }
+        
+        .action-icon { background: transparent; border: 1px solid transparent; border-radius: 3px; cursor: pointer; padding: 4px; font-size: 12px; color: var(--text-muted); transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+        .action-icon:hover { background: #ecf0f1; color: var(--secondary); }
+        .icon-delete:hover { background: #fadbd8; color: #c0392b; }
+        
+        .sequence-grid { flex: 1; position: relative; background: #fff; }
+        .grid-header { height: 32px; background: #eaeded; border-bottom: 1px solid var(--border-color); display: flex; align-items: flex-end; position: sticky; top: 0; z-index: 5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Noto Sans JP'; }
+        
+        .pos-marker { width: 22px; height: 100%; font-size: 9px; text-align: center; color: #95a5a6; border-left: 1px solid #e5e8e8; flex-shrink: 0; display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 2px; cursor: col-resize; user-select: none; transition: background-color 0.1s; }
+        .pos-marker:hover { background-color: #d1d8d8; }
+        .pos-marker.drag-selected { border-top: none; border-bottom: 2px solid #8e44ad; background-color: rgba(142, 68, 173, 0.15); color: var(--text-main); font-weight: bold; }
+        
+        .row { display: flex; height: 36px; border-bottom: 1px solid #f4f6f6; }
+        .base { width: 22px; height: 36px; line-height: 36px; text-align: center; font-family: 'Courier New', Consolas, monospace; font-weight: bold; font-size: 14px; flex-shrink: 0; cursor: pointer; box-sizing: border-box; transition: background-color 0.1s; }
+        
+        .base-A { background-color: #d5f5e3; color: #1e8449; }
+        .base-T { background-color: #fadbd8; color: #c0392b; }
+        .base-G { background-color: #fcf3cf; color: #d68910; }
+        .base-C { background-color: #d4e6f1; color: #2980b9; }
+        .base-- { background-color: #fdfefe; color: var(--border-color); font-weight: normal; } 
+        
+        .base-Y, .base-R, .base-N, .base-W, .base-S, .base-M, .base-K, .base-B, .base-V, .base-D, .base-H { background-color: #f2f4f4; color: var(--text-muted); }
+        
+        .selected-column { background-color: rgba(52, 152, 219, 0.15) !important; border-left: 1px solid rgba(52,152,219,0.3); border-right: 1px solid rgba(52,152,219,0.3); }
+        .selected-cell { box-shadow: inset 0 0 0 2px #e74c3c !important; background-color: rgba(231, 76, 60, 0.2) !important; z-index: 2; position: relative; }
+        
+        .drag-selected { background-color: rgba(142, 68, 173, 0.25) !important; border-top: 2px solid #8e44ad; border-bottom: 2px solid #8e44ad; color: var(--text-main) !important; z-index: 3; position: relative;}
+        .drag-left { border-left: 2px solid #8e44ad; }
+        .drag-right { border-right: 2px solid #8e44ad; }
+        
+        .primer-f { border-bottom: 3px solid #3498db; } 
+        .primer-r { border-bottom: 3px solid #e74c3c; } 
+        .mutation-bg { background-color: #e74c3c !important; color: white !important; font-weight: 900; z-index: 1; }
+        .conserved-bg { background-color: #a2d9ce !important; color: #0e6251 !important; font-weight: 900; z-index: 1; }
+        .search-bg { background-color: #f1c40f !important; color: var(--secondary) !important; font-weight: 900; z-index: 2; box-shadow: inset 0 0 0 2px #f39c12; }
 
- .editor-card { flex: 1; display: flex; flex-direction: column; min-height: 500px; border-top: 4px solid var(--phase-color); position: relative;}
- .editor-container { flex: 1; overflow: auto; background: white; display: flex; position: relative; user-select: none; }
- 
- .names-column { width: 280px; background: #f8f9f9; border-right: 2px solid var(--border-color); flex-shrink: 0; z-index: 10; position: sticky; left: 0; box-shadow: 2px 0 5px rgba(0,0,0,0.03); }
- .name-header { height: 32px; background: #eaeded; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; padding-left: 15px; font-size: 11px; font-weight: bold; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
- .name-cell { height: 36px; padding: 0 8px; border-bottom: 1px solid #ecf0f1; display: flex; align-items: center; gap: 3px; background: #fff; transition: background 0.2s; }
- .name-cell:hover { background: #fdfefe; }
- .name-cell.primer-row { background: #f0f8ff; border-left: 3px solid #3498db; }
- 
- .seq-name-input { flex: 1; min-width: 0; padding: 5px; font-size: 12px; border: 1px solid transparent; border-radius: 3px; color: var(--text-main); font-weight: 600; font-family: monospace; background: transparent; transition: all 0.2s; }
- .seq-name-input:hover { border-color: #dcdde1; background: #fff; }
- .seq-name-input:focus { outline: none; border-color: var(--phase-color); background: #fff; box-shadow: 0 0 0 2px rgba(26, 188, 156, 0.2); }
- 
- .action-icon { background: transparent; border: 1px solid transparent; border-radius: 3px; cursor: pointer; padding: 4px; font-size: 12px; color: var(--text-muted); transition: 0.2s; display: flex; align-items: center; justify-content: center; }
- .action-icon:hover { background: #ecf0f1; color: var(--secondary); }
- .icon-delete:hover { background: #fadbd8; color: #c0392b; }
- 
- .sequence-grid { flex: 1; position: relative; background: #fff; }
- .grid-header { height: 32px; background: #eaeded; border-bottom: 1px solid var(--border-color); display: flex; align-items: flex-end; position: sticky; top: 0; z-index: 5; }
- 
- .pos-marker { width: 22px; height: 100%; font-size: 9px; text-align: center; color: #95a5a6; border-left: 1px solid #e5e8e8; flex-shrink: 0; display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 2px; cursor: col-resize; user-select: none; transition: background-color 0.1s; }
- .pos-marker:hover { background-color: #d1d8d8; }
- .pos-marker.drag-selected { border-top: none; border-bottom: 2px solid #8e44ad; background-color: rgba(142, 68, 173, 0.15); color: var(--text-main); font-weight: bold; }
- 
- .row { display: flex; height: 36px; border-bottom: 1px solid #f4f6f6; }
- .base { width: 22px; height: 36px; line-height: 36px; text-align: center; font-family: 'Courier New', Consolas, monospace; font-weight: bold; font-size: 14px; flex-shrink: 0; cursor: pointer; box-sizing: border-box; transition: background-color 0.1s; letter-spacing: 1px;}
- 
- .base-A { background-color: #d5f5e3; color: #1e8449; }
- .base-T { background-color: #fadbd8; color: #c0392b; }
- .base-G { background-color: #fcf3cf; color: #d68910; }
- .base-C { background-color: #d4e6f1; color: #2980b9; }
- .base-- { background-color: #fdfefe; color: var(--border-color); font-weight: normal; } 
- .base-Y, .base-R, .base-N, .base-W, .base-S, .base-M, .base-K, .base-B, .base-V, .base-D, .base-H { background-color: #f2f4f4; color: var(--text-muted); }
- 
- .selected-column { background-color: rgba(52, 152, 219, 0.15) !important; border-left: 1px solid rgba(52,152,219,0.3); border-right: 1px solid rgba(52,152,219,0.3); }
- .selected-cell { box-shadow: inset 0 0 0 2px var(--danger) !important; background-color: rgba(231, 76, 60, 0.2) !important; z-index: 2; position: relative; }
- 
- .drag-selected { background-color: rgba(142, 68, 173, 0.25) !important; border-top: 2px solid #8e44ad; border-bottom: 2px solid #8e44ad; color: var(--text-main) !important; z-index: 3; position: relative;}
- .drag-left { border-left: 2px solid #8e44ad; }
- .drag-right { border-right: 2px solid #8e44ad; }
- 
- .primer-f { border-bottom: 3px solid #3498db; } 
- .primer-r { border-bottom: 3px solid var(--danger); } 
- .mutation-bg { background-color: var(--danger) !important; color: white !important; font-weight: 900; z-index: 1; }
- .conserved-bg { background-color: #a2d9ce !important; color: #0e6251 !important; font-weight: 900; z-index: 1; }
- .search-bg { background-color: #f1c40f !important; color: var(--secondary) !important; font-weight: 900; z-index: 2; box-shadow: inset 0 0 0 2px var(--warning); }
+        .header-primer-stats { display: flex; gap: 15px; font-size: 12px; background: #1a252f; padding: 6px 15px; border-radius: 4px; border-left: 4px solid #8e44ad; transition: opacity 0.2s; align-items: center; box-shadow: inset 0 1px 3px rgba(0,0,0,0.3); opacity: 0; pointer-events: none; flex-wrap: wrap;}
+        .h-stat { display: flex; align-items: baseline; gap: 4px; color: #ecf0f1; font-weight: bold; }
+        .val-seq { font-family: 'Courier New', Consolas, monospace; color: #f1c40f; font-weight: bold; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px; letter-spacing: 1px;}
+        .val-display { font-weight: bold; font-size: 14px; text-shadow: 0 0 2px rgba(0,0,0,0.8); transition: color 0.2s;}
+        .val-target { font-size: 10px; color: var(--text-muted); margin-left: 2px; font-weight: normal;}
 
- .header-primer-stats { display: flex; gap: 15px; font-size: 12px; background: #1a252f; padding: 6px 15px; border-radius: 4px; border-left: 4px solid #8e44ad; transition: opacity 0.2s; align-items: center; box-shadow: inset 0 1px 3px rgba(0,0,0,0.3); opacity: 0; pointer-events: none; flex-wrap: wrap;}
- .h-stat { display: flex; align-items: baseline; gap: 4px; color: #ecf0f1; font-weight: bold; }
- .val-seq { font-family: 'Courier New', Consolas, monospace; color: #f1c40f; font-weight: bold; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px; letter-spacing: 1px;}
- .val-display { font-weight: bold; font-size: 14px; text-shadow: 0 0 2px rgba(0,0,0,0.8); transition: color 0.2s;}
- .val-target { font-size: 10px; color: var(--text-muted); margin-left: 2px; font-weight: normal;}
+        .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 10px 15px; font-size: 11px; color: var(--text-main); border-bottom: 1px solid #dcdde1; margin: 0; border-radius: 0; }
+        .bench-tip strong { color: #2980b9; font-size: 11px; display: inline-block; }
+        
+        .step-up-card { background: #f8f9fa; border: 1px solid #d1d5db; padding: 20px; border-radius: 8px; margin-top: 25px; color: #2c3e50; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .step-up-card h3 { color: #2c3e50; margin-top: 0; font-size: 15px; display: flex; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 12px; }
+        .step-up-card h3 svg { margin-right: 8px; width: 20px; height: 20px; flex-shrink: 0; }
+        .step-up-card h3 span { font-size: 0.8em; opacity: 0.7; margin-left: 8px; font-weight: normal; }
+        .step-up-card p { margin: 0; font-size: 13px; line-height: 1.6; }
+        .step-up-card p span { display: block; margin-top: 4px; }
+        .step-up-card p span:first-of-type { margin-top: 6px; }
 
- .status-bar { background: var(--primary); color: white; padding: 8px 20px; font-size: 12px; display: flex; justify-content: space-between; font-weight: 600; letter-spacing: 0.5px; z-index: 40; flex-shrink: 0; margin-top: auto; position: sticky; bottom: 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.2); }
- .footer { background: #1a252f; padding: 10px 20px; text-align: center; font-size: 11px; color: var(--text-muted); letter-spacing: 1px; flex-shrink: 0; }
- 
- .loader { border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid #fff; border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite; display: inline-block; margin-left: 5px; vertical-align: middle; }
- @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .status-bar { background: var(--primary); color: white; padding: 8px 20px; font-size: 12px; display: flex; justify-content: space-between; font-weight: 600; letter-spacing: 0.5px; z-index: 40; flex-shrink: 0; margin-top: auto; position: sticky; bottom: 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.2); }
+        .footer { background: #1a252f; padding: 10px 20px; text-align: center; font-size: 11px; color: var(--text-muted); letter-spacing: 1px; flex-shrink: 0; }
+        
+        .loader { border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid #fff; border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite; display: inline-block; margin-left: 5px; vertical-align: middle; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
- @media screen and (max-width: 768px) {
- .main-content { padding: 10px; flex-direction: column !important; }
- .card { min-width: 100% !important; margin-bottom: 10px; }
- .toolbar-row { flex-direction: column; align-items: stretch; gap: 8px; }
- .btn, .search-input, .primer-input { width: 100% !important; justify-content: center; padding: 12px; font-size: 14px; }
- .slider-container { width: 100%; justify-content: space-between; }
- .header h1 { font-size: 16px; margin-right: 40px; }
- .version-badge { top: 10px; right: 10px; padding: 2px 6px; }
- .editor-card .card-header { flex-direction: column; align-items: flex-start; gap: 8px; padding: 10px; }
- .header-primer-stats { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 6px 10px; width: 100%; margin-top: 0; }
- .editor-container { -webkit-overflow-scrolling: touch; }
- .names-column { width: 160px !important; }
- .name-header { font-size: 9px; padding-left: 5px; }
- .seq-name-input { font-size: 10px; }
- .divider { display: none; }
- .editor-toolbar > div:nth-child(2) { border-left: none !important; padding-left: 0 !important; border-top: 1px dashed var(--border-color); padding-top: 8px; margin-top: 5px; width: 100%; }
- }
+        @media screen and (max-width: 768px) {
+            .main-content { padding: 10px; flex-direction: column !important; }
+            .card { min-width: 100% !important; margin-bottom: 10px; }
+            .toolbar-row { flex-direction: column; align-items: stretch; gap: 8px; }
+            .btn, .search-input, .primer-input { width: 100% !important; justify-content: center; padding: 12px; font-size: 14px; }
+            .slider-container { width: 100%; justify-content: space-between; }
+            .header h1 { font-size: 16px; margin-right: 40px; }
+            .version-badge { top: 10px; right: 10px; padding: 2px 6px; }
+            .export-grid { grid-template-columns: 1fr; }
+            
+            .editor-card .card-header { flex-direction: column; align-items: flex-start; gap: 8px; padding: 10px; }
+            .header-primer-stats { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 6px 10px; width: 100%; margin-top: 0; }
 
- #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 12px 24px; border-radius: 30px; font-weight: bold; font-size: 13px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 100000; pointer-events: none; text-align: center; max-width: 90vw; box-sizing: border-box; word-break: auto-phrase; }
- #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
- #toast.error { background: var(--danger); }
- #toast.warning { background: var(--warning); color: #7e5109; }
- #toast.info { background: var(--phase-color); }
- 
- .drag-handle { cursor: grab; padding: 2px 4px; font-size: 14px; color: var(--border-color); user-select: none; display: flex; align-items: center; }
- .drag-handle:active { cursor: grabbing; color: var(--secondary); }
- .seq-checkbox { margin: 0 2px; cursor: pointer; }
- .name-cell.drag-over { border-top: 2px dashed #3498db; background: #ebf5fb; }
- 
- .custom-tooltip { position: fixed; background: rgba(44, 62, 80, 0.95); color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 11px; pointer-events: none; z-index: 9999; opacity: 0; transition: opacity 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-weight: normal; line-height: 1.4; display: none; white-space: normal; width: max-content; max-width: min(320px, 90vw); text-align: center; box-sizing: border-box; }
- .custom-tooltip::after { content: ''; position: absolute; border-width: 5px; border-style: solid; left: 50%; transform: translateX(-50%); }
- .custom-tooltip.show-top::after { top: 100%; border-color: rgba(44, 62, 80, 0.95) transparent transparent transparent; }
- .custom-tooltip.show-bottom::after { bottom: 100%; border-color: transparent transparent rgba(44, 62, 80, 0.95) transparent; }
- </style>
+            .editor-container { -webkit-overflow-scrolling: touch; }
+            .names-column { width: 160px !important; }
+            .name-header { font-size: 9px; padding-left: 5px; }
+            .seq-name-input { font-size: 10px; }
+            .divider { display: none; }
+            
+            .editor-toolbar > div:nth-child(2) { border-left: none !important; padding-left: 0 !important; border-top: 1px dashed var(--border-color); padding-top: 8px; margin-top: 5px; width: 100%; }
+        }
+
+        #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 12px 24px; border-radius: 30px; font-weight: bold; font-size: 13px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 100000; pointer-events: none; text-align: center; max-width: 90vw; box-sizing: border-box; word-break: auto-phrase; }
+        #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        #toast.error { background: var(--danger); }
+        #toast.warning { background: var(--warning); color: #7e5109; }
+        #toast.info { background: var(--phase-color); }
+        
+        .drag-handle { cursor: grab; padding: 2px 4px; font-size: 14px; color: var(--border-color); user-select: none; display: flex; align-items: center; }
+        .drag-handle:active { cursor: grabbing; color: var(--secondary); }
+        .seq-checkbox { margin: 0 2px; cursor: pointer; }
+        .name-cell.drag-over { border-top: 2px dashed #3498db; background: #ebf5fb; }
+        
+        .custom-tooltip { position: fixed; background: rgba(44, 62, 80, 0.95); color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 11px; pointer-events: none; z-index: 9999; opacity: 0; transition: opacity 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-weight: normal; line-height: 1.4; display: none; white-space: normal; width: max-content; max-width: min(320px, 90vw); text-align: center; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Noto Sans JP'; }
+        .custom-tooltip::after { content: ''; position: absolute; border-width: 5px; border-style: solid; left: 50%; transform: translateX(-50%); }
+        .custom-tooltip.show-top::after { top: 100%; border-color: rgba(44, 62, 80, 0.95) transparent transparent transparent; }
+        .custom-tooltip.show-bottom::after { bottom: 100%; border-color: transparent transparent rgba(44, 62, 80, 0.95) transparent; }
+    </style>
 </head>
 <body>
 
 <div class="header-container">
- <div class="header">
- <div>
- <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>DNA Alignment Studio</h1>
- <p>Bio-Edu Suite: Phase 2 / Sequence Curation & Pipeline Hub</p>
- </div>
- <div class="version-badge">v3.14</div>
- </div>
+    <div class="header">
+        <div>
+            <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>DNA Alignment Studio</h1>
+            <p>Bio-Edu Suite: Phase 2 / Sequence Curation & Pipeline Hub</p>
+        </div>
+        <div class="version-badge">v3.14</div>
+    </div>
 </div>
 
 <div class="main-content">
- 
- <div class="control-grid">
- 
- <div class="card">
- <div class="card-header" style="justify-content: flex-start; padding: 10px 18px;">
- <span>in silico データ処理パネル</span>
- </div>
- <div class="card-body">
- 
- <div id="rat_step2" class="rationale-text">
- <strong>【根拠：なぜプライマーで両端を特定するのか？】</strong><br>
- ・サンガー法などで得られた生のDNAの塩基配列データには、機械の読み取りノイズや不要な塩基配列が両端に大量に含まれています。<br>
- ・自分が使った「プライマー F/R」をアンカーとして検索し、ノイズを省いた「本当に必要な領域」だけを特定・整列します。<br>
- <span style="color: var(--danger); font-weight: bold;">※制限酵素部位などを探す場合は、下のエディタ内にある「モチーフ検索」を使用してください。</span>
- </div>
- <div id="rat_msa" class="rationale-text">
- <strong>【根拠：MSA(多重整列)とは？】</strong><br>
- ・進化の過程で生じた「欠失や挿入」を補正するため、塩基配列の間に「ギャップ(-)」を挿入しながら、すべてのサンプルの相同な位置を縦にピタリと合わせる高度なアルゴリズムです。<br>
- ・これにより、真の突然変異（一塩基多型等）が浮かび上がります。
- </div>
- <div id="rat_design" class="rationale-text">
- <strong>【根拠：プライマー設計の適正パラメータ】</strong><br>
- ・<strong>長さ (18〜25bp):</strong> 短すぎると特異性が下がり（他の場所にくっつく）、長すぎると結合効率が落ちます。<br>
- ・<strong>GC含量 (40〜60%):</strong> GとCは水素結合が3本あり強く結合するため、極端な偏りを防ぎます。<br>
- ・<strong>Tm値 (55〜65℃):</strong> DNAの二重らせんが半分ほどける温度です。FとRでTm値の差を「5℃以内」に揃えるのがPCR成功の鉄則です。
- </div>
- <div id="rat_export" class="rationale-text">
- <strong>【根拠：FASTAとCLUSTALの違い】</strong><br>
- ・<strong>FASTA:</strong> BLASTや系統樹作成など、コンピューター（プログラム）に読み込ませるためのデータです。<br>
- ・<strong>CLUSTAL:</strong> 突然変異が視覚的にわかりやすい、人間（論文の読者）が読むための表示形式です。次のアプリ「Alignment Print Studio」で美しく印刷できます。
- </div>
+    
+    <div class="control-grid">
+        <div class="card">
+            <div class="card-header" style="justify-content: flex-start; padding: 10px 18px;">
+                <span>in silico データ処理パネル</span>
+            </div>
+            <div class="card-body">
+                
+                <div id="rat_step2" class="rationale-text">
+                    <strong>【根拠：なぜプライマーで両端を特定するのか？】</strong><br>
+                    サンガー法などで得られた生のDNAの塩基配列データには、機械の読み取りノイズや不要な塩基配列が両端に大量に含まれています。自分が使った「プライマー F/R」をアンカーとして検索し、ノイズを省いた「本当に必要な領域」だけを特定・整列します。<br>
+                    <span style="color: #e74c3c; font-weight: bold;">※制限酵素部位などを探す場合は、下のエディタ内にある「モチーフ検索」を使用してください。</span>
+                </div>
+                <div id="rat_msa" class="rationale-text">
+                    <strong>【根拠：MSA(多重整列)とは？】</strong><br>
+                    進化の過程で生じた「欠失や挿入」を補正するため、塩基配列の間に「ギャップ(-)」を挿入しながら、すべてのサンプルの相同な位置を縦にピタリと合わせる高度なアルゴリズムです。これにより、真の突然変異（一塩基多型等）が浮かび上がります。
+                </div>
+                <div id="rat_design" class="rationale-text">
+                    <strong>【根拠：プライマー設計の適正パラメータ】</strong><br>
+                    ・<strong>長さ (18〜25bp):</strong> 短すぎると特異性が下がり（他の場所にくっつく）、長すぎると結合効率が落ちます。<br>
+                    ・<strong>GC含量 (40〜60%):</strong> GとCは水素結合が3本あり強く結合するため、極端な偏りを防ぎます。<br>
+                    ・<strong>Tm値 (55〜65℃):</strong> DNAの二重らせんが半分ほどける温度です。FとRでTm値の差を「5℃以内」に揃えるのがPCR成功の鉄則です。
+                </div>
+                <div id="rat_export" class="rationale-text">
+                    <strong>【根拠：FASTAとCLUSTALの違い】</strong><br>
+                    ・<strong>FASTA:</strong> BLASTや系統樹作成など、コンピューター（プログラム）に読み込ませるためのデータです。<br>
+                    ・<strong>CLUSTAL:</strong> 突然変異が視覚的にわかりやすい、人間（論文の読者）が読むための表示形式です。次のアプリ「Alignment Print Studio」で美しく印刷できます。
+                </div>
 
- <div class="toolbar-row" style="align-items: stretch; margin-top: 8px;">
- <span class="step-label" style="display: flex; align-items: center;">1. データ読込</span>
- <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px; flex: 1;">
- <div style="display: flex; flex-direction: row; gap: 8px; flex: 0 0 auto;">
- <input type="text" id="ncbiId" class="primer-input" placeholder="Accession No. を入力" onkeypress="if(event.keyCode===13) fetchNCBI()">
- <button class="btn btn-primary" onclick="fetchNCBI()" style="white-space: nowrap; height: 100%; margin: 0;" data-tooltip="NCBIから塩基配列データを取得します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18z"/></svg> 取得 <span id="apiLoader" class="loader" style="display:none;"></span></button>
- </div>
- <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" style="margin: 0; min-width: 180px; padding: 8px 15px;">
- <p>ここをクリック、または 生データ(FASTA) をドラッグ＆ドロップ</p>
- <input type="file" id="fileInput" accept=".fasta,.fas,.txt,.seq" multiple onchange="handleFiles(event)">
- </div>
- </div>
- </div>
- 
- <div class="toolbar-row" id="step2Row" style="transition: opacity 0.3s;">
- <span class="step-label">2. 両端特定 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_step2')">?</button></span>
- <div class="primer-label"><span class="color-box-f"></span> Primer F: <input type="text" id="pF" class="primer-input" placeholder="5'側の塩基配列を入力"></div>
- <div class="primer-label"><span class="color-box-r"></span> Primer R: <input type="text" id="pR" class="primer-input" placeholder="3'側の塩基配列を入力"></div>
- <div class="slider-container">許容率: 
- <input type="range" id="mismatchSlider" min="0" max="50" value="20" oninput="updateMismatchVal(this.value)">
- <span id="mismatchVal" style="width: 25px; color: var(--danger);">20%</span>
- </div>
- <button class="btn btn-primary" id="btnStep2" onclick="alignByDualPrimers()" disabled data-tooltip="両端のプライマー塩基配列を基準に整列します">特定＆整列</button>
- </div>
+                <div class="toolbar-row" style="align-items: stretch; margin-top: 8px;">
+                    <span class="step-label" style="display: flex; align-items: center;">1. データ読込</span>
+                    <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px; flex: 1;">
+                        <div style="display: flex; flex-direction: row; gap: 8px; flex: 0 0 auto;">
+                            <input type="text" id="ncbiId" class="primer-input" style="width: 180px;" placeholder="Accession No. を入力" onkeypress="if(event.keyCode===13) fetchNCBI()">
+                            <button class="btn btn-primary" onclick="fetchNCBI()" data-tooltip="NCBIから塩基配列データを取得します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18z"/></svg> 取得 <span id="apiLoader" class="loader" style="display:none;"></span></button>
+                        </div>
+                        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" style="margin: 0; min-width: 180px; padding: 8px 15px;">
+                            <p>ここをクリック、または 生データ(FASTA) をドラッグ＆ドロップ</p>
+                            <input type="file" id="fileInput" accept=".fasta,.fas,.txt,.seq" multiple onchange="handleFiles(event)">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="toolbar-row" id="step2Row" style="transition: opacity 0.3s;">
+                    <span class="step-label">2. 両端特定 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_step2')">?</button></span>
+                    <div class="primer-label"><span class="color-box-f"></span> Primer F: <input type="text" id="pF" class="primer-input" style="width: 230px;" placeholder="5'側のプライマー配列を入力"></div>
+                    <div class="primer-label"><span class="color-box-r"></span> Primer R: <input type="text" id="pR" class="primer-input" style="width: 230px;" placeholder="3'側のプライマー配列を入力"></div>
+                    <div class="slider-container">許容率: 
+                        <input type="range" id="mismatchSlider" min="0" max="50" value="20" oninput="updateMismatchVal(this.value)">
+                        <span id="mismatchVal" style="width: 25px; color: #e74c3c;">20%</span>
+                    </div>
+                    <button class="btn btn-primary" id="btnStep2" onclick="alignByDualPrimers()" disabled data-tooltip="両端のプライマー塩基配列を基準に整列します">特定＆整列</button>
+                </div>
 
- <div class="toolbar-row">
- <span class="step-label">3. アライメント <button class="rationale-btn" onclick="toggleRationale(event, 'rat_msa')">?</button></span>
- <div style="display:flex; flex-direction:row; gap:8px; align-items:center; flex-wrap: wrap;">
- <button class="btn btn-primary" id="btnOptionMSA" onclick="runMSA()" disabled data-tooltip="チェックされた塩基配列の相同性を比較して整列させます"> MSA実行</button>
- <button class="btn" id="btnResetMSA" onclick="resetMSA()" disabled data-tooltip="実行されたアライメントを解除し、生データの状態に戻します">MSA解除</button>
- <span style="font-size: 10px; color: var(--text-muted); line-height: 1.4;">※段階的MSA: チェックした塩基配列のみが計算対象になります。</span>
- </div>
- </div>
- 
- <div class="toolbar-row">
- <span class="step-label">4. 保存 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_export')">?</button></span>
- <div style="display: flex; gap: 8px; flex-wrap: wrap; width: 100%; max-width: 450px;">
- <div style="display: flex; flex-direction: column; gap: 8px; flex: 1;">
- <button class="btn btn-success" id="btnExportFasta" onclick="exportFastaAll()" disabled data-tooltip="FASTA形式でファイルとして保存します" style="width: 100%;"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg> FASTA保存</button>
- <button class="btn btn-success" id="btnExportClustal" onclick="exportClustalAll()" disabled data-tooltip="CLUSTAL形式でファイルとして保存します" style="width: 100%;"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg> CLUSTAL保存</button>
- </div>
- 
- <div style="display: flex; flex-direction: column; gap: 8px; flex: 1;">
- <button class="btn" id="btnCopyFasta" onclick="copyFastaAll()" disabled data-tooltip="FASTA形式でクリップボードにコピーします" style="width: 100%;"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6v3H9zM8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg> FASTAコピー</button>
- <button class="btn" id="btnCopyClustal" onclick="copyClustalAll()" disabled data-tooltip="CLUSTAL形式でクリップボードにコピーします" style="width: 100%;"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6v3H9zM8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg> CLUSTALコピー</button>
- </div>
- </div>
+                <div class="toolbar-row">
+                    <span class="step-label">3. アライメント <button class="rationale-btn" onclick="toggleRationale(event, 'rat_msa')">?</button></span>
+                    <div style="display:flex; flex-direction:row; gap:8px; align-items:center; flex-wrap: wrap;">
+                        <button class="btn btn-primary" id="btnOptionMSA" onclick="runMSA()" disabled data-tooltip="チェックされた塩基配列の相同性を比較して整列させます"> MSA実行</button>
+                        <button class="btn btn-option" id="btnResetMSA" onclick="resetMSA()" disabled data-tooltip="実行されたアライメントを解除し、生データの状態に戻します">MSA解除</button>
+                        <span style="font-size: 10px; color: var(--text-muted); line-height: 1.4;">※段階的MSA: チェックした塩基配列のみが計算対象になります。</span>
+                    </div>
+                </div>
+                
+                <div class="toolbar-row">
+                    <!-- 💡 項目4 と 項目5 を左右入れ替え -->
+                    <span class="step-label">4. プライマー設計 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_design')">?</button></span>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; flex: 1;">
+                        <button class="btn btn-success" id="btnConserved" onclick="toggleConservedRegions()" disabled data-tooltip="塩基配列間で保存されている領域を強調表示します">保存領域</button>
+                        <span style="font-size: 10px; color: var(--text-muted); line-height: 1.4;">※塩基配列をドラッグ(長押し選択)で設計ナビが起動します。</span>
+                    </div>
 
- <div class="divider"></div>
- 
- <span class="step-label">5. プライマー設計 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_design')">?</button></span>
- <button class="btn btn-success" id="btnConserved" onclick="toggleConservedRegions()" disabled data-tooltip="塩基配列間で保存されている領域を強調表示します">保存領域</button>
- <span style="font-size: 10px; color: var(--text-muted); line-height: 1.4;">※塩基配列をドラッグ(長押し選択)で設計ナビが起動します。</span>
- </div>
- </div>
- </div>
- </div>
+                    <div class="divider"></div>
+                    
+                    <span class="step-label">5. 保存 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_export')">?</button></span>
+                    <div class="export-grid">
+                        <button class="btn btn-success" id="btnExportFasta" onclick="exportFastaAll()" disabled data-tooltip="FASTA形式でファイルとして保存します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg> FASTA保存</button>
+                        <button class="btn" id="btnCopyFasta" onclick="copyFastaAll()" disabled data-tooltip="FASTA形式でクリップボードにコピーします"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6v3H9zM8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg> FASTAコピー</button>
+                        <button class="btn btn-success" id="btnExportClustal" onclick="exportClustalAll()" disabled data-tooltip="CLUSTAL形式でファイルとして保存します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg> CLUSTAL保存</button>
+                        <button class="btn" id="btnCopyClustal" onclick="copyClustalAll()" disabled data-tooltip="CLUSTAL形式でクリップボードにコピーします"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6v3H9zM8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg> CLUSTALコピー</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
- <div class="card editor-card">
- <div class="card-header">
- <span>塩基配列エディタ</span>
- 
- <div id="primerStatsPanel" class="header-primer-stats">
- <span style="color: #f1c40f; font-weight: bold; margin-right: 5px;">🎯 プライマー設計ナビ:</span>
- <span class="h-stat" style="align-items: center;">塩基配列: <span id="psSeq" class="val-seq" style="cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.6)'" onmouseout="this.style.background='rgba(0,0,0,0.3)'" onclick="copyPrimerSequence()" data-tooltip="クリックして完全な塩基配列をコピー">-</span></span>
- <span class="h-stat">長さ: <span id="psLen" class="val-display">-</span><span class="val-target">bp (適正:18-25)</span></span>
- <span class="h-stat">GC含量: <span id="psGC" class="val-display">-</span><span class="val-target">% (適正:40-60)</span></span>
- <span class="h-stat">Tm値: <span id="psTm" class="val-display">-</span><span class="val-target">℃ (適正:55-65)</span></span>
- </div>
- </div>
- 
- <div class="editor-toolbar" style="padding: 8px 15px; background: #ecf0f1; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
- <div style="display: flex; flex-direction: column; gap: 5px;">
- <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
- <span style="font-size: 12px; font-weight: bold; color: var(--secondary); display: flex; align-items: center;">
- 🔍 モチーフ検索
- <button class="rationale-btn" onclick="toggleRationale(event, 'rat_motif')" style="margin-right: 5px;">?</button>
- </span>
- <input type="text" id="searchInput" class="primer-input" placeholder="検索したい塩基配列を入力" oninput="toggleHighlightBtn()" onkeypress="if(event.keyCode===13 && !document.getElementById('btnHighlight').disabled) highlightSearch()">
- <button class="btn btn-primary" id="btnHighlight" onclick="highlightSearch()" disabled data-tooltip="入力した塩基配列を検索してハイライトします">ハイライト</button>
- <button class="btn" id="btnClear" onclick="clearSearch()" disabled data-tooltip="ハイライトを解除します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg> クリア</button>
- </div>
- <span style="font-size: 10px; color: var(--text-muted); line-height: 1.4;">※制限酵素部位などを検索できます。ギャップ(-)は無視されます。</span>
- </div>
+    <div class="card editor-card">
+        <div class="card-header">
+            <span>塩基配列エディタ</span>
+            
+            <div id="primerStatsPanel" class="header-primer-stats">
+                <span style="color: #f1c40f; font-weight: bold; margin-right: 5px;">🎯 プライマー設計ナビ:</span>
+                <span class="h-stat" style="align-items: center;">塩基配列: <span id="psSeq" class="val-seq" style="cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.6)'" onmouseout="this.style.background='rgba(0,0,0,0.3)'" onclick="copyPrimerSequence()" data-tooltip="クリックして完全な塩基配列をコピー">-</span></span>
+                <span class="h-stat">長さ: <span id="psLen" class="val-display">-</span><span class="val-target">bp (適正:18-25)</span></span>
+                <span class="h-stat">GC含量: <span id="psGC" class="val-display">-</span><span class="val-target">% (適正:40-60)</span></span>
+                <span class="h-stat">Tm値: <span id="psTm" class="val-display">-</span><span class="val-target">℃ (適正:55-65)</span></span>
+            </div>
+        </div>
+        
+        <div class="editor-toolbar" style="padding: 8px 15px; background: #ecf0f1; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+                <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
+                    <span style="font-size: 12px; font-weight: bold; color: var(--secondary); display: flex; align-items: center;">
+                        🔍 モチーフ検索
+                        <button class="rationale-btn" onclick="toggleRationale(event, 'rat_motif')" style="margin-right: 5px;">?</button>
+                    </span>
+                    <input type="text" id="searchInput" class="primer-input" style="width: 140px;" placeholder="塩基配列を入力" style="text-transform: uppercase;" oninput="toggleHighlightBtn()" onkeypress="if(event.keyCode===13 && !document.getElementById('btnHighlight').disabled) highlightSearch()">
+                    <button class="btn btn-option" id="btnHighlight" style="padding: 6px 12px; font-size: 11px;" onclick="highlightSearch()" disabled data-tooltip="入力した塩基配列を検索してハイライトします"> ハイライト</button>
+                    <button class="btn" id="btnClear" style="padding: 6px 12px; font-size: 11px;" onclick="clearSearch()" disabled data-tooltip="ハイライトを解除します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg> クリア</button>
+                </div>
+                <span style="font-size: 10px; color: var(--text-muted); line-height: 1.4;">※制限酵素部位などを検索できます。ギャップ(-)は無視されます。</span>
+            </div>
 
- <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; border-left: 2px solid var(--border-color); padding-left: 10px;">
- <span style="font-size: 12px; font-weight: bold; color: #c0392b; display: flex; align-items: center;">
- ✂️ 範囲カット・操作
- <button class="rationale-btn" onclick="toggleRationale(event, 'rat_step3')" style="margin-right: 5px;">?</button>
- </span>
- </div>
- </div>
- 
- <div id="rat_motif" class="rationale-text">
- <strong>【根拠：上部の「プライマー両端特定」との違い】</strong><br>
- ・ステップ2の「両端特定」が<strong>不要なノイズを切り落とすための目印探し（トリミング準備）</strong>であるのに対し、この「モチーフ検索」は<strong>制限酵素部位など、生物学的に意味のある短い塩基配列</strong>がどこにあるかをエディタ内で探し出し、黄色くハイライト（強調表示）するための機能です。
- </div>
- <div id="rat_step3" class="rationale-text">
- <strong>【根拠：なぜ手動でカットするのか？】</strong><br>
- ・端がガタガタになっているノイズ部分や不要な領域を残したまま次の解析に進むと、システムがそれを「存在しない未知の突然変異」として誤認識してしまいます。綺麗にトリミングするのがインシリコ解析の鉄則です。<br>
- <strong>【キーボード操作・ショートカット】</strong><br>
- ・一括削除: 塩基配列または目盛りをドラッグで選択し [Backspace] または [Delete]<br>
- ・１文字編集: セルを選択して [A][T][G][C][Y][R][N] 等を入力して上書き<br>
- ・ギャップ挿入: [Space] または [-]<br>
- ・移動: 矢印キー [↑][↓][←][→]<br>
- ・元に戻す / やり直す: [Ctrl+Z] / [Ctrl+Shift+Z] (Macは Cmd+Z / Cmd+Shift+Z)<br>
- <strong>【参考：あいまい塩基表（IUPACコード）】</strong><br>
- ・Y (CかT), R (AかG), N (不明), W (AかT), S (CかG), M (AかC), K (GかT)
- </div>
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; border-left: 2px solid var(--border-color); padding-left: 10px;">
+                <span style="font-size: 12px; font-weight: bold; color: var(--danger); display: flex; align-items: center;">
+                    ✂️ 範囲カット・操作
+                    <button class="rationale-btn" onclick="toggleRationale(event, 'rat_step3')" style="margin-right: 5px;">?</button>
+                </span>
+            </div>
+        </div>
+        
+        <div id="rat_motif" class="rationale-text" style="border-bottom: 1px solid var(--warning);">
+            <strong>【根拠：上部の「プライマー両端特定」との違い】</strong><br>
+            ステップ2の「両端特定」が<strong>不要なノイズを切り落とすための目印探し（トリミング準備）</strong>であるのに対し、この「モチーフ検索」は<strong>制限酵素部位など、生物学的に意味のある短い塩基配列</strong>がどこにあるかをエディタ内で探し出し、黄色くハイライト（強調表示）するための機能です。
+        </div>
+        <div id="rat_step3" class="rationale-text" style="border-bottom: 1px solid var(--warning);">
+            <strong>【根拠：なぜ手動でカットするのか？】</strong><br>
+            端がガタガタになっているノイズ部分や不要な領域を残したまま次の解析に進むと、システムがそれを「存在しない未知の突然変異」として誤認識してしまいます。綺麗にトリミングするのがインシリコ解析の鉄則です。<br>
+            <strong>【キーボード操作・ショートカット】</strong><br>
+            ・一括削除: 塩基配列または目盛りをドラッグで選択し [Backspace] または [Delete]<br>
+            ・１文字編集: セルを選択して [A][T][G][C][Y][R][N] 等を入力して上書き<br>
+            ・ギャップ挿入: [Space] または [-]<br>
+            ・移動: 矢印キー [↑][↓][←][→]<br>
+            ・元に戻す / やり直す: [Ctrl+Z] / [Ctrl+Shift+Z] (Macは Cmd+Z / Cmd+Shift+Z)<br>
+            <strong>【参考：あいまい塩基表（IUPACコード）】</strong><br>
+            Y (CかT), R (AかG), N (不明), W (AかT), S (CかG), M (AかC), K (GかT)
+        </div>
 
- <div class="bench-tip">
- <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg> 現場のコツ（設計ミッション）</strong><br>
- 塩基配列の端の不要な領域をカットしながら、右上の「設計ナビ」の数値が<strong>すべて緑色（適正値）</strong>になる理想の領域を探し出しましょう！
- </div>
+        <div class="bench-tip">
+            <strong>💡 現場のコツ（設計ミッション）</strong><br>
+            塩基配列の端の不要な領域をカットしながら、右上の「設計ナビ」の数値が<strong>すべて緑色（適正値）</strong>になる理想の領域を探し出しましょう！
+        </div>
 
- <div class="editor-container" id="editorWrap">
- <div class="names-column" id="namesColumn">
- <div class="name-header">配列名</div>
- </div>
- <div class="sequence-grid" id="sequenceGrid">
- <div class="grid-header" id="gridHeader"></div>
- <div id="rowsContainer"></div>
- </div>
- </div>
- </div>
- 
- <div class="step-up-card">
- <h3>
- <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2-2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
- より高度な解析ツールへ
- </h3>
- <p>
- 本当の研究で「多数の塩基配列」「長い塩基配列」を正確に多重整列(MSA)するには、このアプリの簡易機能ではなく、世界標準の解析アルゴリズム<b>「MAFFT」</b>や<b>「Clustal Omega」</b>を使いましょう。
- </p>
- </div>
+        <div class="editor-container" id="editorWrap">
+            <div class="names-column" id="namesColumn">
+                <div class="name-header">配列名</div>
+            </div>
+            <div class="sequence-grid" id="sequenceGrid">
+                <div class="grid-header" id="gridHeader"></div>
+                <div id="rowsContainer"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="step-up-card">
+        <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2-2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+            より高度な解析ツールへ
+        </h3>
+        <p>本当の研究で「多数の塩基配列」「長い塩基配列」を正確に多重整列(MSA)するには、このアプリの簡易機能ではなく、世界標準の解析アルゴリズム<b>「MAFFT」</b>や<b>「Clustal Omega」</b>を使いましょう。</p>
+    </div>
 </div>
 
 <div class="status-bar">
- <span id="statusText">ステップ1: NCBIから自動取得するか、生データをドロップしてください。</span>
- <span id="posText">Row: - | Pos: -</span>
+    <span id="statusText">ステップ1: NCBIから自動取得するか、生データをドロップしてください。</span>
+    <span id="posText">Row: - | Pos: -</span>
 </div>
 
 <div class="footer">
- &copy; 2026 Bio-Edu Suite v3.14 | Sequence Curation & Pipeline Hub
+    &copy; 2026 Bio-Edu Suite v3.14 | Sequence Curation & Pipeline Hub
 </div>
 
 <div id="toast">メッセージ</div>
 <div id="globalTooltip" class="custom-tooltip"></div>
 
 <script>
- let sequences = []; 
- let selectedRow = -1; 
- let selectedCol = -1; 
- let alignedPosF = 0; 
- let alignedPosR = 0; 
- let mutationCols = new Set(); 
- let conservedCols = new Set(); 
-
- let isDragging = false;
- let dragStartRow = -1;
- let dragStartCol = -1;
- let dragEndCol = -1;
- let dragMode = null; 
-
- let isConservedVisible = false;
- let dragSrcIndex = null; 
- let currentSelectedPrimer = ""; 
-
- let historyStates = [];
- let historyIndex = -1;
-
- function saveState() {
- let state = sequences.map(s => ({
- name: s.name,
- data: [...s.data],
- isFPrimerFasta: s.isFPrimerFasta,
- isRPrimerFasta: s.isRPrimerFasta,
- isSelected: s.isSelected,
- fStart: s.fStart, fEnd: s.fEnd, rStart: s.rStart, rEnd: s.rEnd,
- searchHighlights: s.searchHighlights ? new Set(s.searchHighlights) : new Set()
- }));
- 
- if (historyIndex < historyStates.length - 1) {
- historyStates = historyStates.slice(0, historyIndex + 1);
- }
- historyStates.push(state);
- historyIndex++;
- if (historyStates.length > 20) {
- historyStates.shift();
- historyIndex--;
- }
- }
-
- function undo() {
- if (historyIndex > 0) {
- historyIndex--;
- restoreState(historyStates[historyIndex]);
- }
- }
-
- function redo() {
- if (historyIndex < historyStates.length - 1) {
- historyIndex++;
- restoreState(historyStates[historyIndex]);
- }
- }
-
- function restoreState(state) {
- sequences = state.map(s => ({
- name: s.name,
- data: [...s.data],
- isFPrimerFasta: s.isFPrimerFasta,
- isRPrimerFasta: s.isRPrimerFasta,
- isSelected: s.isSelected,
- fStart: s.fStart, fEnd: s.fEnd, rStart: s.rStart, rEnd: s.rEnd,
- searchHighlights: s.searchHighlights ? new Set(s.searchHighlights) : new Set()
- }));
- updateMutationsAndRender();
- }
-
- function setRoute(route) {
- const pF = document.getElementById('pF');
- const pR = document.getElementById('pR');
- const mismatchSlider = document.getElementById('mismatchSlider');
- const btnStep2 = document.getElementById('btnStep2');
- const msaBtn = document.getElementById('btnOptionMSA');
- const st = document.getElementById('statusText');
- const step2Row = document.getElementById('step2Row');
- 
- const selectedCount = sequences.filter(s => s.isSelected !== false && !s.isFPrimerFasta && !s.isRPrimerFasta).length;
-
- if(route === 'B') {
- pF.disabled = true; pR.disabled = true; mismatchSlider.disabled = true;
- btnStep2.disabled = true; 
- if(step2Row) step2Row.style.opacity = "0.4";
- msaBtn.disabled = selectedCount < 2; 
- document.getElementById('btnExportFasta').disabled = false; 
- document.getElementById('btnExportClustal').disabled = false; 
- document.getElementById('btnCopyFasta').disabled = false; 
- document.getElementById('btnCopyClustal').disabled = false; 
- document.getElementById('btnConserved').disabled = false;
- st.innerText = "NCBIから登録済みの塩基配列を取得しました。プライマー検索をスキップし、直接MSA（多重整列）が可能です。";
- } else {
- pF.disabled = false; pR.disabled = false; mismatchSlider.disabled = false;
- btnStep2.disabled = false; 
- if(step2Row) step2Row.style.opacity = "1";
- msaBtn.disabled = selectedCount < 2; 
- st.innerText = "生データを読み込みました。プライマー F/Rを入力してノイズ領域を特定するか、自由にカットを行ってください。";
- }
- updateMSAButtonState();
- }
-
- async function fetchNCBI() {
- const idInput = document.getElementById('ncbiId').value.trim();
- if(!idInput) return;
- 
- const loader = document.getElementById('apiLoader');
- if(loader) loader.style.display = 'inline-block';
- document.getElementById('statusText').innerText = `NCBIから [${idInput}] を取得中...`;
-
- try {
- const response = await fetch(`https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=${idInput}&rettype=fasta&retmode=text`);
- if (!response.ok) throw new Error("HTTP " + response.status);
- const data = await response.text();
- if (!data || data.includes('Error')) throw new Error("データが見つかりませんでした。");
- 
- parseFasta(data, "NCBI_" + idInput);
- renderEditorSync();
- setRoute('B');
- saveState();
- } catch (error) {
- showToast("取得エラー: " + error.message, "error");
- document.getElementById('statusText').innerText = "エラー";
- } finally {
- if(loader) loader.style.display = 'none';
- }
- }
- 
- function toggleRationale(event, id) { 
- event.stopPropagation(); 
- const el = document.getElementById(id); 
- const btn = event.currentTarget; 
- const isShown = el.classList.contains('show');
- 
- document.querySelectorAll('.rationale-text').forEach(e => { 
- e.classList.remove('show', 'arrow-top', 'arrow-bottom'); 
- });
- 
- if(!isShown) { 
- if (el.parentNode !== document.body) document.body.appendChild(el); 
- el.style.top = '0px'; el.style.left = '0px'; 
- el.classList.add('show');
- 
- const elHeight = el.offsetHeight; 
- const elWidth = el.offsetWidth; 
- const rect = btn.getBoundingClientRect(); 
- 
- let topPos = rect.bottom + 12; 
- let arrowClass = 'arrow-top';
- 
- if (rect.bottom + elHeight + 20 > window.innerHeight) { 
- topPos = rect.top - elHeight - 12; 
- arrowClass = 'arrow-bottom'; 
- } 
- el.classList.add(arrowClass); 
- el.style.top = topPos + 'px'; 
- 
- let leftPos = rect.left - (elWidth / 2) + (rect.width / 2); 
- if (leftPos + elWidth > window.innerWidth) leftPos = window.innerWidth - elWidth - 10; 
- if (leftPos < 10) leftPos = 10; 
- el.style.left = leftPos + 'px'; 
- 
- const arrowOffset = rect.left - leftPos + (rect.width / 2) - 6; 
- el.style.setProperty('--arrow-left', arrowOffset + 'px'); 
- } 
- }
- 
- document.addEventListener('click', (e) => { 
- if (!e.target.closest('.rationale-text') && !e.target.closest('.rationale-btn')) { 
- document.querySelectorAll('.rationale-text').forEach(el => { 
- el.classList.remove('show', 'arrow-top', 'arrow-bottom'); 
- }); 
- } 
- });
- document.addEventListener('scroll', () => { 
- document.querySelectorAll('.rationale-text').forEach(el => { 
- el.classList.remove('show', 'arrow-top', 'arrow-bottom'); 
- }); 
- }, true);
-
- function toggleHighlightBtn() {
- const val = document.getElementById('searchInput').value.trim();
- const isDisabled = (val.length === 0);
- document.getElementById('btnHighlight').disabled = isDisabled;
- document.getElementById('btnClear').disabled = isDisabled;
- }
-
- function updateMismatchVal(val) { document.getElementById('mismatchVal').innerText = val + '%'; }
-
- function unlockStep(step) {
- if(step >= 2) document.getElementById('btnStep2').disabled = false;
- if(step >= 3) {
- document.getElementById('btnExportFasta').disabled = false; 
- document.getElementById('btnExportClustal').disabled = false; 
- document.getElementById('btnCopyFasta').disabled = false; 
- document.getElementById('btnCopyClustal').disabled = false; 
- document.getElementById('btnConserved').disabled = false;
- }
- }
-
- function toggleConservedRegions() {
- isConservedVisible = !isConservedVisible;
- let btn = document.getElementById('btnConserved');
- if (isConservedVisible) {
- btn.innerHTML = "🟢 隠す";
- btn.style.backgroundColor = "#1e8449";
- btn.style.borderColor = "#196f3d";
- } else {
- btn.innerHTML = "🟢 保存領域";
- btn.style.backgroundColor = "";
- btn.style.borderColor = "";
- }
- renderEditorSync(); 
- }
-
- function updateMSAButtonState() {
- const selectedCount = sequences.filter(s => s.isSelected !== false && !s.isFPrimerFasta && !s.isRPrimerFasta).length;
- const msaBtn = document.getElementById('btnOptionMSA');
- if (msaBtn) msaBtn.disabled = selectedCount < 2;
- }
-
- const dropZone = document.getElementById('dropZone');
- ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
- dropZone.addEventListener(eventName, preventDefaults, false);
- });
- function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
- dropZone.addEventListener('dragover', () => dropZone.classList.add('dragover'));
- dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
- dropZone.addEventListener('drop', (e) => {
- dropZone.classList.remove('dragover');
- handleFiles({ target: { files: e.dataTransfer.files } });
- });
-
- function handleFiles(event) {
- const files = event.target.files;
- if (!files || files.length === 0) return;
- 
- document.getElementById('statusText').innerText = "データを読み込み中...";
- mutationCols.clear(); 
- conservedCols.clear();
- document.getElementById('primerStatsPanel').style.opacity = '0';
- document.getElementById('primerStatsPanel').style.pointerEvents = 'none';
-
- let loadedCount = 0;
- let fileInput = document.getElementById('fileInput');
-
- Array.from(files).forEach(file => {
- const reader = new FileReader();
- reader.onload = (e) => {
- try { parseFasta(e.target.result, file.name.replace(/\.[^/.]+$/, "")); } catch(err) {}
- loadedCount++;
- if (loadedCount === files.length) { 
- renderEditorAsync(); 
- if(fileInput) fileInput.value = ''; 
- unlockStep(2);
- setRoute('A');
- saveState();
- }
- };
- reader.readAsText(file);
- });
- }
-
- function parseFasta(text, defaultName) {
- const lines = text.split('\n');
- let currentName = "", currentSeq = "";
- lines.forEach(line => {
- line = line.trim();
- if (line.startsWith('>')) {
- if (currentName) sequences.push({ name: currentName, data: currentSeq.split(''), isFPrimerFasta: false, isRPrimerFasta: false, isSelected: true });
- currentName = line.substring(1).split(' ')[0];
- currentSeq = "";
- } else {
- currentSeq += line.toUpperCase().replace(/[^A-Z-]/g, '');
- }
- });
- if (currentName) sequences.push({ name: currentName, data: currentSeq.split(''), isFPrimerFasta: false, isRPrimerFasta: false, isSelected: true });
- else if (currentSeq) sequences.push({ name: defaultName, data: currentSeq.split(''), isFPrimerFasta: false, isRPrimerFasta: false, isSelected: true });
- }
-
- function handleDragStart(e) {
- dragSrcIndex = parseInt(this.dataset.index);
- e.dataTransfer.effectAllowed = 'move';
- e.dataTransfer.setData('text/plain', dragSrcIndex);
- this.style.opacity = '0.4';
- }
- function handleDragOver(e) { if (e.preventDefault) e.preventDefault(); e.dataTransfer.dropEffect = 'move'; return false; }
- function handleDragEnter(e) { this.classList.add('drag-over'); }
- function handleDragLeave(e) { this.classList.remove('drag-over'); }
- function handleDrop(e) {
- if (e.stopPropagation) e.stopPropagation();
- let targetIndex = parseInt(this.dataset.index);
- if (dragSrcIndex !== null && dragSrcIndex !== targetIndex) {
- let movedSeq = sequences.splice(dragSrcIndex, 1)[0];
- sequences.splice(targetIndex, 0, movedSeq);
- if (selectedRow === dragSrcIndex) selectedRow = targetIndex;
- else { selectedRow = -1; selectedCol = -1; }
- renderEditorSync();
- saveState();
- }
- return false;
- }
- function handleDragEnd(e) {
- this.style.opacity = '1';
- document.querySelectorAll('.name-cell').forEach(c => c.classList.remove('drag-over'));
- }
-
- function deleteSeq(index) {
- let deletedName = sequences[index].name;
- sequences.splice(index, 1);
- if(selectedRow === index) { selectedRow = -1; selectedCol = -1; }
- else if (selectedRow > index) selectedRow--;
- if(sequences.length < 2) { mutationCols.clear(); conservedCols.clear(); }
- updateMutationsAndRender();
- saveState();
- showToast(`「${deletedName}」を削除しました`);
- }
-
- function reverseComplement(seq) {
- const comp = {'A':'T', 'T':'A', 'G':'C', 'C':'G'};
- return seq.split('').reverse().map(c => comp[c] || c).join('');
- }
-
- function findFuzzy(target, query, maxMismatches) {
- let bestMatch = { index: -1, mismatches: 999 };
- for (let i = 0; i <= target.length - query.length; i++) {
- let mismatches = 0;
- for (let j = 0; j < query.length; j++) {
- if (target[i + j] !== query[j]) { mismatches++; if (mismatches > maxMismatches) break; }
- }
- if (mismatches <= maxMismatches && mismatches < bestMatch.mismatches) bestMatch = { index: i, mismatches: mismatches };
- }
- return bestMatch.index;
- }
-
- function alignByDualPrimers() {
- if(sequences.length === 0) return;
- let fPrimer = document.getElementById('pF').value.toUpperCase().replace(/[^A-Z]/g, '');
- let rPrimer = document.getElementById('pR').value.toUpperCase().replace(/[^A-Z]/g, '');
- if(!fPrimer || !rPrimer) { showToast("エラー: 検索を実行するには、FとRの両方のプライマー塩基配列を入力してください。", "error"); return; }
-
- mutationCols.clear();
- conservedCols.clear();
- document.getElementById('primerStatsPanel').style.opacity = '0';
- document.getElementById('primerStatsPanel').style.pointerEvents = 'none';
-
- let rPrimerRC = reverseComplement(rPrimer); 
- let tolerancePercent = parseInt(document.getElementById('mismatchSlider').value) / 100;
- let maxMF = Math.floor(fPrimer.length * tolerancePercent); 
- let maxMR = Math.floor(rPrimerRC.length * tolerancePercent); 
-
- document.getElementById('statusText').innerText = "検索中...";
-
- setTimeout(() => {
- let maxFPos = 0; let globalValidROffset = -1;
- let foundAnyF = false; let foundAnyR = false;
- let unfoundSamples = [];
-
- sequences.forEach(s => {
- let seqStr = s.data.join('').replace(/-/g, ''); s.data = seqStr.split(''); 
- if (seqStr === fPrimer || (seqStr.includes(fPrimer) && seqStr.length < fPrimer.length + 10)) {
- s.fStartTemp = 0; s.fEndTemp = seqStr.length; s.rStartTemp = -1; s.rEndTemp = -1;
- s.isFPrimerFasta = true; foundAnyF = true;
- if(s.fStartTemp > maxFPos) maxFPos = s.fStartTemp;
- return;
- } else if (seqStr === rPrimerRC || (seqStr.includes(rPrimerRC) && seqStr.length < rPrimerRC.length + 10)) {
- s.rStartTemp = 0; s.rEndTemp = seqStr.length; s.fStartTemp = -1; s.fEndTemp = -1;
- s.isRPrimerFasta = true; foundAnyR = true;
- return;
- }
- 
- s.fStartTemp = findFuzzy(seqStr, fPrimer, maxMF);
- if(s.fStartTemp !== -1) {
- s.fEndTemp = s.fStartTemp + fPrimer.length;
- if(s.fStartTemp > maxFPos) maxFPos = s.fStartTemp;
- foundAnyF = true;
- let subSeq = seqStr.substring(s.fEndTemp);
- let subMatch = findFuzzy(subSeq, rPrimerRC, maxMR);
- if(subMatch !== -1) {
- s.rStartTemp = s.fEndTemp + subMatch; s.rEndTemp = s.rStartTemp + rPrimerRC.length; foundAnyR = true;
- if (globalValidROffset === -1) globalValidROffset = fPrimer.length + subMatch;
- } else { s.rStartTemp = -1; s.rEndTemp = -1; }
- } else {
- s.fStartTemp = -1; s.fEndTemp = -1; s.rStartTemp = -1; s.rEndTemp = -1;
- }
-
- if(s.fStartTemp === -1 && s.rStartTemp === -1) unfoundSamples.push(s.name);
- });
-
- if(!foundAnyF && !foundAnyR) { 
- showToast("指定されたプライマーが見つかりません。入力ミスがないか確認してください。", "error"); 
- document.getElementById('statusText').innerText = "検索失敗。";
- return; 
- }
-
- if(unfoundSamples.length > 0) showToast(`一部の塩基配列からプライマー領域が見つかりませんでした。`, "warning");
-
- let maxRPos = 0;
- sequences.forEach(s => {
- if (s.isRPrimerFasta) {
- if (globalValidROffset !== -1) {
- let pad = maxFPos + globalValidROffset;
- s.data = Array(pad).fill('-').concat(s.data);
- s.fStart = -1; s.fEnd = -1; s.rStart = pad; s.rEnd = pad + s.data.length - pad;
- if(s.rStart > maxRPos) maxRPos = s.rStart;
- }
- } else if (s.isFPrimerFasta) {
- let pad = maxFPos; if(pad > 0) s.data = Array(pad).fill('-').concat(s.data);
- s.fStart = pad; s.fEnd = pad + fPrimer.length; s.rStart = -1; s.rEnd = -1;
- } else if(s.fStartTemp !== -1) {
- let pad = maxFPos - s.fStartTemp; if(pad > 0) s.data = Array(pad).fill('-').concat(s.data);
- s.fStart = s.fStartTemp + pad; s.fEnd = s.fEndTemp + pad;
- if(s.rStartTemp !== -1) {
- s.rStart = s.rStartTemp + pad; s.rEnd = s.rEndTemp + pad;
- if(s.rStart > maxRPos) maxRPos = s.rStart;
- } else { s.rStart = -1; s.rEnd = -1; }
- }
- delete s.fStartTemp; delete s.fEndTemp; delete s.rStartTemp; delete s.rEndTemp;
- });
-
- alignedPosF = maxFPos; alignedPosR = maxRPos > 0 ? maxRPos : maxFPos;
- unlockStep(3);
- updateMutationsAndRender(); 
- saveState();
- scrollToPos(alignedPosF);
- document.getElementById('statusText').innerText = "検索成功！不要な両端（ノイズ領域）はドラッグして一括削除（カット）してください。";
- }, 50);
- }
-
- function scrollToPos(pos) {
- let wrap = document.getElementById('editorWrap');
- wrap.scrollTo({ left: Math.max(0, (pos * 23) - 200), behavior: 'smooth' });
- }
-
- document.addEventListener('keydown', function(e) {
- if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-
- if (e.ctrlKey || e.metaKey) {
- if (e.key.toLowerCase() === 'z') { e.preventDefault(); if (e.shiftKey) redo(); else undo(); return; } 
- else if (e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); return; }
- }
-
- let prevent = false;
- let requiresSave = false;
-
- if (e.key === 'Backspace' || e.key === 'Delete') {
- if (dragStartCol !== -1 && dragEndCol !== -1) {
- let startCol = Math.min(dragStartCol, dragEndCol);
- let endCol = Math.max(dragStartCol, dragEndCol);
- let numToDelete = endCol - startCol + 1;
- 
- if (dragMode === 'column') {
- sequences.forEach(s => {
- s.data.splice(startCol, numToDelete);
- if (s.fStart !== -1 && startCol < s.fEnd) { if (endCol < s.fStart) { s.fStart -= numToDelete; s.fEnd -= numToDelete; } else { s.fStart = -1; s.fEnd = -1; } }
- if (s.rStart !== -1 && startCol < s.rEnd) { if (endCol < s.rStart) { s.rStart -= numToDelete; s.rEnd -= numToDelete; } else { s.rStart = -1; s.rEnd = -1; } }
- });
- document.getElementById('statusText').innerText = "縦列一括削除（トリミング）を実行しました。";
- } else if (dragMode === 'individual' && dragStartRow !== -1) {
- let s = sequences[dragStartRow];
- s.data.splice(startCol, numToDelete);
- if (s.fStart !== -1 && startCol < s.fEnd) { if (endCol < s.fStart) { s.fStart -= numToDelete; s.fEnd -= numToDelete; } else { s.fStart = -1; s.fEnd = -1; } }
- if (s.rStart !== -1 && startCol < s.rEnd) { if (endCol < s.rStart) { s.rStart -= numToDelete; s.rEnd -= numToDelete; } else { s.rStart = -1; s.rEnd = -1; } }
- document.getElementById('statusText').innerText = "選択された塩基配列の範囲を削除しました。";
- }
- 
- selectedCol = -1; selectedRow = -1;
- dragStartRow = -1; dragStartCol = -1; dragEndCol = -1; dragMode = null;
- prevent = true; requiresSave = true; updateMutationsAndRender();
- } else if (selectedCol !== -1 && selectedRow !== -1) {
- let seq = sequences[selectedRow];
- seq.data.splice(selectedCol, 1);
- if (seq.fStart !== -1 && selectedCol < seq.fEnd) { if(selectedCol < seq.fStart) seq.fStart--; seq.fEnd--; }
- if (seq.rStart !== -1 && selectedCol < seq.rEnd) { if(selectedCol < seq.rStart) seq.rStart--; seq.rEnd--; }
- prevent = true; requiresSave = true; updateMutationsAndRender();
- }
- } else if (selectedRow !== -1 && selectedCol !== -1) {
- let seq = sequences[selectedRow];
- let key = e.key.toUpperCase();
-
- if (e.key === 'ArrowRight') { selectedCol = Math.min(seq.data.length, selectedCol + 1); prevent = true; } 
- else if (e.key === 'ArrowLeft') { selectedCol = Math.max(0, selectedCol - 1); prevent = true; } 
- else if (e.key === 'ArrowDown') { selectedRow = Math.min(sequences.length - 1, selectedRow + 1); prevent = true; } 
- else if (e.key === 'ArrowUp') { selectedRow = Math.max(0, selectedRow - 1); prevent = true; } 
- else if (e.key === ' ' || e.key === '-' || e.key === '_') {
- seq.data.splice(selectedCol, 0, '-');
- if (seq.fStart !== -1 && selectedCol <= seq.fEnd) { if(selectedCol <= seq.fStart) seq.fStart++; seq.fEnd++; }
- if (seq.rStart !== -1 && selectedCol <= seq.rEnd) { if(selectedCol <= seq.rStart) seq.rStart++; seq.rEnd++; }
- selectedCol++; prevent = true; requiresSave = true; updateMutationsAndRender();
- } else if (['A','T','G','C','U','N','Y','R','W','S','M','K','B','V','D','H'].includes(key)) {
- if(selectedCol < seq.data.length) seq.data[selectedCol] = key; else seq.data.push(key);
- selectedCol++; prevent = true; requiresSave = true; updateMutationsAndRender();
- }
- }
-
- if (prevent) {
- e.preventDefault();
- if (e.key && e.key.startsWith('Arrow')) {
- updateSelectionUI();
- let cell = document.querySelector(`.row[data-row="${selectedRow}"] .base[data-col="${selectedCol}"]`);
- if(cell) cell.scrollIntoView({block: "nearest", inline: "nearest"});
- }
- if (requiresSave) saveState();
- }
- });
-
- function updateMutationsAndRender() {
- updateMSAButtonState();
-
- if(sequences.length < 2) { 
- reapplySearch(); renderEditorSync(); return; 
- }
-
- let finalAlignLen = Math.max(...sequences.map(s => s.data.length));
- mutationCols.clear(); conservedCols.clear();
- 
- for(let c=0; c<finalAlignLen; c++) {
- let bases = [];
- sequences.forEach(s => { 
- if(!s.isFPrimerFasta && !s.isRPrimerFasta && s.isSelected !== false && s.data[c] !== undefined && s.data[c] !== '-') bases.push(s.data[c]); 
- });
- if(bases.length > 1) {
- let first = bases[0]; let isConserved = true;
- for(let b=1; b<bases.length; b++) {
- if(bases[b] !== first) { mutationCols.add(c); isConserved = false; break; }
- }
- if (isConserved) conservedCols.add(c);
- }
- }
- reapplySearch(); renderEditorSync(); 
- }
-
- function alignPairNW(s1, s2) {
- let m = s1.length, n = s2.length;
- let dp = new Int32Array((m + 1) * (n + 1));
- let get = (i, j) => dp[i * (n + 1) + j];
- let set = (i, j, val) => dp[i * (n + 1) + j] = val;
-
- for(let i=0; i<=m; i++) set(i, 0, -i*2);
- for(let j=0; j<=n; j++) set(0, j, -j*2);
-
- for(let i=1; i<=m; i++) {
- for(let j=1; j<=n; j++) {
- let match = (s1[i-1] === s2[j-1]) ? 3 : -1;
- if(s1[i-1] === '-' || s2[j-1] === '-') match = -1; 
- set(i, j, Math.max( get(i-1, j-1) + match, get(i-1, j) - 2, get(i, j-1) - 2 ));
- }
- }
- let align1 = "", align2 = "";
- let ops = []; 
- let i = m, j = n;
- while(i > 0 && j > 0) {
- let match = (s1[i-1] === s2[j-1]) ? 3 : -1;
- if(s1[i-1] === '-' || s2[j-1] === '-') match = -1;
- if(get(i, j) === get(i-1, j-1) + match) { align1 = s1[i-1] + align1; align2 = s2[j-1] + align2; ops.unshift(1); i--; j--; } 
- else if(get(i, j) === get(i-1, j) - 2) { align1 = s1[i-1] + align1; align2 = "-" + align2; ops.unshift(2); i--; } 
- else { align1 = "-" + align1; align2 = s2[j-1] + align2; ops.unshift(3); j--; }
- }
- while(i > 0) { align1 = s1[i-1] + align1; align2 = "-" + align2; ops.unshift(2); i--; }
- while(j > 0) { align1 = "-" + align1; align2 = s2[j-1] + align2; ops.unshift(3); j--; }
- return [align1, align2, ops];
- }
-
- function runMSA() {
- let targetSeqs = sequences.filter(s => !s.isFPrimerFasta && !s.isRPrimerFasta && s.isSelected !== false);
- if(targetSeqs.length < 2) { showToast("比較する塩基配列を2つ以上選択してください。", "warning"); return; }
- let seqStrs = targetSeqs.map(s => s.data.join('').replace(/-/g, ''));
- let maxLen = Math.max(...seqStrs.map(s => s.length));
- 
- if(maxLen > 2000) { showToast("塩基配列が長すぎます。多重整列を実行する前にカットしてください。", "error"); return; }
- document.getElementById('statusText').innerText = "アライメントを計算中...";
-
- setTimeout(() => {
- let refSeq = seqStrs[0];
- let alignedSeqs = [refSeq];
- 
- for(let k=1; k<seqStrs.length; k++) {
- let targetSeq = seqStrs[k];
- let [newRef, newTarget, ops] = alignPairNW(refSeq, targetSeq);
- 
- let updatedAligned = [];
- for(let p=0; p<alignedSeqs.length; p++) {
- let oldSeq = alignedSeqs[p]; let newSeq = ""; let oldPtr = 0;
- for(let op of ops) {
- if(op === 1 || op === 2) { newSeq += oldSeq[oldPtr]; oldPtr++; } else if(op === 3) { newSeq += '-'; }
- }
- updatedAligned.push(newSeq);
- }
- alignedSeqs = updatedAligned; alignedSeqs.push(newTarget); refSeq = newRef;
- }
-
- let tIdx = 0; let finalAlignLen = alignedSeqs[0].length;
- for(let i=0; i<sequences.length; i++) {
- if(!sequences[i].isFPrimerFasta && !sequences[i].isRPrimerFasta && sequences[i].isSelected !== false) {
- sequences[i].data = alignedSeqs[tIdx].split(''); tIdx++;
- }
- }
-
- let fPrimer = document.getElementById('pF').value.toUpperCase().replace(/[^A-Z]/g, '');
- let rPrimer = document.getElementById('pR').value.toUpperCase().replace(/[^A-Z]/g, '');
- let rPrimerRC = reverseComplement(rPrimer);
-
- sequences.forEach(s => {
- if(s.isFPrimerFasta && fPrimer.length > 0) {
- let padding = Array(Math.max(0, finalAlignLen - fPrimer.length)).fill('-');
- s.data = fPrimer.split('').concat(padding);
- s.fStart = 0; s.fEnd = fPrimer.length;
- } else if(s.isRPrimerFasta && rPrimerRC.length > 0) {
- let padding = Array(Math.max(0, finalAlignLen - rPrimerRC.length)).fill('-');
- s.data = padding.concat(rPrimerRC.split(''));
- s.rStart = padding.length; s.rEnd = finalAlignLen;
- }
- });
-
- updateMutationsAndRender(); saveState();
- const resetBtn = document.getElementById('btnResetMSA'); if(resetBtn) resetBtn.disabled = false;
- document.getElementById('statusText').innerText = "アライメント完了！突然変異（赤）や保存領域（薄緑）を確認し、ドラッグしてプライマーを設計してみましょう。";
- 
- document.getElementById('btnExportFasta').disabled = false; document.getElementById('btnExportClustal').disabled = false; 
- document.getElementById('btnCopyFasta').disabled = false; document.getElementById('btnCopyClustal').disabled = false; 
- document.getElementById('btnConserved').disabled = false;
- }, 50);
- }
-
- function resetMSA() {
- sequences.forEach(s => { if(!s.isFPrimerFasta && !s.isRPrimerFasta) s.data = s.data.filter(b => b !== '-'); });
- document.getElementById('btnResetMSA').disabled = true;
- updateMutationsAndRender(); saveState();
- showToast("アライメントを解除し、生データの状態に戻しました。", "info");
- document.getElementById('statusText').innerText = "アライメントを解除しました。";
- }
-
- function renderEditorAsync() { setTimeout(renderEditorSync, 10); }
-
- function renderEditorSync() {
- const namesCol = document.getElementById('namesColumn');
- const header = document.getElementById('gridHeader');
- const container = document.getElementById('rowsContainer');
- if (!namesCol || !header || !container) return;
-
- namesCol.innerHTML = '<div class="name-header">配列名</div>';
- const headerDiv = namesCol.querySelector('.name-header');
- const selectAllCb = document.createElement('input');
- selectAllCb.type = 'checkbox';
- selectAllCb.checked = sequences.length > 0 && sequences.every(s => s.isSelected !== false);
- selectAllCb.setAttribute('data-tooltip', "全選択/解除");
- selectAllCb.style.marginRight = "8px"; selectAllCb.style.cursor = "pointer";
- selectAllCb.onchange = (e) => { sequences.forEach(s => s.isSelected = e.target.checked); renderEditorSync(); };
- headerDiv.insertBefore(selectAllCb, headerDiv.firstChild);
-
- header.innerHTML = ''; container.innerHTML = '';
-
- if (sequences.length === 0) {
- container.innerHTML = '<div style="color:#7f8c8d; text-align:center; padding-top:150px; font-size:16px;">データを読み込んでください。</div>';
- updateMSAButtonState(); return;
- }
-
- const maxLen = Math.max(...sequences.map(s => s.data.length));
- const fragHeader = document.createDocumentFragment();
- const fragNames = document.createDocumentFragment();
- const fragRows = document.createDocumentFragment();
-
- for (let i = 0; i < maxLen; i++) {
- const marker = document.createElement('div'); 
- marker.className = 'pos-marker'; marker.dataset.hcol = i;
- if ((i + 1) % 10 === 0) marker.innerText = i + 1;
- fragHeader.appendChild(marker);
- }
-
- sequences.forEach((s, sIdx) => {
- const nameCell = document.createElement('div');
- nameCell.className = (s.isFPrimerFasta || s.isRPrimerFasta) ? 'name-cell primer-row' : 'name-cell';
- nameCell.dataset.index = sIdx;
- nameCell.addEventListener('dragstart', handleDragStart); nameCell.addEventListener('dragover', handleDragOver);
- nameCell.addEventListener('drop', handleDrop); nameCell.addEventListener('dragenter', handleDragEnter);
- nameCell.addEventListener('dragleave', handleDragLeave); nameCell.addEventListener('dragend', handleDragEnd);
-
- const dragHandle = document.createElement('div'); dragHandle.className = 'drag-handle'; dragHandle.innerHTML = '⠿';
- dragHandle.setAttribute('data-tooltip', "ドラッグして移動");
- dragHandle.addEventListener('mousedown', () => { nameCell.draggable = true; });
- dragHandle.addEventListener('mouseup', () => { nameCell.draggable = false; });
- dragHandle.addEventListener('mouseleave', () => { nameCell.draggable = false; });
-
- const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.className = 'seq-checkbox';
- checkbox.setAttribute('data-tooltip', "出力・操作の対象にする"); checkbox.checked = s.isSelected !== false;
- checkbox.onchange = (e) => { 
- s.isSelected = e.target.checked; 
- selectAllCb.checked = sequences.every(seq => seq.isSelected !== false);
- updateMSAButtonState(); updateMutationsAndRender(); 
- };
-
- nameCell.appendChild(dragHandle); nameCell.appendChild(checkbox);
- const nameInput = document.createElement('input'); nameInput.type = 'text'; nameInput.className = 'seq-name-input'; nameInput.value = s.name; nameInput.oninput = (e) => { s.name = e.target.value; };
- const btnDel = document.createElement('button'); btnDel.className = 'action-icon icon-delete'; btnDel.innerHTML = '🗑️'; btnDel.onclick = () => deleteSeq(sIdx);
- nameCell.appendChild(nameInput); nameCell.appendChild(btnDel); fragNames.appendChild(nameCell);
-
- const rowDiv = document.createElement('div'); rowDiv.className = 'row'; rowDiv.dataset.row = sIdx;
- const fragBases = document.createDocumentFragment();
- 
- s.data.forEach((base, bIdx) => {
- const baseDiv = document.createElement('div'); let exClass = "";
- if(s.fStart !== undefined && s.fStart !== -1 && bIdx >= s.fStart && bIdx < s.fEnd) exClass += " primer-f";
- if(s.rStart !== undefined && s.rStart !== -1 && bIdx >= s.rStart && bIdx < s.rEnd) exClass += " primer-r";
- if(s.isSelected !== false && mutationCols.has(bIdx) && !s.isFPrimerFasta && !s.isRPrimerFasta && base !== '-') exClass += " mutation-bg";
- if(s.isSelected !== false && isConservedVisible && conservedCols.has(bIdx) && !s.isFPrimerFasta && !s.isRPrimerFasta && base !== '-') exClass += " conserved-bg";
- if(s.searchHighlights && s.searchHighlights.has(bIdx)) exClass += " search-bg";
-
- baseDiv.className = `base base-${base}${exClass}`; baseDiv.innerText = base; baseDiv.dataset.col = bIdx;
- fragBases.appendChild(baseDiv);
- });
- rowDiv.appendChild(fragBases); fragRows.appendChild(rowDiv);
- });
-
- header.appendChild(fragHeader); namesCol.appendChild(fragNames); container.appendChild(fragRows);
- updateSelectionUI(); updateDragSelection(); updateMSAButtonState();
- }
-
- function highlightSearch() {
- let inputStr = document.getElementById('searchInput').value.trim().toUpperCase();
- if(!inputStr) { clearSearch(); return; }
- reapplySearch(); renderEditorSync();
- let foundAny = false;
- sequences.forEach(s => { if(s.searchHighlights && s.searchHighlights.size > 0) foundAny = true; });
- if(foundAny) showToast(`「${inputStr}」をハイライトしました`); else showToast(`「${inputStr}」は見つかりませんでした`, "warning");
- }
-
- function clearSearch() { document.getElementById('searchInput').value = ''; toggleHighlightBtn(); reapplySearch(); renderEditorSync(); }
-
- function reapplySearch() {
- let inputEl = document.getElementById('searchInput');
- let inputStr = inputEl ? inputEl.value.trim().toUpperCase() : '';
- let searchStr = inputStr.replace(/U/g, 'T').replace(/[^A-Z]/g, '');
- 
- sequences.forEach(s => {
- if (!s.searchHighlights) s.searchHighlights = new Set();
- s.searchHighlights.clear();
- if (!searchStr || s.isFPrimerFasta || s.isRPrimerFasta) return;
- let noGapSeq = ""; let colMap = [];
- for(let c=0; c<s.data.length; c++) { if(s.data[c] !== '-') { noGapSeq += s.data[c]; colMap.push(c); } }
- let startIndex = 0;
- while((startIndex = noGapSeq.indexOf(searchStr, startIndex)) > -1) {
- for(let i=0; i<searchStr.length; i++) s.searchHighlights.add(colMap[startIndex + i]);
- startIndex++;
- }
- });
- }
-
- function selectCell(rIdx, bIdx) {
- selectedRow = rIdx; selectedCol = bIdx;
- document.getElementById('posText').innerText = `Row: ${rIdx + 1} | Pos: ${bIdx + 1}`;
- updateSelectionUI();
- }
-
- function updateSelectionUI() {
- document.querySelectorAll('.selected-column').forEach(e => e.classList.remove('selected-column'));
- document.querySelectorAll('.selected-cell').forEach(e => e.classList.remove('selected-cell'));
- if (selectedCol >= 0 && !isDragging) {
- document.querySelectorAll(`.base[data-col="${selectedCol}"]`).forEach(e => e.classList.add('selected-column'));
- if (selectedRow >= 0) {
- let cell = document.querySelector(`.row[data-row="${selectedRow}"] .base[data-col="${selectedCol}"]`);
- if (cell) cell.classList.add('selected-cell');
- }
- }
- }
-
- const sequenceGrid = document.getElementById('sequenceGrid');
- let scrollAnimationId = null;
- let isEdgeScrolling = false;
- let currentMouseX = 0;
- let currentMouseY = 0;
-
- function startEdgeScroll(mouseX, mouseY) {
- const container = document.getElementById('editorWrap');
- if (!container) return;
-
- const rect = container.getBoundingClientRect();
- const edgeThreshold = 50;
- let scrollSpeed = 0;
-
- if (mouseX < rect.left + edgeThreshold) {
- const distance = (rect.left + edgeThreshold) - mouseX;
- scrollSpeed = -(2 + (distance * 0.15));
- } else if (mouseX > rect.right - edgeThreshold) {
- const distance = mouseX - (rect.right - edgeThreshold);
- scrollSpeed = 2 + (distance * 0.15);
- }
-
- scrollSpeed = Math.max(-30, Math.min(30, scrollSpeed));
-
- if (scrollSpeed !== 0) {
- if (!isEdgeScrolling) {
- isEdgeScrolling = true;
- const scrollLoop = () => {
- if (isEdgeScrolling) {
- container.scrollLeft += scrollSpeed;
- 
- if (isDragging) {
- // Scrolled positions require fetching the element directly under the mouse pointer
- let target = document.elementFromPoint(currentMouseX, currentMouseY);
- if (target) {
- if (dragMode === 'individual' && target.classList.contains('base')) {
- let row = parseInt(target.parentElement.dataset.row);
- let col = parseInt(target.dataset.col);
- if (row === dragStartRow) {
- dragEndCol = col;
- updateDragSelection();
- }
- } else if (dragMode === 'column' && target.classList.contains('pos-marker')) {
- let col = parseInt(target.dataset.hcol);
- dragEndCol = col;
- updateDragSelection();
- }
- }
- }
- scrollAnimationId = requestAnimationFrame(scrollLoop);
- }
- };
- scrollLoop();
- }
- } else {
- stopEdgeScroll();
- }
- }
-
- function stopEdgeScroll() {
- isEdgeScrolling = false;
- if (scrollAnimationId) {
- cancelAnimationFrame(scrollAnimationId);
- scrollAnimationId = null;
- }
- }
-
- sequenceGrid.addEventListener('mousedown', function(e) {
- if(e.target.classList.contains('base')) {
- isDragging = true;
- dragMode = 'individual';
- let row = parseInt(e.target.parentElement.dataset.row);
- let col = parseInt(e.target.dataset.col);
- dragStartRow = row; dragStartCol = col; dragEndCol = col;
- selectCell(row, col);
- updateDragSelection();
- } else if (e.target.classList.contains('pos-marker')) {
- isDragging = true;
- dragMode = 'column';
- let col = parseInt(e.target.dataset.hcol);
- dragStartRow = -1; dragStartCol = col; dragEndCol = col;
- updateDragSelection();
- }
- });
-
- // Monitor mouse movements across the entire document during a drag operation
- document.addEventListener('mousemove', function(e) {
- if(!isDragging) return;
- 
- currentMouseX = e.clientX;
- currentMouseY = e.clientY;
- 
- startEdgeScroll(e.clientX, e.clientY);
-
- // Regular highlighting logic if not actively edge-scrolling
- if (!isEdgeScrolling) {
- let target = e.target;
- if(dragMode === 'individual' && target.classList.contains('base')) {
- let row = parseInt(target.parentElement.dataset.row);
- let col = parseInt(target.dataset.col);
- if(row === dragStartRow) {
- dragEndCol = col;
- updateDragSelection();
- }
- } else if (dragMode === 'column' && target.classList.contains('pos-marker')) {
- let col = parseInt(target.dataset.hcol);
- dragEndCol = col;
- updateDragSelection();
- }
- }
- });
-
- document.addEventListener('mouseup', function(e) {
- if(isDragging) {
- isDragging = false;
- stopEdgeScroll();
- }
- });
-
- function calculatePrimerStats(seq) {
- currentSelectedPrimer = seq; 
- let displaySeq = seq.length > 20 ? seq.substring(0, 18) + '...' : seq;
- document.getElementById('psSeq').innerText = displaySeq;
- 
- let len = seq.length; let lenEl = document.getElementById('psLen');
- lenEl.innerText = len; lenEl.style.color = (len >= 18 && len <= 25) ? '#2ecc71' : '#e74c3c';
- 
- let a = (seq.match(/A/gi) || []).length; let t = (seq.match(/T/gi) || []).length;
- let g = (seq.match(/G/gi) || []).length; let c = (seq.match(/C/gi) || []).length;
- 
- let gc = len > 0 ? ((g + c) / len * 100) : 0;
- let gcEl = document.getElementById('psGC');
- gcEl.innerText = gc.toFixed(1); gcEl.style.color = (gc >= 40 && gc <= 60) ? '#2ecc71' : '#e74c3c';
- 
- let tm = 0; if (len < 14) tm = (a + t) * 2 + (g + c) * 4; else tm = 64.9 + 41 * (g + c - 16.4) / len;
- let tmEl = document.getElementById('psTm');
- tmEl.innerText = tm.toFixed(1); tmEl.style.color = (tm >= 55 && tm <= 65) ? '#2ecc71' : '#e74c3c';
- }
-
- function updateDragSelection() {
- document.querySelectorAll('.drag-selected').forEach(e => e.classList.remove('drag-selected', 'drag-left', 'drag-right'));
- 
- if (dragStartCol === -1 || dragEndCol === -1) {
- document.getElementById('primerStatsPanel').style.opacity = '0';
- document.getElementById('primerStatsPanel').style.pointerEvents = 'none';
- return;
- }
-
- let start = Math.min(dragStartCol, dragEndCol);
- let end = Math.max(dragStartCol, dragEndCol);
- 
- if (dragMode === 'individual' && dragStartRow !== -1) {
- let seqObj = sequences[dragStartRow];
- let selectedSeq = "";
- let rowEl = document.querySelector(`.row[data-row="${dragStartRow}"]`);
- if(!rowEl) return;
-
- for(let c=start; c<=end; c++) {
- let cell = rowEl.children[c];
- if (cell && cell.classList.contains('base')) {
- cell.classList.add('drag-selected');
- if (c === start) cell.classList.add('drag-left');
- if (c === end) cell.classList.add('drag-right');
- if (seqObj.data[c] !== '-') selectedSeq += seqObj.data[c];
- }
- }
- 
- if (selectedSeq.length > 0 && start !== end) {
- calculatePrimerStats(selectedSeq);
- document.getElementById('primerStatsPanel').style.opacity = '1';
- document.getElementById('primerStatsPanel').style.pointerEvents = 'auto';
- } else {
- currentSelectedPrimer = ""; 
- document.getElementById('primerStatsPanel').style.opacity = '0';
- document.getElementById('primerStatsPanel').style.pointerEvents = 'none';
- }
- } else if (dragMode === 'column') {
- currentSelectedPrimer = ""; 
- document.getElementById('primerStatsPanel').style.opacity = '0';
- document.getElementById('primerStatsPanel').style.pointerEvents = 'none';
- 
- document.querySelectorAll('.row').forEach(rowEl => {
- for(let c=start; c<=end; c++) {
- let cell = rowEl.children[c];
- if (cell && cell.classList.contains('base')) {
- cell.classList.add('drag-selected');
- if (c === start) cell.classList.add('drag-left');
- if (c === end) cell.classList.add('drag-right');
- }
- }
- });
- 
- let headerEl = document.getElementById('gridHeader');
- if(headerEl) {
- for(let c=start; c<=end; c++) {
- let cell = headerEl.children[c];
- if (cell && cell.classList.contains('pos-marker')) cell.classList.add('drag-selected');
- }
- }
- }
- }
-
- function copyPrimerSequence() {
- if (!currentSelectedPrimer) return;
- copyToClipboardFallback(currentSelectedPrimer, "プライマーの塩基配列をコピーしました。すぐに注文等に利用できます。");
- }
-
- function exportFastaAll() {
- if(sequences.length === 0) return;
- let output = "";
- sequences.forEach(s => { 
- if(s.isFPrimerFasta || s.isRPrimerFasta || s.isSelected === false) return;
- output += `>${s.name}\n${s.data.join('').replace(/-/g, 'N')}\n`; 
- });
- if(output === "") { showToast("出力対象が選択されていません", "warning"); return; }
- const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([output], { type: 'text/plain' }));
- const date = new Date();
- const dateStr = `${date.getFullYear()}${String(date.getMonth()+1).padStart(2,'0')}${String(date.getDate()).padStart(2,'0')}`;
- a.download = `BioEdu_Export_${dateStr}.fasta`; a.click();
- }
-
- function exportClustalAll() {
- if(sequences.length === 0) return;
- let output = "CLUSTAL formatted alignment by DNA Alignment Studio v3.14 (Bio-Edu Suite)\n\n";
- let maxLen = Math.max(...sequences.map(s => s.data.length));
- let namePad = Math.max(20, Math.max(...sequences.map(s => s.name.length)) + 4);
- let baseCounts = new Array(sequences.length).fill(0);
- let hasSelected = false;
- 
- for (let i = 0; i < maxLen; i += 60) {
- output += "\n";
- let blockLen = Math.min(60, maxLen - i);
- for (let sIdx = 0; sIdx < sequences.length; sIdx++) {
- let s = sequences[sIdx];
- if (s.isSelected === false) continue;
- hasSelected = true; let seqPart = "";
- for (let j = 0; j < blockLen; j++) { let b = s.data[i + j] || '-'; seqPart += b; if (b !== '-') baseCounts[sIdx]++; }
- let nameStr = s.name.padEnd(namePad, ' ');
- output += `${nameStr}${seqPart}\t${baseCounts[sIdx]}\n`;
- }
- let consLine = "".padEnd(namePad, ' ');
- for (let j = 0; j < blockLen; j++) {
- let col = i + j; let bases = [];
- sequences.forEach(s => { if (!s.isFPrimerFasta && !s.isRPrimerFasta && s.data[col] !== undefined && s.data[col] !== '-' && s.isSelected !== false) bases.push(s.data[col]); });
- if (bases.length > 1) {
- let first = bases[0]; let isConserved = true;
- for (let b = 1; b < bases.length; b++) { if (bases[b] !== first) { isConserved = false; break; } }
- consLine += isConserved ? '*' : ' ';
- } else { consLine += ' '; }
- }
- output += `${consLine}\n`;
- }
- 
- if(!hasSelected) { showToast("出力対象が選択されていません", "warning"); return; }
- const a = document.createElement('a'); 
- a.href = URL.createObjectURL(new Blob([output], { type: 'text/plain' }));
- const date = new Date();
- const dateStr = `${date.getFullYear()}${String(date.getMonth()+1).padStart(2,'0')}${String(date.getDate()).padStart(2,'0')}`;
- a.download = `BioEdu_Export_${dateStr}.txt`; a.click();
- }
-
- function showToast(msg, type = "") {
- const toast = document.getElementById('toast');
- if (!toast) return;
- toast.innerText = msg;
- let className = "show";
- if (type === "error") className += " error";
- else if (type === "warning") className += " warning";
- else if (type === "info") className += " info";
- toast.className = "";
- void toast.offsetWidth; 
- toast.className = className;
- setTimeout(() => { toast.classList.remove("show"); }, 3000);
- }
-
- function copyToClipboardFallback(text, successMessage) {
- if(text === "") { showToast("対象が選択されていません", "warning"); return; }
- const textArea = document.createElement("textarea");
- textArea.value = text;
- textArea.style.position = "fixed"; textArea.style.left = "-9999px";
- document.body.appendChild(textArea); textArea.focus(); textArea.select();
- try { document.execCommand('copy'); showToast(successMessage); } 
- catch (err) { showToast("コピーに失敗しました。", "error"); }
- document.body.removeChild(textArea);
- }
-
- function copyFastaAll() {
- if(sequences.length === 0) return;
- let output = "";
- sequences.forEach(s => { 
- if(s.isFPrimerFasta || s.isRPrimerFasta || s.isSelected === false) return;
- output += `>${s.name}\n${s.data.join('').replace(/-/g, 'N')}\n`; 
- });
- copyToClipboardFallback(output.trim(), "FASTA形式で一括コピーしました");
- }
-
- function copyClustalAll() {
- if(sequences.length === 0) return;
- let output = "CLUSTAL formatted alignment by DNA Alignment Studio v3.14 (Bio-Edu Suite)\n\n";
- let maxLen = Math.max(...sequences.map(s => s.data.length));
- let namePad = Math.max(20, Math.max(...sequences.map(s => s.name.length)) + 4);
- let baseCounts = new Array(sequences.length).fill(0);
- let hasSelected = false;
- 
- for (let i = 0; i < maxLen; i += 60) {
- output += "\n";
- let blockLen = Math.min(60, maxLen - i);
- for (let sIdx = 0; sIdx < sequences.length; sIdx++) {
- let s = sequences[sIdx];
- if (s.isSelected === false) continue;
- hasSelected = true; let seqPart = "";
- for (let j = 0; j < blockLen; j++) { let b = s.data[i + j] || '-'; seqPart += b; if (b !== '-') baseCounts[sIdx]++; }
- let nameStr = s.name.padEnd(namePad, ' ');
- output += `${nameStr}${seqPart}\t${baseCounts[sIdx]}\n`;
- }
- let consLine = "".padEnd(namePad, ' ');
- for (let j = 0; j < blockLen; j++) {
- let col = i + j; let bases = [];
- sequences.forEach(s => { if (!s.isFPrimerFasta && !s.isRPrimerFasta && s.data[col] !== undefined && s.data[col] !== '-' && s.isSelected !== false) bases.push(s.data[col]); });
- if (bases.length > 1) {
- let first = bases[0]; let isConserved = true;
- for (let b = 1; b < bases.length; b++) { if (bases[b] !== first) { isConserved = false; break; } }
- consLine += isConserved ? '*' : ' ';
- } else { consLine += ' '; }
- }
- output += `${consLine}\n`;
- }
- if(!hasSelected) { showToast("コピー対象が選択されていません", "warning"); return; }
- copyToClipboardFallback(output.trim(), "CLUSTAL形式で一括コピーしました");
- }
-
- const tooltip = document.getElementById('globalTooltip');
- document.body.addEventListener('mouseover', (e) => {
- const target = e.target.closest('[data-tooltip]');
- if (target && !target.classList.contains('rationale-btn')) {
- const text = target.getAttribute('data-tooltip');
- tooltip.innerHTML = text; tooltip.style.display = 'block';
- const rect = target.getBoundingClientRect(); const ttRect = tooltip.getBoundingClientRect();
- let topPos = rect.top - ttRect.height - 8; let leftPos = rect.left + (rect.width / 2);
- let arrowClass = 'show-top'; 
- if (topPos < 0) { topPos = rect.bottom + 8; arrowClass = 'show-bottom'; }
- if (leftPos - ttRect.width / 2 < 5) leftPos = 5 + ttRect.width / 2;
- else if (leftPos + ttRect.width / 2 > window.innerWidth - 5) leftPos = window.innerWidth - ttRect.width / 2 - 5;
- tooltip.className = `custom-tooltip ${arrowClass}`; tooltip.style.top = topPos + 'px';
- tooltip.style.left = leftPos + 'px'; tooltip.style.transform = `translateX(-50%)`; tooltip.style.opacity = '1';
- }
- });
-
- document.body.addEventListener('mouseout', (e) => {
- const target = e.target.closest('[data-tooltip]');
- if (target) {
- tooltip.style.opacity = '0';
- setTimeout(() => { if (tooltip.style.opacity === '0') tooltip.style.display = 'none'; }, 200);
- }
- });
- 
- document.addEventListener('scroll', () => { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; }, true);
+    let sequences = []; 
+    let selectedRow = -1; 
+    let selectedCol = -1; 
+    let alignedPosF = 0; 
+    let alignedPosR = 0; 
+    let mutationCols = new Set(); 
+    let conservedCols = new Set(); 
+    
+    let isDragging = false;
+    let dragStartRow = -1;
+    let dragStartCol = -1;
+    let dragEndCol = -1;
+    let dragMode = null; 
+
+    let isConservedVisible = false;
+    let dragSrcIndex = null; 
+    let currentSelectedPrimer = ""; 
+
+    let historyStates = [];
+    let historyIndex = -1;
+    
+    // 💡 枠外ドラッグ・スクロール連動用変数
+    let currentMouseX = 0;
+    let autoScrollFrame = null;
+
+    function saveState() {
+        let state = sequences.map(s => ({
+            name: s.name, data: [...s.data],
+            isFPrimerFasta: s.isFPrimerFasta, isRPrimerFasta: s.isRPrimerFasta,
+            isSelected: s.isSelected,
+            fStart: s.fStart, fEnd: s.fEnd, rStart: s.rStart, rEnd: s.rEnd,
+            searchHighlights: s.searchHighlights ? new Set(s.searchHighlights) : new Set()
+        }));
+        if (historyIndex < historyStates.length - 1) historyStates = historyStates.slice(0, historyIndex + 1);
+        historyStates.push(state);
+        historyIndex++;
+        if (historyStates.length > 20) { historyStates.shift(); historyIndex--; }
+    }
+
+    function undo() { if (historyIndex > 0) { historyIndex--; restoreState(historyStates[historyIndex]); } }
+    function redo() { if (historyIndex < historyStates.length - 1) { historyIndex++; restoreState(historyStates[historyIndex]); } }
+
+    function restoreState(state) {
+        sequences = state.map(s => ({
+            name: s.name, data: [...s.data],
+            isFPrimerFasta: s.isFPrimerFasta, isRPrimerFasta: s.isRPrimerFasta,
+            isSelected: s.isSelected,
+            fStart: s.fStart, fEnd: s.fEnd, rStart: s.rStart, rEnd: s.rEnd,
+            searchHighlights: s.searchHighlights ? new Set(s.searchHighlights) : new Set()
+        }));
+        updateMutationsAndRender();
+    }
+
+    function setRoute(route) {
+        const pF = document.getElementById('pF');
+        const pR = document.getElementById('pR');
+        const mismatchSlider = document.getElementById('mismatchSlider');
+        const btnStep2 = document.getElementById('btnStep2');
+        const msaBtn = document.getElementById('btnOptionMSA');
+        const st = document.getElementById('statusText');
+        const step2Row = document.getElementById('step2Row');
+        const selectedCount = sequences.filter(s => s.isSelected !== false && !s.isFPrimerFasta && !s.isRPrimerFasta).length;
+
+        if(route === 'B') {
+            pF.disabled = true; pR.disabled = true; mismatchSlider.disabled = true;
+            btnStep2.disabled = true; 
+            if(step2Row) step2Row.style.opacity = "0.4";
+            msaBtn.disabled = selectedCount < 2; 
+            document.getElementById('btnExportFasta').disabled = false; 
+            document.getElementById('btnExportClustal').disabled = false; 
+            document.getElementById('btnCopyFasta').disabled = false; 
+            document.getElementById('btnCopyClustal').disabled = false; 
+            document.getElementById('btnConserved').disabled = false;
+            st.innerText = "NCBIから登録済みの塩基配列を取得しました。プライマー検索をスキップし、直接MSA（多重整列）が可能です。";
+        } else {
+            pF.disabled = false; pR.disabled = false; mismatchSlider.disabled = false;
+            btnStep2.disabled = false; 
+            if(step2Row) step2Row.style.opacity = "1";
+            msaBtn.disabled = selectedCount < 2; 
+            st.innerText = "生データを読み込みました。プライマー F/Rを入力してノイズ領域を特定するか、自由にカットを行ってください。";
+        }
+        updateMSAButtonState();
+    }
+
+    async function fetchNCBI() {
+        const idInput = document.getElementById('ncbiId').value.trim();
+        if(!idInput) return;
+        const loader = document.getElementById('apiLoader');
+        if(loader) loader.style.display = 'inline-block';
+        document.getElementById('statusText').innerText = `NCBIから [${idInput}] を取得中...`;
+        try {
+            const response = await fetch(`https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=${idInput}&rettype=fasta&retmode=text`);
+            if (!response.ok) throw new Error("HTTP " + response.status);
+            const data = await response.text();
+            if (!data || data.includes('Error')) throw new Error("データが見つかりませんでした。");
+            parseFasta(data, "NCBI_" + idInput);
+            renderEditorSync();
+            setRoute('B');
+            saveState(); 
+        } catch (error) {
+            showToast("取得エラー: " + error.message, "error");
+            document.getElementById('statusText').innerText = "エラー";
+        } finally {
+            if(loader) loader.style.display = 'none';
+        }
+    }
+    
+    function toggleRationale(event, id) {
+        event.stopPropagation();
+        const el = document.getElementById(id);
+        const btn = event.currentTarget;
+        const isShown = el.classList.contains('show');
+        document.querySelectorAll('.rationale-text').forEach(e => e.classList.remove('show'));
+        if(!isShown) {
+            if (el.parentNode !== document.body) document.body.appendChild(el);
+            el.style.top = '0px'; el.style.left = '0px';
+            el.classList.add('show');
+            const elHeight = el.offsetHeight;
+            const elWidth  = el.offsetWidth;
+            const rect = btn.getBoundingClientRect();
+            let topPos = rect.bottom + 10;
+            let arrowClass = 'arrow-top';
+            if (rect.bottom + elHeight + 20 > window.innerHeight) {
+                topPos = rect.top - elHeight - 10;
+                arrowClass = 'arrow-bottom';
+            }
+            el.style.top = topPos + 'px';
+            const btnCenter = rect.left + rect.width / 2;
+            let leftPos = btnCenter - elWidth / 2;
+            if (leftPos + elWidth > window.innerWidth - 10) leftPos = window.innerWidth - elWidth - 10;
+            if (leftPos < 10) leftPos = 10;
+            el.style.left = leftPos + 'px';
+            let arrowLeft = btnCenter - leftPos;
+            if (arrowLeft < 12) arrowLeft = 12;
+            if (arrowLeft > elWidth - 12) arrowLeft = elWidth - 12;
+            el.classList.remove('arrow-top', 'arrow-bottom');
+            el.classList.add(arrowClass);
+            el.style.setProperty('--arrow-left', arrowLeft + 'px');
+        }
+    }
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.rationale-text') && !e.target.closest('.rationale-btn')) {
+            document.querySelectorAll('.rationale-text').forEach(el => el.classList.remove('show'));
+        }
+    });
+    document.addEventListener('scroll', () => { document.querySelectorAll('.rationale-text').forEach(el => el.classList.remove('show')); }, true);
+
+    function toggleHighlightBtn() {
+        const val = document.getElementById('searchInput').value.trim();
+        const isDisabled = (val.length === 0);
+        document.getElementById('btnHighlight').disabled = isDisabled;
+        document.getElementById('btnClear').disabled = isDisabled;
+    }
+
+    function updateMismatchVal(val) { document.getElementById('mismatchVal').innerText = val + '%'; }
+
+    function unlockStep(step) {
+        if(step >= 2) document.getElementById('btnStep2').disabled = false;
+        if(step >= 3) {
+            document.getElementById('btnExportFasta').disabled = false; 
+            document.getElementById('btnExportClustal').disabled = false; 
+            document.getElementById('btnCopyFasta').disabled = false; 
+            document.getElementById('btnCopyClustal').disabled = false; 
+            document.getElementById('btnConserved').disabled = false;
+        }
+    }
+
+    function toggleConservedRegions() {
+        isConservedVisible = !isConservedVisible;
+        let btn = document.getElementById('btnConserved');
+        if (isConservedVisible) {
+            btn.innerHTML = "🟢 隠す";
+            btn.style.backgroundColor = "#1e8449";
+            btn.style.borderColor = "#196f3d";
+        } else {
+            btn.innerHTML = "🟢 保存領域";
+            btn.style.backgroundColor = "";
+            btn.style.borderColor = "";
+        }
+        renderEditorSync(); 
+    }
+
+    function updateMSAButtonState() {
+        const selectedCount = sequences.filter(s => s.isSelected !== false && !s.isFPrimerFasta && !s.isRPrimerFasta).length;
+        const msaBtn = document.getElementById('btnOptionMSA');
+        if (msaBtn) msaBtn.disabled = selectedCount < 2;
+    }
+
+    const dropZone = document.getElementById('dropZone');
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => { dropZone.addEventListener(eventName, preventDefaults, false); });
+    function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+    dropZone.addEventListener('dragover', () => dropZone.classList.add('dragover'));
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', (e) => { dropZone.classList.remove('dragover'); handleFiles({ target: { files: e.dataTransfer.files } }); });
+
+    function handleFiles(event) {
+        const files = event.target.files;
+        if (!files || files.length === 0) return;
+        const statusText = document.getElementById('statusText');
+        statusText.innerText = "データを読み込み中...";
+        mutationCols.clear(); conservedCols.clear();
+        document.getElementById('primerStatsPanel').style.opacity = '0';
+        document.getElementById('primerStatsPanel').style.pointerEvents = 'none';
+
+        let loadedCount = 0;
+        let fileInput = document.getElementById('fileInput');
+
+        Array.from(files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try { parseFasta(e.target.result, file.name.replace(/\.[^/.]+$/, "")); } 
+                catch(err) { console.error("FASTA読み込みエラー:", err); }
+                loadedCount++;
+                if (loadedCount === files.length) { 
+                    renderEditorAsync(); 
+                    if(fileInput) fileInput.value = ''; 
+                    unlockStep(2);
+                    setRoute('A');
+                    saveState();
+                }
+            };
+            reader.readAsText(file);
+        });
+    }
+
+    function parseFasta(text, defaultName) {
+        const lines = text.split('\n');
+        let currentName = "", currentSeq = "";
+        lines.forEach(line => {
+            line = line.trim();
+            if (line.startsWith('>')) {
+                if (currentName) sequences.push({ name: currentName, data: currentSeq.split(''), isFPrimerFasta: false, isRPrimerFasta: false, isSelected: true });
+                currentName = line.substring(1).split(' ')[0];
+                currentSeq = "";
+            } else { currentSeq += line.toUpperCase().replace(/[^A-Z-]/g, ''); }
+        });
+        if (currentName) sequences.push({ name: currentName, data: currentSeq.split(''), isFPrimerFasta: false, isRPrimerFasta: false, isSelected: true });
+        else if (currentSeq) sequences.push({ name: defaultName, data: currentSeq.split(''), isFPrimerFasta: false, isRPrimerFasta: false, isSelected: true });
+    }
+
+    function handleDragStart(e) { dragSrcIndex = parseInt(this.dataset.index); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', dragSrcIndex); this.style.opacity = '0.4'; }
+    function handleDragOver(e) { if (e.preventDefault) e.preventDefault(); e.dataTransfer.dropEffect = 'move'; return false; }
+    function handleDragEnter(e) { this.classList.add('drag-over'); }
+    function handleDragLeave(e) { this.classList.remove('drag-over'); }
+    function handleDrop(e) {
+        if (e.stopPropagation) e.stopPropagation();
+        let targetIndex = parseInt(this.dataset.index);
+        if (dragSrcIndex !== null && dragSrcIndex !== targetIndex) {
+            let movedSeq = sequences.splice(dragSrcIndex, 1)[0];
+            sequences.splice(targetIndex, 0, movedSeq);
+            if (selectedRow === dragSrcIndex) selectedRow = targetIndex;
+            else { selectedRow = -1; selectedCol = -1; }
+            renderEditorSync(); saveState();
+        }
+        return false;
+    }
+    function handleDragEnd(e) { this.style.opacity = '1'; document.querySelectorAll('.name-cell').forEach(c => c.classList.remove('drag-over')); }
+
+    function deleteSeq(index) {
+        let deletedName = sequences[index].name;
+        sequences.splice(index, 1);
+        if(selectedRow === index) { selectedRow = -1; selectedCol = -1; }
+        else if (selectedRow > index) selectedRow--;
+        if(sequences.length < 2) { mutationCols.clear(); conservedCols.clear(); }
+        updateMutationsAndRender(); saveState();
+        showToast(`「${deletedName}」を削除しました`);
+    }
+
+    function reverseComplement(seq) {
+        const comp = {'A':'T', 'T':'A', 'G':'C', 'C':'G'};
+        return seq.split('').reverse().map(c => comp[c] || c).join('');
+    }
+
+    function findFuzzy(target, query, maxMismatches) {
+        let bestMatch = { index: -1, mismatches: 999 };
+        for (let i = 0; i <= target.length - query.length; i++) {
+            let mismatches = 0;
+            for (let j = 0; j < query.length; j++) {
+                if (target[i + j] !== query[j]) { mismatches++; if (mismatches > maxMismatches) break; }
+            }
+            if (mismatches <= maxMismatches && mismatches < bestMatch.mismatches) bestMatch = { index: i, mismatches: mismatches };
+        }
+        return bestMatch.index;
+    }
+
+    function alignByDualPrimers() {
+        if(sequences.length === 0) return;
+        let fPrimer = document.getElementById('pF').value.toUpperCase().replace(/[^A-Z]/g, '');
+        let rPrimer = document.getElementById('pR').value.toUpperCase().replace(/[^A-Z]/g, '');
+        if(!fPrimer || !rPrimer) { showToast("エラー: 検索を実行するには、FとRの両方のプライマー塩基配列を入力してください。", "error"); return; }
+        mutationCols.clear(); conservedCols.clear();
+        document.getElementById('primerStatsPanel').style.opacity = '0';
+        document.getElementById('primerStatsPanel').style.pointerEvents = 'none';
+
+        let rPrimerRC = reverseComplement(rPrimer); 
+        let tolerancePercent = parseInt(document.getElementById('mismatchSlider').value) / 100;
+        let maxMF = Math.floor(fPrimer.length * tolerancePercent); 
+        let maxMR = Math.floor(rPrimerRC.length * tolerancePercent); 
+
+        document.getElementById('statusText').innerText = "検索中...";
+        setTimeout(() => {
+            let maxFPos = 0; let globalValidROffset = -1;
+            let foundAnyF = false; let foundAnyR = false;
+            let unfoundSamples = [];
+
+            sequences.forEach(s => {
+                let seqStr = s.data.join('').replace(/-/g, ''); s.data = seqStr.split(''); 
+                if (seqStr === fPrimer || (seqStr.includes(fPrimer) && seqStr.length < fPrimer.length + 10)) {
+                    s.fStartTemp = 0; s.fEndTemp = seqStr.length; s.rStartTemp = -1; s.rEndTemp = -1;
+                    s.isFPrimerFasta = true; foundAnyF = true;
+                    if(s.fStartTemp > maxFPos) maxFPos = s.fStartTemp;
+                    return;
+                } else if (seqStr === rPrimerRC || (seqStr.includes(rPrimerRC) && seqStr.length < rPrimerRC.length + 10)) {
+                    s.rStartTemp = 0; s.rEndTemp = seqStr.length; s.fStartTemp = -1; s.fEndTemp = -1;
+                    s.isRPrimerFasta = true; foundAnyR = true;
+                    return;
+                }
+                
+                s.isFPrimerFasta = false; s.isRPrimerFasta = false;
+                s.fStartTemp = findFuzzy(seqStr, fPrimer, maxMF);
+                if(s.fStartTemp !== -1) {
+                    s.fEndTemp = s.fStartTemp + fPrimer.length;
+                    if(s.fStartTemp > maxFPos) maxFPos = s.fStartTemp;
+                    foundAnyF = true;
+                    let subSeq = seqStr.substring(s.fEndTemp);
+                    let subMatch = findFuzzy(subSeq, rPrimerRC, maxMR);
+                    if(subMatch !== -1) {
+                        s.rStartTemp = s.fEndTemp + subMatch; s.rEndTemp = s.rStartTemp + rPrimerRC.length; foundAnyR = true;
+                        if (globalValidROffset === -1) globalValidROffset = fPrimer.length + subMatch;
+                    } else { s.rStartTemp = -1; s.rEndTemp = -1; }
+                } else {
+                    s.fStartTemp = -1; s.fEndTemp = -1; s.rStartTemp = -1; s.rEndTemp = -1;
+                }
+                if(s.fStartTemp === -1 && s.rStartTemp === -1) unfoundSamples.push(s.name);
+            });
+
+            if(!foundAnyF && !foundAnyR) { 
+                showToast("指定されたプライマーが見つかりません。入力ミスがないか確認してください。", "error"); 
+                document.getElementById('statusText').innerText = "検索失敗。";
+                return; 
+            }
+            if(unfoundSamples.length > 0) showToast(`一部の塩基配列からプライマー領域が見つかりませんでした。`, "warning");
+
+            let maxRPos = 0;
+            sequences.forEach(s => {
+                if (s.isRPrimerFasta) {
+                    if (globalValidROffset !== -1) {
+                        let pad = maxFPos + globalValidROffset;
+                        s.data = Array(pad).fill('-').concat(s.data);
+                        s.fStart = -1; s.fEnd = -1; s.rStart = pad; s.rEnd = pad + s.data.length - pad;
+                        if(s.rStart > maxRPos) maxRPos = s.rStart;
+                    }
+                } else if (s.isFPrimerFasta) {
+                     let pad = maxFPos; if(pad > 0) s.data = Array(pad).fill('-').concat(s.data);
+                     s.fStart = pad; s.fEnd = pad + fPrimer.length; s.rStart = -1; s.rEnd = -1;
+                } else if(s.fStartTemp !== -1) {
+                    let pad = maxFPos - s.fStartTemp; if(pad > 0) s.data = Array(pad).fill('-').concat(s.data);
+                    s.fStart = s.fStartTemp + pad; s.fEnd = s.fEndTemp + pad;
+                    if(s.rStartTemp !== -1) {
+                        s.rStart = s.rStartTemp + pad; s.rEnd = s.rEndTemp + pad;
+                        if(s.rStart > maxRPos) maxRPos = s.rStart;
+                    } else { s.rStart = -1; s.rEnd = -1; }
+                }
+                delete s.fStartTemp; delete s.fEndTemp; delete s.rStartTemp; delete s.rEndTemp;
+            });
+
+            alignedPosF = maxFPos; alignedPosR = maxRPos > 0 ? maxRPos : maxFPos;
+            unlockStep(3);
+            updateMutationsAndRender(); saveState();
+            scrollToPos(alignedPosF);
+            document.getElementById('statusText').innerText = "検索成功！不要な両端（ノイズ領域）はドラッグして一括削除（カット）してください。";
+        }, 50);
+    }
+
+    function scrollToPos(pos) {
+        let wrap = document.getElementById('editorWrap');
+        wrap.scrollTo({ left: Math.max(0, (pos * 23) - 200), behavior: 'smooth' });
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.ctrlKey || e.metaKey) {
+            if (e.key.toLowerCase() === 'z') { e.preventDefault(); if (e.shiftKey) redo(); else undo(); return; } 
+            else if (e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); return; }
+        }
+
+        let prevent = false; let requiresSave = false;
+
+        if (e.key === 'Backspace' || e.key === 'Delete') {
+            if (dragStartCol !== -1 && dragEndCol !== -1) {
+                let startCol = Math.min(dragStartCol, dragEndCol);
+                let endCol = Math.max(dragStartCol, dragEndCol);
+                let numToDelete = endCol - startCol + 1;
+                
+                if (dragMode === 'column') {
+                    sequences.forEach(s => {
+                        s.data.splice(startCol, numToDelete);
+                        if (s.fStart !== -1 && startCol < s.fEnd) { 
+                            if (endCol < s.fStart) { s.fStart -= numToDelete; s.fEnd -= numToDelete; }
+                            else { s.fStart = -1; s.fEnd = -1; }
+                        }
+                        if (s.rStart !== -1 && startCol < s.rEnd) { 
+                            if (endCol < s.rStart) { s.rStart -= numToDelete; s.rEnd -= numToDelete; }
+                            else { s.rStart = -1; s.rEnd = -1; }
+                        }
+                    });
+                    document.getElementById('statusText').innerText = "縦列一括削除（トリミング）を実行しました。";
+                } else if (dragMode === 'individual' && dragStartRow !== -1) {
+                    let s = sequences[dragStartRow];
+                    s.data.splice(startCol, numToDelete);
+                    if (s.fStart !== -1 && startCol < s.fEnd) { 
+                        if (endCol < s.fStart) { s.fStart -= numToDelete; s.fEnd -= numToDelete; }
+                        else { s.fStart = -1; s.fEnd = -1; }
+                    }
+                    if (s.rStart !== -1 && startCol < s.rEnd) { 
+                        if (endCol < s.rStart) { s.rStart -= numToDelete; s.rEnd -= numToDelete; }
+                        else { s.rStart = -1; s.rEnd = -1; }
+                    }
+                    document.getElementById('statusText').innerText = "選択された塩基配列の範囲を削除しました。";
+                }
+                selectedCol = -1; selectedRow = -1;
+                dragStartRow = -1; dragStartCol = -1; dragEndCol = -1;
+                dragMode = null;
+                prevent = true; requiresSave = true;
+                updateMutationsAndRender();
+            } else if (selectedCol !== -1 && selectedRow !== -1) {
+                let seq = sequences[selectedRow];
+                seq.data.splice(selectedCol, 1);
+                if (seq.fStart !== -1 && selectedCol < seq.fEnd) { if(selectedCol < seq.fStart) seq.fStart--; seq.fEnd--; }
+                if (seq.rStart !== -1 && selectedCol < seq.rEnd) { if(selectedCol < seq.rStart) seq.rStart--; seq.rEnd--; }
+                prevent = true; requiresSave = true;
+                updateMutationsAndRender();
+            }
+        } else if (selectedRow !== -1 && selectedCol !== -1) {
+            let seq = sequences[selectedRow]; let key = e.key.toUpperCase();
+            if (e.key === 'ArrowRight') { selectedCol = Math.min(seq.data.length, selectedCol + 1); prevent = true; } 
+            else if (e.key === 'ArrowLeft') { selectedCol = Math.max(0, selectedCol - 1); prevent = true; } 
+            else if (e.key === 'ArrowDown') { selectedRow = Math.min(sequences.length - 1, selectedRow + 1); prevent = true; } 
+            else if (e.key === 'ArrowUp') { selectedRow = Math.max(0, selectedRow - 1); prevent = true; } 
+            else if (e.key === ' ' || e.key === '-' || e.key === '_') {
+                seq.data.splice(selectedCol, 0, '-');
+                if (seq.fStart !== -1 && selectedCol <= seq.fEnd) { if(selectedCol <= seq.fStart) seq.fStart++; seq.fEnd++; }
+                if (seq.rStart !== -1 && selectedCol <= seq.rEnd) { if(selectedCol <= seq.rStart) seq.rStart++; seq.rEnd++; }
+                selectedCol++; prevent = true; requiresSave = true;
+                updateMutationsAndRender();
+            } else if (['A','T','G','C','U','N','Y','R','W','S','M','K','B','V','D','H'].includes(key)) {
+                if(selectedCol < seq.data.length) seq.data[selectedCol] = key; else seq.data.push(key);
+                selectedCol++; prevent = true; requiresSave = true;
+                updateMutationsAndRender();
+            }
+        }
+
+        if (prevent) {
+            e.preventDefault();
+            if (e.key && e.key.startsWith('Arrow')) {
+                updateSelectionUI();
+                let cell = document.querySelector(`.row[data-row="${selectedRow}"] .base[data-col="${selectedCol}"]`);
+                if(cell) cell.scrollIntoView({block: "nearest", inline: "nearest"});
+            }
+            if (requiresSave) saveState(); 
+        }
+    });
+
+    function updateMutationsAndRender() {
+        updateMSAButtonState(); 
+        if(sequences.length < 2) { reapplySearch(); renderEditorSync(); return; }
+
+        let finalAlignLen = Math.max(...sequences.map(s => s.data.length));
+        mutationCols.clear(); conservedCols.clear();
+        
+        for(let c=0; c<finalAlignLen; c++) {
+            let bases = [];
+            sequences.forEach(s => { 
+                if(!s.isFPrimerFasta && !s.isRPrimerFasta && s.isSelected !== false && s.data[c] !== undefined && s.data[c] !== '-') {
+                    bases.push(s.data[c]); 
+                }
+            });
+            if(bases.length > 1) {
+                let first = bases[0]; let isConserved = true;
+                for(let b=1; b<bases.length; b++) {
+                    if(bases[b] !== first) { mutationCols.add(c); isConserved = false; break; }
+                }
+                if (isConserved) conservedCols.add(c);
+            }
+        }
+        reapplySearch(); 
+        renderEditorSync(); 
+    }
+
+    function alignPairNW(s1, s2) {
+        let m = s1.length, n = s2.length;
+        let dp = new Int32Array((m + 1) * (n + 1));
+        let get = (i, j) => dp[i * (n + 1) + j];
+        let set = (i, j, val) => dp[i * (n + 1) + j] = val;
+
+        for(let i=0; i<=m; i++) set(i, 0, -i*2);
+        for(let j=0; j<=n; j++) set(0, j, -j*2);
+
+        for(let i=1; i<=m; i++) {
+            for(let j=1; j<=n; j++) {
+                let match = (s1[i-1] === s2[j-1]) ? 3 : -1;
+                if(s1[i-1] === '-' || s2[j-1] === '-') match = -1; 
+                set(i, j, Math.max( get(i-1, j-1) + match, get(i-1, j) - 2, get(i, j-1) - 2 ));
+            }
+        }
+        let align1 = "", align2 = ""; let ops = []; let i = m, j = n;
+        while(i > 0 && j > 0) {
+            let match = (s1[i-1] === s2[j-1]) ? 3 : -1;
+            if(s1[i-1] === '-' || s2[j-1] === '-') match = -1;
+            if(get(i, j) === get(i-1, j-1) + match) { align1 = s1[i-1] + align1; align2 = s2[j-1] + align2; ops.unshift(1); i--; j--; }
+            else if(get(i, j) === get(i-1, j) - 2) { align1 = s1[i-1] + align1; align2 = "-" + align2; ops.unshift(2); i--; }
+            else { align1 = "-" + align1; align2 = s2[j-1] + align2; ops.unshift(3); j--; }
+        }
+        while(i > 0) { align1 = s1[i-1] + align1; align2 = "-" + align2; ops.unshift(2); i--; }
+        while(j > 0) { align1 = "-" + align1; align2 = s2[j-1] + align2; ops.unshift(3); j--; }
+        return [align1, align2, ops];
+    }
+
+    function runMSA() {
+        let targetSeqs = sequences.filter(s => !s.isFPrimerFasta && !s.isRPrimerFasta && s.isSelected !== false);
+        if(targetSeqs.length < 2) { showToast("比較する塩基配列を2つ以上選択してください。", "warning"); return; }
+        let seqStrs = targetSeqs.map(s => s.data.join('').replace(/-/g, ''));
+        let maxLen = Math.max(...seqStrs.map(s => s.length));
+        
+        if(maxLen > 2000) { showToast("塩基配列が長すぎます。多重整列を実行する前にカットしてください。", "error"); return; }
+        document.getElementById('statusText').innerText = "アライメントを計算中...";
+
+        setTimeout(() => {
+            let refSeq = seqStrs[0];
+            let alignedSeqs = [refSeq];
+            
+            for(let k=1; k<seqStrs.length; k++) {
+                let targetSeq = seqStrs[k];
+                let [newRef, newTarget, ops] = alignPairNW(refSeq, targetSeq);
+                let updatedAligned = [];
+                for(let p=0; p<alignedSeqs.length; p++) {
+                    let oldSeq = alignedSeqs[p]; let newSeq = ""; let oldPtr = 0;
+                    for(let op of ops) {
+                        if(op === 1 || op === 2) { newSeq += oldSeq[oldPtr]; oldPtr++; } else if(op === 3) { newSeq += '-'; }
+                    }
+                    updatedAligned.push(newSeq);
+                }
+                alignedSeqs = updatedAligned; alignedSeqs.push(newTarget); refSeq = newRef;
+            }
+
+            let tIdx = 0; let finalAlignLen = alignedSeqs[0].length;
+            for(let i=0; i<sequences.length; i++) {
+                if(!sequences[i].isFPrimerFasta && !sequences[i].isRPrimerFasta && sequences[i].isSelected !== false) {
+                    sequences[i].data = alignedSeqs[tIdx].split(''); tIdx++;
+                }
+            }
+
+            let fPrimer = document.getElementById('pF').value.toUpperCase().replace(/[^A-Z]/g, '');
+            let rPrimer = document.getElementById('pR').value.toUpperCase().replace(/[^A-Z]/g, '');
+            let rPrimerRC = reverseComplement(rPrimer);
+
+            sequences.forEach(s => {
+                if(s.isFPrimerFasta && fPrimer.length > 0) {
+                    let padding = Array(Math.max(0, finalAlignLen - fPrimer.length)).fill('-');
+                    s.data = fPrimer.split('').concat(padding); s.fStart = 0; s.fEnd = fPrimer.length;
+                } else if(s.isRPrimerFasta && rPrimerRC.length > 0) {
+                    let padding = Array(Math.max(0, finalAlignLen - rPrimerRC.length)).fill('-');
+                    s.data = padding.concat(rPrimerRC.split('')); s.rStart = padding.length; s.rEnd = finalAlignLen;
+                }
+            });
+
+            updateMutationsAndRender(); saveState(); 
+            const resetBtn = document.getElementById('btnResetMSA');
+            if(resetBtn) resetBtn.disabled = false;
+
+            document.getElementById('statusText').innerText = "アライメント完了！突然変異（赤）や保存領域（薄緑）を確認し、ドラッグしてプライマーを設計してみましょう。";
+            
+            document.getElementById('btnExportFasta').disabled = false; document.getElementById('btnExportClustal').disabled = false; 
+            document.getElementById('btnCopyFasta').disabled = false; document.getElementById('btnCopyClustal').disabled = false; 
+            document.getElementById('btnConserved').disabled = false;
+        }, 50);
+    }
+
+    function resetMSA() {
+        sequences.forEach(s => { if(!s.isFPrimerFasta && !s.isRPrimerFasta) s.data = s.data.filter(b => b !== '-'); });
+        document.getElementById('btnResetMSA').disabled = true;
+        updateMutationsAndRender(); saveState();
+        showToast("アライメントを解除し、生データの状態に戻しました。");
+        document.getElementById('statusText').innerText = "アライメントを解除しました。";
+    }
+
+    function renderEditorAsync() { setTimeout(renderEditorSync, 10); }
+
+    function renderEditorSync() {
+        const namesCol = document.getElementById('namesColumn');
+        const header = document.getElementById('gridHeader');
+        const container = document.getElementById('rowsContainer');
+        if (!namesCol || !header || !container) return;
+
+        namesCol.innerHTML = '<div class="name-header">配列名</div>';
+        const headerDiv = namesCol.querySelector('.name-header');
+        const selectAllCb = document.createElement('input');
+        selectAllCb.type = 'checkbox';
+        selectAllCb.checked = sequences.length > 0 && sequences.every(s => s.isSelected !== false);
+        selectAllCb.setAttribute('data-tooltip', "全選択/解除");
+        selectAllCb.style.marginRight = "8px"; selectAllCb.style.cursor = "pointer";
+        selectAllCb.onchange = (e) => { sequences.forEach(s => s.isSelected = e.target.checked); renderEditorSync(); };
+        headerDiv.insertBefore(selectAllCb, headerDiv.firstChild);
+
+        header.innerHTML = ''; container.innerHTML = '';
+        if (sequences.length === 0) {
+            container.innerHTML = '<div style="color:#7f8c8d; text-align:center; padding-top:150px; font-size:16px;">データを読み込んでください。</div>';
+            updateMSAButtonState(); return;
+        }
+
+        const maxLen = Math.max(...sequences.map(s => s.data.length));
+        const fragHeader = document.createDocumentFragment();
+        const fragNames = document.createDocumentFragment();
+        const fragRows = document.createDocumentFragment();
+
+        for (let i = 0; i < maxLen; i++) {
+            const marker = document.createElement('div'); marker.className = 'pos-marker'; marker.dataset.hcol = i;
+            if ((i + 1) % 10 === 0) marker.innerText = i + 1;
+            fragHeader.appendChild(marker);
+        }
+
+        sequences.forEach((s, sIdx) => {
+            const nameCell = document.createElement('div');
+            nameCell.className = (s.isFPrimerFasta || s.isRPrimerFasta) ? 'name-cell primer-row' : 'name-cell';
+            nameCell.dataset.index = sIdx;
+            nameCell.addEventListener('dragstart', handleDragStart); nameCell.addEventListener('dragover', handleDragOver);
+            nameCell.addEventListener('drop', handleDrop); nameCell.addEventListener('dragenter', handleDragEnter);
+            nameCell.addEventListener('dragleave', handleDragLeave); nameCell.addEventListener('dragend', handleDragEnd);
+
+            const dragHandle = document.createElement('div'); dragHandle.className = 'drag-handle'; dragHandle.innerHTML = '⠿';
+            dragHandle.setAttribute('data-tooltip', "ドラッグして移動");
+            dragHandle.addEventListener('mousedown', () => { nameCell.draggable = true; });
+            dragHandle.addEventListener('mouseup', () => { nameCell.draggable = false; });
+            dragHandle.addEventListener('mouseleave', () => { nameCell.draggable = false; });
+
+            const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.className = 'seq-checkbox';
+            checkbox.setAttribute('data-tooltip', "出力・操作の対象にする"); checkbox.checked = s.isSelected !== false;
+            checkbox.onchange = (e) => { s.isSelected = e.target.checked; selectAllCb.checked = sequences.every(seq => seq.isSelected !== false); updateMSAButtonState(); updateMutationsAndRender(); };
+
+            nameCell.appendChild(dragHandle); nameCell.appendChild(checkbox);
+            
+            const nameInput = document.createElement('input'); nameInput.type = 'text'; nameInput.className = 'seq-name-input'; nameInput.value = s.name; nameInput.oninput = (e) => { s.name = e.target.value; };
+            const btnDel = document.createElement('button'); btnDel.className = 'action-icon icon-delete'; btnDel.innerHTML = '🗑️'; btnDel.onclick = () => deleteSeq(sIdx);
+            nameCell.appendChild(nameInput); nameCell.appendChild(btnDel); fragNames.appendChild(nameCell);
+
+            const rowDiv = document.createElement('div'); rowDiv.className = 'row'; rowDiv.dataset.row = sIdx;
+            const fragBases = document.createDocumentFragment();
+            
+            s.data.forEach((base, bIdx) => {
+                const baseDiv = document.createElement('div'); let exClass = "";
+                if(s.fStart !== undefined && s.fStart !== -1 && bIdx >= s.fStart && bIdx < s.fEnd) exClass += " primer-f";
+                if(s.rStart !== undefined && s.rStart !== -1 && bIdx >= s.rStart && bIdx < s.rEnd) exClass += " primer-r";
+                if(s.isSelected !== false && mutationCols.has(bIdx) && !s.isFPrimerFasta && !s.isRPrimerFasta && base !== '-') exClass += " mutation-bg";
+                if(s.isSelected !== false && isConservedVisible && conservedCols.has(bIdx) && !s.isFPrimerFasta && !s.isRPrimerFasta && base !== '-') exClass += " conserved-bg";
+                if(s.searchHighlights && s.searchHighlights.has(bIdx)) exClass += " search-bg";
+
+                baseDiv.className = `base base-${base}${exClass}`; baseDiv.innerText = base; baseDiv.dataset.col = bIdx;
+                fragBases.appendChild(baseDiv);
+            });
+            rowDiv.appendChild(fragBases); fragRows.appendChild(rowDiv);
+        });
+
+        header.appendChild(fragHeader); namesCol.appendChild(fragNames); container.appendChild(fragRows);
+        updateSelectionUI(); updateDragSelection(); updateMSAButtonState();
+    }
+
+    function highlightSearch() {
+        let inputStr = document.getElementById('searchInput').value.trim().toUpperCase();
+        if(!inputStr) { clearSearch(); return; }
+        reapplySearch(); renderEditorSync();
+        let foundAny = false;
+        sequences.forEach(s => { if(s.searchHighlights && s.searchHighlights.size > 0) foundAny = true; });
+        if(foundAny) showToast(`「${inputStr}」をハイライトしました`); else showToast(`「${inputStr}」は見つかりませんでした`, "warning");
+    }
+
+    function clearSearch() { document.getElementById('searchInput').value = ''; toggleHighlightBtn(); reapplySearch(); renderEditorSync(); }
+
+    function reapplySearch() {
+        let inputEl = document.getElementById('searchInput');
+        let searchStr = inputEl ? inputEl.value.trim().toUpperCase().replace(/U/g, 'T').replace(/[^A-Z]/g, '') : '';
+        sequences.forEach(s => {
+            if (!s.searchHighlights) s.searchHighlights = new Set();
+            s.searchHighlights.clear();
+            if (!searchStr || s.isFPrimerFasta || s.isRPrimerFasta) return;
+
+            let noGapSeq = ""; let colMap = [];
+            for(let c=0; c<s.data.length; c++) {
+                if(s.data[c] !== '-') { noGapSeq += s.data[c]; colMap.push(c); }
+            }
+            let startIndex = 0;
+            while((startIndex = noGapSeq.indexOf(searchStr, startIndex)) > -1) {
+                for(let i=0; i<searchStr.length; i++) s.searchHighlights.add(colMap[startIndex + i]);
+                startIndex++;
+            }
+        });
+    }
+
+    function selectCell(rIdx, bIdx) {
+        selectedRow = rIdx; selectedCol = bIdx;
+        document.getElementById('posText').innerText = `Row: ${rIdx + 1} | Pos: ${bIdx + 1}`;
+        updateSelectionUI();
+    }
+
+    function updateSelectionUI() {
+        document.querySelectorAll('.selected-column').forEach(e => e.classList.remove('selected-column'));
+        document.querySelectorAll('.selected-cell').forEach(e => e.classList.remove('selected-cell'));
+        if (selectedCol >= 0 && !isDragging) {
+            document.querySelectorAll(`.base[data-col="${selectedCol}"]`).forEach(e => e.classList.add('selected-column'));
+            if (selectedRow >= 0) {
+                let cell = document.querySelector(`.row[data-row="${selectedRow}"] .base[data-col="${selectedCol}"]`);
+                if (cell) cell.classList.add('selected-cell');
+            }
+        }
+    }
+
+    // --- 💡 枠外ドラッグ・ズルズルスクロール対応 ---
+    const sequenceGrid = document.getElementById('sequenceGrid');
+
+    sequenceGrid.addEventListener('mousedown', function(e) {
+        if(e.target.classList.contains('base')) {
+            isDragging = true; dragMode = 'individual';
+            let row = parseInt(e.target.parentElement.dataset.row);
+            let col = parseInt(e.target.dataset.col);
+            dragStartRow = row; dragStartCol = col; dragEndCol = col;
+            selectCell(row, col); updateDragSelection(); startAutoScroll();
+        } else if (e.target.classList.contains('pos-marker')) {
+            isDragging = true; dragMode = 'column';
+            let col = parseInt(e.target.dataset.hcol);
+            dragStartRow = -1; dragStartCol = col; dragEndCol = col;
+            updateDragSelection(); startAutoScroll();
+        }
+    });
+
+    document.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        currentMouseX = e.clientX;
+        updateDragEndColByMouse(currentMouseX);
+    });
+
+    document.addEventListener('mouseup', function(e) {
+        if(isDragging) { isDragging = false; stopAutoScroll(); }
+    });
+
+    function updateDragEndColByMouse(clientX) {
+        if (!isDragging) return;
+        const wrap = document.getElementById('editorWrap');
+        const namesCol = document.getElementById('namesColumn');
+        if (!wrap || !namesCol) return;
+        
+        const rect = wrap.getBoundingClientRect();
+        const namesWidth = namesCol.offsetWidth;
+        const cellWidth = 22; 
+        
+        const seqAreaLeft = rect.left + namesWidth;
+        let relativeX = clientX - seqAreaLeft + wrap.scrollLeft;
+        let col = Math.floor(relativeX / cellWidth);
+        
+        let maxCol = 0;
+        if (sequences.length > 0) maxCol = Math.max(...sequences.map(s => s.data.length)) - 1;
+        if (col < 0) col = 0; if (col > maxCol) col = maxCol;
+
+        if (dragEndCol !== col) {
+            dragEndCol = col;
+            updateDragSelection();
+        }
+    }
+
+    function checkAutoScroll() {
+        if (!isDragging) return;
+        const wrap = document.getElementById('editorWrap');
+        const namesCol = document.getElementById('namesColumn');
+        const rect = wrap.getBoundingClientRect();
+        const namesWidth = namesCol.offsetWidth;
+        const scrollTriggerArea = 50; const maxSpeed = 30;
+        let scrollSpeed = 0;
+        
+        if (currentMouseX > rect.right - scrollTriggerArea) {
+            let dist = currentMouseX - (rect.right - scrollTriggerArea);
+            scrollSpeed = Math.min(maxSpeed, (dist / scrollTriggerArea) * maxSpeed);
+        } else if (currentMouseX < rect.left + namesWidth + scrollTriggerArea) {
+            let dist = (rect.left + namesWidth + scrollTriggerArea) - currentMouseX;
+            scrollSpeed = -Math.min(maxSpeed, (dist / scrollTriggerArea) * maxSpeed);
+        }
+        
+        if (scrollSpeed !== 0) {
+            wrap.scrollLeft += scrollSpeed;
+            updateDragEndColByMouse(currentMouseX);
+        }
+        autoScrollFrame = requestAnimationFrame(checkAutoScroll);
+    }
+
+    function startAutoScroll() { if (!autoScrollFrame) checkAutoScroll(); }
+    function stopAutoScroll() { if (autoScrollFrame) { cancelAnimationFrame(autoScrollFrame); autoScrollFrame = null; } }
+    // ----------------------------------------------
+
+    function calculatePrimerStats(seq) {
+        currentSelectedPrimer = seq; 
+        let displaySeq = seq.length > 20 ? seq.substring(0, 18) + '...' : seq;
+        document.getElementById('psSeq').innerText = displaySeq;
+        
+        let len = seq.length; let lenEl = document.getElementById('psLen');
+        lenEl.innerText = len; lenEl.style.color = (len >= 18 && len <= 25) ? '#2ecc71' : '#e74c3c';
+        
+        let a = (seq.match(/A/gi) || []).length; let t = (seq.match(/T/gi) || []).length;
+        let g = (seq.match(/G/gi) || []).length; let c = (seq.match(/C/gi) || []).length;
+        
+        let gc = len > 0 ? ((g + c) / len * 100) : 0; let gcEl = document.getElementById('psGC');
+        gcEl.innerText = gc.toFixed(1); gcEl.style.color = (gc >= 40 && gc <= 60) ? '#2ecc71' : '#e74c3c';
+        
+        let tm = 0;
+        if (len < 14) tm = (a + t) * 2 + (g + c) * 4; else tm = 64.9 + 41 * (g + c - 16.4) / len;
+        let tmEl = document.getElementById('psTm');
+        tmEl.innerText = tm.toFixed(1); tmEl.style.color = (tm >= 55 && tm <= 65) ? '#2ecc71' : '#e74c3c';
+    }
+
+    function updateStatusBarDragInfo() {
+        if (dragStartCol === -1 || dragEndCol === -1) return;
+        let start = Math.min(dragStartCol, dragEndCol) + 1;
+        let end = Math.max(dragStartCol, dragEndCol) + 1;
+        let len = end - start + 1;
+        let rowStr = (dragMode === 'column') ? 'All' : (dragStartRow + 1);
+        document.getElementById('posText').innerText = `Row: ${rowStr} | Pos: ${start} - ${end} (Len: ${len})`;
+    }
+
+    function updateDragSelection() {
+        document.querySelectorAll('.drag-selected').forEach(e => e.classList.remove('drag-selected', 'drag-left', 'drag-right'));
+        
+        if (dragStartCol === -1 || dragEndCol === -1) {
+            document.getElementById('primerStatsPanel').style.opacity = '0';
+            document.getElementById('primerStatsPanel').style.pointerEvents = 'none';
+            if (!isDragging && selectedRow !== -1 && selectedCol !== -1) {
+                document.getElementById('posText').innerText = `Row: ${selectedRow + 1} | Pos: ${selectedCol + 1}`;
+            }
+            return;
+        }
+
+        let start = Math.min(dragStartCol, dragEndCol);
+        let end = Math.max(dragStartCol, dragEndCol);
+        
+        if (dragMode === 'individual' && dragStartRow !== -1) {
+            let seqObj = sequences[dragStartRow];
+            let selectedSeq = "";
+            let rowEl = document.querySelector(`.row[data-row="${dragStartRow}"]`);
+            if(rowEl) {
+                for(let c=start; c<=end; c++) {
+                    let cell = rowEl.children[c];
+                    if (cell && cell.classList.contains('base')) {
+                        cell.classList.add('drag-selected');
+                        if (c === start) cell.classList.add('drag-left');
+                        if (c === end) cell.classList.add('drag-right');
+                        if (seqObj.data[c] !== '-') selectedSeq += seqObj.data[c];
+                    }
+                }
+            }
+            if (selectedSeq.length > 0 && start !== end) {
+                calculatePrimerStats(selectedSeq);
+                document.getElementById('primerStatsPanel').style.opacity = '1';
+                document.getElementById('primerStatsPanel').style.pointerEvents = 'auto';
+            } else {
+                currentSelectedPrimer = ""; 
+                document.getElementById('primerStatsPanel').style.opacity = '0';
+                document.getElementById('primerStatsPanel').style.pointerEvents = 'none';
+            }
+        } else if (dragMode === 'column') {
+            currentSelectedPrimer = ""; 
+            document.getElementById('primerStatsPanel').style.opacity = '0';
+            document.getElementById('primerStatsPanel').style.pointerEvents = 'none';
+            
+            document.querySelectorAll('.row').forEach(rowEl => {
+                for(let c=start; c<=end; c++) {
+                    let cell = rowEl.children[c];
+                    if (cell && cell.classList.contains('base')) {
+                        cell.classList.add('drag-selected');
+                        if (c === start) cell.classList.add('drag-left');
+                        if (c === end) cell.classList.add('drag-right');
+                    }
+                }
+            });
+            let headerEl = document.getElementById('gridHeader');
+            if(headerEl) {
+                for(let c=start; c<=end; c++) {
+                    let cell = headerEl.children[c];
+                    if (cell && cell.classList.contains('pos-marker')) cell.classList.add('drag-selected');
+                }
+            }
+        }
+        updateStatusBarDragInfo(); // ドラッグ連動表示
+    }
+
+    function copyPrimerSequence() {
+        if (!currentSelectedPrimer) return;
+        copyToClipboardFallback(currentSelectedPrimer, "プライマーの塩基配列をコピーしました。すぐに注文等に利用できます。");
+    }
+
+    function exportFastaAll() {
+        if(sequences.length === 0) return;
+        let output = "";
+        sequences.forEach(s => { 
+            if(s.isFPrimerFasta || s.isRPrimerFasta || s.isSelected === false) return;
+            output += `>${s.name}\n${s.data.join('').replace(/-/g, 'N')}\n`; 
+        });
+        if(output === "") { showToast("出力対象が選択されていません", "warning"); return; }
+        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([output], { type: 'text/plain' }));
+        a.download = "aligned_samples.fasta"; a.click();
+    }
+
+    function exportClustalAll() {
+        if(sequences.length === 0) return;
+        let output = "CLUSTAL formatted alignment by DNA Alignment Studio v3.14 (Bio-Edu Suite)\n\n";
+        let maxLen = Math.max(...sequences.map(s => s.data.length));
+        let namePad = Math.max(20, Math.max(...sequences.map(s => s.name.length)) + 4);
+        let baseCounts = new Array(sequences.length).fill(0);
+        let hasSelected = false;
+        
+        for (let i = 0; i < maxLen; i += 60) {
+            output += "\n";
+            let blockLen = Math.min(60, maxLen - i);
+            for (let sIdx = 0; sIdx < sequences.length; sIdx++) {
+                let s = sequences[sIdx];
+                if (s.isSelected === false) continue;
+                hasSelected = true;
+                let seqPart = "";
+                for (let j = 0; j < blockLen; j++) {
+                    let b = s.data[i + j] || '-'; seqPart += b; if (b !== '-') baseCounts[sIdx]++;
+                }
+                let nameStr = s.name.padEnd(namePad, ' ');
+                output += `${nameStr}${seqPart}\t${baseCounts[sIdx]}\n`;
+            }
+            
+            let consLine = "".padEnd(namePad, ' ');
+            for (let j = 0; j < blockLen; j++) {
+                let col = i + j;
+                let bases = [];
+                sequences.forEach(s => {
+                    if (!s.isFPrimerFasta && !s.isRPrimerFasta && s.data[col] !== undefined && s.data[col] !== '-' && s.isSelected !== false) bases.push(s.data[col]);
+                });
+                if (bases.length > 1) {
+                    let first = bases[0]; let isConserved = true;
+                    for (let b = 1; b < bases.length; b++) { if (bases[b] !== first) { isConserved = false; break; } }
+                    consLine += isConserved ? '*' : ' ';
+                } else { consLine += ' '; }
+            }
+            output += `${consLine}\n`;
+        }
+        
+        if(!hasSelected) { showToast("出力対象が選択されていません", "warning"); return; }
+        const a = document.createElement('a'); 
+        a.href = URL.createObjectURL(new Blob([output], { type: 'text/plain' }));
+        a.download = "aligned_samples.txt"; 
+        a.click();
+    }
+
+    function showToast(msg, type = "") {
+        const toast = document.getElementById('toast');
+        if (!toast) return;
+        toast.innerText = msg;
+        let className = "show";
+        if (type === "error") className += " error"; else if (type === "warning") className += " warning"; else if (type === "info") className += " info";
+        toast.className = "";
+        void toast.offsetWidth; 
+        toast.className = className;
+        setTimeout(() => { toast.classList.remove("show"); }, 3000);
+    }
+
+    function copyToClipboardFallback(text, successMessage) {
+        if(text === "") { showToast("対象が選択されていません", "warning"); return; }
+        const textArea = document.createElement("textarea");
+        textArea.value = text; textArea.style.position = "fixed"; textArea.style.left = "-9999px";
+        document.body.appendChild(textArea); textArea.focus(); textArea.select();
+        try { document.execCommand('copy'); showToast(successMessage); } catch (err) { console.error('Oops, unable to copy', err); showToast("コピーに失敗しました。", "error"); }
+        document.body.removeChild(textArea);
+    }
+
+    function copyFastaAll() {
+        if(sequences.length === 0) return;
+        let output = "";
+        sequences.forEach(s => { 
+            if(s.isFPrimerFasta || s.isRPrimerFasta || s.isSelected === false) return;
+            output += `>${s.name}\n${s.data.join('').replace(/-/g, 'N')}\n`; 
+        });
+        copyToClipboardFallback(output.trim(), "FASTA形式で一括コピーしました");
+    }
+
+    function copyClustalAll() {
+        if(sequences.length === 0) return;
+        let output = "CLUSTAL formatted alignment by DNA Alignment Studio v3.14 (Bio-Edu Suite)\n\n";
+        let maxLen = Math.max(...sequences.map(s => s.data.length));
+        let namePad = Math.max(20, Math.max(...sequences.map(s => s.name.length)) + 4);
+        let baseCounts = new Array(sequences.length).fill(0);
+        let hasSelected = false;
+        
+        for (let i = 0; i < maxLen; i += 60) {
+            output += "\n"; let blockLen = Math.min(60, maxLen - i);
+            for (let sIdx = 0; sIdx < sequences.length; sIdx++) {
+                let s = sequences[sIdx]; if (s.isSelected === false) continue;
+                hasSelected = true; let seqPart = "";
+                for (let j = 0; j < blockLen; j++) { let b = s.data[i + j] || '-'; seqPart += b; if (b !== '-') baseCounts[sIdx]++; }
+                let nameStr = s.name.padEnd(namePad, ' ');
+                output += `${nameStr}${seqPart}\t${baseCounts[sIdx]}\n`;
+            }
+            let consLine = "".padEnd(namePad, ' ');
+            for (let j = 0; j < blockLen; j++) {
+                let col = i + j; let bases = [];
+                sequences.forEach(s => { if (!s.isFPrimerFasta && !s.isRPrimerFasta && s.data[col] !== undefined && s.data[col] !== '-' && s.isSelected !== false) bases.push(s.data[col]); });
+                if (bases.length > 1) {
+                    let first = bases[0]; let isConserved = true;
+                    for (let b = 1; b < bases.length; b++) { if (bases[b] !== first) { isConserved = false; break; } }
+                    consLine += isConserved ? '*' : ' ';
+                } else { consLine += ' '; }
+            }
+            output += `${consLine}\n`;
+        }
+        if(!hasSelected) { showToast("コピー対象が選択されていません", "warning"); return; }
+        copyToClipboardFallback(output.trim(), "CLUSTAL形式で一括コピーしました");
+    }
+
+    const tooltip = document.getElementById('globalTooltip');
+    document.body.addEventListener('mouseover', (e) => {
+        const target = e.target.closest('[data-tooltip]');
+        if (target) {
+            const text = target.getAttribute('data-tooltip'); tooltip.innerHTML = text; tooltip.style.display = 'block';
+            const rect = target.getBoundingClientRect(); const ttRect = tooltip.getBoundingClientRect();
+            let topPos = rect.top - ttRect.height - 8; let leftPos = rect.left + (rect.width / 2); let arrowClass = 'show-top'; 
+            if (topPos < 0) { topPos = rect.bottom + 8; arrowClass = 'show-bottom'; }
+            if (leftPos - ttRect.width / 2 < 5) leftPos = 5 + ttRect.width / 2; else if (leftPos + ttRect.width / 2 > window.innerWidth - 5) leftPos = window.innerWidth - ttRect.width / 2 - 5;
+            tooltip.className = `custom-tooltip ${arrowClass}`; tooltip.style.top = topPos + 'px'; tooltip.style.left = leftPos + 'px'; tooltip.style.transform = `translateX(-50%)`; tooltip.style.opacity = '1';
+        }
+    });
+    document.body.addEventListener('mouseout', (e) => {
+        const target = e.target.closest('[data-tooltip]');
+        if (target) { tooltip.style.opacity = '0'; setTimeout(() => { if (tooltip.style.opacity === '0') tooltip.style.display = 'none'; }, 200); }
+    });
+    document.addEventListener('scroll', () => { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; }, true);
 
 </script>
+
 </body>
 </html>
