@@ -87,6 +87,8 @@
 
         .toolbar-row { display: flex; width: 100%; gap: 15px; align-items: center; flex-wrap: wrap; }
         .step-label { font-size: 13px; font-weight: bold; color: #7f8c8d; min-width: 80px; display: flex; align-items: center; }
+        
+        .divider { width: 1px; height: 24px; background: #dcdde1; margin: 0 15px; flex-shrink: 0; }
 
         .btn { background: #fdfefe; border: 1px solid var(--border-color); padding: 8px 16px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 5px; border-radius: 4px; font-weight: bold; transition: all 0.2s; color: var(--text-main); white-space: nowrap; }
         .btn:hover:not(:disabled) { background: #eaf2f8; border-color: #3498db; color: #2980b9; transform: scale(0.98); }
@@ -134,6 +136,7 @@
         .base-char.deleted { text-decoration: line-through; color: #95a5a6 !important; opacity: 0.5; }
         .base-char.edited { border-bottom: 3px solid var(--danger); background: #fadbd8; }
         .base-char.highlight { background: #f1c40f !important; color: #34495e !important; box-shadow: inset 0 0 0 2px #f39c12;}
+        .base-char.qc-warning { background: rgba(231, 76, 60, 0.2) !important; color: var(--danger) !important; box-shadow: inset 0 0 0 2px var(--danger); }
 
         .c-A { color: #27ae60; } .c-T { color: #e74c3c; } .c-G { color: #2c3e50; } .c-C { color: #2980b9; }
         .c-N, .c-Y, .c-R, .c-W, .c-S, .c-M, .c-K, .c-B, .c-V, .c-D, .c-H, .c-U { color: #8e44ad; }
@@ -157,6 +160,7 @@
             .version-badge { top: 10px; right: 10px; padding: 2px 6px; }
             .editor-toolbar { padding: 10px !important; }
             .editor-toolbar > div:nth-child(2) { border-left: none !important; padding-left: 0 !important; border-top: 1px dashed var(--border-color); padding-top: 8px; margin-top: 5px; width: 100%; }
+            .divider { display: none; } /* スマホ等ではディバイダーを非表示 */
         }
 
         /* カスタムツールチップ (Z-index: 9999 準拠) */
@@ -219,9 +223,22 @@
                 </div>
             </div>
             
-            <div class="toolbar-row">
-                <span class="step-label">3. 保存 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_export')">?</button></span>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <div class="toolbar-row" style="align-items: center;">
+                <!-- 左側：QC -->
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <span class="step-label">3. 品質管理 (QC)</span>
+                    <button class="btn" id="btnQC" onclick="runQC()" disabled style="padding: 8px 16px;" data-tooltip="配列内の判読不能塩基(N)や曖昧塩基(ダブルピーク等)を検出し、ハイライトします。">
+                        <svg class="btn-icon svg-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        低品質・曖昧塩基を検出
+                    </button>
+                </div>
+
+                <!-- 中央：ディバイダー -->
+                <div class="divider"></div>
+
+                <!-- 右側：保存 -->
+                <div style="display: flex; flex: 1; justify-content: flex-end; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <span class="step-label">4. 保存 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_export')">?</button></span>
                     <button class="btn btn-success" id="btnExport" onclick="exportFasta()" disabled style="min-width: 140px; padding: 8px 16px;" data-tooltip="波形データから抽出した塩基配列をFASTA形式でファイルとして保存します。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg> FASTA保存</button>
                     <button class="btn" id="btnCopyFasta" onclick="copyFasta()" disabled style="min-width: 140px; padding: 8px 16px;" data-tooltip="波形データから抽出した塩基配列をFASTA形式でクリップボードにコピーします。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6v3H9zM8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg> FASTAコピー</button>
                 </div>
@@ -314,7 +331,7 @@
 </div>
 
 <div class="footer">
-    Bio-Edu Suite &copy; 2026 | Developed for Bioinformatics & Wet-Lab Education
+    &copy; 2026 Bio-Edu Suite v2.4 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
 <div id="toast">メッセージ</div>
@@ -420,6 +437,7 @@
                 document.getElementById('searchInput').disabled = false;
                 document.getElementById('btnSearch').disabled = false;
                 document.getElementById('btnClearSearch').disabled = false;
+                document.getElementById('btnQC').disabled = false;
                 document.getElementById('btnExport').disabled = false;
                 document.getElementById('btnCopyFasta').disabled = false;
 
@@ -514,7 +532,8 @@
                 loc: dv.getInt16(plocDir.dataOffset + i * 2),
                 isDeleted: false,
                 isEdited: false,
-                isHighlight: false
+                isHighlight: false,
+                isQCWarning: false
             });
         }
 
@@ -584,6 +603,15 @@
         });
         ctx.stroke();
 
+        // QCハイライトの描画
+        ab1Data.bases.forEach(b => {
+            if (!b.isDeleted && b.isQCWarning) {
+                let x = b.loc * baseWidth * scaleX;
+                ctx.fillStyle = 'rgba(231, 76, 60, 0.15)';
+                ctx.fillRect(x - (baseWidth * scaleX / 2), 0, baseWidth * scaleX, h);
+            }
+        });
+
         let minSel = dragStartIndex !== -1 ? Math.min(dragStartIndex, dragEndIndex) : selectedBaseIndex;
         let maxSel = dragStartIndex !== -1 ? Math.max(dragStartIndex, dragEndIndex) : selectedBaseIndex;
 
@@ -644,6 +672,7 @@
             if(b.isDeleted) classes.push('deleted');
             if(b.isEdited) classes.push('edited');
             if(b.isHighlight) classes.push('highlight');
+            if(b.isQCWarning) classes.push('qc-warning');
             
             let isSelected = false;
             if (dragStartIndex !== -1 && dragEndIndex !== -1) {
@@ -661,17 +690,25 @@
             div.dataset.index = index;
 
             div.onmousedown = (e) => {
+                if (e.shiftKey && selectedBaseIndex !== -1) {
+                    dragStartIndex = selectedBaseIndex;
+                    dragEndIndex = index;
+                    selectedBaseIndex = index;
+                } else {
+                    dragStartIndex = index;
+                    dragEndIndex = index;
+                    selectedBaseIndex = index;
+                }
                 isDraggingBases = true;
-                dragStartIndex = index;
-                dragEndIndex = index;
-                selectedBaseIndex = index;
                 redrawAll();
+                updateStatusBar(selectedBaseIndex);
             };
             div.onmouseenter = (e) => {
                 if (isDraggingBases) {
                     dragEndIndex = index;
                     selectedBaseIndex = index;
                     redrawAll();
+                    updateStatusBar(selectedBaseIndex);
                 }
             };
 
@@ -751,6 +788,7 @@
             dragEndIndex = closestIndex;
             selectedBaseIndex = closestIndex;
             redrawAll();
+            updateStatusBar(selectedBaseIndex);
         }
     }
 
@@ -812,10 +850,44 @@
         
         const scaleX = parseFloat(document.getElementById('scaleX').value);
         const baseWidth = 2.0;
-        let x = ab1Data.bases[index].loc * baseWidth * scaleX;
+        let b = ab1Data.bases[index];
+        let x = b.loc * baseWidth * scaleX;
         
         let minScroll = x - traceContainer.clientWidth / 2;
         traceContainer.scrollTo({ left: Math.max(0, minScroll), behavior: 'smooth' });
+
+        updateStatusBar(index);
+    }
+
+    function updateStatusBar(index) {
+        if (!ab1Data || index < 0 || index >= ab1Data.bases.length) return;
+        let b = ab1Data.bases[index];
+        let loc = b.loc;
+        let signalA = ab1Data.traces['A'] && ab1Data.traces['A'][loc] !== undefined ? ab1Data.traces['A'][loc] : 0;
+        let signalT = ab1Data.traces['T'] && ab1Data.traces['T'][loc] !== undefined ? ab1Data.traces['T'][loc] : 0;
+        let signalG = ab1Data.traces['G'] && ab1Data.traces['G'][loc] !== undefined ? ab1Data.traces['G'][loc] : 0;
+        let signalC = ab1Data.traces['C'] && ab1Data.traces['C'][loc] !== undefined ? ab1Data.traces['C'][loc] : 0;
+        
+        let char = b.char.toUpperCase();
+        let statusMsg = "";
+        const iupacMap = {
+            'R': ['A', 'G'], 'Y': ['C', 'T'], 'S': ['G', 'C'], 'W': ['A', 'T'],
+            'K': ['G', 'T'], 'M': ['A', 'C'], 'B': ['C', 'G', 'T'], 'D': ['A', 'G', 'T'],
+            'H': ['A', 'C', 'T'], 'V': ['A', 'C', 'G'], 'N': ['A', 'T', 'G', 'C']
+        };
+        
+        if (['A', 'T', 'G', 'C'].includes(char)) {
+             statusMsg = `[正常塩基 ${char}] シグナル強度: A=${signalA}, T=${signalT}, G=${signalG}, C=${signalC}`;
+        } else if (char === 'N') {
+             statusMsg = `[判読不能 N] シグナル強度: A=${signalA}, T=${signalT}, G=${signalG}, C=${signalC} - 再確認または削除を推奨`;
+        } else if (iupacMap[char]) {
+             let bases = iupacMap[char];
+             statusMsg = `[曖昧塩基 ${char} (ピーク混在: ${bases.join('/')})] シグナル強度: A=${signalA}, T=${signalT}, G=${signalG}, C=${signalC}`;
+        } else {
+             statusMsg = `[塩基 ${char}] シグナル強度: A=${signalA}, T=${signalT}, G=${signalG}, C=${signalC}`;
+        }
+        
+        document.getElementById('statusText').innerText = `ステータス: 選択位置 ${index + 1} | ${statusMsg}`;
     }
 
     document.addEventListener('keydown', function(e) {
@@ -873,8 +945,44 @@
             e.preventDefault();
             if(changed) saveHistory();
             redrawAll();
+            if (selectedBaseIndex !== -1) {
+                updateStatusBar(selectedBaseIndex);
+            }
         }
     });
+
+    function runQC() {
+        if (!ab1Data) return;
+        const iupac = ['N', 'R', 'Y', 'S', 'W', 'K', 'M', 'B', 'D', 'H', 'V'];
+        let nCount = 0;
+        let iupacCount = 0;
+        
+        ab1Data.bases.forEach(b => {
+            let charUpper = b.char.toUpperCase();
+            if (!b.isDeleted && iupac.includes(charUpper)) {
+                b.isQCWarning = true;
+                if (charUpper === 'N') {
+                    nCount++;
+                } else {
+                    iupacCount++;
+                }
+            } else {
+                b.isQCWarning = false;
+            }
+        });
+        redrawAll();
+        
+        let totalCount = nCount + iupacCount;
+        let statusStr = "";
+        if (totalCount > 0) {
+            showToast(`${totalCount}個の低品質/曖昧塩基を検出しました。`, "warning");
+            statusStr = `ステータス: QC完了。N塩基 ${nCount}件、ダブルピーク等 ${iupacCount}件を確認してください。`;
+        } else {
+            showToast("曖昧な塩基は見つかりませんでした。", "success");
+            statusStr = `ステータス: QC完了。問題のある塩基は検出されませんでした。`;
+        }
+        document.getElementById('statusText').innerText = statusStr;
+    }
 
     function searchSequence() {
         if(!ab1Data) return;
@@ -957,9 +1065,15 @@
         let headerName = currentFileName.replace(/\.ab1$/i, '_curated');
         let output = `>${headerName}\n${seqStr}\n`;
         
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const dateString = `${yyyy}${mm}${dd}`;
+        
         const a = document.createElement('a'); 
         a.href = URL.createObjectURL(new Blob([output], { type: 'text/plain' }));
-        a.download = `${headerName}.fasta`; 
+        a.download = `BioEdu_Export_${dateString}.fasta`; 
         a.click();
         
         document.getElementById('statusText').innerText = `ステータス: ファイルを保存しました。`;
