@@ -39,40 +39,25 @@
         .card-header { background: var(--secondary); color: white; padding: 10px 18px; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;}
         .card-body { padding: 15px; display: flex; flex-direction: column; gap: 16px; }
 
-        /* 根拠表示用スタイル */
-        .rationale-btn { background: var(--phase-color); color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; }
+        /* 根拠表示用スタイル (ガイドライン第6項①準拠) */
+        .rationale-btn { background: var(--phase-color); color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; flex-shrink: 0; }
         .rationale-btn:hover { transform: scale(1.1); filter: brightness(1.2); }
         
-        .rationale-text {
-            background: #fef9e7;
-            border: 1px solid var(--warning);
-            padding: 10px;
-            border-radius: 4px;
-            font-size: 11px;
-            color: #7e5109;
-            line-height: 1.5;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
-            position: fixed !important;
-            z-index: 9000 !important;
-            width: max-content !important;
-            max-width: min(320px, calc(100vw - 24px)) !important;
-            margin: 0 !important;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.2s, transform 0.2s;
-            transform: translateY(-10px);
-            pointer-events: none;
-            box-sizing: border-box;
-        }
-        .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
-        .rationale-text::after {
-            content: ''; position: absolute; width: 10px; height: 10px;
-            background: #fef9e7; transform: rotate(45deg);
-            left: var(--arrow-left, 50%); margin-left: -5px;
-        }
-        .rationale-text.arrow-top::after    { top: -6px; border-left: 1px solid var(--warning); border-top: 1px solid var(--warning); }
-        .rationale-text.arrow-bottom::after { bottom: -6px; border-right: 1px solid var(--warning); border-bottom: 1px solid var(--warning); }
-        .rationale-text > strong:first-child { color: #d35400; display: inline-block; margin-bottom: 4px; font-size: 12px; }
+        .rationale-text { position: fixed; background: #fef9e7; border: 1px solid var(--warning); padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: max-content; max-width: min(320px, calc(100vw - 24px)); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; } 
+        .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; } 
+        .rationale-text strong { color: #d35400; display: block; margin-bottom: 4px; font-size: 12px; }
+        
+        .rationale-text::after { content: ''; position: absolute; border-width: 6px; border-style: solid; left: var(--arrow-left, 50%); } 
+        .rationale-text.arrow-top::after { top: -12px; border-color: transparent transparent #fef9e7 transparent; } 
+        .rationale-text.arrow-bottom::after { bottom: -12px; border-color: #fef9e7 transparent transparent transparent; } 
+        .rationale-text::before { content: ''; position: absolute; border-width: 7px; border-style: solid; left: calc(var(--arrow-left, 50%) - 1px); } 
+        .rationale-text.arrow-top::before { top: -14px; border-color: transparent transparent var(--warning) transparent; } 
+        .rationale-text.arrow-bottom::before { bottom: -14px; border-color: var(--warning) transparent transparent transparent; }
+
+        /* インラインSVGアイコン用 共通カラークラス */ 
+        .svg-hint { color: var(--warning); } /* 💡 気づき・推奨用 (#f39c12) */ 
+        .svg-info { color: inherit; } /* ℹ️ 情報・ルール用 */ 
+        .svg-danger { color: var(--danger); } /* 🚨 警告・エラー用 (#e74c3c) */
 
         .header-icon { width: 20px; height: 20px; vertical-align: -3px; margin-right: 6px; flex-shrink: 0; }
         .btn-icon { width: 14px; height: 14px; vertical-align: -2px; flex-shrink: 0; }
@@ -125,8 +110,8 @@
 
         .slider-container { display: flex; align-items: center; gap: 8px; background: #f8f9f9; padding: 4px 10px; border-radius: 4px; border: 1px solid #dcdde1; font-size: 11px; font-weight: bold; color: var(--secondary); white-space: nowrap; }
         input[type=range] { width: 60px; margin: 0; cursor: pointer; }
-        .divider { width: 1px; height: 24px; background: #dcdde1; margin: 0 5px; }
-
+        .divider { width: 1px; height: 24px; background: #dcdde1; margin: 0 10px; }
+        
         .editor-card { flex: 1; display: flex; flex-direction: column; min-height: 500px; position: relative;}
         .editor-container { flex: 1; overflow: auto; background: white; display: flex; position: relative; user-select: none; font-family: 'Courier New', Consolas, monospace; }
         
@@ -182,7 +167,7 @@
         .val-target { font-size: 10px; color: var(--text-muted); margin-left: 2px; font-weight: normal;}
 
         .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 10px 15px; font-size: 11px; color: var(--text-main); border-bottom: 1px solid #dcdde1; margin: 0; border-radius: 0; }
-        .bench-tip strong { color: #2980b9; font-size: 11px; display: inline-block; }
+        .bench-tip strong { color: #2980b9; font-size: 11px; display: inline-block; margin-bottom: 4px; display: flex; align-items: center;}
         
         .step-up-card { background: #f8f9fa; border: 1px solid #d1d5db; padding: 20px; border-radius: 8px; margin-top: 25px; color: #2c3e50; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
         .step-up-card h3 { color: #2c3e50; margin-top: 0; font-size: 15px; display: flex; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 12px; }
@@ -259,30 +244,32 @@
             <div class="card-body">
                 
                 <div id="rat_step2" class="rationale-text">
-                    <strong>【根拠：なぜプライマーで両端を特定するのか？】</strong><br>
-                    サンガー法などで得られた生のDNAの塩基配列データには、機械の読み取りノイズや不要な塩基配列が両端に大量に含まれています。自分が使った「プライマー F/R」をアンカーとして検索し、ノイズを省いた「本当に必要な領域」だけを特定・整列します。<br>
-                    <span style="color: #e74c3c; font-weight: bold;">※制限酵素部位などを探す場合は、下のエディタ内にある「モチーフ検索」を使用してください。</span>
+                    <strong>なぜプライマーで両端を特定するのか？</strong>
+                    ・サンガー法などで得られた生のDNAの塩基配列データには、機械の読み取りノイズや不要な塩基配列が両端に大量に含まれています。<br>
+                    ・自分が使った「プライマー F/R」をアンカーとして検索し、ノイズを省いた「本当に必要な領域」だけを特定・整列します。<br>
+                    ・※制限酵素部位などを探す場合は、下のエディタ内にある「モチーフ検索」を使用してください。
                 </div>
                 <div id="rat_msa" class="rationale-text">
-                    <strong>【根拠：MSA(多重整列)とは？】</strong><br>
-                    進化の過程で生じた「欠失や挿入」を補正するため、塩基配列の間に「ギャップ(-)」を挿入しながら、すべてのサンプルの相同な位置を縦にピタリと合わせる高度なアルゴリズムです。これにより、真の突然変異（一塩基多型等）が浮かび上がります。
+                    <strong>MSA(多重整列)とは？</strong>
+                    ・進化の過程で生じた「欠失や挿入」を補正するため、塩基配列の間に「ギャップ(-)」を挿入しながら、すべてのサンプルの相同な位置を縦にピタリと合わせる高度なアルゴリズムです。<br>
+                    ・これにより、真の突然変異（一塩基多型等）が浮かび上がります。
                 </div>
                 <div id="rat_design" class="rationale-text">
-                    <strong>【根拠：プライマー設計の適正パラメータ】</strong><br>
-                    ・<strong>長さ (18〜25bp):</strong> 短すぎると特異性が下がり（他の場所にくっつく）、長すぎると結合効率が落ちます。<br>
-                    ・<strong>GC含量 (40〜60%):</strong> GとCは水素結合が3本あり強く結合するため、極端な偏りを防ぎます。<br>
-                    ・<strong>Tm値 (55〜65℃):</strong> DNAの二重らせんが半分ほどける温度です。FとRでTm値の差を「5℃以内」に揃えるのがPCR成功の鉄則です。
+                    <strong>プライマー設計の適正パラメータ</strong>
+                    ・長さ (18〜25bp): 短すぎると特異性が下がり（他の場所にくっつく）、長すぎると結合効率が落ちます。<br>
+                    ・GC含量 (40〜60%): GとCは水素結合が3本あり強く結合するため、極端な偏りを防ぎます。<br>
+                    ・Tm値 (55〜65℃): DNAの二重らせんが半分ほどける温度です。FとRでTm値の差を「5℃以内」に揃えるのがPCR成功の鉄則です。
                 </div>
                 <div id="rat_export" class="rationale-text">
-                    <strong>【根拠：FASTAとCLUSTALの違い】</strong><br>
-                    ・<strong>FASTA:</strong> BLASTや系統樹作成など、コンピューター（プログラム）に読み込ませるためのデータです。<br>
-                    ・<strong>CLUSTAL:</strong> 突然変異が視覚的にわかりやすい、人間（論文の読者）が読むための表示形式です。次のアプリ「Alignment Print Studio」で美しく印刷できます。
+                    <strong>FASTAとCLUSTALの違い</strong>
+                    ・FASTA: BLASTや系統樹作成など、コンピューター（プログラム）に読み込ませるためのデータです。<br>
+                    ・CLUSTAL: 突然変異が視覚的にわかりやすい、人間（論文の読者）が読むための表示形式です。次のアプリ「Alignment Print Studio」で美しく印刷できます。
                 </div>
 
                 <div class="toolbar-row" style="align-items: flex-start;">
-                    <span class="step-label" style="display: flex; align-items: center; margin-top: 14px;">1. データ読込</span>
-                    <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px; flex: 1;">
-                        <div style="display: flex; flex-direction: row; gap: 8px; flex: 0 0 auto; align-items: center; margin-top: 6px;">
+                    <span class="step-label" style="display: flex; align-items: center; margin-top: 15px;">1. データ読込</span>
+                    <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px; flex: 1; align-items: flex-start;">
+                        <div style="display: flex; flex-direction: row; gap: 8px; flex: 0 0 auto; align-items: center; margin-top: 8px;">
                             <input type="text" id="ncbiId" class="primer-input" style="width: 180px;" placeholder="Accession No. を入力" onkeypress="if(event.keyCode===13) fetchNCBI()">
                             <button class="btn btn-primary" onclick="fetchNCBI()" data-tooltip="NCBIから塩基配列データを取得します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18z"/></svg> 取得 <span id="apiLoader" class="loader" style="display:none;"></span></button>
                         </div>
@@ -314,16 +301,15 @@
                 </div>
                 
                 <div class="toolbar-row" style="align-items: flex-start;">
-                    <!-- 💡 項目4 と 項目5 を左右入れ替え -->
-                    <span class="step-label" style="margin-top: 10px;">4. プライマー設計 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_design')">?</button></span>
-                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; flex: 1; margin-top: 2px;">
+                    <span class="step-label" style="margin-top: 8px;">4. プライマー設計 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_design')">?</button></span>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; flex: 1; margin-top: 8px;">
                         <button class="btn btn-success" id="btnConserved" onclick="toggleConservedRegions()" disabled data-tooltip="塩基配列間で保存されている領域を強調表示します">保存領域</button>
                         <span style="font-size: 10px; color: var(--text-muted); line-height: 1.4;">※塩基配列をドラッグ(長押し選択)で設計ナビが起動します。</span>
                     </div>
-
-                    <div class="divider" style="height: auto; align-self: stretch;"></div>
                     
-                    <span class="step-label" style="margin-top: 10px;">5. 保存 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_export')">?</button></span>
+                    <div class="divider" style="margin-top: 12px;"></div>
+                    
+                    <span class="step-label" style="margin-top: 8px;">5. 保存 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_export')">?</button></span>
                     <div class="export-grid">
                         <button class="btn btn-success" id="btnExportFasta" onclick="exportFastaAll()" disabled data-tooltip="FASTA形式でファイルとして保存します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg> FASTA保存</button>
                         <button class="btn" id="btnCopyFasta" onclick="copyFastaAll()" disabled data-tooltip="FASTA形式でクリップボードにコピーします"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6v3H9zM8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg> FASTAコピー</button>
@@ -352,8 +338,9 @@
             <div style="display: flex; flex-direction: column; gap: 5px;">
                 <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
                     <span style="font-size: 12px; font-weight: bold; color: var(--secondary); display: flex; align-items: center;">
-                        🔍 モチーフ検索
-                        <button class="rationale-btn" onclick="toggleRationale(event, 'rat_motif')" style="margin-right: 5px;">?</button>
+                        <svg class="svg-info" style="width: 16px; height: 16px; margin-right: 4px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        モチーフ検索
+                        <button class="rationale-btn" onclick="toggleRationale(event, 'rat_motif')">?</button>
                     </span>
                     <input type="text" id="searchInput" class="primer-input" style="width: 140px;" placeholder="塩基配列を入力" style="text-transform: uppercase;" oninput="toggleHighlightBtn()" onkeypress="if(event.keyCode===13 && !document.getElementById('btnHighlight').disabled) highlightSearch()">
                     <button class="btn btn-option" id="btnHighlight" style="padding: 6px 12px; font-size: 11px;" onclick="highlightSearch()" disabled data-tooltip="入力した塩基配列を検索してハイライトします"> ハイライト</button>
@@ -364,32 +351,33 @@
 
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; border-left: 2px solid var(--border-color); padding-left: 10px;">
                 <span style="font-size: 12px; font-weight: bold; color: var(--danger); display: flex; align-items: center;">
-                    ✂️ 範囲カット・操作
-                    <button class="rationale-btn" onclick="toggleRationale(event, 'rat_step3')" style="margin-right: 5px;">?</button>
+                    <svg class="svg-danger" style="width: 16px; height: 16px; margin-right: 4px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg>
+                    範囲カット・操作
+                    <button class="rationale-btn" onclick="toggleRationale(event, 'rat_step3')">?</button>
                 </span>
             </div>
         </div>
         
-        <div id="rat_motif" class="rationale-text" style="border-bottom: 1px solid var(--warning);">
-            <strong>【根拠：上部の「プライマー両端特定」との違い】</strong><br>
-            ステップ2の「両端特定」が<strong>不要なノイズを切り落とすための目印探し（トリミング準備）</strong>であるのに対し、この「モチーフ検索」は<strong>制限酵素部位など、生物学的に意味のある短い塩基配列</strong>がどこにあるかをエディタ内で探し出し、黄色くハイライト（強調表示）するための機能です。
+        <div id="rat_motif" class="rationale-text">
+            <strong>上部の「プライマー両端特定」との違い</strong>
+            ・ステップ2の「両端特定」が不要なノイズを切り落とすための目印探し（トリミング準備）であるのに対し、この「モチーフ検索」は制限酵素部位など、生物学的に意味のある短い塩基配列がどこにあるかをエディタ内で探し出し、黄色くハイライト（強調表示）するための機能です。
         </div>
-        <div id="rat_step3" class="rationale-text" style="border-bottom: 1px solid var(--warning);">
-            <strong>【根拠：なぜ手動でカットするのか？】</strong><br>
-            端がガタガタになっているノイズ部分や不要な領域を残したまま次の解析に進むと、システムがそれを「存在しない未知の突然変異」として誤認識してしまいます。綺麗にトリミングするのがインシリコ解析の鉄則です。<br>
-            <strong>【キーボード操作・ショートカット】</strong><br>
+        <div id="rat_step3" class="rationale-text">
+            <strong>なぜ手動でカットするのか？</strong>
+            ・端がガタガタになっているノイズ部分や不要な領域を残したまま次の解析に進むと、システムがそれを「存在しない未知の突然変異」として誤認識してしまいます。綺麗にトリミングするのがインシリコ解析の鉄則です。<br>
+            <strong>キーボード操作・ショートカット</strong>
             ・一括削除: 塩基配列または目盛りをドラッグで選択し [Backspace] または [Delete]<br>
             ・１文字編集: セルを選択して [A][T][G][C][Y][R][N] 等を入力して上書き<br>
             ・ギャップ挿入: [Space] または [-]<br>
             ・移動: 矢印キー [↑][↓][←][→]<br>
-            ・元に戻す / やり直す: [Ctrl+Z] / [Ctrl+Shift+Z] (Macは Cmd+Z / Cmd+Shift+Z)<br>
-            <strong>【参考：あいまい塩基表（IUPACコード）】</strong><br>
-            Y (CかT), R (AかG), N (不明), W (AかT), S (CかG), M (AかC), K (GかT)
+            ・元に戻す / やり直す: [Ctrl+Z] / [Ctrl+Shift+Z]<br>
+            <strong>参考：あいまい塩基表（IUPACコード）</strong>
+            ・Y (CかT), R (AかG), N (不明), W (AかT), S (CかG), M (AかC), K (GかT)
         </div>
 
         <div class="bench-tip">
-            <strong>💡 現場のコツ（設計ミッション）</strong><br>
-            塩基配列の端の不要な領域をカットしながら、右上の「設計ナビ」の数値が<strong>すべて緑色（適正値）</strong>になる理想の領域を探し出しましょう！
+            <strong><svg class="svg-hint" style="width: 16px; height: 16px; margin-right: 6px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg> 現場のコツ（設計ミッション）</strong>
+            塩基配列の端の不要な領域をカットしながら、右上の「設計ナビ」の数値がすべて緑色（適正値）になる理想の領域を探し出しましょう！
         </div>
 
         <div class="editor-container" id="editorWrap">
@@ -418,7 +406,7 @@
 </div>
 
 <div class="footer">
-    &copy;2026 Bio-Edu Suite v1.0 | Developed for Bioinformatics & Wet-Lab Education
+    &copy; 2026 Bio-Edu Suite v3.14 | Sequence Curation & Pipeline Hub
 </div>
 
 <div id="toast">メッセージ</div>
@@ -446,7 +434,6 @@
     let historyStates = [];
     let historyIndex = -1;
     
-    // 💡 枠外ドラッグ・スクロール連動用変数
     let currentMouseX = 0;
     let autoScrollFrame = null;
 
@@ -532,46 +519,58 @@
         }
     }
     
-    function toggleRationale(event, id) {
-        event.stopPropagation();
-        const el = document.getElementById(id);
-        const btn = event.currentTarget;
+    /* ガイドライン第6項①: フリップ計算とoffsetWidthを用いた安全なポップオーバー表示ロジック */
+    function toggleRationale(event, id) { 
+        event.stopPropagation(); 
+        const el = document.getElementById(id); 
+        const btn = event.currentTarget; 
         const isShown = el.classList.contains('show');
-        document.querySelectorAll('.rationale-text').forEach(e => e.classList.remove('show'));
-        if(!isShown) {
-            if (el.parentNode !== document.body) document.body.appendChild(el);
-            el.style.top = '0px'; el.style.left = '0px';
+
+        document.querySelectorAll('.rationale-text').forEach(e => { 
+            e.classList.remove('show', 'arrow-top', 'arrow-bottom'); 
+        });
+
+        if(!isShown) { 
+            if (el.parentNode !== document.body) document.body.appendChild(el); 
+            el.style.top = '0px'; el.style.left = '0px'; 
             el.classList.add('show');
-            const elHeight = el.offsetHeight;
-            const elWidth  = el.offsetWidth;
-            const rect = btn.getBoundingClientRect();
-            let topPos = rect.bottom + 10;
+
+            const elHeight = el.offsetHeight; 
+            const elWidth = el.offsetWidth; 
+            const rect = btn.getBoundingClientRect(); 
+
+            let topPos = rect.bottom + 12; 
             let arrowClass = 'arrow-top';
-            if (rect.bottom + elHeight + 20 > window.innerHeight) {
-                topPos = rect.top - elHeight - 10;
-                arrowClass = 'arrow-bottom';
-            }
-            el.style.top = topPos + 'px';
-            const btnCenter = rect.left + rect.width / 2;
-            let leftPos = btnCenter - elWidth / 2;
-            if (leftPos + elWidth > window.innerWidth - 10) leftPos = window.innerWidth - elWidth - 10;
-            if (leftPos < 10) leftPos = 10;
-            el.style.left = leftPos + 'px';
-            let arrowLeft = btnCenter - leftPos;
-            if (arrowLeft < 12) arrowLeft = 12;
-            if (arrowLeft > elWidth - 12) arrowLeft = elWidth - 12;
-            el.classList.remove('arrow-top', 'arrow-bottom');
-            el.classList.add(arrowClass);
-            el.style.setProperty('--arrow-left', arrowLeft + 'px');
-        }
+
+            if (rect.bottom + elHeight + 20 > window.innerHeight) { 
+                topPos = rect.top - elHeight - 12; 
+                arrowClass = 'arrow-bottom'; 
+            } 
+            el.classList.add(arrowClass); 
+            el.style.top = topPos + 'px'; 
+
+            let leftPos = rect.left - (elWidth / 2) + (rect.width / 2); 
+            if (leftPos + elWidth > window.innerWidth) leftPos = window.innerWidth - elWidth - 10; 
+            if (leftPos < 10) leftPos = 10; 
+            el.style.left = leftPos + 'px'; 
+
+            const arrowOffset = rect.left - leftPos + (rect.width / 2) - 6; 
+            el.style.setProperty('--arrow-left', arrowOffset + 'px'); 
+        } 
     }
 
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.rationale-text') && !e.target.closest('.rationale-btn')) {
-            document.querySelectorAll('.rationale-text').forEach(el => el.classList.remove('show'));
+            document.querySelectorAll('.rationale-text').forEach(el => {
+                el.classList.remove('show', 'arrow-top', 'arrow-bottom');
+            });
         }
     });
-    document.addEventListener('scroll', () => { document.querySelectorAll('.rationale-text').forEach(el => el.classList.remove('show')); }, true);
+    document.addEventListener('scroll', () => { 
+        document.querySelectorAll('.rationale-text').forEach(el => {
+            el.classList.remove('show', 'arrow-top', 'arrow-bottom');
+        });
+    }, true);
 
     function toggleHighlightBtn() {
         const val = document.getElementById('searchInput').value.trim();
@@ -1068,7 +1067,11 @@
             nameCell.appendChild(dragHandle); nameCell.appendChild(checkbox);
             
             const nameInput = document.createElement('input'); nameInput.type = 'text'; nameInput.className = 'seq-name-input'; nameInput.value = s.name; nameInput.oninput = (e) => { s.name = e.target.value; };
-            const btnDel = document.createElement('button'); btnDel.className = 'action-icon icon-delete'; btnDel.innerHTML = '🗑️'; btnDel.onclick = () => deleteSeq(sIdx);
+            const btnDel = document.createElement('button'); btnDel.className = 'action-icon icon-delete'; 
+            /* ゴミ箱のSVG化 */
+            btnDel.innerHTML = '<svg class="svg-danger" style="width: 14px; height: 14px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>'; 
+            btnDel.onclick = () => deleteSeq(sIdx);
+            
             nameCell.appendChild(nameInput); nameCell.appendChild(btnDel); fragNames.appendChild(nameCell);
 
             const rowDiv = document.createElement('div'); rowDiv.className = 'row'; rowDiv.dataset.row = sIdx;
@@ -1141,7 +1144,6 @@
         }
     }
 
-    // --- 💡 枠外ドラッグ・ズルズルスクロール対応 ---
     const sequenceGrid = document.getElementById('sequenceGrid');
 
     sequenceGrid.addEventListener('mousedown', function(e) {
@@ -1219,7 +1221,6 @@
 
     function startAutoScroll() { if (!autoScrollFrame) checkAutoScroll(); }
     function stopAutoScroll() { if (autoScrollFrame) { cancelAnimationFrame(autoScrollFrame); autoScrollFrame = null; } }
-    // ----------------------------------------------
 
     function calculatePrimerStats(seq) {
         currentSelectedPrimer = seq; 
@@ -1312,7 +1313,7 @@
                 }
             }
         }
-        updateStatusBarDragInfo(); // ドラッグ連動表示
+        updateStatusBarDragInfo(); 
     }
 
     function copyPrimerSequence() {
@@ -1329,7 +1330,7 @@
         });
         if(output === "") { showToast("出力対象が選択されていません", "warning"); return; }
         const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([output], { type: 'text/plain' }));
-        a.download = "aligned_samples.fasta"; a.click();
+        a.download = "BioEdu_Export_aligned_samples.fasta"; a.click();
     }
 
     function exportClustalAll() {
@@ -1374,7 +1375,7 @@
         if(!hasSelected) { showToast("出力対象が選択されていません", "warning"); return; }
         const a = document.createElement('a'); 
         a.href = URL.createObjectURL(new Blob([output], { type: 'text/plain' }));
-        a.download = "aligned_samples.txt"; 
+        a.download = "BioEdu_Export_aligned_samples.txt"; 
         a.click();
     }
 
