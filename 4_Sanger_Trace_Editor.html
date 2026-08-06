@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+<!-- [Absolute-Zero] セクション1/4 開始: head・CSS -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sanger Trace Editor v2.4 | Bio-Edu Suite</title>
+    <title>Sanger Trace Editor v30.0 | Bio-Edu Suite</title>
     <style>
         /* テーマカラー規格（ガイドライン第3項） */
         :root {
@@ -49,19 +50,19 @@
         
         /* 根拠表示用スタイル（Z-index: 9000 準拠） */
         .rationale-text {
-            position: fixed !important;
-            z-index: 9000 !important;
-            width: max-content !important;
-            max-width: min(320px, calc(100vw - 24px)) !important;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
-            border: 1px solid var(--warning) !important;
-            background-color: #fef9e7 !important;
-            color: #7e5109 !important;
-            margin: 0 !important;
-            padding: 12px !important;
-            border-radius: 6px !important;
-            line-height: 1.5 !important;
-            font-size: 11px !important;
+            position: fixed;
+            z-index: 9000;
+            width: max-content;
+            max-width: min(320px, calc(100vw - 24px));
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border: 1px solid var(--warning);
+            background-color: #fef9e7;
+            color: #7e5109;
+            margin: 0;
+            padding: 12px;
+            border-radius: 6px;
+            line-height: 1.5;
+            font-size: 11px;
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.2s, transform 0.2s;
@@ -76,7 +77,7 @@
         .rationale-text::before { content: ''; position: absolute; border-width: 7px; border-style: solid; left: calc(var(--arrow-left, 50%) - 1px); }
         .rationale-text.arrow-top::before { top: -14px; border-color: transparent transparent var(--warning) transparent; }
         .rationale-text.arrow-bottom::before { bottom: -14px; border-color: var(--warning) transparent transparent transparent; }
-        .rationale-text strong { color: #d35400 !important; display: block !important; margin-bottom: 4px !important; font-size: 12px !important; }
+        .rationale-text strong { color: #d35400; display: block; margin-bottom: 4px; font-size: 12px; }
 
         /* アイコン用カラークラス */
         .svg-hint { color: var(--warning); }
@@ -91,7 +92,8 @@
         .divider { width: 1px; height: 24px; background: #dcdde1; margin: 0 15px; flex-shrink: 0; }
 
         .btn { background: #fdfefe; border: 1px solid var(--border-color); padding: 8px 16px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 5px; border-radius: 4px; font-weight: bold; transition: all 0.2s; color: var(--text-main); white-space: nowrap; }
-        .btn:hover:not(:disabled) { background: #eaf2f8; border-color: #3498db; color: #2980b9; transform: scale(0.98); }
+        .btn:hover:not(:disabled) { background: #eaf2f8; border-color: #3498db; color: #2980b9; box-shadow: 0 2px 4px rgba(0,0,0,0.1); filter: brightness(1.05); }
+        .btn:active:not(:disabled) { transform: scale(0.98); }
         .btn:disabled { color: #a0a0a0; cursor: not-allowed; background: #f4f6f6; border-color: #dcdde1; opacity: 0.6; filter: grayscale(50%); box-shadow: none; transform: none; }
         
         .btn-primary { background: #3498db; color: white; border-color: #2980b9; }
@@ -153,6 +155,35 @@
         
         input[type="file"] { display: none; }
 
+        /* カスタムツールチップ (Z-index: 9999 準拠) */
+        .custom-tooltip { position: fixed; background: rgba(44, 62, 80, 0.95); color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 11px; pointer-events: none; z-index: 9999; opacity: 0; transition: opacity 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-weight: normal; line-height: 1.4; display: none; white-space: normal; width: max-content; max-width: min(320px, 90vw); text-align: center; box-sizing: border-box; }
+        .custom-tooltip::after { content: ''; position: absolute; border-width: 5px; border-style: solid; left: 50%; transform: translateX(-50%); }
+        .custom-tooltip.show-top::after { top: 100%; border-color: rgba(44, 62, 80, 0.95) transparent transparent transparent; }
+        .custom-tooltip.show-bottom::after { bottom: 100%; border-color: transparent transparent rgba(44, 62, 80, 0.95) transparent; }
+
+        /* インラインスタイル除去・UI調整用クラス群 */
+        .toolbar-stretch { align-items: stretch; }
+        .toolbar-center { align-items: center; }
+        .step-label-flex { display: flex; align-items: center; }
+        .step-label-compact { min-width: auto; margin-right: 4px; }
+        .drop-zone-wrapper { display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px; flex: 1; }
+        .drop-zone-compact { margin: 0; min-width: 180px; padding: 8px 15px; }
+        .drop-zone-icon { margin-right: 8px; width: 18px; height: 18px; flex-shrink: 0; }
+        .action-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .slider-wrapper { display: flex; gap: 12px; flex-wrap: wrap; }
+        .save-group { display: flex; flex: 1; justify-content: flex-end; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .editor-toolbar { padding: 8px 15px; background: #ecf0f1; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+        .editor-toolbar-col { display: flex; flex-direction: column; gap: 5px; }
+        .editor-toolbar-row { display: flex; gap: 4px; flex-wrap: nowrap; align-items: center; flex: 1; min-width: 200px; }
+        .editor-toolbar-label { font-size: 12px; font-weight: bold; color: var(--secondary); display: flex; align-items: center; white-space: nowrap; }
+        .editor-toolbar-label.danger { color: var(--danger); }
+        .editor-toolbar-hint { font-size: 10px; color: var(--text-muted); line-height: 1.4; }
+        .editor-toolbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; border-left: 2px solid var(--border-color); padding-left: 10px; }
+        .primer-input.flex-fill { flex: 1; min-width: 80px; text-transform: uppercase; }
+        .btn-sm { padding: 4px 8px; font-size: 11px; white-space: nowrap; }
+        .rationale-btn.spaced { margin-left: 5px; margin-right: 5px; }
+        .btn-icon.spaced { margin-right: 4px; }
+
         @media screen and (max-width: 900px) {
             .main-content { padding: 10px; }
             .toolbar-row { flex-direction: column; align-items: stretch; gap: 8px; }
@@ -162,15 +193,11 @@
             .editor-toolbar > div:nth-child(2) { border-left: none !important; padding-left: 0 !important; border-top: 1px dashed var(--border-color); padding-top: 8px; margin-top: 5px; width: 100%; }
             .divider { display: none; } /* スマホ等ではディバイダーを非表示 */
         }
-
-        /* カスタムツールチップ (Z-index: 9999 準拠) */
-        .custom-tooltip { position: fixed; background: rgba(44, 62, 80, 0.95); color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 11px; pointer-events: none; z-index: 9999; opacity: 0; transition: opacity 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-weight: normal; line-height: 1.4; display: none; white-space: normal; width: max-content; max-width: min(320px, 90vw); text-align: center; box-sizing: border-box; }
-        .custom-tooltip::after { content: ''; position: absolute; border-width: 5px; border-style: solid; left: 50%; transform: translateX(-50%); }
-        .custom-tooltip.show-top::after { top: 100%; border-color: rgba(44, 62, 80, 0.95) transparent transparent transparent; }
-        .custom-tooltip.show-bottom::after { bottom: 100%; border-color: transparent transparent rgba(44, 62, 80, 0.95) transparent; }
     </style>
+<!-- [Absolute-Zero] セクション1/4 完了。省略なしで続行 -->
 </head>
 <body>
+<!-- [Absolute-Zero] セクション2/4 開始: Header・Main(QCパネル) -->
 
 <div class="header-container">
     <div class="header">
@@ -178,14 +205,14 @@
             <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>Sanger Trace Editor</h1>
             <p>Bio-Edu Suite: Phase 2 / AB1 Binary Parsing, Trace Visualization & Curation</p>
         </div>
-        <div class="version-badge">v2.4</div>
+        <div class="version-badge">v30.0</div>
     </div>
 </div>
 
 <div class="main-content">
     
     <div class="card">
-        <div class="card-header">in silico 生データ品質管理パネル</div>
+        <div class="card-header">Ⅰ. in silico 生データ品質管理パネル</div>
         <div class="card-body">
             
             <div id="rat_ab1" class="rationale-text popover-panel">
@@ -198,12 +225,20 @@
                 FASTA形式は、塩基配列をコンピューターで扱うための世界標準フォーマットです。多重整列（MSA）やBLAST検索など、次のステップの解析ソフト（DNA Alignment Studio等）へデータを引き継ぐために使用します。
             </div>
 
-            <div class="toolbar-row" style="align-items: stretch;">
-                <span class="step-label" style="display: flex; align-items: center;">1. データ読込 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_ab1')">?</button></span>
+            <div class="toolbar-row toolbar-stretch">
+                <span class="step-label step-label-flex">1. データ読込 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_ab1')">?</button></span>
                 
-                <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px; flex: 1;">
-                    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" style="margin: 0; min-width: 180px; padding: 8px 15px;">
-                        <p>ここをクリック、または 生データ(.ab1) をドラッグ＆ドロップ</p>
+                <div class="drop-zone-wrapper">
+                    <div class="drop-zone drop-zone-compact" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                        <p>
+                            <svg class="btn-icon drop-zone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="12" y1="18" x2="12" y2="12"></line>
+                                <line x1="9" y1="15" x2="15" y2="15"></line>
+                            </svg>
+                            ここをクリック、または 生データ(.ab1) をドラッグ＆ドロップ
+                        </p>
                         <input type="file" id="fileInput" accept=".ab1" onchange="handleFileSelect(event)">
                     </div>
                 </div>
@@ -211,7 +246,7 @@
 
             <div class="toolbar-row">
                 <span class="step-label">2. 表示調整</span>
-                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <div class="slider-wrapper">
                     <div class="slider-group">
                         <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12H3"/><path d="M17 8l4 4-4 4"/><path d="M7 8l-4 4 4 4"/></svg>
                         幅 (X): <input type="range" id="scaleX" min="0.5" max="3" step="0.1" value="1.0" oninput="redrawAll()" disabled>
@@ -223,11 +258,11 @@
                 </div>
             </div>
             
-            <div class="toolbar-row" style="align-items: center;">
+            <div class="toolbar-row toolbar-center">
                 <!-- 左側：QC -->
-                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <div class="action-group">
                     <span class="step-label">3. 品質管理 (QC)</span>
-                    <button class="btn" id="btnQC" onclick="runQC()" disabled style="padding: 8px 16px;" data-tooltip="配列内の判読不能塩基(N)や曖昧塩基(ダブルピーク等)を検出し、ハイライトします。">
+                    <button class="btn" id="btnQC" onclick="runQC()" disabled data-tooltip="配列内の判読不能塩基(N)や曖昧塩基(ダブルピーク等)を検出し、ハイライトします。">
                         <svg class="btn-icon svg-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                         低品質・曖昧塩基を検出
                     </button>
@@ -237,39 +272,40 @@
                 <div class="divider"></div>
 
                 <!-- 右側：保存 -->
-                <div style="display: flex; flex: 1; justify-content: flex-end; align-items: center; gap: 8px; flex-wrap: wrap;">
-                    <span class="step-label" style="min-width: auto; margin-right: 4px;">4. 保存 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_export')">?</button></span>
-                    <button class="btn btn-success" id="btnExport" onclick="exportFasta()" disabled style="min-width: 140px; padding: 8px 16px;" data-tooltip="波形データから抽出した塩基配列をFASTA形式でファイルとして保存します。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg> FASTA保存</button>
-                    <button class="btn" id="btnCopyFasta" onclick="copyFasta()" disabled style="min-width: 140px; padding: 8px 16px;" data-tooltip="波形データから抽出した塩基配列をFASTA形式でクリップボードにコピーします。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6v3H9zM8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg> FASTAコピー</button>
+                <div class="save-group">
+                    <span class="step-label step-label-compact">4. 保存 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_export')">?</button></span>
+                    <button class="btn btn-success" id="btnExport" onclick="exportFasta()" disabled data-tooltip="波形データから抽出した塩基配列をFASTA形式でファイルとして保存します。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg> FASTA保存</button>
+                    <button class="btn" id="btnCopyFasta" onclick="copyFasta()" disabled data-tooltip="波形データから抽出した塩基配列をFASTA形式でクリップボードにコピーします。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6v3H9zM8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg> FASTAコピー</button>
                 </div>
             </div>
         </div>
     </div>
-
+<!-- [Absolute-Zero] セクション2/4 完了。省略なしで続行 -->
+<!-- [Absolute-Zero] セクション3/4 開始: Main(波形ビュアー)・Footer -->
     <div class="card trace-card">
-        <div class="card-header">波形ビュアー</div>
+        <div class="card-header">Ⅱ. 波形ビュアー</div>
         
-        <div class="editor-toolbar" style="padding: 8px 15px; background: #ecf0f1; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+        <div class="editor-toolbar">
             
-            <div style="display: flex; flex-direction: column; gap: 5px;">
-                <div style="display: flex; gap: 4px; flex-wrap: nowrap; align-items: center; flex: 1; min-width: 200px;">
-                    <span style="font-size: 12px; font-weight: bold; color: var(--secondary); display: flex; align-items: center; white-space: nowrap;">
-                        <svg class="btn-icon" style="margin-right: 4px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <div class="editor-toolbar-col">
+                <div class="editor-toolbar-row">
+                    <span class="editor-toolbar-label">
+                        <svg class="btn-icon icon-spaced" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                         モチーフ検索
-                        <button class="rationale-btn" onclick="toggleRationale(event, 'rat_motif')" style="margin-left: 5px; margin-right: 5px;">?</button>
+                        <button class="rationale-btn spaced" onclick="toggleRationale(event, 'rat_motif')">?</button>
                     </span>
-                    <input type="text" id="searchInput" class="primer-input" placeholder="塩基配列を入力" style="flex: 1; min-width: 80px; text-transform: uppercase;" onkeypress="if(event.keyCode===13) searchSequence()" disabled>
-                    <button class="btn btn-primary" id="btnSearch" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;" onclick="searchSequence()" disabled data-tooltip="入力した塩基配列を検索し、強調表示します。">ハイライト</button>
-                    <button class="btn" id="btnClearSearch" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;" onclick="clearSearch()" disabled data-tooltip="強調表示を解除します。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg> クリア</button>
+                    <input type="text" id="searchInput" class="primer-input flex-fill" placeholder="塩基配列を入力" onkeypress="if(event.keyCode===13) searchSequence()" disabled>
+                    <button class="btn btn-primary btn-sm" id="btnSearch" onclick="searchSequence()" disabled data-tooltip="入力した塩基配列を検索し、強調表示します。">ハイライト</button>
+                    <button class="btn btn-sm" id="btnClearSearch" onclick="clearSearch()" disabled data-tooltip="強調表示を解除します。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg> クリア</button>
                 </div>
-                <span style="font-size: 10px; color: var(--text-muted); line-height: 1.4;">※プライマー等を検索し、黄色くハイライトします。</span>
+                <span class="editor-toolbar-hint">※プライマー等を検索し、黄色くハイライトします。</span>
             </div>
 
-            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; border-left: 2px solid var(--border-color); padding-left: 10px;">
-                <span style="font-size: 12px; font-weight: bold; color: var(--danger); display: flex; align-items: center; white-space: nowrap;">
-                    <svg class="btn-icon" style="margin-right: 4px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg>
+            <div class="editor-toolbar-right">
+                <span class="editor-toolbar-label danger">
+                    <svg class="btn-icon icon-spaced" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg>
                     範囲カット・操作
-                    <button class="rationale-btn" onclick="toggleRationale(event, 'rat_step3')" style="margin-left: 5px;">?</button>
+                    <button class="rationale-btn spaced" onclick="toggleRationale(event, 'rat_step3')">?</button>
                 </span>
             </div>
         </div>
@@ -331,12 +367,13 @@
 </div>
 
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v2.4 | Developed for Bioinformatics & Wet-Lab Education
+    &copy; 2026 Bio-Edu Suite v30.0 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
 <div id="toast">メッセージ</div>
 <div id="globalTooltip" class="custom-tooltip"></div>
-
+<!-- [Absolute-Zero] セクション3/4 完了。省略なしで続行 -->
+<!-- [Absolute-Zero] セクション4/4 開始: Script -->
 <script>
     // --- 根拠ポップオーバー制御 ---
     function toggleRationale(event, id) {
@@ -948,8 +985,8 @@
                 baseObj.isDeleted = false;
                 
                 const iupacMapLocal = {
-                    'R': 'A/Gのヘテロ', 'Y': 'C/Tのヘテロ', 'S': 'G/Cのヘテロ', 'W': 'A/Tのヘテロ',
-                    'K': 'G/Tのヘテロ', 'M': 'A/Cのヘテロ', 'B': 'C/G/Tの混在', 'D': 'A/G/Tの混在',
+                    'R': 'A/Gのヘテロ接合体', 'Y': 'C/Tのヘテロ接合体', 'S': 'G/Cのヘテロ接合体', 'W': 'A/Tのヘテロ接合体',
+                    'K': 'G/Tのヘテロ接合体', 'M': 'A/Cのヘテロ接合体', 'B': 'C/G/Tの混在', 'D': 'A/G/Tの混在',
                     'H': 'A/C/Tの混在', 'V': 'A/C/Gの混在', 'N': '判読不能'
                 };
                 
@@ -1164,6 +1201,6 @@
 
     document.addEventListener('scroll', () => { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; }, true);
 </script>
-
+<!-- [Absolute-Zero] セクション4/4 完了。省略なしで続行 -->
 </body>
 </html>
