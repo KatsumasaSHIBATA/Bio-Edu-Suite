@@ -1,9 +1,10 @@
+<!-- [Absolute-Zero] セクション1/1 開始。省略なしで続行 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNA Alignment Studio v30.0 | Bio-Edu Suite</title>
+    <title>DNA Alignment Studio v31.0 | Bio-Edu Suite</title>
     <style>
         /* テーマカラー規格（ガイドライン第3項） */
         :root {
@@ -77,7 +78,7 @@
         .btn-success { background: var(--success); color: white; border-color: #1e8449; }
         .btn-option { background: var(--secondary); color: white; border-color: var(--primary); }
         
-        /* ★要望適用: 5.保存ボタン群を2行2列の均等グリッドに変更 */
+        /* 5.保存ボタン群を2行2列の均等グリッドに変更 */
         .export-flex { 
             display: grid; 
             grid-template-columns: 1fr 1fr; 
@@ -87,7 +88,7 @@
         .export-flex .btn { 
             margin: 0; 
             width: 100%; 
-            justify-content: flex-start; /* アイコンとテキストを左揃えにして美しく */
+            justify-content: center; /* ユーザー要望により中央揃えに変更 */
         }
 
         .drop-zone { border: 2px dashed var(--border-color); border-radius: 8px; padding: 16px; text-align: center; background: #f8f9fa; transition: 0.2s; cursor: pointer; flex: 1; max-width: 450px; display: flex; flex-direction: column; justify-content: center; }
@@ -164,7 +165,6 @@
         .conserved-bg { background-color: #a2d9ce !important; color: #0e6251 !important; font-weight: 900; z-index: 1; }
         .search-bg { background-color: #f1c40f !important; color: var(--secondary) !important; font-weight: 900; z-index: 2; box-shadow: inset 0 0 0 2px #f39c12; }
 
-        /* ★要望適用: 紫の左ボーダーを削除し、レイアウト調整 */
         .header-primer-stats { 
             display: flex; gap: 15px; font-size: 12px; background: #1a252f; 
             padding: 6px 15px; border-radius: 4px; transition: opacity 0.2s; 
@@ -176,7 +176,6 @@
         .val-display { font-weight: bold; font-size: 14px; text-shadow: 0 0 2px rgba(0,0,0,0.8); transition: color 0.2s;}
         .val-target { font-size: 10px; color: var(--text-muted); margin-left: 2px; font-weight: normal;}
 
-        /* ★要望適用: プライマーモード(F/R)切替ボタンのスタイル */
         .primer-mode-btn { 
             background: transparent; border: 1px solid #7f8c8d; color: #bdc3c7; 
             padding: 2px 8px; font-size: 11px; border-radius: 4px; cursor: pointer; 
@@ -188,7 +187,6 @@
             box-shadow: inset 0 0 5px rgba(255,255,255,0.2); 
         }
 
-        /* ★要望適用: 上下の白い余白（margin）を削除 */
         .bench-tip { 
             background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px 15px; 
             border-radius: 0 4px 4px 0; font-size: 12px; color: var(--text-main); 
@@ -255,7 +253,7 @@
             <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>DNA Alignment Studio</h1>
             <p>Bio-Edu Suite: Phase 2 / Sequence Curation & Pipeline Hub</p>
         </div>
-        <div class="version-badge">v30.0</div>
+        <div class="version-badge">v31.0</div>
     </div>
 </div>
 
@@ -269,24 +267,24 @@
             <div class="card-body">
                 
                 <div id="rat_step2" class="rationale-text">
-                    <strong>なぜプライマーで両端を特定するのか？</strong>
+                    <strong>【根拠：なぜプライマーで両端を特定するのか？】</strong>
                     ・サンガー法などで得られた生のDNAの塩基配列データには、機械の読み取りノイズや不要な塩基配列が両端に大量に含まれています。<br>
                     ・自分が使った「プライマー F/R」をアンカーとして検索し、ノイズを省いた「本当に必要な領域」だけを特定・整列します。<br>
                     ※制限酵素部位などを探す場合は、下のエディタ内にある「モチーフ検索」を使用してください。
                 </div>
                 <div id="rat_msa" class="rationale-text">
-                    <strong>MSA(多重整列)とは？</strong>
+                    <strong>【根拠：MSA(多重整列)とは？】</strong>
                     ・進化の過程で生じた「欠失や挿入」を補正するため、塩基配列の間に「ギャップ(-)」を挿入しながら、すべてのサンプルの相同な位置を縦にピタリと合わせる高度なアルゴリズムです。<br>
                     ・これにより、真の変異（一塩基多型等）が浮かび上がります。
                 </div>
                 <div id="rat_design" class="rationale-text">
-                    <strong>プライマー設計の適正パラメータ</strong>
+                    <strong>【根拠：プライマー設計の適正パラメータ】</strong>
                     ・長さ (18〜25bp): 短すぎると特異性が下がり（他の場所にくっつく）、長すぎると結合効率が落ちます。<br>
                     ・GC含量 (40〜60%): GとCは水素結合が3本あり強く結合するため、極端な偏りを防ぎます。<br>
                     ・Tm値 (55〜65℃): DNAの二重らせんが半分ほどける温度です。FとRでTm値の差を「5℃以内」に揃えるのがPCR成功の鉄則です。
                 </div>
                 <div id="rat_export" class="rationale-text">
-                    <strong>FASTAとCLUSTALの違い</strong>
+                    <strong>【根拠：FASTAとCLUSTALの違い】</strong>
                     ・FASTA: BLASTや系統樹作成など、コンピューター（プログラム）に読み込ませるためのデータです。<br>
                     ・CLUSTAL: 変異が視覚的にわかりやすい、人間（論文の読者）が読むための表示形式です。次のアプリ「Alignment Print Studio」で美しく印刷できます。
                 </div>
@@ -325,16 +323,16 @@
                     </div>
                 </div>
                 
-                <div class="toolbar-row" style="align-items: flex-start;">
-                    <span class="step-label" style="margin-top: 8px;">4. プライマー設計 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_design')">?</button></span>
-                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; flex: 1; margin-top: 8px;">
-                        <button class="btn btn-success" id="btnConserved" onclick="toggleConservedRegions()" disabled data-tooltip="塩基配列間で保存されている領域を強調表示します">保存領域</button>
+                <div class="toolbar-row" style="align-items: center;">
+                    <span class="step-label">4. プライマー設計 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_design')">?</button></span>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; flex: 1;">
+                        <button class="btn btn-success" id="btnConserved" onclick="toggleConservedRegions()" disabled data-tooltip="塩基配列間で保存されている領域を強調表示します" style="min-width: 90px;">保存領域</button>
                         <span style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">※塩基配列をドラッグ(長押し選択)で設計ナビが起動します。</span>
                     </div>
                     
-                    <div class="divider" style="margin-top: 12px;"></div>
+                    <div class="divider"></div>
                     
-                    <span class="step-label" style="margin-top: 8px;">5. 保存 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_export')">?</button></span>
+                    <span class="step-label">5. 保存 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_export')">?</button></span>
                     <div class="export-flex">
                         <button class="btn btn-success" id="btnExportFasta" onclick="exportFastaAll()" disabled data-tooltip="FASTA形式でファイルとして保存します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg> FASTA保存</button>
                         <button class="btn" id="btnCopyFasta" onclick="copyFastaAll()" disabled data-tooltip="FASTA形式でクリップボードにコピーします"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6v3H9zM8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg> FASTAコピー</button>
@@ -358,7 +356,6 @@
                     <span class="h-stat">GC含量: <span id="psGC" class="val-display">-</span><span class="val-target">% (適正:40-60)</span></span>
                     <span class="h-stat">Tm値: <span id="psTm" class="val-display">-</span><span class="val-target">℃ (適正:55-65)</span></span>
                     
-                    <!-- ★要望適用: 逆相補鎖（Primer R）切替機能をコンパクトに組み込み -->
                     <div style="display: flex; align-items: center; gap: 6px; margin-left: auto; border-left: 1px solid #7f8c8d; padding-left: 12px;">
                         <span style="font-size: 11px; color: #bdc3c7;">用途:</span>
                         <button id="btnPrimerF" class="primer-mode-btn active" onclick="setPrimerMode('F')" data-tooltip="F(Forward)プライマーとして設計 (そのままの塩基配列)">
@@ -380,9 +377,8 @@
                         モチーフ検索
                         <button class="rationale-btn" onclick="toggleRationale(event, 'rat_motif')">?</button>
                     </span>
-                    <input type="text" id="searchInput" class="primer-input" style="width: 140px; text-transform: uppercase;" placeholder="塩基配列を入力" oninput="toggleHighlightBtn()" onkeypress="if(event.keyCode===13 && !document.getElementById('btnHighlight').disabled) highlightSearch()">
-                    <button class="btn btn-option" id="btnHighlight" style="padding: 6px 12px; font-size: 11px;" onclick="highlightSearch()" disabled data-tooltip="入力した塩基配列を検索してハイライトします"> ハイライト</button>
-                    <button class="btn" id="btnClear" style="padding: 6px 12px; font-size: 11px;" onclick="clearSearch()" disabled data-tooltip="ハイライトを解除します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg> クリア</button>
+                    <input type="text" id="searchInput" class="primer-input" style="width: 140px; text-transform: uppercase;" placeholder="塩基配列を入力" oninput="toggleHighlightBtn()" onkeypress="if(event.keyCode===13 && !document.getElementById('btnToggleHighlight').disabled) toggleHighlightAction()">
+                    <button class="btn btn-option" id="btnToggleHighlight" style="padding: 6px 12px; font-size: 11px; min-width: 90px;" onclick="toggleHighlightAction()" disabled data-tooltip="入力した塩基配列を検索してハイライトします"> ハイライト</button>
                 </div>
                 <span style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">※制限酵素部位などを検索できます。ギャップ(-)は無視されます。</span>
             </div>
@@ -397,19 +393,19 @@
         </div>
         
         <div id="rat_motif" class="rationale-text">
-            <strong>上部の「プライマー両端特定」との違い</strong>
+            <strong>【根拠：上部の「プライマー両端特定」との違い】</strong>
             ・ステップ2の「両端特定」が不要なノイズを切り落とすための目印探し（トリミング準備）であるのに対し、この「モチーフ検索」は制限酵素部位など、生物学的に意味のある短い塩基配列がどこにあるかをエディタ内で探し出し、黄色くハイライト（強調表示）するための機能です。
         </div>
         <div id="rat_step3" class="rationale-text">
-            <strong>なぜ手動でカットするのか？</strong>
+            <strong>【根拠：なぜ手動でカットするのか？】</strong>
             ・端がガタガタになっているノイズ部分や不要な領域を残したまま次の解析に進むと、システムがそれを「存在しない未知の変異」として誤認識してしまいます。綺麗にトリミングするのがインシリコ解析の鉄則です。<br>
-            <strong>キーボード操作・ショートカット</strong>
+            <strong>【キーボード操作・ショートカット】</strong>
             ・一括削除: 塩基配列または目盛りをドラッグで選択し [Backspace] または [Delete]<br>
             ・１文字編集: セルを選択して [A][T][G][C][Y][R][N] 等を入力して上書き<br>
             ・ギャップ挿入: [Space] または [-]<br>
             ・移動: 矢印キー [↑][↓][←][→]<br>
             ・元に戻す / やり直す: [Ctrl+Z] / [Ctrl+Shift+Z]<br>
-            <strong>参考：あいまい塩基表（IUPACコード）</strong>
+            <strong>【参考：あいまい塩基表（IUPACコード）】</strong>
             ・Y (CかT), R (AかG), N (不明), W (AかT), S (CかG), M (AかC), K (GかT)
         </div>
 
@@ -444,7 +440,7 @@
 </div>
 
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v30.0 | Developed for Bioinformatics & Wet-Lab Education
+    &copy; 2026 Bio-Edu Suite v31.0 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
 <div id="toast">メッセージ</div>
@@ -467,7 +463,6 @@
     let isConservedVisible = false;
     let dragSrcIndex = null; 
     
-    // ★要望適用: プライマー設計ナビの逆相補鎖状態管理
     let currentSelectedPrimerRaw = ""; 
     let currentSelectedPrimer = ""; 
     let currentPrimerMode = "F"; 
@@ -477,6 +472,7 @@
     
     let currentMouseX = 0;
     let autoScrollFrame = null;
+    let isHighlightActive = false; // 新規追加: モチーフ検索トグル状態
 
     function saveState() {
         let state = sequences.map(s => ({
@@ -648,13 +644,6 @@
     }
     
     window.addEventListener('DOMContentLoaded', initTooltips);
-
-    function toggleHighlightBtn() {
-        const val = document.getElementById('searchInput').value.trim();
-        const isDisabled = (val.length === 0);
-        document.getElementById('btnHighlight').disabled = isDisabled;
-        document.getElementById('btnClear').disabled = isDisabled;
-    }
 
     function updateMismatchVal(val) { document.getElementById('mismatchVal').innerText = val + '%'; }
 
@@ -1171,16 +1160,61 @@
         updateSelectionUI(); updateDragSelection(); updateMSAButtonState();
     }
 
+    function toggleHighlightAction() {
+        if (isHighlightActive) {
+            clearSearch();
+        } else {
+            highlightSearch();
+        }
+    }
+
     function highlightSearch() {
         let inputStr = document.getElementById('searchInput').value.trim().toUpperCase();
         if(!inputStr) { clearSearch(); return; }
         reapplySearch(); renderEditorSync();
         let foundAny = false;
         sequences.forEach(s => { if(s.searchHighlights && s.searchHighlights.size > 0) foundAny = true; });
-        if(foundAny) showToast(`「${inputStr}」をハイライトしました`); else showToast(`「${inputStr}」は見つかりませんでした`, "warning");
+        if(foundAny) {
+            showToast(`「${inputStr}」をハイライトしました`);
+            isHighlightActive = true;
+            const btn = document.getElementById('btnToggleHighlight');
+            if(btn) {
+                btn.innerHTML = `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg> クリア`;
+                btn.className = "btn";
+                btn.setAttribute('data-tooltip', 'ハイライトを解除します');
+            }
+        } else {
+            showToast(`「${inputStr}」は見つかりませんでした`, "warning");
+        }
     }
 
-    function clearSearch() { document.getElementById('searchInput').value = ''; toggleHighlightBtn(); reapplySearch(); renderEditorSync(); }
+    function clearSearch() { 
+        document.getElementById('searchInput').value = ''; 
+        isHighlightActive = false;
+        const btn = document.getElementById('btnToggleHighlight');
+        if(btn) {
+            btn.innerHTML = `ハイライト`;
+            btn.className = "btn btn-option";
+            btn.setAttribute('data-tooltip', '入力した塩基配列を検索してハイライトします');
+        }
+        toggleHighlightBtn(); reapplySearch(); renderEditorSync(); 
+    }
+
+    function toggleHighlightBtn() {
+        const val = document.getElementById('searchInput').value.trim();
+        const isDisabled = (val.length === 0);
+        const btn = document.getElementById('btnToggleHighlight');
+        if (btn) btn.disabled = isDisabled;
+        if (isDisabled && isHighlightActive) {
+            isHighlightActive = false;
+            if(btn) {
+                btn.innerHTML = `ハイライト`;
+                btn.className = "btn btn-option";
+                btn.setAttribute('data-tooltip', '入力した塩基配列を検索してハイライトします');
+            }
+            reapplySearch(); renderEditorSync();
+        }
+    }
 
     function reapplySearch() {
         let inputEl = document.getElementById('searchInput');
@@ -1300,7 +1334,6 @@
     function startAutoScroll() { if (!autoScrollFrame) checkAutoScroll(); }
     function stopAutoScroll() { if (autoScrollFrame) { cancelAnimationFrame(autoScrollFrame); autoScrollFrame = null; } }
 
-    // ★要望適用: プライマーの用途（F/R）切替とUI反映
     function setPrimerMode(mode) {
         currentPrimerMode = mode;
         document.getElementById('btnPrimerF').classList.toggle('active', mode === 'F');
@@ -1310,15 +1343,13 @@
         }
     }
 
-    // ★要望適用: 逆相補鎖（R用）への変換処理を含む画面更新関数
     function updatePrimerStatsDisplay() {
         let seq = currentSelectedPrimerRaw;
         
-        // Rモードなら塩基配列を逆相補鎖に変換
         if (currentPrimerMode === 'R') {
             seq = reverseComplement(seq);
         }
-        currentSelectedPrimer = seq; // コピー用に保存
+        currentSelectedPrimer = seq; 
         
         let displaySeq = seq.length > 20 ? seq.substring(0, 18) + '...' : seq;
         document.getElementById('psSeq').innerText = currentPrimerMode === 'R' ? displaySeq + " (Rev)" : displaySeq;
@@ -1430,13 +1461,19 @@
             output += `>${s.name}\n${s.data.join('').replace(/-/g, 'N')}\n`; 
         });
         if(output === "") { showToast("出力対象が選択されていません", "warning"); return; }
-        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([output], { type: 'text/plain' }));
-        a.download = "BioEdu_Export_aligned_samples.fasta"; a.click();
+        
+        const date = new Date();
+        const yyyymmdd = date.getFullYear().toString() + (date.getMonth() + 1).toString().padStart(2, '0') + date.getDate().toString().padStart(2, '0');
+        
+        const a = document.createElement('a'); 
+        a.href = URL.createObjectURL(new Blob([output], { type: 'text/plain' }));
+        a.download = `BioEdu_Export_${yyyymmdd}.fasta`; 
+        a.click();
     }
 
     function exportClustalAll() {
         if(sequences.length === 0) return;
-        let output = "CLUSTAL formatted alignment by DNA Alignment Studio v30.0 (Bio-Edu Suite)\n\n";
+        let output = "CLUSTAL formatted alignment by DNA Alignment Studio v31.0 (Bio-Edu Suite)\n\n";
         let maxLen = Math.max(...sequences.map(s => s.data.length));
         let namePad = Math.max(20, Math.max(...sequences.map(s => s.name.length)) + 4);
         let baseCounts = new Array(sequences.length).fill(0);
@@ -1474,9 +1511,13 @@
         }
         
         if(!hasSelected) { showToast("出力対象が選択されていません", "warning"); return; }
+        
+        const date = new Date();
+        const yyyymmdd = date.getFullYear().toString() + (date.getMonth() + 1).toString().padStart(2, '0') + date.getDate().toString().padStart(2, '0');
+        
         const a = document.createElement('a'); 
         a.href = URL.createObjectURL(new Blob([output], { type: 'text/plain' }));
-        a.download = "BioEdu_Export_aligned_samples.txt"; 
+        a.download = `BioEdu_Export_${yyyymmdd}.txt`; 
         a.click();
     }
 
@@ -1513,7 +1554,7 @@
 
     function copyClustalAll() {
         if(sequences.length === 0) return;
-        let output = "CLUSTAL formatted alignment by DNA Alignment Studio v30.0 (Bio-Edu Suite)\n\n";
+        let output = "CLUSTAL formatted alignment by DNA Alignment Studio v31.0 (Bio-Edu Suite)\n\n";
         let maxLen = Math.max(...sequences.map(s => s.data.length));
         let namePad = Math.max(20, Math.max(...sequences.map(s => s.name.length)) + 4);
         let baseCounts = new Array(sequences.length).fill(0);
@@ -1545,6 +1586,6 @@
     }
 
 </script>
-
+<!-- [Absolute-Zero] セクション1/1 完了。省略なしで続行 -->
 </body>
 </html>
