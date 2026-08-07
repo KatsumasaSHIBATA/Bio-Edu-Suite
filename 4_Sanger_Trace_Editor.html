@@ -4,7 +4,7 @@
 <!-- [Absolute-Zero] セクション1/4 開始: head・CSS -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sanger Trace Editor v30.0 | Bio-Edu Suite</title>
+    <title>Sanger Trace Editor v31.0 | Bio-Edu Suite</title>
     <style>
         /* テーマカラー規格（ガイドライン第3項） */
         :root {
@@ -96,6 +96,9 @@
         .btn:active:not(:disabled) { transform: scale(0.98); }
         .btn:disabled { color: #a0a0a0; cursor: not-allowed; background: #f4f6f6; border-color: #dcdde1; opacity: 0.6; filter: grayscale(50%); box-shadow: none; transform: none; }
         
+        /* v31.0: ボタングループの幅同期（スマートアライメント） */
+        .smart-align-group { display: grid; grid-auto-columns: 1fr; grid-auto-flow: column; gap: 8px; }
+
         .btn-primary { background: #3498db; color: white; border-color: #2980b9; }
         .btn-primary:hover:not(:disabled) { background: #2980b9; color: white; }
         .btn-success { background: var(--success); color: white; border-color: #1e8449; }
@@ -205,7 +208,7 @@
             <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>Sanger Trace Editor</h1>
             <p>Bio-Edu Suite: Phase 2 / AB1 Binary Parsing, Trace Visualization & Curation</p>
         </div>
-        <div class="version-badge">v30.0</div>
+        <div class="version-badge">v31.0</div>
     </div>
 </div>
 
@@ -274,8 +277,10 @@
                 <!-- 右側：保存 -->
                 <div class="save-group">
                     <span class="step-label step-label-compact">4. 保存 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_export')">?</button></span>
-                    <button class="btn btn-success" id="btnExport" onclick="exportFasta()" disabled data-tooltip="波形データから抽出した塩基配列をFASTA形式でファイルとして保存します。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg> FASTA保存</button>
-                    <button class="btn" id="btnCopyFasta" onclick="copyFasta()" disabled data-tooltip="波形データから抽出した塩基配列をFASTA形式でクリップボードにコピーします。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6v3H9zM8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg> FASTAコピー</button>
+                    <div class="smart-align-group">
+                        <button class="btn btn-success" id="btnExport" onclick="exportFasta()" disabled data-tooltip="波形データから抽出した塩基配列をFASTA形式でファイルとして保存します。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg> FASTA保存</button>
+                        <button class="btn" id="btnCopyFasta" onclick="copyFasta()" disabled data-tooltip="波形データから抽出した塩基配列をFASTA形式でクリップボードにコピーします。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6v3H9zM8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg> FASTAコピー</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -294,9 +299,8 @@
                         モチーフ検索
                         <button class="rationale-btn spaced" onclick="toggleRationale(event, 'rat_motif')">?</button>
                     </span>
-                    <input type="text" id="searchInput" class="primer-input flex-fill" placeholder="塩基配列を入力" onkeypress="if(event.keyCode===13) searchSequence()" disabled>
-                    <button class="btn btn-primary btn-sm" id="btnSearch" onclick="searchSequence()" disabled data-tooltip="入力した塩基配列を検索し、強調表示します。">ハイライト</button>
-                    <button class="btn btn-sm" id="btnClearSearch" onclick="clearSearch()" disabled data-tooltip="強調表示を解除します。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg> クリア</button>
+                    <input type="text" id="searchInput" class="primer-input flex-fill" placeholder="塩基配列を入力" onkeypress="if(event.keyCode===13 && !this.disabled) searchSequence()" disabled>
+                    <button class="btn btn-primary btn-sm" id="btnSearchToggle" onclick="toggleSearch()" disabled data-tooltip="入力した塩基配列を検索し、強調表示します。">ハイライト</button>
                 </div>
                 <span class="editor-toolbar-hint">※プライマー等を検索し、黄色くハイライトします。</span>
             </div>
@@ -325,7 +329,9 @@
             ・やり直しの取り消し (Redo): [Ctrl]+[Y] または [Cmd]+[Shift]+[Z]<br><br>
             <strong>【参考：あいまい塩基表（IUPACコード）】</strong>
             波形が重なっている（ダブルピーク）部分の修正に使います。<br>
-            Y (CかT), R (AかG), N (不明), W (AかT), S (CかG), M (AかC), K (GかT)
+            ・Y (CかT), R (AかG), N (不明)<br>
+            ・W (AかT), S (CかG)<br>
+            ・M (AかC), K (GかT)
         </div>
 
         <div class="bench-tip">
@@ -367,7 +373,7 @@
 </div>
 
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v30.0 | Developed for Bioinformatics & Wet-Lab Education
+    &copy; 2026 Bio-Edu Suite v31.0 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
 <div id="toast">メッセージ</div>
@@ -450,6 +456,9 @@
     
     let historyStack = [];
     let historyIndex = -1;
+    
+    // v31.0: 検索トグル状態
+    let isSearchActive = false;
 
     const colorMap = {
         'A': '#27ae60',
@@ -472,8 +481,7 @@
                 document.getElementById('scaleX').disabled = false;
                 document.getElementById('scaleY').disabled = false;
                 document.getElementById('searchInput').disabled = false;
-                document.getElementById('btnSearch').disabled = false;
-                document.getElementById('btnClearSearch').disabled = false;
+                document.getElementById('btnSearchToggle').disabled = false;
                 document.getElementById('btnQC').disabled = false;
                 document.getElementById('btnExport').disabled = false;
                 document.getElementById('btnCopyFasta').disabled = false;
@@ -485,6 +493,8 @@
                 historyStack = [];
                 historyIndex = -1;
                 saveHistory();
+                
+                if(isSearchActive) clearSearch(); // ファイル読み込み時に検索状態をリセット
 
                 redrawAll();
             } catch (err) {
@@ -1058,6 +1068,15 @@
         }
     }
 
+    // v31.0: 検索機能のトグル統合
+    function toggleSearch() {
+        if (isSearchActive) {
+            clearSearch();
+        } else {
+            searchSequence();
+        }
+    }
+
     function searchSequence() {
         if(!ab1Data) return;
         let query = document.getElementById('searchInput').value.toUpperCase().replace(/[^ATGCUNYRWSMKBVDH]/g, '');
@@ -1083,6 +1102,15 @@
             }
             selectBase(validIndices[matchIdx]);
             document.getElementById('statusText').innerText = `ステータス: 配列を強調表示しました。`;
+            
+            // トグル状態をクリアモードに変更
+            isSearchActive = true;
+            document.getElementById('searchInput').disabled = true;
+            const btn = document.getElementById('btnSearchToggle');
+            btn.classList.remove('btn-primary');
+            btn.innerHTML = `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg> クリア`;
+            btn.setAttribute('data-tooltip', '強調表示を解除します。');
+
         } else {
             showToast("指定された塩基配列が見つかりません。", "warning");
         }
@@ -1091,10 +1119,18 @@
     
     function clearSearch() {
         document.getElementById('searchInput').value = '';
+        document.getElementById('searchInput').disabled = false;
         if(!ab1Data) return;
         ab1Data.bases.forEach(b => b.isHighlight = false);
         redrawAll();
         document.getElementById('statusText').innerText = "ステータス: 検索を解除しました。";
+        
+        // トグル状態をハイライトモードに変更
+        isSearchActive = false;
+        const btn = document.getElementById('btnSearchToggle');
+        btn.classList.add('btn-primary');
+        btn.innerHTML = `ハイライト`;
+        btn.setAttribute('data-tooltip', '入力した塩基配列を検索し、強調表示します。');
     }
 
     function showToast(msg, type = "") {
