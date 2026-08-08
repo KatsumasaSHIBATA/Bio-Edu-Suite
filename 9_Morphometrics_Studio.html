@@ -227,7 +227,7 @@
                 </div>
                 <div id="rat_efa" class="rationale-text">
                     <strong>【根拠：対称・非対称の分離による厳密な評価】</strong>
-                    ダイコンの根形のように表裏がない対象物の場合、撮影時の「置き方」による曲がりがノイズになります。フーリエ係数を「対称 (a, d)」と「非対称 (b, c)」に分けてPCAにかけることで、「太さ・とまり具合」と「曲がり」を独立して評価できます。
+                    ・ダイコンの根形のように表裏がない対象物の場合、撮影時の「置き方」による曲がりがノイズになります。フーリエ係数を「対称 (a, d)」と「非対称 (b, c)」に分けてPCAにかけることで、「太さ・とまり具合」と「曲がり」を独立して評価できます。
                 </div>
 
                 <div class="drop-zone" id="dropZoneA" data-tooltip="チェーンコードファイルをドラッグ＆ドロップ">
@@ -245,7 +245,7 @@
                         <div class="rationale-wrapper"><button class="rationale-btn" onclick="toggleRationale(event, 'rat_imgproc')">?</button>
                             <div id="rat_imgproc" class="rationale-text">
                                 <strong>【根拠：画像処理による自動抽出】</strong>
-                                ブラウザ上で画像をグレースケール化し、指定した閾値で二値化（白黒化）します。Moore-Neighborアルゴリズムにより境界ピクセルを追跡し、Freeman Chain Codeを自動生成します。
+                                ・ブラウザ上で画像をグレースケール化し、指定した閾値で二値化（白黒化）します。Moore-Neighborアルゴリズムにより境界ピクセルを追跡し、Freeman Chain Codeを自動生成します。
                             </div>
                         </div>
                     </span>
@@ -307,7 +307,7 @@
                 </div>
                 <div id="rat_clust" class="rationale-text">
                     <strong>【根拠：Lance-Williams Update Formula】</strong>
-                    Rにおけるクラスタ解析のアルゴリズムに準拠。特にウォード法(Ward's D2)においては、初期距離を平方し、結合時に重心間の偏差平方和の増加量を最小化するように更新をかけます。最後に平方根をとることで、枝の高さ(Height)が実際の「距離」を表すR互換の樹状図となります。
+                    ・Rにおけるクラスタ解析のアルゴリズムに準拠。特にウォード法(Ward's D2)においては、初期距離を平方し、結合時に重心間の偏差平方和の増加量を最小化するように更新をかけます。最後に平方根をとることで、枝の高さ(Height)が実際の「距離」を表すR互換の樹状図となります。
                 </div>
 
                 <div class="drop-zone" id="dropZoneB" data-tooltip="CSVファイルをドラッグ＆ドロップ">
@@ -370,7 +370,7 @@
                         <div class="rationale-wrapper"><button class="rationale-btn" onclick="toggleRationale(event, 'rat_prinprint')">?</button>
                             <div id="rat_prinprint" class="rationale-text">
                                 <strong>【根拠：形状の復元】</strong>
-                                主成分スコアから逆にフーリエ係数を計算し、輪郭を描き直します。灰色の点線は全体の「平均形状」を表し、青い線が現在のスライダー（またはクリックした個体）の形状です。集団内に存在する微細な「変異」が直感的に分かります。
+                                ・主成分スコアから逆にフーリエ係数を計算し、輪郭を描き直します。灰色の点線は全体の「平均形状」を表し、青い線が現在のスライダー（またはクリックした個体）の形状です。集団内に存在する微細な「変異」が直感的に分かります。
                             </div>
                         </div>
                     </span>
