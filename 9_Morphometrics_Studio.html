@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📐 Morphometrics Studio v5.2 | Bio-Edu Suite</title>
+    <title>📐 Morphometrics Studio v31.0 | Bio-Edu Suite</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         :root {
@@ -29,20 +29,35 @@
         }
 
         *, *::before, *::after { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
+        
+        /* ガイドライン第11項① 準拠: タイポグラフィ */
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Noto Sans JP'; 
+            font-size: 14px; 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 100vh; 
+            overflow-x: hidden; 
+        }
 
-        /* 改行崩れ・テキスト折り返しの補正（ガイドライン第4項） */
-        body, .card, p, div, .bench-tip, .pro-invite, .rationale-text, .assist-panel { word-break: normal; overflow-wrap: anywhere; line-height: 1.6; }
+        /* 改行崩れ・テキスト折り返しの補正（ガイドライン第5項） */
+        body, .card, p, div, .bench-tip, .step-up-card, .rationale-text, .assist-panel, .dynamic-hint { 
+            word-break: normal; 
+            overflow-wrap: anywhere; 
+            line-height: 1.6; 
+        }
         .label-title, .no-wrap { white-space: nowrap; }
 
-        /* 共通ヘッダー */
+        /* 共通ヘッダー (ガイドライン第5項) */
         .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid var(--phase-color); display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 30; flex-shrink: 0; position: sticky; top: 0; }
-        .header { width: 100%; max-width: 1400px; padding: 12px 20px; color: white; display: flex; align-items: center; justify-content: space-between; position: relative; }
-        .header h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 1px; color: #fff; }
-        .header p { margin: 4px 0 0 0; font-size: 11px; color: var(--phase-color-light); font-weight: 600; letter-spacing: 0.5px; }
-        
-        /* バージョンバッジ */
-        .version-badge { background: var(--secondary); color: var(--phase-color); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid var(--phase-color); }
+        .header { width: 100%; max-width: 1400px; padding: 12px 20px; box-sizing: border-box; display: flex; align-items: center; position: relative; }
+        .header-title-group { display: flex; flex-direction: column; justify-content: center; }
+        .header h1 { margin: 0; font-size: 20px; font-weight: 700; color: #fff; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
+        .header p { margin: 4px 0 0 0; font-size: 11px; color: var(--phase-color); font-weight: 600; }
+        .version-badge { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); background: var(--secondary); color: var(--phase-color); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid var(--phase-color); }
         
         .main-content { width: 100%; max-width: 1400px; margin: 0 auto; padding: 15px; display: flex; flex-wrap: wrap; gap: 15px; flex: 1; align-items: flex-start; }
         
@@ -51,53 +66,68 @@
         .card-header { background: var(--secondary); color: white; padding: 12px 18px; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: space-between; }
         .card-body { padding: 15px; display: flex; flex-direction: column; gap: 10px; }
 
-        /* 教育的ポップオーバー (フリップ対応) — ガイドライン第5項① 準拠 */
+        /* インラインSVGアイコン用 共通カラークラス (ガイドライン第2項) */
+        .svg-hint { color: var(--warning); }
+        .svg-info { color: inherit; }
+        .svg-danger { color: var(--danger); }
+        .header-icon { width: 20px; height: 20px; flex-shrink: 0; }
+        .btn-icon { width: 14px; height: 14px; margin-right: 5px; flex-shrink: 0; vertical-align: middle; }
+
+        /* 教育的ポップオーバー (ガイドライン第6項① 準拠) */
         .rationale-btn { background: var(--phase-color); color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; flex-shrink: 0; }
         .rationale-btn:hover { transform: scale(1.1); filter: brightness(1.2); }
-        .rationale-text { position: fixed; background: #fef9e7; border: 1px solid #f39c12; padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: 320px; max-width: calc(100vw - 24px); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; }
+        .rationale-text { position: fixed; background: #fef9e7; border: 1px solid var(--warning); padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: max-content; max-width: min(320px, calc(100vw - 24px)); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; }
         .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
-        /* 吹き出しの尻尾（.pop-arrow）。JS が --arrow-left とフリップ方向クラスを設定する */
-        .rationale-text::after {
-            content: ''; position: absolute; width: 10px; height: 10px;
-            background: #fef9e7; transform: rotate(45deg);
-            left: var(--arrow-left, 50%); margin-left: -5px;
-        }
-        .rationale-text.arrow-top::after    { top: -6px; border-left: 1px solid #f39c12; border-top: 1px solid #f39c12; }
-        .rationale-text.arrow-bottom::after { bottom: -6px; border-right: 1px solid #f39c12; border-bottom: 1px solid #f39c12; }
-        /* ヘッダーアイコン（インラインSVG / stroke="currentColor" で見出し色に同期） */
-        .header-icon { width: 20px; height: 20px; vertical-align: -3px; margin-right: 6px; flex-shrink: 0; }
-        .btn-icon { width: 14px; height: 14px; vertical-align: -2px; flex-shrink: 0; }
         .rationale-text strong { color: #d35400; display: block; margin-bottom: 4px; font-size: 12px; }
+        .rationale-text::after { content: ''; position: absolute; border-width: 6px; border-style: solid; left: var(--arrow-left, 50%); }
+        .rationale-text.arrow-top::after { top: -12px; border-color: transparent transparent #fef9e7 transparent; }
+        .rationale-text.arrow-bottom::after { bottom: -12px; border-color: #fef9e7 transparent transparent transparent; }
+        .rationale-text::before { content: ''; position: absolute; border-width: 7px; border-style: solid; left: calc(var(--arrow-left, 50%) - 1px); }
+        .rationale-text.arrow-top::before { top: -14px; border-color: transparent transparent var(--warning) transparent; }
+        .rationale-text.arrow-bottom::before { bottom: -14px; border-color: var(--warning) transparent transparent transparent; }
 
         .edu-panel { padding: 12px 15px; border-radius: 6px; font-size: 12px; line-height: 1.5; margin-bottom: 5px; }
-        .rationale-panel { background-color: var(--phase-color-bg); border-left: 4px solid var(--phase-color); color: var(--primary); }
+        /* ガイドライン第6項② 準拠: border-leftを消去 */
+        .rationale-panel { background-color: var(--phase-color-bg); color: var(--primary); }
 
-        /* 現場のコツ (Bench Tip) */
-        .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px; border-radius: 0 4px 4px 0; font-size: 11px; color: #2c3e50; line-height: 1.5; margin-bottom: 10px; }
-        .bench-tip strong { color: #2980b9; font-size: 12px; display: block; margin-bottom: 4px;}
+        /* 現場のコツ (Bench Tip) - ガイドライン第6項② 準拠 */
+        .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px 15px; border-radius: 0 4px 4px 0; font-size: 12px; color: var(--text-main); line-height: 1.6; margin: 15px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .bench-tip strong { color: #2980b9; display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 13px; }
 
-        /* 入力フォーム群 */
+        /* より高度な解析ツールへ (ガイドライン第6項⑦ 準拠) */
+        .step-up-card { background: #f8f9fa; border: 1px solid #d1d5db; padding: 20px; border-radius: 8px; margin-top: 25px; color: #2c3e50; box-shadow: 0 2px 4px rgba(0,0,0,0.02); width: 100%; box-sizing: border-box; }
+        .step-up-card h3 { color: #2c3e50; margin-top: 0; font-size: 15px; display: flex; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 12px; }
+        .step-up-card h3 svg { margin-right: 8px; width: 20px; height: 20px; flex-shrink: 0; }
+        .step-up-card p { margin: 0; font-size: 13px; line-height: 1.6; }
+        .step-up-card p span { display: block; margin-top: 4px; }
+        .step-up-card p span:first-of-type { margin-top: 6px; }
+
+        /* 入力フォーム群 (ガイドライン第11項③ 準拠) */
         .algo-selector { display: flex; gap: 5px; background: #ecf0f1; padding: 4px; border-radius: 4px; margin-bottom: 5px; align-items: center; }
         .algo-selector label { flex: 1; text-align: center; padding: 6px; font-size: 11px; font-weight: bold; color: #7f8c8d; cursor: pointer; border-radius: 3px; transition: 0.2s; white-space: nowrap; }
         .algo-selector input { display: none; }
         .algo-selector input:checked + label { background: var(--phase-color); color: white; }
 
-        .drop-zone { border: 2px dashed #bdc3c7; border-radius: 4px; padding: 10px; text-align: center; background: #fafbfc; transition: 0.2s; cursor: pointer; margin-bottom: 5px;}
+        /* ドロップゾーン (ガイドライン第9項① 準拠) - 横並びに修正 */
+        .drop-zone { border: 2px dashed var(--border-color); background: #f8f9fa; border-radius: 8px; padding: 16px; text-align: center; transition: 0.2s; cursor: pointer; margin-bottom: 5px; display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 8px; }
         .drop-zone:hover, .drop-zone.dragover { background: #ebf5fb; border-color: var(--phase-color); }
-        .drop-zone p { margin: 0; font-size: 11px; color: #7f8c8d; font-weight: bold; pointer-events: none; }
+        .drop-zone p { margin: 0; font-size: 12px; color: #7f8c8d; font-weight: bold; pointer-events: none; }
+        .drop-zone svg { width: 20px; height: 20px; color: #95a5a6; pointer-events: none; flex-shrink: 0; }
         input[type="file"] { display: none; }
 
-        input[type="text"], input[type="number"], select, textarea { width: 100%; font-size: 11px; padding: 8px; border: 1px solid #bdc3c7; border-radius: 4px; box-sizing: border-box; outline: none; transition: 0.2s; background: #fdfefe; font-family: inherit; }
-        textarea { height: 90px; font-family: 'Courier New', Consolas, monospace; white-space: pre; overflow-x: auto; resize: vertical; }
-        input:focus, select:focus, textarea:focus { border-color: var(--phase-color); box-shadow: 0 0 0 3px rgba(52,152,219,0.2); }
+        input[type="text"], input[type="number"], select, textarea { font-size: 12px; padding: 8px; border: 1px solid #bdc3c7; border-radius: 4px; box-sizing: border-box; outline: none; transition: 0.2s; background: #fdfefe; font-family: inherit; }
+        textarea { height: 90px; font-family: 'Courier New', Consolas, monospace; white-space: pre; overflow-x: auto; resize: vertical; width: 100%; }
+        input:focus, select:focus, textarea:focus { border-color: var(--phase-color); box-shadow: 0 0 0 2px rgba(52,152,219,0.2); }
 
-        .btn { background: #fdfefe; border: 1px solid #bdc3c7; padding: 8px 12px; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; border-radius: 4px; font-weight: bold; transition: all 0.2s; color: #2c3e50; }
-        .btn:hover:not(:disabled) { background: #eaf2f8; border-color: var(--phase-color); color: var(--phase-color-hover); }
-        .btn-primary { background: var(--phase-color); color: white; border-color: var(--phase-color-hover); box-shadow: 0 3px 0 var(--phase-color-hover); width: 100%;}
-        .btn-primary:active:not(:disabled) { transform: translateY(3px); box-shadow: none; }
-        .btn-success { background: #27ae60; color: white; border-color: #1e8449; box-shadow: 0 3px 0 #1e8449; width: 100%; margin-top: 5px;}
-        .btn-success:active:not(:disabled) { transform: translateY(3px); box-shadow: none; }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+        /* ボタン群 (ガイドライン第11項② 準拠) */
+        .btn { background: #fdfefe; border: 1px solid #bdc3c7; padding: 8px 16px; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; font-weight: bold; transition: all 0.2s; color: #2c3e50; text-decoration: none; box-shadow: none; width: fit-content; }
+        .btn:hover:not(:disabled) { background: #eaf2f8; border-color: var(--phase-color); color: var(--phase-color-hover); box-shadow: 0 2px 4px rgba(0,0,0,0.1); filter: brightness(1.05); }
+        .btn:active:not(:disabled) { transform: scale(0.98); }
+        .btn-primary { background: var(--phase-color); color: white; border-color: var(--phase-color-hover); }
+        .btn-success { background: var(--success); color: white; border-color: #1e8449; }
+        
+        /* ガイドライン違反のグレー化を修正: 白背景＋グレー文字に統一 */
+        .btn:disabled { background: #fdfefe !important; border-color: #bdc3c7 !important; color: #95a5a6 !important; opacity: 1; cursor: not-allowed; box-shadow: none !important; filter: none !important; transform: none !important; }
 
         /* スライダーUI */
         .slider-group { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
@@ -123,15 +153,12 @@
         .node text { font: 10px sans-serif; fill: #2c3e50; pointer-events: none;}
 
         /* トースト・ツールチップ */
-        /* トースト通知（ガイドライン第5項⑤ 準拠 / alert() は使用禁止） */
         #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 12px 24px; border-radius: 30px; font-weight: bold; font-size: 13px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 100000; pointer-events: none; text-align: center; max-width: 90vw; box-sizing: border-box; word-break: auto-phrase; }
         #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
         #toast.error { background: var(--danger); }
         #toast.warning { background: var(--warning); color: #7e5109; }
         #toast.info { background: var(--phase-color); }
 
-        /* カスタムツールチップ（ガイドライン第5項④ 準拠 / ネイティブ title 属性は使用しない）
-           ※本文が最長52文字の日本語のため nowrap では狭い端末で画面外に溢れる。折り返し＋幅上限で堅牢化 */
         .custom-tooltip { position: fixed; background: rgba(44, 62, 80, 0.95); color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 11px; pointer-events: none; z-index: 9999; opacity: 0; transition: opacity 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-weight: normal; line-height: 1.4; display: none; white-space: normal; width: max-content; max-width: min(320px, 90vw); text-align: center; box-sizing: border-box; }
         .custom-tooltip::after { content: ''; position: absolute; border-width: 5px; border-style: solid; left: 50%; transform: translateX(-50%); }
         .custom-tooltip.show-top::after { top: 100%; border-color: rgba(44, 62, 80, 0.95) transparent transparent transparent; }
@@ -146,7 +173,7 @@
 
         @media screen and (max-width: 768px) {
             .algo-selector, #route-a-controls .drop-zone + div > div:first-child, .slider-group { flex-direction: column !important; align-items: stretch !important; gap: 10px; }
-            .btn, input[type="text"], input[type="number"], select, textarea { width: 100% !important; box-sizing: border-box; }
+            .btn, select { width: 100% !important; box-sizing: border-box; }
             .canvas-container, .log-table, .tree-card .card-body, #pca-svg-container, #tree-svg-container, #viz-route-a {
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
@@ -158,11 +185,16 @@
 
 <div class="header-container">
     <div class="header">
-        <div>
-            <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 21h18L3 3z"/><path d="M7 21v-2M11 21v-2M15 21v-2"/></svg>Morphometrics Studio</h1>
+        <div class="header-title-group">
+            <h1>
+                <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                    <path d="M3 21h18L3 3z"/><path d="M7 21v-2M11 21v-2M15 21v-2"/>
+                </svg>
+                Morphometrics Studio
+            </h1>
             <p>Bio-Edu Suite: Phase 3 / Strict EFA & Lance-Williams Clustering</p>
         </div>
-        <div class="version-badge">v5.2</div>
+        <div class="version-badge">v31.0</div>
     </div>
 </div>
 
@@ -171,12 +203,12 @@
     <!-- 左ペイン: 制御パラメータ -->
     <div class="card">
         <div class="card-header">
-            <span>解析パイプライン設定</span>
+            <span>Ⅰ. 解析パイプライン設定</span>
         </div>
         <div class="card-body">
             
             <div id="active-sample-info" style="background:#f8f9f9; border:1px solid #bdc3c7; padding:10px; border-radius:4px; font-size:12px; margin-bottom:5px;">
-                <!-- JSで埋め込み（データ未連携時も明示的に表示） -->
+                <!-- JSで埋め込み -->
             </div>
 
             <div class="algo-selector" data-tooltip="データに合わせて解析ルートを切り替えます">
@@ -191,44 +223,47 @@
                 <div class="edu-panel rationale-panel">
                     <strong>Kuhl & Giardina (1982) の楕円フーリエ解析</strong>
                     <button class="rationale-btn" onclick="toggleRationale(event, 'rat_efa')">?</button><br>
-                    生のチェーンコードから積分計算でフーリエ係数(a, b, c, d)を算出し、主成分分析(PCA)で次元縮約を行います。第1調和楕円に基づく数学的に厳密な標準化により、純粋な「形の変異(variation)」だけを抽出します。
+                    生のチェーンコードから積分計算でフーリエ係数(a, b, c, d)を算出し、主成分分析(PCA)で次元縮約を行います。第1調和楕円に基づく数学的に厳密な標準化により、純粋な「形の変異」だけを抽出します。
                 </div>
                 <div id="rat_efa" class="rationale-text">
-                    <strong>【対称・非対称の分離による厳密な評価】</strong>
+                    <strong>【根拠：対称・非対称の分離による厳密な評価】</strong>
                     ダイコンの根形のように表裏がない対象物の場合、撮影時の「置き方」による曲がりがノイズになります。フーリエ係数を「対称 (a, d)」と「非対称 (b, c)」に分けてPCAにかけることで、「太さ・とまり具合」と「曲がり」を独立して評価できます。
                 </div>
 
                 <div class="drop-zone" id="dropZoneA" data-tooltip="チェーンコードファイルをドラッグ＆ドロップ">
-                    <p>ここにファイル(.chc, .txt)をドロップ</p>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline>
+                    </svg>
+                    <p>ここをクリック、またはチェーンコードファイルをドラッグ＆ドロップ</p>
                     <input type="file" id="fileInputA" accept=".chc,.dat,.txt">
                 </div>
 
                 <!-- 画像二値化＆チェーンコード抽出モジュール -->
                 <div style="background: #fafbfc; border: 1px solid #bdc3c7; border-radius: 4px; padding: 10px; margin-bottom: 5px;">
-                    <span style="font-size: 11px; font-weight: bold; color: #34495e; display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px;">
-                        <span>[i] 画像から輪郭を抽出 (オートトレース)</span>
+                    <span style="font-size: 13px; font-weight: bold; color: #34495e; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                        <span>1. 画像から輪郭を抽出 (オートトレース)</span>
                         <div class="rationale-wrapper"><button class="rationale-btn" onclick="toggleRationale(event, 'rat_imgproc')">?</button>
-                            <div id="rat_imgproc" class="rationale-text" style="width:250px;">
-                                <strong>【画像処理による自動抽出】</strong>
+                            <div id="rat_imgproc" class="rationale-text">
+                                <strong>【根拠：画像処理による自動抽出】</strong>
                                 ブラウザ上で画像をグレースケール化し、指定した閾値で二値化（白黒化）します。Moore-Neighborアルゴリズムにより境界ピクセルを追跡し、Freeman Chain Codeを自動生成します。
                             </div>
                         </div>
                     </span>
                     <div style="display: flex; gap: 10px;">
-                        <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
+                        <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
                             <input type="file" id="imgUpload" accept="image/*" style="display: none;" onchange="loadImageForTrace(event)">
-                            <button class="btn" style="width:100%; font-size: 11px;" onclick="document.getElementById('imgUpload').click()" data-tooltip="JPG/PNG形式の画像ファイルを選択します">画像選択</button>
+                            <button class="btn" onclick="document.getElementById('imgUpload').click()" data-tooltip="JPG/PNG形式の画像ファイルを選択します">画像選択</button>
                             <div style="display: flex; align-items: center; gap: 5px;">
                                 <label style="font-size: 10px; font-weight: bold; white-space: nowrap;">閾値(Threshold):</label>
                                 <input type="range" id="threshSlider" min="0" max="255" value="128" style="flex: 1; margin:0;" oninput="updateImagePreview()">
                                 <span id="threshVal" style="font-size: 10px; font-family: monospace; width: 22px; text-align: right;">128</span>
                             </div>
-                            <div style="display: flex; gap: 5px;">
-                                <input type="text" id="imgSampleName" placeholder="サンプル名を入力" style="flex: 1;">
-                                <button class="btn btn-primary" style="padding: 4px 8px; font-size: 11px; box-shadow:none; width:auto;" onclick="extractAndAppend()" data-tooltip="画像から輪郭を抽出しチェーンコードを生成します">抽出 -></button>
+                            <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                                <input type="text" id="imgSampleName" placeholder="サンプル名を入力" style="flex: 1; min-width: 120px;">
+                                <button class="btn btn-primary" onclick="extractAndAppend()" data-tooltip="画像から輪郭を抽出しチェーンコードを生成します">抽出 -></button>
                             </div>
                         </div>
-                        <div style="width: 80px; height: 80px; border: 1px dashed #bdc3c7; background: #fff; border-radius: 4px; overflow: hidden; position: relative;">
+                        <div style="width: 80px; height: 80px; border: 1px dashed #bdc3c7; background: #fff; border-radius: 4px; overflow: hidden; position: relative; flex-shrink: 0;">
                             <canvas id="imgCanvas" style="width: 100%; height: 100%; object-fit: contain;"></canvas>
                         </div>
                     </div>
@@ -236,23 +271,20 @@
                 
                 <!-- 教育的意義: 現場のコツ -->
                 <div class="bench-tip">
-                    <strong>🧪 現場のコツ (Bench Tip)</strong>
+                    <strong>
+                        <svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>
+                        現場のコツ (Bench Tip)
+                    </strong>
                     オートトレースを行う際は、画像の影やゴミを拾わないように閾値（Threshold）を調整する職人技が必要。また、対象物を撮影する際は常に真上から同じ倍率で撮影するのが形態学の鉄則。
-                </div>
-                
-                <!-- 教育的意義: プロツールへの誘い -->
-                <div style="background:#f4f6f7; border:1px solid #bdc3c7; padding:10px; border-radius:4px; font-size:11px; color:#2c3e50; line-height:1.5; margin-bottom:10px;">
-                    <strong>🔗 Step up to professional tools</strong><br>
-                    より高度なノイズ除去やバッチ処理（100枚の画像を一気に処理するなど）を行いたい場合は、プロの研究者が愛用する『ImageJ / Fiji』や、岩田先生が開発した『SHAPE』パッケージを使ってみよう。
                 </div>
                 
                 <textarea id="chain-code-input" placeholder="チェーンコード（ Freeman Chain Code ）を入力してください"></textarea>
                 
-                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 5px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 5px; flex-wrap: wrap; gap: 5px;">
                     <label style="font-size:11px; font-weight:bold; color:#2c3e50;">調和数 (Harmonics n):</label>
                     <input type="number" id="harmonics-input" value="20" min="1" max="40" style="width: 60px; text-align:center;">
                 </div>
-                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 10px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 15px; flex-wrap: wrap; gap: 5px;">
                     <label style="font-size:11px; font-weight:bold; color:#2c3e50;">PCA対象成分 (岩田モデル):</label>
                     <select id="pca-feature-mode" style="width: 150px;">
                         <option value="all">全係数 (a, b, c, d)</option>
@@ -261,7 +293,9 @@
                     </select>
                 </div>
 
-                <button class="btn btn-primary" onclick="runStrictMathEFA()" data-tooltip="楕円フーリエ解析と主成分分析を実行します">EFA & PCA 実行</button>
+                <div style="display: flex; gap: 10px; justify-content: space-between;">
+                    <button class="btn btn-primary" style="flex: 1;" onclick="runStrictMathEFA()" data-tooltip="楕円フーリエ解析と主成分分析を実行します">EFA & PCA 実行</button>
+                </div>
             </div>
 
             <!-- ================= Route B コントロール ================= -->
@@ -272,44 +306,54 @@
                     既存の計測データから距離行列を計算し、R言語の <code>hclust</code> と数学的に完全に等価な更新式エンジンを用いて、厳密な樹状図を描画します。
                 </div>
                 <div id="rat_clust" class="rationale-text">
-                    <strong>【Lance-Williams Update Formula】</strong>
+                    <strong>【根拠：Lance-Williams Update Formula】</strong>
                     Rにおけるクラスタ解析のアルゴリズムに準拠。特にウォード法(Ward's D2)においては、初期距離を平方し、結合時に重心間の偏差平方和の増加量を最小化するように更新をかけます。最後に平方根をとることで、枝の高さ(Height)が実際の「距離」を表すR互換の樹状図となります。
                 </div>
 
                 <div class="drop-zone" id="dropZoneB" data-tooltip="CSVファイルをドラッグ＆ドロップ">
-                    <p>ここにファイル(.csv)をドロップ</p>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline>
+                    </svg>
+                    <p>ここをクリック、またはCSVファイルをドラッグ＆ドロップ</p>
                     <input type="file" id="fileInputB" accept=".csv">
                 </div>
 
                 <textarea id="csv-input" placeholder="計測データをCSV形式で入力してください"></textarea>
                 
-                <div style="display:flex; gap: 5px; margin-bottom: 5px;">
+                <div style="display:flex; gap: 5px; margin-bottom: 5px; flex-wrap: wrap;">
                     <select id="data-direction"><option value="col">列がサンプル</option><option value="row">行がサンプル</option></select>
-                    <select id="dist-method">
+                    <select id="dist-method" style="flex: 1;">
                         <option value="euclidean" selected>ユークリッド距離</option>
                         <option value="manhattan">マンハッタン距離</option>
                         <option value="canberra">キャンベラ距離</option>
                     </select>
                 </div>
-                <div style="display:flex; gap: 5px; margin-bottom: 10px;">
-                    <select id="clustering-method">
+                <div style="display:flex; gap: 5px; margin-bottom: 15px;">
+                    <select id="clustering-method" style="flex: 1;">
                         <option value="ward" selected>ウォード法 (Ward's D2)</option>
                         <option value="upgma">群平均法 (UPGMA)</option>
                         <option value="complete">完全連結法 (Complete)</option>
                         <option value="single">単連結法 (Single)</option>
                     </select>
                 </div>
-                <button class="btn btn-primary" onclick="runRouteB()">階層的クラスタ解析を実行</button>
+                <div style="display: flex; gap: 10px; justify-content: space-between;">
+                    <button class="btn btn-primary" style="flex: 1;" onclick="runRouteB()">階層的クラスタ解析を実行</button>
+                </div>
             </div>
-
-            <button class="btn btn-success" id="save-btn" onclick="saveToDashboard()" disabled data-tooltip="ダッシュボード(Phase 1)へ解析結果を書き戻します">ノートに記録</button>
+            
+            <div style="margin-top: 10px; display: flex; justify-content: flex-end;">
+                <button class="btn btn-success" id="save-btn" onclick="saveToDashboard()" disabled data-tooltip="ダッシュボード(Phase 1)へ解析結果を書き戻します">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                    ノートに記録
+                </button>
+            </div>
         </div>
     </div>
 
     <!-- 右ペイン: 結果表示 -->
     <div class="card tree-card">
         <div class="card-header">
-            <span>統計解析・逆変換ビジュアライゼーション</span>
+            <span>Ⅱ. 統計解析・逆変換ビジュアライゼーション</span>
         </div>
         <div class="card-body" style="background:#f0f3f4; padding:15px; display:flex; flex-direction:column; flex:1;">
             
@@ -324,16 +368,16 @@
                     <span style="font-size:12px; font-weight:bold; color:#7f8c8d; margin-bottom:5px; display:flex; align-items:center;">
                         逆フーリエ変換 形状シミュレータ
                         <div class="rationale-wrapper"><button class="rationale-btn" onclick="toggleRationale(event, 'rat_prinprint')">?</button>
-                            <div id="rat_prinprint" class="rationale-text" style="width:250px;">
-                                <strong>【形状の復元】</strong>
+                            <div id="rat_prinprint" class="rationale-text">
+                                <strong>【根拠：形状の復元】</strong>
                                 主成分スコアから逆にフーリエ係数を計算し、輪郭を描き直します。灰色の点線は全体の「平均形状」を表し、青い線が現在のスライダー（またはクリックした個体）の形状です。集団内に存在する微細な「変異」が直感的に分かります。
                             </div>
                         </div>
                     </span>
-                    <div style="display: flex; gap: 15px; align-items: center;">
-                        <canvas id="shape-canvas" style="flex:1; height: 180px; border:1px dashed #bdc3c7; border-radius:4px;"></canvas>
+                    <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                        <canvas id="shape-canvas" style="flex:1; height: 180px; border:1px dashed #bdc3c7; border-radius:4px; min-width: 200px;"></canvas>
                         
-                        <div id="pc-sliders" style="flex:1; display: none; background: #fafbfc; padding: 10px; border-radius: 4px; border: 1px solid #ecf0f1;">
+                        <div id="pc-sliders" style="flex:1; display: none; background: #fafbfc; padding: 10px; border-radius: 4px; border: 1px solid #ecf0f1; min-width: 200px;">
                             <div class="slider-group">
                                 <span class="slider-label">PC 1</span>
                                 <input type="range" id="pc1-slider" min="-3" max="3" step="0.1" value="0" oninput="updateShapeFromSliders()">
@@ -387,111 +431,131 @@
 
         </div>
     </div>
+    
+    <!-- ガイドライン第6項⑦ 準拠: より高度な解析ツールへ -->
+    <div class="step-up-card">
+        <h3>
+            <!-- 外部へのリンク・発展を示す公式SVGへ置換 -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+            より高度な解析ツールへ
+        </h3>
+        <p>
+            より高度なノイズ除去やバッチ処理（100枚の画像を一気に処理するなど）を行いたい場合は、プロの研究者が愛用する『ImageJ / Fiji』や、岩田先生が開発した『SHAPE』パッケージを使ってみよう。
+        </p>
+    </div>
 </div>
 
-<div id="d3-tooltip" class="custom-tooltip"></div>
 <div id="toast"></div>
-<!-- フッター文言はSuite全体で完全統一 -->
-<div class="footer">&copy; 2026 Bio-Edu Suite | Advanced Bioinformatics & Wet-Lab Emulator</div>
+<!-- フッター文言はSuite全体で完全統一 (ガイドライン第9項④) -->
+<div class="footer">&copy; 2026 Bio-Edu Suite v31.0 | Developed for Bioinformatics & Wet-Lab Education</div>
 
 <script>
-    // --- ツールチップ & ポップオーバー (UI/UX 統合) ---
-    const tooltip = document.getElementById('d3-tooltip');
+    // --- ツールチップ & ポップオーバー (UI/UX 統合 v31.0 準拠) ---
+    function initTooltips() {
+        const tooltip = document.createElement('div');
+        tooltip.className = 'custom-tooltip';
+        document.body.appendChild(tooltip);
 
-    document.body.addEventListener('mouseover', (e) => {
-        const target = e.target.closest('[data-tooltip]');
-        if (target && !target.classList.contains('rationale-btn')) {
-            tooltip.innerHTML = target.getAttribute('data-tooltip');
-            tooltip.style.display = 'block';
-            
-            const rect = target.getBoundingClientRect();
-            const ttRect = tooltip.getBoundingClientRect();
-            let topPos = rect.top - ttRect.height - 8;
-            let leftPos = rect.left + (rect.width / 2);
-            let arrowClass = 'show-top'; 
+        document.body.addEventListener('mouseover', (e) => {
+            const target = e.target.closest('[data-tooltip]');
+            if (target && !target.classList.contains('rationale-btn')) {
+                tooltip.innerHTML = target.getAttribute('data-tooltip');
+                tooltip.style.display = 'block';
+                
+                const rect = target.getBoundingClientRect();
+                const ttRect = tooltip.getBoundingClientRect();
+                let topPos = rect.top - ttRect.height - 8;
+                let leftPos = rect.left + (rect.width / 2);
+                let arrowClass = 'show-top'; 
 
-            if (topPos < 0) {
-                topPos = rect.bottom + 8;
-                arrowClass = 'show-bottom'; 
+                if (topPos < 0) {
+                    topPos = rect.bottom + 8;
+                    arrowClass = 'show-bottom'; 
+                }
+                if (leftPos - ttRect.width / 2 < 5) leftPos = 5 + ttRect.width / 2;
+                else if (leftPos + ttRect.width / 2 > window.innerWidth - 5) leftPos = window.innerWidth - ttRect.width / 2 - 5;
+
+                tooltip.className = `custom-tooltip ${arrowClass}`;
+                tooltip.style.top = topPos + 'px';
+                tooltip.style.left = leftPos + 'px';
+                tooltip.style.transform = `translateX(-50%)`;
+                tooltip.style.opacity = '1';
             }
-            if (leftPos - ttRect.width / 2 < 5) leftPos = 5 + ttRect.width / 2;
-            else if (leftPos + ttRect.width / 2 > window.innerWidth - 5) leftPos = window.innerWidth - ttRect.width / 2 - 5;
+        });
 
-            tooltip.className = `custom-tooltip ${arrowClass}`;
-            tooltip.style.top = topPos + 'px';
-            tooltip.style.left = leftPos + 'px';
-            tooltip.style.transform = `translateX(-50%)`;
-            tooltip.style.opacity = '1';
-        }
-    });
+        document.body.addEventListener('mouseout', (e) => {
+            if (e.target.closest('[data-tooltip]')) {
+                tooltip.style.opacity = '0';
+                setTimeout(() => { if (tooltip.style.opacity === '0') tooltip.style.display = 'none'; }, 200);
+            }
+        });
+        
+        document.addEventListener('scroll', () => { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; }, true);
+    }
+    initTooltips();
 
-    document.body.addEventListener('mouseout', (e) => {
-        if (e.target.closest('[data-tooltip]')) {
-            tooltip.style.opacity = '0';
-            setTimeout(() => { if (tooltip.style.opacity === '0') tooltip.style.display = 'none'; }, 200);
-        }
-    });
-    
-    document.addEventListener('scroll', () => { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; }, true);
-
-    // ★ ガイドライン準拠: fixed配置に基づくクリック駆動のポップオーバー表示ロジック
+    // ★ ガイドライン v31.0 準拠: 動的幅算出・フリップ計算付き表示ロジック
     function toggleRationale(event, id) {
         event.stopPropagation();
         const el = document.getElementById(id);
         const btn = event.currentTarget;
         const isShown = el.classList.contains('show');
         
-        document.querySelectorAll('.rationale-text').forEach(e => e.classList.remove('show'));
+        // 他のポップオーバーを閉じる
+        document.querySelectorAll('.rationale-text').forEach(e => {
+            e.classList.remove('show', 'arrow-top', 'arrow-bottom');
+        });
         
         if(!isShown) {
             if (el.parentNode !== document.body) document.body.appendChild(el);
             el.style.top = '0px'; el.style.left = '0px'; 
             el.classList.add('show');
             
+            // フリップ計算による絶対配置 (offsetWidthを用いた親要素追従)
             const elHeight = el.offsetHeight;
             const elWidth  = el.offsetWidth;
             const rect = btn.getBoundingClientRect();
 
-            let topPos = rect.bottom + 10;
+            let topPos = rect.bottom + 12;
             let arrowClass = 'arrow-top';
+            
             // 画面下端に見切れる場合は上側に配置
             if (rect.bottom + elHeight + 20 > window.innerHeight) {
-                topPos = rect.top - elHeight - 10;
+                topPos = rect.top - elHeight - 12;
                 arrowClass = 'arrow-bottom';
             }
+            el.classList.add(arrowClass);
             el.style.top = topPos + 'px';
 
-            // 左右位置の調整（幅は固定値ではなく offsetWidth で動的算出）
-            const btnCenter = rect.left + rect.width / 2;
-            let leftPos = btnCenter - elWidth / 2;
-            if (leftPos + elWidth > window.innerWidth - 10) leftPos = window.innerWidth - elWidth - 10;
+            // 左右位置の調整 (offsetWidth を使用してはみ出し防止)
+            let leftPos = rect.left - (elWidth / 2) + (rect.width / 2);
+            if (leftPos + elWidth > window.innerWidth) leftPos = window.innerWidth - elWidth - 10;
             if (leftPos < 10) leftPos = 10;
             el.style.left = leftPos + 'px';
 
-            // 吹き出しの尻尾をボタン中央へ追従させる（両端12pxは食い込ませない）
-            let arrowLeft = btnCenter - leftPos;
-            if (arrowLeft < 12) arrowLeft = 12;
-            if (arrowLeft > elWidth - 12) arrowLeft = elWidth - 12;
-            el.classList.remove('arrow-top', 'arrow-bottom');
-            el.classList.add(arrowClass);
-            el.style.setProperty('--arrow-left', arrowLeft + 'px');
+            // 尻尾の水平位置をボタン中央に合わせるカスタムプロパティ
+            const arrowOffset = rect.left - leftPos + (rect.width / 2) - 6;
+            el.style.setProperty('--arrow-left', arrowOffset + 'px');
         }
     }
 
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.rationale-text') && !e.target.closest('.rationale-btn')) {
-            document.querySelectorAll('.rationale-text').forEach(el => el.classList.remove('show'));
+            document.querySelectorAll('.rationale-text').forEach(el => {
+                el.classList.remove('show', 'arrow-top', 'arrow-bottom');
+            });
         }
     });
 
-    // ★ ガイドライン第5項① 準拠: スクロールでポップオーバーを閉じる
     document.addEventListener('scroll', () => {
-        document.querySelectorAll('.rationale-text').forEach(el => el.classList.remove('show'));
+        document.querySelectorAll('.rationale-text').forEach(el => {
+            el.classList.remove('show', 'arrow-top', 'arrow-bottom');
+        });
     }, true);
 
-    // ★ ガイドライン準拠: Toast表示ロジック
     // --- トースト通知（ガイドライン第5項⑤ 準拠 / alert() は使用禁止） ---
-    // type: ""(=成功/緑) | "error" | "warning" | "info"。'success' 等の未知値は既定の緑にフォールバックする
     function showToast(msg, type = "") {
         const toast = document.getElementById('toast');
         if (!toast) return;
@@ -501,7 +565,7 @@
         else if (type === "warning") className += " warning";
         else if (type === "info") className += " info";
         toast.className = "";
-        void toast.offsetWidth; // リフローを挟み、連続表示でもアニメーションを再生させる
+        void toast.offsetWidth; // リフロー
         toast.className = className;
         setTimeout(() => { toast.classList.remove("show"); }, 3000);
     }
@@ -553,6 +617,7 @@
             reader.onload = ev => document.getElementById(inputId).value = ev.target.result;
             reader.readAsText(e.target.files[0]);
         });
+        zone.addEventListener('click', () => document.getElementById(fileInputId).click());
     };
     setupDropZone('dropZoneA', 'chain-code-input', 'fileInputA');
     setupDropZone('dropZoneB', 'csv-input', 'fileInputB');
@@ -562,9 +627,8 @@
     // 統合データ管理 (バッチ対応)
     // ==========================================
     let analysisResult = null;
-    let activeSample = null; // レガシーの保存ロジック用フォールバック
+    let activeSample = null;
     
-    // ★ ガイドライン準拠: 全データを舐めるバッチ読み込みロジックの実装
     window.onload = () => {
         try {
             const samplesStr = localStorage.getItem('bio_edu_samples');
@@ -573,7 +637,6 @@
                 samples = JSON.parse(samplesStr);
             }
 
-            // 形態データを持つサンプルを抽出
             let morphSamples = samples.filter(s => s.morphData && s.morphData.trim() !== "");
 
             if (morphSamples.length === 0) {
@@ -583,22 +646,16 @@
                         <span style="background:var(--border-color); color:white; padding:2px 6px; border-radius:10px; font-size:10px; font-weight:bold;">未選択</span>
                     </div>
                 `;
-                if(document.getElementById('assistModal')) document.getElementById('assistModal').style.display = 'flex';
                 setTimeout(() => { showToast("形態データを持つサンプルがありません", "warning"); }, 500);
                 return;
             }
 
-            // レガシーな単一サンプル保存のフォールバック用として最初のサンプルをセット
             activeSample = morphSamples[0];
-
-            // 全ての形態データを改行で結合
             let combinedData = morphSamples.map(s => s.morphData.trim()).join("\n");
             
-            // chain-code-input に一気に流し込む
             document.getElementById('chain-code-input').value = combinedData;
             document.getElementById('route_a').checked = true;
             
-            // 表示更新
             document.getElementById('active-sample-info').innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <span><strong>Target:</strong> バッチ読み込み完了 <span style="color:var(--text-muted); font-size:10px;">(${morphSamples.length} samples)</span></span>
@@ -607,10 +664,7 @@
             `;
             
             switchRoute();
-
-            setTimeout(() => {
-                showToast(`ダッシュボードから ${morphSamples.length} 件のサンプルをバッチ読み込みしました`, "info");
-            }, 500);
+            setTimeout(() => { showToast(`ダッシュボードから ${morphSamples.length} 件のサンプルをバッチ読み込みしました`, "info"); }, 500);
 
         } catch (e) {
             console.error("Data Load Error:", e);
@@ -621,9 +675,6 @@
     function saveToDashboard() {
         if (!activeSample || !analysisResult) return;
         
-        // 既存のsaveToDashboardロジックは、バッチ処理ではなく単一サンプル更新用。
-        // 今回の指示は「画像抽出時のダッシュボード保存」がメインであり、既存のsave処理の
-        // 本格的なバッチ対応は要求されていないが、エラーを防ぐため現状の形を維持する。
         let storedSamples = JSON.parse(localStorage.getItem('bio_edu_samples') || '[]');
         let targetIndex = storedSamples.findIndex(s => s.id === activeSample.id);
         
@@ -632,7 +683,6 @@
             localStorage.setItem('bio_edu_samples', JSON.stringify(storedSamples));
             
             activeSample.morphResult = analysisResult;
-            // 【ガイドライン第6項 必須】書き戻し時も timestamp を更新して鮮度を保つ
             activeSample.timestamp = new Date().getTime();
             localStorage.setItem('bio_edu_active_sample', JSON.stringify(activeSample));
             
@@ -707,17 +757,14 @@
         const ctx = canvas.getContext('2d');
         const d = ctx.getImageData(0, 0, w, h).data;
         
-        // 対象物を黒(0)と仮定
         function isObj(x, y) {
             if(x<0||x>=w||y<0||y>=h) return false;
             return d[(y*w+x)*4] < 128; 
         }
 
-        // Freeman Chain Code (8方向) Canvas座標系(下向き正)
         const dx = [1, 1, 0, -1, -1, -1, 0, 1];
         const dy = [0, -1, -1, -1, 0, 1, 1, 1]; 
         
-        // 開始点を探す
         let startX = -1, startY = -1;
         outer: for(let y=0; y<h; y++){
             for(let x=0; x<w; x++){
@@ -734,7 +781,7 @@
         let cnt = 0;
         do {
             let found = false;
-            let startDir = (dir + 6) % 8; // Moore-Neighbor
+            let startDir = (dir + 6) % 8;
             for(let i=0; i<8; i++){
                 let ndir = (startDir + i) % 8;
                 let nx = cx + dx[ndir];
@@ -749,7 +796,7 @@
             }
             if(!found) break;
             cnt++;
-            if(cnt > w*h*2) break; // 無限ループ防止
+            if(cnt > w*h*2) break; 
         } while(cx !== startX || cy !== startY);
 
         if(codes.length < 10) { showToast("輪郭が短すぎます。閾値を調整してください。", "error"); return; }
@@ -760,7 +807,6 @@
         const ta = document.getElementById('chain-code-input');
         ta.value = ta.value ? ta.value + "\n" + outStr : outStr;
         
-        // ★双方向データシンク（逆連携）の実装: 抽出データを新規サンプルとして保存する
         try {
             let storedSamples = JSON.parse(localStorage.getItem('bio_edu_samples') || '[]');
             const newSample = {
@@ -772,7 +818,7 @@
             };
             storedSamples.push(newSample);
             localStorage.setItem('bio_edu_samples', JSON.stringify(storedSamples));
-            showToast(`抽出完了: ${name} をダッシュボードに保存しました`, "success");
+            showToast(`抽出完了: ${name} を保存しました`, "success");
         } catch (e) {
             console.error("Save Error:", e);
             showToast("ダッシュボードへの保存に失敗しました", "error");
@@ -781,7 +827,6 @@
 
     /** =========================================================
      * Route A: Strict EFA & PCA Engine (Kuhl & Giardina 1982 / Iwata 1998)
-     * 欠損防止：これらの数学ロジックは一切変更しません。
      * ========================================================= */
     let globalSamples = []; 
     let globalPCA = null;   
@@ -807,7 +852,6 @@
             const coords = chainCodeToCoordinates(sample.codes);
             const rawCoeffs = computeEFA(coords, harmonics);
             
-            // ★ 第1調和楕円に基づく厳密な標準化 (サイズ、回転、開始点) [Iwata 1998]
             const stdCoeffs = standardizeEFA(rawCoeffs);
             
             for(let n=0; n<harmonics; n++) {
@@ -817,17 +861,16 @@
                 globalMeanCoeffs[n].d += stdCoeffs[n].d / parsedData.length;
             }
 
-            // モードに応じた特徴量抽出 (第1調和楕円の定数は除外)
             let features = [];
             for (let j = 0; j < harmonics; j++) {
                 let c = stdCoeffs[j];
                 if (currentFeatureMode === 'all') {
                     if (j > 0) features.push(c.a, c.b, c.c);
-                    features.push(c.d); // j=0 の d1 は変異し得る
-                } else if (currentFeatureMode === 'sym') { // 対称 (a, d)
+                    features.push(c.d); 
+                } else if (currentFeatureMode === 'sym') { 
                     if (j > 0) features.push(c.a);
                     features.push(c.d);
-                } else if (currentFeatureMode === 'asym') { // 非対称 (b, c)
+                } else if (currentFeatureMode === 'asym') { 
                     if (j > 0) features.push(c.b, c.c);
                 }
             }
@@ -859,7 +902,7 @@
             const endIndex = parts.indexOf('-1');
             if(endIndex === -1) continue;
             let codes = [];
-            for(let i=parts.length > 5 ? 5 : 1; i<endIndex; i++) { // SHAPE形式のヘッダー対応
+            for(let i=parts.length > 5 ? 5 : 1; i<endIndex; i++) { 
                 let val = parseInt(parts[i], 10);
                 if(val >= 0 && val <= 7) codes.push(val);
             }
@@ -876,8 +919,6 @@
     }
 
     function computeEFA(coords, numHarmonics) {
-        // [Reference] Kuhl, F.P. and Giardina, C.R. (1982) "Elliptic Fourier features of a closed contour"
-        // [Reference] 岩田洋佳 (1998) 「植物形態の楕円フーリエ記述子に基づく評価ならびに統計遺伝学的解析」式(2)〜(5)
         const K = coords.length - 1;
         let dt = new Array(K), t = new Array(K + 1);
         t[0] = 0;
@@ -906,7 +947,6 @@
     }
 
     function standardizeEFA(coeffs) {
-        // [Reference] 岩田洋佳 (1998) p.14-18 "2.4 楕円フーリエ記述子の標準化"
         if(coeffs.length === 0) return coeffs;
         let a1 = coeffs[0].a, b1 = coeffs[0].b, c1 = coeffs[0].c, d1 = coeffs[0].d;
         let theta1 = 0.5 * Math.atan2(2 * (a1*b1 + c1*d1), a1*a1 + c1*c1 - b1*b1 - d1*d1);
@@ -994,7 +1034,6 @@
             newFeatures[j] = globalPCA.means[j] + s1 * globalPCA.loadings1[j] + s2 * globalPCA.loadings2[j];
         }
 
-        // Featureベクトルからフル係数に復元（除外された定数項を補完）
         let newCoeffs = [];
         let fIdx = 0;
         for (let i = 0; i < globalMeanCoeffs.length; i++) {
@@ -1043,7 +1082,6 @@
 
         let scale = Math.min(w, h) * 0.35; 
         
-        // 1. Mean Shape (Gray Dashed)
         let meanPts = getPts(globalMeanCoeffs);
         ctx.beginPath();
         for(let i=0; i<meanPts.length; i++) {
@@ -1055,7 +1093,6 @@
         ctx.strokeStyle = '#bdc3c7'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]); ctx.stroke();
         ctx.setLineDash([]);
 
-        // 2. Current Shape (Blue Solid)
         let curPts = getPts(coeffs);
         ctx.beginPath();
         for(let i=0; i<curPts.length; i++) {
@@ -1196,8 +1233,6 @@
     }
 
     function performClustering(data, sampleNames, distType, linkType) {
-        // [Reference] 新納浩幸 (2007) 『Rで学ぶクラスタ解析』
-        // 階層的クラスタリング: Lance-Williams Update Formula に基づくR言語(hclust)互換の距離更新エンジン
         const n = data.length;
         let distMatrix = [];
         for (let i = 0; i < n; i++) {
@@ -1206,7 +1241,7 @@
                 if (i === j) distMatrix[i][j] = 0;
                 else if (i > j) {
                     let d = calcDistance(data[i], data[j], distType);
-                    if (linkType === 'ward') d = d * d; // Ward法では距離の平方を初期値とする
+                    if (linkType === 'ward') d = d * d; 
                     distMatrix[i][j] = d;
                 }
             }
@@ -1233,7 +1268,6 @@
             let cI = clusters[mergeI], cJ = clusters[mergeJ];
             cI.active = false; cJ.active = false;
 
-            // ★ Lance-Williams更新式（UPGMA）の高さ算出の厳格化
             let newCluster = {
                 id: clusters.length, name: `Node${clusters.length}`, size: cI.size + cJ.size,
                 active: true, left: cI, right: cJ,
@@ -1247,7 +1281,6 @@
                 let d_ik = distMatrix[cI.id][clusters[k].id], d_jk = distMatrix[cJ.id][clusters[k].id], d_ij = minDist;
                 let ni = cI.size, nj = cJ.size, nk = clusters[k].size, newDist = 0;
 
-                // Lance-Williams 更新式
                 if (linkType === 'upgma') newDist = (ni * d_ik + nj * d_jk) / (ni + nj);
                 else if (linkType === 'complete') newDist = Math.max(d_ik, d_jk);
                 else if (linkType === 'single') newDist = Math.min(d_ik, d_jk);
