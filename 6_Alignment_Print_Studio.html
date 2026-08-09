@@ -1,4 +1,3 @@
-<!-- [Absolute-Zero] セクション1/1 完了。省略なしで続行 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -84,9 +83,10 @@
             align-items: center; 
             gap: 8px; 
         }
-        .header h1 svg.header-icon {
-            width: 24px;
-            height: 24px;
+        .header h1 svg {
+            width: 20px; 
+            height: 20px; 
+            margin-right: 4px; 
             flex-shrink: 0;
         }
         .header-titles {
@@ -159,12 +159,6 @@
         }
 
         /* 共通 UI コンポーネント */
-        .input-wrapper {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
         .drop-zone { 
             border: 2px dashed var(--border-color); 
             border-radius: 8px; 
@@ -195,6 +189,16 @@
         }
         .drop-zone svg {
             flex-shrink: 0;
+        }
+        
+        #fileInput {
+            display: none;
+        }
+
+        .input-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
         
         textarea { 
@@ -254,6 +258,15 @@
             align-items: center;
             gap: 6px;
         }
+
+        #fontSizeDisplay {
+            color: var(--primary-action);
+            min-width: 45px;
+            text-align: right;
+            font-size: 14px;
+            font-family: 'Courier New', Consolas, monospace;
+            display: inline-block; 
+        }
         
         input[type="range"] { 
             width: 100px; 
@@ -275,14 +288,6 @@
         input[type="text"].keyword-input:focus { 
             border-color: var(--danger); 
             box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2); 
-        }
-
-        #fontSizeDisplay {
-            color: var(--primary-action);
-            width: 60px; /* 固定幅によりpt変更時の横揺れ・ガタつきを防止 */
-            text-align: right;
-            font-size: 14px;
-            font-family: 'Courier New', Consolas, monospace;
         }
         
         .radio-group { 
@@ -386,16 +391,13 @@
             pointer-events: auto; 
         } 
         
-        /* 広すぎるスコープ問題を解決: .rationale-text の直下の子要素のみを見出しと判定しブロック化 */
-        .rationale-text > strong { 
+        /* 見出し用の専用スコープを適用し、本文の強調と切り離す */
+        .rationale-text strong.section-title { 
             color: #d35400; 
             display: block;
             margin-bottom: 4px;
             font-size: 12px;
-        }
-        .rationale-text p {
-            margin: 0;
-        }
+        } 
         
         .rationale-text::after { 
             content: ''; 
@@ -441,8 +443,8 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.02); 
         }
         
-        /* 広すぎるスコープ問題を解決: .bench-tip の直下の子要素のみを見出しと判定しFlex化 */
-        .bench-tip > strong { 
+        /* 見出し用の専用スコープを適用し、本文の強調と切り離す */
+        .bench-tip strong.section-title { 
             color: #2980b9; 
             display: flex;
             align-items: center;
@@ -450,11 +452,8 @@
             margin-bottom: 4px;
             font-size: 13px;
         }
-        .bench-tip > strong svg {
+        .bench-tip strong.section-title svg {
             flex-shrink: 0;
-        }
-        .bench-tip p {
-            margin: 0;
         }
 
         /* トースト通知 */
@@ -526,12 +525,12 @@
             border-color: transparent transparent rgba(44, 62, 80, 0.95) transparent; 
         }
 
-        /* プレビューパネル専用の背景色設定 (帯とラインはcontrol-panelで共通化) */
+        /* プレビューパネル専用の背景色設定 */
         .preview-panel-body {
             padding: 24px;
             display: flex;
             justify-content: center;
-            background: #e5e7eb; /* 紙を際立たせるための背景コントラスト */
+            background: #e5e7eb; 
         }
         
         .paper-preview { 
@@ -615,7 +614,6 @@
             .no-print { display: none !important; }
             .main-content { padding: 0; gap: 0; display: block; max-width: none; }
             
-            /* プレビューパネルの装飾を消し、中身だけを印刷する */
             .control-panel.preview-panel { 
                 border: none; 
                 box-shadow: none; 
@@ -636,12 +634,16 @@
     </style>
 </head>
 <body>
-
+<!-- [Absolute-Zero] セクション1/1 完了。省略なしで続行 -->
 <div class="header-container no-print">
     <div class="header">
         <div class="header-titles">
             <h1>
-                <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>
+                <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                    <path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/>
+                    <path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/>
+                    <path d="M10 7.5h4M10 16.5h4"/>
+                </svg>
                 Alignment Print Studio
             </h1>
             <p>Bio-Edu Suite: Phase EXTRA / Smart Paging & Formatting for CLUSTAL Data</p>
@@ -659,16 +661,15 @@
         
         <div class="control-panel-body">
             <div id="rat_print" class="rationale-text">
-                <strong>【根拠：なぜ論文用の書式ツールが必要なのか？】</strong>
-                <p>
-                    ・アライメント結果を「60塩基ごとのブロック」に分けて表示するCLUSTAL形式は、論文や学会発表における世界標準フォーマットです。<br>
-                    ・このブロックが、ページをまたいで「上半分が1ページ目、下半分が2ページ目」に分断されることは、読み手を極度に混乱させるため<strong>論文の図表ルールとして絶対にNG</strong>です。<br>
-                    ・このツールは、指定したキーワードを使って「ここまでが1ブロック」と認識し、絶対に途中で改ページさせない（<code>page-break-inside: avoid</code>）魔法のレイアウトを自動生成します。
-                </p>
+                <!-- .section-title により見出し専用スタイルを適用し、本文の強調タグはスコープ外にしてブラウザデフォルトのboldを効かせる -->
+                <strong class="section-title">【根拠：なぜ論文用の書式ツールが必要なのか？】</strong>
+                ・アライメント結果を「60塩基ごとのブロック」に分けて表示するCLUSTAL形式は、論文や学会発表における世界標準フォーマットです。<br>
+                ・このブロックが、ページをまたいで「上半分が1ページ目、下半分が2ページ目」に分断されることは、読み手を極度に混乱させるため<strong>論文の図表ルールとして絶対にNG</strong>です。<br>
+                ・このツールは、指定したキーワードを使って「ここまでが1ブロック」と認識し、絶対に途中で改ページさせない（<code>page-break-inside: avoid</code>）魔法のレイアウトを自動生成します。
             </div>
 
             <div class="desc-text">
-                Bio-Edu Suiteのアライメントアプリで作成した塩基配列・アミノ酸配列のアライメント結果を入力してください。<br>
+                Bio-Edu Suiteのアライメントアプリで作成した塩基配列のアライメント結果を入力してください。
                 指定したキーワードを検知してブロック化し、A4用紙の底辺で配列が真っ二つに分断されるのを防ぎます。
             </div>
 
@@ -676,7 +677,7 @@
                 <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" data-tooltip="ここをクリックするか、ファイルをドラッグ＆ドロップして塩基配列・アミノ酸配列のデータを読み込みます">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
                     <span>ここをクリック、またはアライメントデータをドラッグ＆ドロップ</span>
-                    <input type="file" id="fileInput" style="display: none;" accept=".fasta,.txt,.aln">
+                    <input type="file" id="fileInput" accept=".fasta,.txt,.aln">
                 </div>
 
                 <textarea id="inputText" placeholder="塩基配列またはアミノ酸配列のアライメント結果（CLUSTAL形式など）をここに貼り付け（Ctrl+V）てください。"></textarea>
@@ -684,7 +685,7 @@
             
             <div class="settings-grid">
                 <div class="setting-item">
-                    <span>終端:</span>
+                    <span>終端キー:</span>
                     <input type="text" id="breakKeyword" class="keyword-input" value="Primer_R" oninput="renderText()" data-tooltip="このキーワードを含む行を1つのブロックの終端（改ページ禁止）と認識します">
                 </div>
 
@@ -713,16 +714,14 @@
             </div>
 
             <div class="bench-tip">
-                <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（等幅フォントの絶対ルール）</strong>
-                <p>
-                    塩基配列やアミノ酸配列をWordやPowerPointにコピペする際、Arialや游ゴシックなどの「プロポーショナルフォント（文字ごとに幅が違うフォント）」を使うと、<strong>縦のラインが完全にズレてしまいデータが台無しになります。</strong><br>
-                    本ツールは、強制的に「Courier New」などの等幅フォントを適用するため、コピー＆ペーストのミスを防ぐことができます。
-                </p>
+                <!-- .section-title により見出し専用スタイルを適用し、本文の強調タグはスコープ外にしてブラウザデフォルトのboldを効かせる -->
+                <strong class="section-title"><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（等幅フォントの絶対ルール）</strong>
+                塩基配列やアミノ酸配列をWordやPowerPointにコピペする際、Arialや游ゴシックなどの「プロポーショナルフォント（文字ごとに幅が違うフォント）」を使うと、<strong>縦のラインが完全にズレてしまいデータが台無しになります。</strong>
+                本ツールは、強制的に「Courier New」などの等幅フォントを適用するため、コピー＆ペーストのミスを防ぐことができます。
             </div>
         </div>
     </div>
 
-    <!-- プレビューエリアもコントロールパネルと全く同じ「帯とライン」の構造に統一 -->
     <div class="control-panel preview-panel">
         <h2 class="no-print">Ⅱ. 印刷プレビュー (A4用紙イメージ)</h2>
         <div class="control-panel-body preview-panel-body">
@@ -992,7 +991,6 @@
         styleTag.innerHTML = `@media print { @page { size: A4 ${orientation}; margin: 15mm; } }`;
     }
 
-    // 消失していたデモ用変数の完全復元（アセット保護）
     const demoText = `CLUSTAL formatted alignment by DNA Alignment Studio v3.14 (Bio-Edu Suite)
 
 Primer_F_L14841 ------------------------------------------------------------ 0
