@@ -1,774 +1,763 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Central Dogma Simulator v1.8 | Bio-Edu Suite</title>
-    <style>
-        *, *::before, *::after { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
-        
-        /* 共通ヘッダー */
-        .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 30; flex-shrink: 0; }
-        .header { width: 100%; max-width: 1400px; padding: 10px 20px; color: white; display: flex; flex-direction: column; position: relative; }
-        .header h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 1px; color: #fff; }
-        .header p { margin: 4px 0 0 0; font-size: 11px; color: #1abc9c; font-weight: 600; letter-spacing: 0.5px; }
-        .version-badge { position: absolute; right: 20px; top: 15px; background: #34495e; color: #1abc9c; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid #1abc9c; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🧊 Central Dogma Simulator v31.0 | Bio-Edu Suite</title>
+  <style>
+  /* テーマカラー規格（ガイドライン第3項） */
+  :root {
+    /* 【共通】ベースカラー・ステータスカラー */
+    --primary: #2c3e50; /* ダークネイビー (主要テキスト) */
+    --secondary: #34495e; /* ネイビー (サブヘッダー) */
+    --bg-color: #f0f3f4; /* ライトグレー (背景) */
+    --card-bg: #ffffff; /* ホワイト (カード背景) */
+    --text-main: #2c3e50; /* メインテキスト */
+    --text-muted: #7f8c8d; /* 補足テキスト */
+    --border-color: #bdc3c7; /* ボーダー */
+    --success: #27ae60; /* 成功・保存 */
+    --danger: #e74c3c; /* エラー・警告 */
+    --warning: #f39c12; /* ヒント・教育ポップオーバー */
 
-        /* 2カラムレイアウト */
-        .main-content { width: 100%; max-width: 1400px; margin: 0 auto; padding: 15px; display: grid; grid-template-columns: 380px 1fr; gap: 15px; align-items: start; flex: 1; }
-        
-        /* 左側コントロールパネル */
-        .control-panel { display: flex; flex-direction: column; gap: 15px; position: sticky; top: 15px; }
-        /* 右側ビューアエリア */
-        .right-panel { display: flex; flex-direction: column; gap: 15px; flex: 1; min-width: 0; }
-        
-        .card { background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; border-top: 4px solid #3498db; }
-        .card-header { background: #34495e; color: white; padding: 10px 15px; font-size: 13px; font-weight: bold; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 5px;}
-        .card-body { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+    /* 【アプリ個別】フェーズカラー (Phase 6) */
+    --phase-color: #e67e22;
+    --phase-color-hover: #d35400;
+  }
 
-        /* 教育用パネル */
-        .rationale-btn { background: #1abc9c; color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; }
-        .rationale-btn:hover { background: #16a085; transform: scale(1.1); }
-        .rationale-text { display: none; background: #fef9e7; border: 1px solid #f39c12; padding: 10px; border-radius: 4px; font-size: 11px; color: #7e5109; margin-bottom: 5px; line-height: 1.5; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
+  *, *::before, *::after { box-sizing: border-box; }
+  
+  /* ガイドライン第11項① タイポグラフィ */
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Noto Sans JP'; font-size: 14px; background-color: var(--bg-color); color: var(--text-main); margin: 0; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
+  
+  /* ガイドライン第5項 改行崩れ・テキスト折り返しの補正 */
+  body, .card, p, div, .bench-tip, .step-up-card, .rationale-text, .assist-panel, .dynamic-hint { word-break: normal; overflow-wrap: anywhere; line-height: 1.6; }
+  .label-title, .no-wrap { white-space: nowrap; }
 
-        .toolbar-row { display: flex; width: 100%; gap: 6px; align-items: center; flex-wrap: wrap; }
-        .step-label { font-size: 12px; font-weight: bold; color: #e67e22; min-width: 70px; display: flex; align-items: center; }
+  /* 共通ユーティリティクラス（インラインスタイル撲滅用） */
+  .card-title-group { display: flex; align-items: center; }
+  .ml-auto { margin-left: auto; }
+  .empty-message { color: var(--text-muted); padding: 20px; width: 100%; text-align: center; }
 
-        .btn { background: #fdfefe; border: 1px solid #bdc3c7; padding: 8px 12px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 5px; border-radius: 4px; font-weight: bold; transition: all 0.2s; color: #2c3e50; white-space: nowrap; flex: 1; }
-        .btn:hover:not(:disabled) { background: #eaf2f8; border-color: #3498db; color: #2980b9; }
-        .btn:disabled { color: #a0a0a0; cursor: not-allowed; background: #f4f6f6; border-color: #dcdde1; opacity: 0.6; }
-        .btn-primary { background: #3498db; color: white; border-color: #2980b9; box-shadow: 0 3px 0 #2980b9; }
-        .btn-primary:active:not(:disabled) { transform: translateY(3px); box-shadow: none; }
-        
-        .btn-action-transcription { background: #e67e22; color: white; border-color: #d35400; box-shadow: 0 3px 0 #d35400; font-size: 13px; padding: 10px;}
-        .btn-action-translation { background: #e84393; color: white; border-color: #d63031; box-shadow: 0 3px 0 #d63031; font-size: 13px; padding: 10px;}
-        .btn-action-transcription:active:not(:disabled), .btn-action-translation:active:not(:disabled) { transform: translateY(3px); box-shadow: none; }
+  /* ガイドライン第5項・第12項 共通ヘッダーとZ-index階層 */
+  .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid var(--phase-color); display: flex; justify-content: center; position: sticky; top: 0; z-index: 30; box-shadow: 0 2px 10px rgba(0,0,0,0.15); flex-shrink: 0; }
+  .header { width: 100%; max-width: 1400px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; position: relative; }
+  .header h1 { margin: 0; font-size: 20px; font-weight: 700; color: #fff; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
+  .header p { margin: 4px 0 0 0; font-size: 11px; color: var(--phase-color); font-weight: 600; letter-spacing: 0.5px; }
+  .version-badge { position: absolute; right: 20px; top: 15px; background: var(--secondary); color: var(--phase-color); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid var(--phase-color); }
 
-        .primer-input { padding: 6px 8px; font-family: monospace; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 12px; background: #fafafa; outline: none; width: 100%; }
-        .primer-input:focus { border-color: #3498db; background: #fff; }
+  /* ガイドライン第10項 左右分割レイアウトと余白 */
+  .main-content { width: 100%; max-width: 1400px; margin: 0 auto; padding: 24px; display: grid; grid-template-columns: 35fr 65fr; gap: 24px; align-items: start; flex: 1; }
+  
+  .control-panel { display: flex; flex-direction: column; gap: 24px; position: sticky; top: 100px; }
+  .right-panel { display: flex; flex-direction: column; gap: 24px; flex: 1; min-width: 0; }
+  
+  .card { background: var(--card-bg); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: visible !important; display: flex; flex-direction: column; border-top: 4px solid var(--phase-color); }
+  .card-header { background: var(--secondary); color: white; padding: 12px 16px; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; position: relative; }
+  .card-body { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
 
-        .drop-zone { border: 2px dashed #bdc3c7; border-radius: 6px; padding: 12px; text-align: center; background: #fafbfc; transition: 0.2s; cursor: pointer; flex: 1; width: 100%; }
-        .drop-zone:hover, .drop-zone.dragover { background: #e8f8f5; border-color: #1abc9c; }
-        .drop-zone p { margin: 0; font-size: 11px; color: #7f8c8d; font-weight: bold; pointer-events: none;}
-        input[type="file"] { display: none; }
+  /* ガイドライン第2項 インラインSVGアイコン用共通カラークラス */
+  .svg-hint { color: var(--warning); }
+  .svg-info { color: inherit; }
+  .svg-danger { color: var(--danger); }
+  .header-icon { width: 24px; height: 24px; flex-shrink: 0; }
+  .btn-icon { width: 16px; height: 16px; flex-shrink: 0; margin-right: 4px; }
 
-        textarea { width: 100%; height: 100px; font-family: 'Courier New', Consolas, monospace; font-size: 11px; padding: 8px; border: 1px solid #bdc3c7; border-radius: 4px; resize: vertical; outline: none; background: #fdfefe; }
-        textarea:focus { border-color: #3498db; box-shadow: 0 0 0 3px rgba(52,152,219,0.2); }
+  /* ガイドライン第6項② 現場のコツ専用デザイン */
+  .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px 16px; border-radius: 0 4px 4px 0; font-size: 12px; color: var(--text-main); line-height: 1.6; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+  .bench-tip strong { color: #2980b9; display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 13px; }
 
-        /* 💡 修正ポイント: mRNAパネルの「レイアウトシフト」防止（高さを初期状態から完全に固定） */
-        .result-box { background: #1a252f; border-radius: 4px; padding: 12px; color: #ecf0f1; font-family: 'Courier New', Courier, monospace; overflow-x: auto; font-size: 14px; line-height: 1.6; height: 180px; overflow-y: auto; word-wrap: break-word; white-space: pre-wrap; box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);}
-        
-        /* mRNA 塩基のカラーコーディング */
-        .rna-base { font-weight: bold; letter-spacing: 1px; }
-        .rna-A { color: #2ecc71; }
-        .rna-U { color: #e74c3c; }
-        .rna-G { color: #f1c40f; }
-        .rna-C { color: #3498db; }
-        .rna-gap { color: #7f8c8d; }
+  /* ガイドライン第6項⑥ 動的ヒントのフラットデザイン */
+  .dynamic-hint { background: #fdf2f2; border: 1px solid #f8d7da; color: #721c24; padding: 12px 16px; border-radius: 6px; font-weight: bold; font-size: 12px; text-align: left; }
 
-        .codon-container { display: flex; flex-wrap: wrap; gap: 5px; background: #fff; padding: 15px; border-radius: 4px; border: 1px solid #bdc3c7; max-height: calc(100vh - 400px); min-height: 250px; overflow-y: auto; padding-bottom: 20px; align-content: flex-start;}
-        
-        /* 💡 修正ポイント: アミノ酸ブロックの幅を完全に固定し、縦横グリッド状にビシッと揃える */
-        .codon-box { display: flex; flex-direction: column; align-items: center; border: 1px solid #dcdde1; border-radius: 4px; background: #fdfefe; box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: relative; cursor: default; transition: 0.2s; width: 44px; flex-shrink: 0; box-sizing: border-box;}
-        .mRNA-codon { background: #ebf5fb; color: #2980b9; padding: 3px 0; width: 100%; text-align: center; font-weight: bold; font-size: 11px; border-bottom: 1px solid #dcdde1; letter-spacing: 1px; border-radius: 4px 4px 0 0; box-sizing: border-box;}
-        .amino-acid { padding: 5px 0; width: 100%; text-align: center; font-weight: 900; font-size: 15px; color: #2c3e50; border-radius: 0 0 4px 4px; box-sizing: border-box;}
-        
-        /* アミノ酸の性質色（リファレンスシートに完全同期） */
-        .aa-nonpolar .amino-acid { background: #fef3c7; color: #92400e; }
-        .aa-polar .amino-acid { background: #d1fae5; color: #065f46; }
-        .aa-acidic .amino-acid { background: #ffe4e6; color: #9f1239; }
-        .aa-basic .amino-acid { background: #dbeafe; color: #1e40af; }
-        .aa-stop .amino-acid { background: #e74c3c; color: white; }
+  /* ガイドライン第6項① 根拠 (Rationale ポップオーバー) */
+  .rationale-btn { background: var(--phase-color); color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; flex-shrink: 0; }
+  .rationale-btn:hover { transform: scale(1.1); filter: brightness(1.2); }
+  
+  .rationale-text { position: fixed; background: #fef9e7; border: 1px solid var(--warning); padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: max-content; max-width: min(320px, calc(100vw - 24px)); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; }
+  .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
+  .rationale-text strong { color: #d35400; display: block; margin-bottom: 4px; font-size: 12px; }
+  .rationale-text::after { content: ''; position: absolute; border-width: 6px; border-style: solid; left: var(--arrow-left, 50%); }
+  .rationale-text.arrow-top::after { top: -12px; border-color: transparent transparent #fef9e7 transparent; }
+  .rationale-text.arrow-bottom::after { bottom: -12px; border-color: #fef9e7 transparent transparent transparent; }
+  .rationale-text::before { content: ''; position: absolute; border-width: 7px; border-style: solid; left: calc(var(--arrow-left, 50%) - 1px); }
+  .rationale-text.arrow-top::before { top: -14px; border-color: transparent transparent var(--warning) transparent; }
+  .rationale-text.arrow-bottom::before { bottom: -14px; border-color: var(--warning) transparent transparent transparent; }
 
-        .codon-start { border: 2px solid #27ae60; }
-        .codon-start .mRNA-codon { background: #27ae60; color: white; border-bottom: none; }
-        
-        /* 💡 修正ポイント: ストップコドンは例外として「STOP」が入るため幅を広げる */
-        .codon-stop { border: 1px solid #c0392b; width: 56px; }
-        .codon-stop .mRNA-codon { background: #c0392b; color: white; border-bottom: none; }
+  /* ガイドライン第6項④ カスタムツールチップ */
+  .custom-tooltip { position: fixed; background: rgba(44, 62, 80, 0.95); color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 11px; pointer-events: none; z-index: 9999; opacity: 0; transition: opacity 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-weight: normal; line-height: 1.4; display: none; white-space: normal; width: max-content; max-width: min(320px, 90vw); text-align: center; }
+  .custom-tooltip::after { content: ''; position: absolute; border-width: 5px; border-style: solid; left: 50%; transform: translateX(-50%); }
+  .custom-tooltip.show-top::after { top: 100%; border-color: rgba(44, 62, 80, 0.95) transparent transparent transparent; }
+  .custom-tooltip.show-bottom::after { bottom: 100%; border-color: transparent transparent rgba(44, 62, 80, 0.95) transparent; }
 
-        /* 変異強調スタイル */
-        .codon-mutated { border: 2px solid #e74c3c !important; box-shadow: 0 0 8px rgba(231, 76, 60, 0.6); animation: pulse 1.5s infinite; z-index: 10; transform: scale(1.05); }
-        .codon-mutated .mRNA-codon { background: #fadbd8; color: #c0392b; }
-        .mut-badge { position: absolute; top: -8px; right: -8px; font-size: 10px; background: #e74c3c; color: white; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3); font-weight: bold; z-index: 11; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); } 70% { box-shadow: 0 0 0 6px rgba(231, 76, 60, 0); } 100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); } }
+  /* ガイドライン第4項・第11項② ボタン形状とカラー意味論 */
+  .btn { border: none; padding: 8px 16px; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; font-weight: bold; transition: all 0.2s; white-space: nowrap; box-shadow: none; width: fit-content; }
+  .btn:hover:not(:disabled) { box-shadow: 0 2px 4px rgba(0,0,0,0.1); filter: brightness(1.05); }
+  .btn:active:not(:disabled) { transform: scale(0.98); }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(50%); box-shadow: none; }
+  .btn-primary { background: #3498db; color: white; }
+  .btn-secondary { background-color: #fdfefe; color: #2c3e50; border: 1px solid #bdc3c7; }
+  .btn-secondary:hover:not(:disabled) { background-color: #eaf2f8; border-color: #3498db; color: #2980b9; }
+  .btn-block { width: 100%; }
 
-        /* ツールチップ */
-        .codon-box[data-tooltip]:hover::after { content: attr(data-tooltip); position: absolute; top: 100%; left: 50%; transform: translateX(-50%); background: #2c3e50; color: #ecf0f1; padding: 6px 10px; border-radius: 4px; font-size: 11px; white-space: pre; z-index: 100; text-align: left; pointer-events: none; box-shadow: 0 4px 10px rgba(0,0,0,0.3); margin-top: 5px; line-height: 1.4; min-width: max-content; border: 1px solid #34495e; }
-        .codon-box[data-tooltip]:hover::before { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border-width: 5px; border-style: solid; border-color: transparent transparent #2c3e50 transparent; z-index: 100; }
+  /* 入力フォーム類 */
+  .form-group { display: flex; flex-direction: column; gap: 8px; }
+  .form-group label { font-size: 13px; font-weight: 600; color: var(--secondary); }
+  .drop-zone { border: 2px dashed var(--border-color); border-radius: 8px; padding: 16px; text-align: center; background: #f8f9fa; transition: 0.2s; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .drop-zone:hover, .drop-zone.dragover { background: #e8f8f5; border-color: var(--phase-color); }
+  .drop-zone-content { display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .drop-zone p { margin: 0; font-size: 12px; color: var(--text-muted); font-weight: bold; pointer-events: none;}
+  input[type="file"] { display: none; }
 
-        .legend-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: #fafafa; padding: 8px; border-radius: 4px; border: 1px solid #bdc3c7; font-size: 10px; }
-        .legend-item { display: flex; align-items: center; gap: 4px; font-weight: bold; color: #2c3e50; }
-        .legend-color { width: 12px; height: 12px; border-radius: 3px; border: 1px solid #aeb6bf; display: inline-block; }
+  textarea { width: 100%; height: 100px; font-family: 'Courier New', Consolas, monospace; font-size: 12px; padding: 12px; border: 1px solid var(--border-color); border-radius: 4px; resize: vertical; outline: none; background: #fdfefe; transition: 0.2s; }
+  textarea:focus { border-color: var(--phase-color); box-shadow: 0 0 0 2px rgba(230, 126, 34, 0.2); }
 
-        .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 8px 12px; font-size: 11px; color: #2c3e50; line-height: 1.5; margin-bottom: 5px;}
-        .bench-tip strong { color: #2980b9; font-size: 11px; }
-        
-        .mega-invite { background: #fff8e1; border: 1px solid #f5b041; padding: 12px 15px; font-size: 12px; color: #7e5109; line-height: 1.5; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
-        .mega-invite strong { color: #d35400; font-size: 13px; display: block; margin-bottom: 4px;}
+  /* 解析結果エリア共通 */
+  .result-box { background: #1a252f; border-radius: 4px; padding: 16px; color: #ecf0f1; font-family: 'Courier New', Courier, monospace; overflow-x: auto; overflow-y: auto; font-size: 14px; line-height: 1.6; height: 200px; word-wrap: break-word; white-space: pre-wrap; box-shadow: inset 0 2px 10px rgba(0,0,0,0.5); }
+  
+  /* マスター・アライメント用クラス群 (JS動的生成用) */
+  .alignment-viewer { background: #0b0b0b; padding: 16px; border-radius: 4px; overflow-x: auto; overflow-y: hidden; margin-bottom: 8px; }
+  .alignment-row { display: flex; align-items: center; height: 26px; white-space: nowrap; font-family: 'Courier New', Consolas, monospace; font-size: 14px; }
+  .seq-name { width: 140px; color: #f1c40f; font-size: 12px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Noto Sans JP'; overflow: hidden; text-overflow: ellipsis; text-align: left; margin-right: 16px; flex-shrink: 0; }
+  .seq-prefix { color: #f1c40f; font-weight: bold; width: 30px; text-align: right; margin-right: 8px; flex-shrink: 0; }
+  .seq-suffix { color: #f1c40f; font-weight: bold; width: 30px; margin-left: 8px; flex-shrink: 0; }
+  .seq-info { color: #7f8c8d; font-size: 11px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Noto Sans JP'; margin-left: 16px; flex-shrink: 0; }
+  .compare-warning { color: var(--warning); font-weight: bold; margin-bottom: 10px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Noto Sans JP'; }
+  .unaligned-alert { color: var(--danger); margin-left: 10px; }
+  .seq-truncated { color: #7f8c8d; letter-spacing: normal; }
+  .consensus-match { color: #ecf0f1; }
+  .consensus-mismatch { color: transparent; }
 
-        .status-bar { background: #2c3e50; color: white; padding: 8px 20px; font-size: 12px; display: flex; justify-content: space-between; font-weight: 600; letter-spacing: 0.5px; z-index: 100; flex-shrink: 0; margin-top: auto; position: sticky; bottom: 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.15);}
-        .footer { background: #1a252f; padding: 10px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; flex-shrink: 0; }
-        
-        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; width: 12px; height: 12px; animation: spin 1s linear infinite; display: none; margin-left: 5px; vertical-align: middle;}
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  .rna-base { font-weight: bold; letter-spacing: 1px; }
+  .rna-A { color: #2ecc71; }
+  .rna-U { color: #e74c3c; }
+  .rna-G { color: #f1c40f; }
+  .rna-C { color: #3498db; }
+  .rna-gap { color: #7f8c8d; }
+  .rna-N { color: #95a5a6; }
 
-        /* UI/UX共通規格の追記 (v1.5) */
-        .form-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 5px; }
-        .form-group label { font-size: 12px; font-weight: 600; color: #7f8c8d; }
-        .input-row { display: flex; gap: 10px; align-items: stretch; width: 100%; }
-        .input-row > input { flex: 1; }
-        .input-row .btn-secondary { flex: 0 0 auto; white-space: nowrap; background-color: #ecf0f1; color: #34495e; border: 1px solid #bdc3c7; padding: 6px 12px; font-size: 12px; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s;}
-        .input-row .btn-secondary:hover:not(:disabled) { background-color: #e0e6ed; }
-        .rna-N { color: #95a5a6; } /* IUPACコード用 */
-        .aa-unknown .amino-acid { background: #e0e0e0; color: #7f8c8d; }
+  .codon-container { display: flex; flex-wrap: wrap; gap: 5px; background: #fff; padding: 16px; border-radius: 4px; border: 1px solid var(--border-color); min-height: 250px; overflow-y: auto; align-content: flex-start;}
+  .codon-box { display: flex; flex-direction: column; align-items: center; border: 1px solid #dcdde1; border-radius: 4px; background: #fdfefe; box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: relative; cursor: default; transition: 0.2s; width: 44px; flex-shrink: 0;}
+  .mRNA-codon { background: #ebf5fb; color: #2980b9; padding: 4px 0; width: 100%; text-align: center; font-weight: bold; font-size: 11px; border-bottom: 1px solid #dcdde1; letter-spacing: 1px; border-radius: 4px 4px 0 0;}
+  .amino-acid { padding: 6px 0; width: 100%; text-align: center; font-weight: 900; font-size: 15px; color: #2c3e50; border-radius: 0 0 4px 4px;}
+  
+  .aa-nonpolar .amino-acid { background: #fef3c7; color: #92400e; }
+  .aa-polar .amino-acid { background: #d1fae5; color: #065f46; }
+  .aa-acidic .amino-acid { background: #ffe4e6; color: #9f1239; }
+  .aa-basic .amino-acid { background: #dbeafe; color: #1e40af; }
+  .aa-stop .amino-acid { background: #e74c3c; color: white; }
+  .aa-unknown .amino-acid { background: #e0e0e0; color: #7f8c8d; }
 
-        /* スマホ向けレイアウトの修正 (パネルが隠れる問題を解決) */
-        @media screen and (max-width: 900px) { 
-            .main-content { grid-template-columns: 1fr; padding: 10px; } 
-            
-            /* スマホ時にはstickyを解除し、自然に下までスクロール可能にする */
-            .control-panel { position: static; } 
-            
-            /* スマホでは内部スクロールではなく、ページ全体のスクロールを利用するため高さを解放 */
-            .codon-container { max-height: none; min-height: 200px; padding-bottom: 10px; }
-        }
+  .codon-start { border: 2px solid #27ae60; }
+  .codon-start .mRNA-codon { background: #27ae60; color: white; border-bottom: none; }
+  .codon-stop { border: 1px solid #c0392b; width: 56px; }
+  .codon-stop .mRNA-codon { background: #c0392b; color: white; border-bottom: none; }
 
-        /* ツールチップ見切れ防止パッチ */
-        .codon-box[data-tooltip]:hover::after,
-        .codon-box[data-tooltip]:hover::before { display: none !important; }
-        #global-tooltip {
-            position: fixed; background: #2c3e50; color: #ecf0f1; padding: 6px 10px; border-radius: 4px; font-size: 11px; white-space: pre; z-index: 99999; text-align: left; pointer-events: none; box-shadow: 0 4px 10px rgba(0,0,0,0.3); line-height: 1.4; border: 1px solid #34495e; display: none; opacity: 0; transition: opacity 0.1s;
-        }
-        #global-tooltip.show-top::before {
-            content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); border-width: 5px; border-style: solid; border-color: #2c3e50 transparent transparent transparent;
-        }
-        #global-tooltip.show-bottom::before {
-            content: ''; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); border-width: 5px; border-style: solid; border-color: transparent transparent #2c3e50 transparent;
-        }
+  /* 突然変異強調スタイル */
+  .codon-mutated { border: 2px solid #e74c3c !important; box-shadow: 0 0 8px rgba(231, 76, 60, 0.6); animation: pulse 1.5s infinite; z-index: 10; transform: scale(1.05); }
+  .codon-mutated .mRNA-codon { background: #fadbd8; color: #c0392b; }
+  .mut-badge { position: absolute; top: -8px; right: -8px; font-size: 10px; background: #e74c3c; color: white; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3); font-weight: bold; z-index: 11; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); } 70% { box-shadow: 0 0 0 6px rgba(231, 76, 60, 0); } 100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); } }
 
-        /* ----------------------------------------------------
-           追加パッチ（UI/UX v1.6仕様・用語準拠・トースト対応）
-        ---------------------------------------------------- */
-        #toast { position: fixed; bottom: 50px; left: 50%; transform: translateX(-50%) translateY(100px); background: #27ae60; color: white; padding: 12px 24px; border-radius: 30px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 100000; pointer-events: none; white-space: pre-wrap; text-align: center; font-size: 13px; line-height: 1.5;}
-        #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .legend-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: #fafafa; padding: 12px; border-radius: 4px; border: 1px solid var(--border-color); font-size: 11px; }
+  .legend-title { grid-column: span 2; font-weight: bold; color: var(--text-muted); border-bottom: 1px solid var(--border-color); padding-bottom: 4px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-weight: bold; color: var(--text-main); }
+  .legend-color { width: 14px; height: 14px; border-radius: 3px; border: 1px solid #aeb6bf; display: inline-block; }
+  .bg-nonpolar { background: #fef3c7; }
+  .bg-polar { background: #d1fae5; }
+  .bg-acidic { background: #ffe4e6; }
+  .bg-basic { background: #dbeafe; }
 
-        /* 「?」ボタンのポップオーバー化 */
-        .card { overflow: visible !important; }
-        .card-header { position: relative; }
-        .rationale-text {
-            position: absolute;
-            top: 40px;
-            right: 0;
-            width: 320px;
-            z-index: 1000;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2) !important;
-        }
-        @media screen and (max-width: 900px) {
-            .rationale-text { right: auto; left: 0; width: 100%; }
-        }
-    </style>
+  /* ガイドライン第6項⑦ より高度な解析ツールへ枠 */
+  .step-up-card { background: #f8f9fa; border: 1px solid #d1d5db; padding: 20px; border-radius: 8px; margin-top: 24px; color: #2c3e50; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+  .step-up-card h3 { color: #2c3e50; margin-top: 0; font-size: 15px; display: flex; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 12px; }
+  .step-up-card h3 svg { margin-right: 8px; width: 20px; height: 20px; flex-shrink: 0; }
+  .step-up-card p { margin: 0; font-size: 13px; line-height: 1.6; }
+
+  /* ガイドライン第9項④ メタ情報書式 */
+  .status-bar { background: var(--primary); color: white; padding: 8px 24px; font-size: 12px; display: flex; justify-content: space-between; font-weight: 600; letter-spacing: 0.5px; z-index: 100; flex-shrink: 0; margin-top: auto; position: sticky; bottom: 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.15);}
+  .footer { background: #1a252f; padding: 12px 20px; text-align: center; font-size: 11px; color: var(--text-muted); letter-spacing: 1px; flex-shrink: 0; }
+  
+  /* ガイドライン第6項⑤ トースト通知 */
+  #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 12px 24px; border-radius: 30px; font-weight: bold; font-size: 13px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 100000; pointer-events: none; text-align: center; max-width: 90vw; word-break: auto-phrase; white-space: pre-wrap; }
+  #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  #toast.error { background: var(--danger); }
+  #toast.warning { background: var(--warning); color: #7e5109; }
+  #toast.info { background: var(--phase-color); }
+
+  /* スマホ向けレイアウト */
+  @media screen and (max-width: 900px) { 
+    .main-content { grid-template-columns: 1fr; padding: 16px; } 
+    .control-panel { position: static; } 
+    .codon-container { max-height: none; min-height: 200px; padding-bottom: 16px; }
+  }
+  </style>
 </head>
 <body>
 
 <div class="header-container">
-    <div class="header">
-        <h1>🧬 Central Dogma Simulator</h1>
-        <p>Bio-Edu Suite: Transcription, Translation & Mutation Detector</p>
-        <div class="version-badge">v1.8</div>
+  <div class="header">
+    <div>
+      <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>Central Dogma Simulator</h1>
+      <p>Bio-Edu Suite: Phase 6 / Transcription, Translation & Mutation Detector</p>
     </div>
+    <div class="version-badge">v31.0</div>
+  </div>
 </div>
 
 <div class="main-content">
+  
+  <div class="control-panel">
     
-    <!-- 左側：コントロールパネル -->
-    <div class="control-panel">
+    <!-- Ⅰ. データの読み込み -->
+    <div class="card">
+      <div class="card-header">
+        <span>Ⅰ. データの読み込み</span>
+      </div>
+      <div class="card-body">
         
-        <!-- 1. データ入力 -->
-        <div class="card">
-            <div class="card-header">⚙️ 1. データの読み込み</div>
-            <div class="card-body">
-                
-                <div id="inputHintDefault" class="bench-tip" style="background:#eafaf1; border-left-color:#27ae60;">
-                    <strong>💡 現場のコツ（比較モード）</strong><br>
-                    <strong>2つの塩基配列（野生型と突然変異体）</strong>を同時入力すると、自動で比較モードになり、翻訳時に変異箇所を検出してアプリ⑩へ同期します。
-                </div>
-                
-                <div id="inputHintCompare" class="bench-tip" style="background:#fdedec; border-left-color:#e74c3c; display:none;">
-                    <strong style="color:#c0392b;">🚨 比較解析の注意点（パイプライン連携）</strong><br>
-                    NCBI等から取得したDNAの塩基配列を複数そのまま比較すると、開始位置（UTR）のズレにより、翻訳フレームが狂って<strong>結果が全て変異（真っ赤）</strong>になることがあります。<br>
-                    正確に比較するには、必ず<strong>アプリ⑤（DNA Alignment Studio）</strong>でアライメントとトリミングを行ってから、データをここにペーストしてください。
-                </div>
-
-                <!-- Template_Reference_App 準拠のUIにパッチ適用 -->
-                <div class="form-group">
-                    <label>生データ (塩基配列 / アミノ酸配列)</label>
-                    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" data-tooltip="FASTA形式のファイルをドラッグ＆ドロップまたはクリックで読み込みます">
-                        <p>📁 ここをクリック、または FASTA形式の塩基配列をドラッグ＆ドロップ</p>
-                        <input type="file" id="fileInput" accept=".fasta,.fas,.txt,.seq" onchange="handleFileSelect(event)" multiple>
-                    </div>
-                </div>
-
-                <!-- 💡 プレースホルダーの汎用化 -->
-                <textarea id="dnaInput" placeholder="FASTA形式の塩基配列を入力してください" data-tooltip="FASTA形式のDNAの塩基配列をここに入力します"></textarea>
-            </div>
+        <div id="inputHintDefault" class="bench-tip">
+          <strong><svg class="svg-hint" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>【現場のコツ（比較モード）】</strong>
+          2つの塩基配列（野生型と突然変異体）を同時入力すると、自動で比較モードになり、翻訳時に突然変異箇所を検出してアプリ⑬へ同期します。
+        </div>
+        
+        <div id="inputHintCompare" class="dynamic-hint" style="display:none;">
+          【比較解析の注意点（パイプライン連携）】<br>
+          NCBI等から取得したDNAの塩基配列を複数そのまま比較すると、開始位置（UTR）のズレにより、翻訳フレームが狂って全て突然変異（真っ赤）として検出されることがあります。<br>
+          正確に比較するには、必ずアプリ⑤（DNA Alignment Studio）でアライメントとトリミングを行ってから、データをここにペーストしてください。
         </div>
 
-        <!-- 2. 転写コントロール -->
-        <div class="card" style="border-top-color: #e67e22;">
-            <div class="card-header" style="background:#34495e;">
-                <span>🧬 2. 転写</span>
-                <button class="rationale-btn" onclick="toggleRationale('rat_transcription')">?</button>
-                <div id="rat_transcription" class="rationale-text" style="border-color:#e67e22;">
-                    <strong>【なぜ転写するのか？】</strong><br>
-                    DNAは設計図の原本であり核内に厳重に保管されています。ポリペプチドを合成するリボソームは細胞質にあるため、「mRNA」という一時的なメモにコピー（TをUに置換）して持ち出します。<br><br>
-                    <strong>【💡 真核生物と原核生物の違い】</strong><br>
-                    大腸菌などの<strong>原核生物</strong>は核を持たないため、転写と翻訳が同じ場所で同時に進行します。一方、ヒトなどの<strong>真核生物</strong>では、転写直後のmRNA（前駆体）はそのままでは使えません。不要な部分（<strong>イントロン</strong>）を切り捨てる<strong>スプライシング</strong>や、両端の保護（5'キャップとポリAテール）という修飾を受けてから核外へ運び出されます。<br>
-                    <span style="color:#7f8c8d; font-size:10px;">（※本シミュレーターやNCBIの[NM_]から始まるデータは、既にスプライシング等の修飾が完了した成熟mRNAの塩基配列を前提としています）</span>
-                </div>
+        <div class="form-group">
+          <label>生データ (塩基配列 / アミノ酸配列)</label>
+          <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" data-tooltip="FASTA形式のファイルをドラッグ＆ドロップまたはクリックで読み込みます">
+            <div class="drop-zone-content">
+              <svg class="svg-info" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+              <p>ここをクリック、または FASTA形式の塩基配列をドラッグ＆ドロップ</p>
             </div>
-            <div class="card-body">
-                <!-- 💡 ボタンの簡略化 -->
-                <button class="btn btn-action-transcription" onclick="runTranscription()" style="width:100%;" data-tooltip="入力されたDNAの塩基配列をmRNAに転写します">転写</button>
-            </div>
+            <input type="file" id="fileInput" accept=".fasta,.fas,.txt,.seq" onchange="handleFileSelect(event)" multiple>
+          </div>
         </div>
 
-        <!-- 3. 翻訳コントロール＆凡例 -->
-        <div class="card" style="border-top-color: #e84393;">
-            <div class="card-header" style="background:#34495e;">
-                <span>🥩 3. 翻訳と変異の検出</span>
-                <button class="rationale-btn" onclick="toggleRationale('rat_translation')">?</button>
-                <div id="rat_translation" class="rationale-text" style="border-color:#e84393;">
-                    <strong>【DNAの突然変異がもたらす意味】</strong><br>アミノ酸が「親水性」から「疎水性」などの全く異なる性質に変わると、ポリペプチドの立体構造や機能が崩壊し、疾患の原因となります。
-                </div>
-            </div>
-            <div class="card-body">
-                <!-- 💡 ボタンの簡略化 -->
-                <button class="btn btn-action-translation" onclick="runTranslation()" id="btnTranslate" style="width:100%;" disabled data-tooltip="転写されたmRNAをアミノ酸配列に翻訳します">翻訳</button>
-
-                <div class="legend-panel">
-                    <span style="grid-column: span 2; font-weight: bold; color: #7f8c8d; border-bottom: 1px solid #bdc3c7; padding-bottom: 2px;">🎨 アミノ酸の化学的性質 (性質急変に注意)</span>
-                    <span class="legend-item"><span class="legend-color" style="background:#fef3c7;"></span>非極性 (疎水性)</span>
-                    <span class="legend-item"><span class="legend-color" style="background:#d1fae5;"></span>極性 (無電荷)</span>
-                    <span class="legend-item"><span class="legend-color" style="background:#ffe4e6;"></span>酸性 (-)</span>
-                    <span class="legend-item"><span class="legend-color" style="background:#dbeafe;"></span>塩基性 (+)</span>
-                </div>
-            </div>
-        </div>
-
+        <textarea id="dnaInput" placeholder="FASTA形式の塩基配列を入力してください" data-tooltip="FASTA形式のDNAの塩基配列をここに入力します"></textarea>
+      </div>
     </div>
 
-    <!-- 右側：結果表示ビューア -->
-    <div class="right-panel">
-        
-        <!-- mRNA ビューア -->
-        <div class="card" style="border-top-color: #f39c12;">
-            <div class="card-header" style="background:#34495e; color:#fff;">
-                <span>🧬 転写結果 (mRNA)</span>
-            </div>
-            <div class="card-body" style="padding:0;">
-                <div class="result-box" id="mrnaResult" style="border-radius:0 0 8px 8px;">
-                    <div style="color:#7f8c8d; padding: 20px; width:100%; text-align:center;">操作パネルから「転写」を実行してください。</div>
-                </div>
-            </div>
+    <!-- Ⅱ. 転写 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title-group">
+          <span>Ⅱ. 転写</span>
+          <button class="rationale-btn" onclick="toggleRationale(event, 'rat_transcription')">?</button>
         </div>
-
-        <!-- Protein ビューア -->
-        <div class="card" style="border-top-color: #27ae60;">
-            <div class="card-header" style="background:#34495e; color:#fff;">
-                <span>🥩 翻訳結果 (アミノ酸配列)</span>
-                <!-- 💡 ボタンの簡略化 -->
-                <button class="btn" style="padding: 2px 8px; font-size: 11px; margin-left: auto; width: auto; flex: 0 0 auto;" onclick="copyAminoAcids()" id="copyAaBtn" disabled data-tooltip="翻訳されたアミノ酸配列をクリップボードにコピーします">コピー</button>
-            </div>
-            <div class="card-body" style="padding:0;">
-                <div class="codon-container" id="proteinResult" style="border:none; border-bottom: 1px solid #bdc3c7; border-radius:0;">
-                    <div style="color:#7f8c8d; padding: 20px; width:100%; text-align:center;">転写後、操作パネルから「翻訳」を実行してください。</div>
-                </div>
-                <div id="mutationAlertContainer" style="display:none; margin: 15px; padding: 12px; border-radius: 4px; font-size: 12px; line-height: 1.5; border: 1px solid;"></div>
-            </div>
+        <div id="rat_transcription" class="rationale-text">
+          <strong>【根拠：なぜ転写するのか？】</strong>
+          ・DNAは設計図の原本であり核内に厳重に保管されています。ポリペプチドを合成するリボソームは細胞質にあるため、「mRNA」という一時的なメモにコピー（TをUに置換）して持ち出します。<br><br>
+          <strong>【参考：真核生物と原核生物の違い】</strong>
+          ・大腸菌などの原核生物は核を持たないため、転写と翻訳が同じ場所で同時に進行します。一方、ヒトなどの真核生物では、転写直後のmRNA（前駆体）はそのままでは使えません。不要な部分（イントロン）を切り捨てるスプライシングや、両端の保護（5'キャップとポリAテール）という修飾を受けてから核外へ運び出されます。<br>
+          <span style="color:#7f8c8d; font-size:10px;">（※本シミュレーターやNCBIの[NM_]から始まるデータは、既にスプライシング等の修飾が完了した成熟mRNAの塩基配列を前提としています）</span>
         </div>
-
-        <div class="mega-invite">
-            <strong>🔗 より高度な解析へ (プロツールへの招待)</strong>
-            実際の疾患遺伝子の塩基配列を翻訳してみましょう。<br>
-            本物の遺伝子領域（ORF）を探すためには <b>『ExPASy Translate Tool』</b> を、翻訳されたアミノ酸が立体的にどう影響するかを確認するためには、アプリ⑩（Protein Structure Explorer）や <b>PyMOL</b> を使ってみましょう。
-        </div>
-
+      </div>
+      <div class="card-body">
+        <button class="btn btn-primary btn-block" onclick="runTranscription()" data-tooltip="入力されたDNAの塩基配列をmRNAに転写します">転写</button>
+      </div>
     </div>
+
+    <!-- Ⅲ. 翻訳 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title-group">
+          <span>Ⅲ. 翻訳と突然変異の検出</span>
+          <button class="rationale-btn" onclick="toggleRationale(event, 'rat_translation')">?</button>
+        </div>
+        <div id="rat_translation" class="rationale-text">
+          <strong>【根拠：DNAの突然変異がもたらす意味】</strong>
+          ・アミノ酸が「親水性」から「疎水性」などの全く異なる性質に変わると、ポリペプチドの立体構造や機能が崩壊し、疾患の原因となります。
+        </div>
+      </div>
+      <div class="card-body">
+        <button class="btn btn-primary btn-block" onclick="runTranslation()" id="btnTranslate" disabled data-tooltip="転写されたmRNAをアミノ酸配列に翻訳します">翻訳</button>
+
+        <div class="legend-panel">
+          <span class="legend-title">アミノ酸の化学的性質 (性質急変に注意)</span>
+          <span class="legend-item"><span class="legend-color bg-nonpolar"></span>非極性 (疎水性)</span>
+          <span class="legend-item"><span class="legend-color bg-polar"></span>極性 (無電荷)</span>
+          <span class="legend-item"><span class="legend-color bg-acidic"></span>酸性 (-)</span>
+          <span class="legend-item"><span class="legend-color bg-basic"></span>塩基性 (+)</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 右側：結果表示ビューア -->
+  <div class="right-panel">
+    
+    <!-- mRNA ビューア -->
+    <div class="card">
+      <div class="card-header">
+        <span>転写結果 (mRNA)</span>
+      </div>
+      <div class="card-body">
+        <div class="result-box" id="mrnaResult">
+          <div class="empty-message">操作パネルから「転写」を実行してください。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Protein ビューア -->
+    <div class="card">
+      <div class="card-header">
+        <span>翻訳結果 (アミノ酸配列)</span>
+        <button class="btn btn-secondary ml-auto" onclick="copyAminoAcids()" id="copyAaBtn" disabled data-tooltip="翻訳されたアミノ酸配列をクリップボードにコピーします">
+          <svg class="btn-icon svg-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>アミノ酸配列 コピー
+        </button>
+      </div>
+      <div class="card-body">
+        <div class="codon-container" id="proteinResult">
+          <div class="empty-message">転写後、操作パネルから「翻訳」を実行してください。</div>
+        </div>
+        <div id="mutationAlertContainer" style="display:none;"></div>
+      </div>
+    </div>
+
+    <div class="step-up-card">
+      <h3>
+        <svg class="svg-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        <span>より高度な解析ツールへ</span>
+      </h3>
+      <p>本物の遺伝子領域（ORF）を探すためには <b>『ExPASy Translate Tool』</b> を、翻訳されたアミノ酸が立体的にどう影響するかを確認するためには、<b>PyMOL</b> を使ってみましょう。</p>
+    </div>
+
+  </div>
 
 </div>
 
 <div class="status-bar">
-    <span id="statusText">ステップ1: FASTA形式の塩基配列を入力してください（複数可）。</span>
-    <span id="posText">Sequences: 0</span>
+  <span id="statusText">ステータス: ステップ1 - FASTA形式の塩基配列を入力してください（複数可）。</span>
+  <span id="posText">塩基配列: 0 件</span>
 </div>
 
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v1.8 | Developed for Bioinformatics & Wet-Lab Education
+  &copy; 2026 Bio-Edu Suite v31.0 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
 <div id="toast"></div>
 
 <script>
-    // --- 追加パッチ: トースト通知 ---
-    function showToast(message) {
-        const toast = document.getElementById('toast');
-        toast.innerText = message;
-        toast.classList.add('show');
-        setTimeout(() => {
-            toast.classList.remove('show');
-        }, 3000);
-    }
+  // --- トースト通知（ガイドライン第5項⑤ 準拠） ---
+  function showToast(msg, type = "") {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.innerText = msg;
+    let className = "show";
+    if (type === "error") className += " error";
+    else if (type === "warning") className += " warning";
+    else if (type === "info") className += " info";
+    toast.className = "";
+    void toast.offsetWidth; // リフローを挟む
+    toast.className = className;
+    setTimeout(() => { toast.classList.remove("show"); }, 3000);
+  }
 
-    function toggleRationale(id) {
-        const el = document.getElementById(id);
-        const isBlock = (el.style.display === 'block');
-        document.querySelectorAll('.rationale-text').forEach(e => e.style.display = 'none');
-        if(!isBlock) el.style.display = 'block';
-    }
+  // --- カスタムツールチップ（ガイドライン第6項④ 準拠） ---
+  function initTooltips() { 
+    const tooltip = document.createElement('div'); 
+    tooltip.className = 'custom-tooltip'; 
+    document.body.appendChild(tooltip); 
 
-    const dropZone = document.getElementById('dropZone');
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => { dropZone.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); }, false); });
-    dropZone.addEventListener('dragover', () => dropZone.classList.add('dragover'));
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-    dropZone.addEventListener('drop', (e) => {
-        dropZone.classList.remove('dragover');
-        if(e.dataTransfer.files.length > 0) readFiles(e.dataTransfer.files);
-    });
+    document.body.addEventListener('mouseover', (e) => { 
+      const target = e.target.closest('[data-tooltip]'); 
+      if (target && !target.classList.contains('rationale-btn')) { 
+        tooltip.innerHTML = target.getAttribute('data-tooltip'); 
+        tooltip.style.display = 'block'; 
+        const rect = target.getBoundingClientRect(); 
+        const ttRect = tooltip.getBoundingClientRect(); 
+        let topPos = rect.top - ttRect.height - 8; 
+        let leftPos = rect.left + (rect.width / 2); 
+        let arrowClass = 'show-top'; 
+        if (topPos < 0) { topPos = rect.bottom + 8; arrowClass = 'show-bottom'; } 
+        if (leftPos - ttRect.width / 2 < 5) leftPos = 5 + ttRect.width / 2; 
+        else if (leftPos + ttRect.width / 2 > window.innerWidth - 5) leftPos = window.innerWidth - ttRect.width / 2 - 5; 
+        tooltip.className = `custom-tooltip ${arrowClass}`; 
+        tooltip.style.top = topPos + 'px'; 
+        tooltip.style.left = leftPos + 'px'; 
+        tooltip.style.transform = 'translateX(-50%)'; 
+        tooltip.style.opacity = '1'; 
+      } 
+    }); 
+    document.body.addEventListener('mouseout', (e) => { 
+      if (e.target.closest('[data-tooltip]')) { 
+        tooltip.style.opacity = '0'; 
+        setTimeout(() => { if (tooltip.style.opacity === '0') tooltip.style.display = 'none'; }, 200); 
+      } 
+    }); 
+  } 
+  window.addEventListener('DOMContentLoaded', initTooltips);
 
-    function handleFileSelect(e) { if(e.target.files.length > 0) readFiles(e.target.files); }
+  // --- 教育的UIモジュール①: 根拠ポップオーバー（ガイドライン第6項① 準拠 / offsetWidthベース） ---
+  function toggleRationale(event, id) { 
+    event.stopPropagation(); 
+    const el = document.getElementById(id); 
+    const btn = event.currentTarget; 
+    const isShown = el.classList.contains('show'); 
 
-    function readFiles(files) {
-        let text = document.getElementById('dnaInput').value;
-        let readCount = 0;
-        for(let i=0; i<files.length; i++) {
-            const reader = new FileReader();
-            reader.onload = ev => {
-                text += (text ? '\n' : '') + ev.target.result;
-                readCount++;
-                if(readCount === files.length) {
-                    document.getElementById('dnaInput').value = text;
-                    updateLength();
-                }
-            };
-            reader.readAsText(files[i]);
+    // 他のポップオーバーを閉じる 
+    document.querySelectorAll('.rationale-text').forEach(e => { 
+      e.classList.remove('show', 'arrow-top', 'arrow-bottom'); 
+    }); 
+
+    if(!isShown) { 
+      if (el.parentNode !== document.body) document.body.appendChild(el); 
+      el.style.top = '0px'; el.style.left = '0px'; 
+      el.classList.add('show'); 
+
+      // フリップ計算による絶対配置 (offsetWidthを用いた親要素追従) 
+      const elHeight = el.offsetHeight; 
+      const elWidth = el.offsetWidth; 
+      const rect = btn.getBoundingClientRect(); 
+
+      let topPos = rect.bottom + 12; 
+      let arrowClass = 'arrow-top'; 
+
+      // 画面下端に見切れる場合は上側に配置 
+      if (rect.bottom + elHeight + 20 > window.innerHeight) { 
+        topPos = rect.top - elHeight - 12; 
+        arrowClass = 'arrow-bottom'; 
+      } 
+      el.classList.add(arrowClass); 
+      el.style.top = topPos + 'px'; 
+
+      // 左右位置の調整 (offsetWidth を使用してはみ出し防止) 
+      let leftPos = rect.left - (elWidth / 2) + (rect.width / 2); 
+      if (leftPos + elWidth > window.innerWidth) leftPos = window.innerWidth - elWidth - 10; 
+      if (leftPos < 10) leftPos = 10; 
+      el.style.left = leftPos + 'px'; 
+
+      // 尻尾の水平位置をボタン中央に合わせるカスタムプロパティ 
+      const arrowOffset = rect.left - leftPos + (rect.width / 2) - 6; 
+      el.style.setProperty('--arrow-left', arrowOffset + 'px'); 
+    } 
+  } 
+
+  document.addEventListener('click', (e) => { 
+    if (!e.target.closest('.rationale-text') && !e.target.closest('.rationale-btn')) { 
+      document.querySelectorAll('.rationale-text').forEach(el => { 
+        el.classList.remove('show', 'arrow-top', 'arrow-bottom'); 
+      }); 
+    } 
+  }); 
+
+  document.addEventListener('scroll', () => { 
+    document.querySelectorAll('.rationale-text').forEach(el => { 
+      el.classList.remove('show', 'arrow-top', 'arrow-bottom'); 
+    }); 
+  }, true); 
+
+  const dropZone = document.getElementById('dropZone');
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => { dropZone.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); }, false); });
+  dropZone.addEventListener('dragover', () => dropZone.classList.add('dragover'));
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', (e) => {
+    dropZone.classList.remove('dragover');
+    if(e.dataTransfer.files.length > 0) readFiles(e.dataTransfer.files);
+  });
+
+  function handleFileSelect(e) { if(e.target.files.length > 0) readFiles(e.target.files); }
+
+  function readFiles(files) {
+    let text = document.getElementById('dnaInput').value;
+    let readCount = 0;
+    for(let i=0; i<files.length; i++) {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        text += (text ? '\n' : '') + ev.target.result;
+        readCount++;
+        if(readCount === files.length) {
+          document.getElementById('dnaInput').value = text;
+          updateLength();
         }
+      };
+      reader.readAsText(files[i]);
     }
+  }
 
-    document.getElementById('dnaInput').addEventListener('input', updateLength);
+  document.getElementById('dnaInput').addEventListener('input', updateLength);
+  
+  function parseFasta() {
+    let raw = document.getElementById('dnaInput').value;
+    let seqs = [];
+    let currentName = "塩基配列 1"; // PDF規格準拠：IT用語の排除
+    let currentSeq = "";
+    let hasHeader = false;
     
-    function parseFasta() {
-        let raw = document.getElementById('dnaInput').value;
-        let seqs = [];
-        let currentName = "Sequence 1";
-        let currentSeq = "";
-        let hasHeader = false;
-        
-        for(let line of raw.split('\n')) {
-            line = line.trim();
-            if(!line) continue;
-            if(line.startsWith('>')) {
-                hasHeader = true;
-                if(currentSeq) { seqs.push({name: currentName, seq: currentSeq}); currentSeq = ""; }
-                currentName = line.substring(1);
-            } else {
-                // NおよびIUPAC核酸コードも許容するように拡張
-                currentSeq += line.toUpperCase().replace(/[^ATGCURYMKWSBDHVN-]/g, '');
-            }
-        }
-        if(currentSeq) seqs.push({name: currentName, seq: currentSeq});
-        if(!hasHeader && seqs.length === 1) seqs[0].name = "Input Sequence";
-        return seqs;
+    for(let line of raw.split('\n')) {
+      line = line.trim();
+      if(!line) continue;
+      if(line.startsWith('>')) {
+        hasHeader = true;
+        if(currentSeq) { seqs.push({name: currentName, seq: currentSeq}); currentSeq = ""; }
+        currentName = line.substring(1);
+      } else {
+        // NおよびIUPAC核酸コードも許容するように拡張
+        currentSeq += line.toUpperCase().replace(/[^ATGCURYMKWSBDHVN-]/g, '');
+      }
     }
+    if(currentSeq) seqs.push({name: currentName, seq: currentSeq});
+    if(!hasHeader && seqs.length === 1) seqs[0].name = "Input Sequence";
+    return seqs;
+  }
 
-    function updateLength() {
-        let seqs = parseFasta();
-        document.getElementById('posText').innerText = `Sequences: ${seqs.length}`;
-        document.getElementById('btnTranslate').disabled = true;
-        document.getElementById('copyAaBtn').disabled = true;
-        
-        if (seqs.length > 1) {
-            document.getElementById('inputHintDefault').style.display = 'none';
-            document.getElementById('inputHintCompare').style.display = 'block';
-        } else {
-            document.getElementById('inputHintDefault').style.display = 'block';
-            document.getElementById('inputHintCompare').style.display = 'none';
-        }
+  function updateLength() {
+    let seqs = parseFasta();
+    document.getElementById('posText').innerText = `塩基配列: ${seqs.length} 件`;
+    document.getElementById('btnTranslate').disabled = true;
+    document.getElementById('copyAaBtn').disabled = true;
+    
+    if (seqs.length > 1) {
+      document.getElementById('inputHintDefault').style.display = 'none';
+      document.getElementById('inputHintCompare').style.display = 'block';
+    } else {
+      document.getElementById('inputHintDefault').style.display = 'block';
+      document.getElementById('inputHintCompare').style.display = 'none';
     }
+  }
 
-    let currentMRNAs = [];
+  let currentMRNAs = [];
 
-    function runTranscription() {
-        let seqs = parseFasta();
-        if(seqs.length === 0 || !seqs[0].seq) { showToast("DNAの塩基配列を入力してください。"); return; }
-        
-        currentMRNAs = seqs.map(s => ({ name: s.name, mrna: s.seq.replace(/T/g, 'U') }));
-        
-        let htmlOutput = '';
-        if (currentMRNAs.length > 1) {
-            let isAligned = currentMRNAs.every(s => s.mrna.length === currentMRNAs[0].mrna.length);
-            let warnMsg = isAligned ? "" : `<span style="color:#e74c3c; margin-left:10px;">⚠️ 未アライメント (塩基配列の長さが異なります)</span>`;
-            htmlOutput += `<div style="color:#e67e22; font-weight:bold; margin-bottom:10px; font-family: 'Segoe UI', sans-serif;">🔍 比較モード: ${currentMRNAs.length}配列を並行表示しています。${warnMsg}</div>`;
-        }
-        
-        // 💡 修正ポイント: CLUSTAL風の等幅・等間隔表示を適用し、コンセンサス行（*）とのズレを完全に防止
-        htmlOutput += `<div style="background: #0b0b0b; padding: 15px; border-radius: 4px; overflow-x: auto; overflow-y: hidden; margin-bottom: 5px;">`;
-        
-        let generateRow = (name, prefix, seqHtml, suffix, info) => {
-            return `<div style="display: flex; align-items: center; height: 26px; white-space: nowrap; font-family: 'Courier New', Consolas, monospace; font-size: 14px;">` +
-                   `<div style="width: 140px; color: #f1c40f; font-size: 12px; font-family: 'Segoe UI', sans-serif; overflow: hidden; text-overflow: ellipsis; text-align: left; margin-right: 15px; flex-shrink: 0;" title="${name}">${name}</div>` +
-                   `<span style="color:#f1c40f; font-weight:bold; width: 30px; text-align: right; margin-right: 8px; flex-shrink: 0;">${prefix}</span>` +
-                   `<span>${seqHtml}</span>` +
-                   `<span style="color:#f1c40f; font-weight:bold; width: 30px; margin-left: 8px; flex-shrink: 0;">${suffix}</span>` +
-                   `<span style="color:#7f8c8d; font-size:11px; font-family: 'Segoe UI', sans-serif; margin-left: 15px; flex-shrink: 0;">${info}</span>` +
-                   `</div>`;
-        };
-
-        let rnaRows = currentMRNAs.map((seqObj) => {
-            let displayRNA = seqObj.mrna; 
-            let isTruncated = false;
-            if(displayRNA.length > 5000) {
-                displayRNA = displayRNA.substring(0, 5000);
-                isTruncated = true;
-            }
-            
-            let coloredRNA = '';
-            for (let i = 0; i < displayRNA.length; i++) {
-                let b = displayRNA[i];
-                if (b === 'A') coloredRNA += '<span class="rna-base rna-A">A</span>';
-                else if (b === 'U') coloredRNA += '<span class="rna-base rna-U">U</span>';
-                else if (b === 'G') coloredRNA += '<span class="rna-base rna-G">G</span>';
-                else if (b === 'C') coloredRNA += '<span class="rna-base rna-C">C</span>';
-                else if (b === '-') coloredRNA += '<span class="rna-base rna-gap">-</span>';
-                else if ('RYMKWSBDHVN'.includes(b)) coloredRNA += `<span class="rna-base rna-N">${b}</span>`;
-                else coloredRNA += `<span class="rna-base">${b}</span>`;
-            }
-            if(isTruncated) coloredRNA += "<span style='color:#7f8c8d; letter-spacing: normal;'> ... (省略)</span>";
-            return { name: seqObj.name, seqHtml: coloredRNA, length: seqObj.mrna.length, raw: displayRNA };
-        });
-
-        // 各配列の描画
-        rnaRows.forEach(row => {
-            htmlOutput += generateRow(row.name, "5'-", row.seqHtml, "-3'", `(${row.length} bp)`);
-        });
-
-        // 💡 修正ポイント: 3行目に一致箇所（コンセンサス *）を表示
-        if (currentMRNAs.length > 1) {
-            let consensusHTML = '';
-            let len = Math.max(rnaRows[0].raw.length, rnaRows[1].raw.length);
-            for(let i=0; i<len; i++) {
-                let b1 = rnaRows[0].raw[i];
-                let b2 = rnaRows[1].raw[i];
-                if (b1 && b2 && b1 === b2 && b1 !== '-') {
-                    consensusHTML += `<span class="rna-base" style="color: #ecf0f1;">*</span>`;
-                } else {
-                    // 等幅CSS設定下で幅を完璧に合わせるため、透明なアンダーバーを使用
-                    consensusHTML += `<span class="rna-base" style="color: transparent;">_</span>`; 
-                }
-            }
-            htmlOutput += generateRow("Consensus", "", consensusHTML, "", "");
-        }
-        
-        htmlOutput += `</div>`;
-        
-        let resultBox = document.getElementById('mrnaResult');
-        resultBox.style.whiteSpace = "normal"; 
-        resultBox.style.wordWrap = "normal";
-        resultBox.innerHTML = htmlOutput;
-        
-        document.getElementById('btnTranslate').disabled = false;
-        document.getElementById('statusText').innerText = "転写完了。塩基の色付けが適用されました。続いて「翻訳」を実行してください。";
+  function runTranscription() {
+    let seqs = parseFasta();
+    if(seqs.length === 0 || !seqs[0].seq) { showToast("DNAの塩基配列を入力してください。", "error"); return; }
+    
+    currentMRNAs = seqs.map(s => ({ name: s.name, mrna: s.seq.replace(/T/g, 'U') }));
+    
+    let htmlOutput = '';
+    if (currentMRNAs.length > 1) {
+      let isAligned = currentMRNAs.every(s => s.mrna.length === currentMRNAs[0].mrna.length);
+      let warnMsg = isAligned ? "" : `<span class="unaligned-alert">未アライメント (塩基配列の長さが異なります)</span>`;
+      htmlOutput += `<div class="compare-warning">比較モード: ${currentMRNAs.length}配列を並行表示しています。${warnMsg}</div>`;
     }
-
-    const aminoAcids = {
-        'A': { code3: 'Ala', name: 'Alanine', property: '非極性 (疎水性)', groupClass: 'aa-nonpolar' },
-        'R': { code3: 'Arg', name: 'Arginine', property: '塩基性 (+)', groupClass: 'aa-basic' },
-        'N': { code3: 'Asn', name: 'Asparagine', property: '極性 (無電荷)', groupClass: 'aa-polar' },
-        'D': { code3: 'Asp', name: 'Aspartic acid', property: '酸性 (-)', groupClass: 'aa-acidic' },
-        'C': { code3: 'Cys', name: 'Cysteine', property: '極性 (無電荷)', groupClass: 'aa-polar' },
-        'Q': { code3: 'Gln', name: 'Glutamine', property: '極性 (無電荷)', groupClass: 'aa-polar' },
-        'E': { code3: 'Glu', name: 'Glutamic acid', property: '酸性 (-)', groupClass: 'aa-acidic' },
-        'G': { code3: 'Gly', name: 'Glycine', property: '非極性 (疎水性)', groupClass: 'aa-nonpolar' },
-        'H': { code3: 'His', name: 'Histidine', property: '塩基性 (+)', groupClass: 'aa-basic' },
-        'I': { code3: 'Ile', name: 'Isoleucine', property: '非極性 (疎水性)', groupClass: 'aa-nonpolar' },
-        'L': { code3: 'Leu', name: 'Leucine', property: '非極性 (疎水性)', groupClass: 'aa-nonpolar' },
-        'K': { code3: 'Lys', name: 'Lysine', property: '塩基性 (+)', groupClass: 'aa-basic' },
-        'M': { code3: 'Met', name: 'Methionine', property: '非極性 (疎水性)', groupClass: 'aa-nonpolar' },
-        'F': { code3: 'Phe', name: 'Phenylalanine', property: '非極性 (疎水性)', groupClass: 'aa-nonpolar' },
-        'P': { code3: 'Pro', name: 'Proline', property: '非極性 (疎水性)', groupClass: 'aa-nonpolar' },
-        'S': { code3: 'Ser', name: 'Serine', property: '極性 (無電荷)', groupClass: 'aa-polar' },
-        'T': { code3: 'Thr', name: 'Threonine', property: '極性 (無電荷)', groupClass: 'aa-polar' },
-        'W': { code3: 'Trp', name: 'Tryptophan', property: '非極性 (疎水性)', groupClass: 'aa-nonpolar' },
-        'Y': { code3: 'Tyr', name: 'Tyrosine', property: '極性 (無電荷)', groupClass: 'aa-polar' },
-        'V': { code3: 'Val', name: 'Valine', property: '非極性 (疎水性)', groupClass: 'aa-nonpolar' },
-        '*': { code3: 'Ter', name: 'Stop codon', property: '翻訳終了', groupClass: 'aa-stop' },
-        'X': { code3: 'Unk', name: 'Unknown', property: '不明', groupClass: 'aa-unknown' } // IUPAC等不明コード対応
+    
+    htmlOutput += `<div class="alignment-viewer">`;
+    
+    let generateRow = (name, prefix, seqHtml, suffix, info) => {
+      return `<div class="alignment-row">` +
+             `<div class="seq-name" data-tooltip="${name}">${name}</div>` +
+             `<span class="seq-prefix">${prefix}</span>` +
+             `<span>${seqHtml}</span>` +
+             `<span class="seq-suffix">${suffix}</span>` +
+             `<span class="seq-info">${info}</span>` +
+             `</div>`;
     };
 
-    const codonTable = { 'UUU': 'F', 'UUC': 'F', 'UUA': 'L', 'UUG': 'L', 'CUU': 'L', 'CUC': 'L', 'CUA': 'L', 'CUG': 'L', 'AUU': 'I', 'AUC': 'I', 'AUA': 'I', 'AUG': 'M', 'GUU': 'V', 'GUC': 'V', 'GUA': 'V', 'GUG': 'V', 'UCU': 'S', 'UCC': 'S', 'UCA': 'S', 'UCG': 'S', 'CCU': 'P', 'CCC': 'P', 'CCA': 'P', 'CCG': 'P', 'ACU': 'T', 'ACC': 'T', 'ACA': 'T', 'ACG': 'T', 'GCU': 'A', 'GCC': 'A', 'GCA': 'A', 'GCG': 'A', 'UAU': 'Y', 'UAC': 'Y', 'UAA': '*', 'UAG': '*', 'CAU': 'H', 'CAC': 'H', 'CAA': 'Q', 'CAG': 'Q', 'AAU': 'N', 'AAC': 'N', 'AAA': 'K', 'AAG': 'K', 'GAU': 'D', 'GAC': 'D', 'GAA': 'E', 'GAG': 'E', 'UGU': 'C', 'UGC': 'C', 'UGA': '*', 'UGG': 'W', 'CGU': 'R', 'CGC': 'R', 'CGA': 'R', 'CGG': 'R', 'AGU': 'S', 'AGC': 'S', 'AGA': 'R', 'AGG': 'R', 'GGU': 'G', 'GGC': 'G', 'GGA': 'G', 'GGG': 'G' };
+    let rnaRows = currentMRNAs.map((seqObj) => {
+      let displayRNA = seqObj.mrna; 
+      let isTruncated = false;
+      if(displayRNA.length > 5000) {
+        displayRNA = displayRNA.substring(0, 5000);
+        isTruncated = true;
+      }
+      
+      let coloredRNA = '';
+      for (let i = 0; i < displayRNA.length; i++) {
+        let b = displayRNA[i];
+        if (b === 'A') coloredRNA += '<span class="rna-base rna-A">A</span>';
+        else if (b === 'U') coloredRNA += '<span class="rna-base rna-U">U</span>';
+        else if (b === 'G') coloredRNA += '<span class="rna-base rna-G">G</span>';
+        else if (b === 'C') coloredRNA += '<span class="rna-base rna-C">C</span>';
+        else if (b === '-') coloredRNA += '<span class="rna-base rna-gap">-</span>';
+        else if ('RYMKWSBDHVN'.includes(b)) coloredRNA += `<span class="rna-base rna-N">${b}</span>`;
+        else coloredRNA += `<span class="rna-base">${b}</span>`;
+      }
+      if(isTruncated) coloredRNA += `<span class="seq-truncated"> ... (省略)</span>`;
+      return { name: seqObj.name, seqHtml: coloredRNA, length: seqObj.mrna.length, raw: displayRNA };
+    });
 
-    function runTranslation() {
-        if(currentMRNAs.length === 0) return;
+    rnaRows.forEach(row => {
+      htmlOutput += generateRow(row.name, "5'-", row.seqHtml, "-3'", `(${row.length} bp)`);
+    });
 
-        if (currentMRNAs.length > 1) {
-            let len0 = currentMRNAs[0].mrna.length;
-            let len1 = currentMRNAs[1].mrna.length;
-            if (len0 !== len1) {
-                showToast("⚠️ 警告: 比較する塩基配列の長さが異なります。\n\nアライメント（位置合わせ）されていないため、翻訳フレームがずれて不当に多くの変異（真っ赤）が検出される可能性があります。\n\n正確な比較を行うには、先に「アプリ⑤」でアライメントと開始位置のトリミングを行ってください。");
-            }
-        }
-
-        let rnaWT = currentMRNAs[0].mrna;
-        let rnaMut = currentMRNAs.length > 1 ? currentMRNAs[1].mrna : rnaWT;
-
-        let container = document.getElementById('proteinResult');
-        container.innerHTML = ''; 
-        let frag = document.createDocumentFragment();
-        
-        let mutPositions = [];
-        let limit = Math.min(rnaMut.length, 3000);
-
-        for(let i=0; i < limit - 2; i+=3) {
-            let codMut = rnaMut.substring(i, i+3);
-            let codWT = rnaWT.substring(i, i+3);
-            
-            if(codMut.includes('-')) continue; 
-
-            // NなどIUPACコードが含まれる場合はUnknownとして処理
-            let aaMut = codonTable[codMut] || 'X';
-            let aaWT = codonTable[codWT] || 'X';
-            
-            let pos = Math.floor(i/3) + 1;
-            
-            // 野生型または突然変異型のどちらかが不明（X）の場合は変異判定から除外する
-            let isMutated = (currentMRNAs.length > 1 && aaMut !== aaWT && aaWT !== 'X' && aaMut !== 'X');
-            
-            if (isMutated) mutPositions.push(pos);
-
-            let aaData = aminoAcids[aaMut] || { code3: 'Unk', name: 'Unknown', property: '不明', groupClass: 'aa-unknown' };
-
-            let div = document.createElement('div');
-            let className = `codon-box ${aaData.groupClass}`;
-            
-            if(codMut === 'AUG') className += " codon-start";
-            if(aaMut === '*') className += " codon-stop";
-            if(isMutated) className += " codon-mutated";
-            
-            div.className = className;
-            
-            let tooltipText = `残基番号: ${pos}\n${aaData.code3} (${aaData.name})\n${aaData.property}`;
-            if(isMutated) {
-                let dWT = aminoAcids[aaWT] || { code3: 'Unk', property: '不明' };
-                tooltipText = `⚠️ 変異箇所 (残基 ${pos})\n[野生型] ${dWT.code3} (${dWT.property})\n   ↓\n[変異体] ${aaData.code3} (${aaData.property})`;
-            }
-            if(aaMut !== '?') div.setAttribute('data-tooltip', tooltipText);
-
-            div.innerHTML = `
-                <div class="mRNA-codon">${codMut}</div>
-                <div class="amino-acid">${aaMut === '*' ? 'STOP' : aaMut}</div>
-                ${isMutated ? '<div class="mut-badge">!</div>' : ''}
-            `;
-            frag.appendChild(div);
-        }
-
-        container.appendChild(frag);
-
-        // 💡 修正ポイント: 右端のガタつき解消（アミノ酸ブロック個数分ピッタリに計算して中央配置）
-        requestAnimationFrame(() => {
-            const boxes = Array.from(container.querySelectorAll('.codon-box:not(.codon-stop)'));
-            if (boxes.length > 0) {
-                const paddingTotal = 30; // padding: 15px * 2 (左右)
-                const boxWidth = 44; // 💡 CSSで固定した幅(44px)を使用し、計算ブレを排除して右端をビシッと揃える
-                const gap = 5; 
-                
-                // containerの親要素の横幅を基準にして入る列数を計算
-                const parentWidth = container.parentElement.clientWidth;
-                const availableWidth = parentWidth - paddingTotal;
-                
-                const maxCols = Math.floor((availableWidth + gap) / (boxWidth + gap));
-                const totalBoxes = container.querySelectorAll('.codon-box').length;
-                const cols = Math.min(maxCols, totalBoxes);
-                
-                const exactWidth = cols * boxWidth + (cols - 1) * gap;
-                
-                // ピッタリの幅に制限して中央配置し、内部は左詰めに
-                container.style.width = (exactWidth + paddingTotal) + 'px';
-                container.style.margin = '0 auto';
-                container.style.justifyContent = 'flex-start';
-            }
-        });
-
-        const alertBox = document.getElementById('mutationAlertContainer');
-        if (mutPositions.length > 0) {
-            localStorage.setItem('bio_edu_suite_mutations', JSON.stringify(mutPositions));
-            alertBox.style.display = 'block';
-            alertBox.style.borderColor = '#e74c3c';
-            alertBox.style.background = '#fdedec';
-            alertBox.style.color = '#c0392b';
-            alertBox.innerHTML = `
-                <strong style="color:#c0392b; font-size:13px;">🚨 アミノ酸配列の変化を ${mutPositions.length} 箇所検出しました！</strong><br>
-                変異残基番号: ${mutPositions.join(', ')}<br><br>
-                <span style="color:#2c3e50;">この変異データは自動的にシステムに保存されました。<br>
-                続いて <b>アプリ⑩（Protein Structure Explorer）</b> を開き、「変異を同期」ボタンを押して、この性質変化がポリペプチドの立体構造にどのような影響を与えているか確認してください。</span>`;
-        } else if (currentMRNAs.length > 1) {
-            alertBox.style.display = 'block';
-            alertBox.style.borderColor = '#27ae60';
-            alertBox.style.background = '#eafaf1';
-            alertBox.style.color = '#1e8449';
-            alertBox.innerHTML = `<strong>✅ アミノ酸配列の変化（変異）は検出されませんでした。</strong><br>DNAの塩基配列において突然変異が起きていてもアミノ酸配列が変わらない（同義置換）可能性が高いです。`;
+    if (currentMRNAs.length > 1) {
+      let consensusHTML = '';
+      let len = Math.max(rnaRows[0].raw.length, rnaRows[1].raw.length);
+      for(let i=0; i<len; i++) {
+        let b1 = rnaRows[0].raw[i];
+        let b2 = rnaRows[1].raw[i];
+        if (b1 && b2 && b1 === b2 && b1 !== '-') {
+          consensusHTML += `<span class="rna-base consensus-match">*</span>`;
         } else {
-            alertBox.style.display = 'none'; 
+          consensusHTML += `<span class="rna-base consensus-mismatch">_</span>`; 
         }
+      }
+      htmlOutput += generateRow("Consensus", "", consensusHTML, "", "");
+    }
+    
+    htmlOutput += `</div>`;
+    
+    let resultBox = document.getElementById('mrnaResult');
+    resultBox.innerHTML = htmlOutput;
+    
+    document.getElementById('btnTranslate').disabled = false;
+    document.getElementById('statusText').innerText = "ステータス: 転写完了。塩基の色付けが適用されました。続いて「翻訳」を実行してください。";
+  }
 
-        document.getElementById('statusText').innerText = "翻訳完了。マウスを乗せてアミノ酸の性質を確認してください。";
-        document.getElementById('copyAaBtn').disabled = false;
+  const aminoAcids = {
+    'A': { code3: 'Ala', name: 'Alanine', property: '非極性 (疎水性)', groupClass: 'aa-nonpolar' },
+    'R': { code3: 'Arg', name: 'Arginine', property: '塩基性 (+)', groupClass: 'aa-basic' },
+    'N': { code3: 'Asn', name: 'Asparagine', property: '極性 (無電荷)', groupClass: 'aa-polar' },
+    'D': { code3: 'Asp', name: 'Aspartic acid', property: '酸性 (-)', groupClass: 'aa-acidic' },
+    'C': { code3: 'Cys', name: 'Cysteine', property: '極性 (無電荷)', groupClass: 'aa-polar' },
+    'Q': { code3: 'Gln', name: 'Glutamine', property: '極性 (無電荷)', groupClass: 'aa-polar' },
+    'E': { code3: 'Glu', name: 'Glutamic acid', property: '酸性 (-)', groupClass: 'aa-acidic' },
+    'G': { code3: 'Gly', name: 'Glycine', property: '非極性 (疎水性)', groupClass: 'aa-nonpolar' },
+    'H': { code3: 'His', name: 'Histidine', property: '塩基性 (+)', groupClass: 'aa-basic' },
+    'I': { code3: 'Ile', name: 'Isoleucine', property: '非極性 (疎水性)', groupClass: 'aa-nonpolar' },
+    'L': { code3: 'Leu', name: 'Leucine', property: '非極性 (疎水性)', groupClass: 'aa-nonpolar' },
+    'K': { code3: 'Lys', name: 'Lysine', property: '塩基性 (+)', groupClass: 'aa-basic' },
+    'M': { code3: 'Met', name: 'Methionine', property: '非極性 (疎水性)', groupClass: 'aa-nonpolar' },
+    'F': { code3: 'Phe', name: 'Phenylalanine', property: '非極性 (疎水性)', groupClass: 'aa-nonpolar' },
+    'P': { code3: 'Pro', name: 'Proline', property: '非極性 (疎水性)', groupClass: 'aa-nonpolar' },
+    'S': { code3: 'Ser', name: 'Serine', property: '極性 (無電荷)', groupClass: 'aa-polar' },
+    'T': { code3: 'Thr', name: 'Threonine', property: '極性 (無電荷)', groupClass: 'aa-polar' },
+    'W': { code3: 'Trp', name: 'Tryptophan', property: '非極性 (疎水性)', groupClass: 'aa-nonpolar' },
+    'Y': { code3: 'Tyr', name: 'Tyrosine', property: '極性 (無電荷)', groupClass: 'aa-polar' },
+    'V': { code3: 'Val', name: 'Valine', property: '非極性 (疎水性)', groupClass: 'aa-nonpolar' },
+    '*': { code3: 'Ter', name: 'Stop codon', property: '翻訳終了', groupClass: 'aa-stop' },
+    'X': { code3: 'Unk', name: 'Unknown', property: '不明', groupClass: 'aa-unknown' } 
+  };
+
+  const codonTable = { 'UUU': 'F', 'UUC': 'F', 'UUA': 'L', 'UUG': 'L', 'CUU': 'L', 'CUC': 'L', 'CUA': 'L', 'CUG': 'L', 'AUU': 'I', 'AUC': 'I', 'AUA': 'I', 'AUG': 'M', 'GUU': 'V', 'GUC': 'V', 'GUA': 'V', 'GUG': 'V', 'UCU': 'S', 'UCC': 'S', 'UCA': 'S', 'UCG': 'S', 'CCU': 'P', 'CCC': 'P', 'CCA': 'P', 'CCG': 'P', 'ACU': 'T', 'ACC': 'T', 'ACA': 'T', 'ACG': 'T', 'GCU': 'A', 'GCC': 'A', 'GCA': 'A', 'GCG': 'A', 'UAU': 'Y', 'UAC': 'Y', 'UAA': '*', 'UAG': '*', 'CAU': 'H', 'CAC': 'H', 'CAA': 'Q', 'CAG': 'Q', 'AAU': 'N', 'AAC': 'N', 'AAA': 'K', 'AAG': 'K', 'GAU': 'D', 'GAC': 'D', 'GAA': 'E', 'GAG': 'E', 'UGU': 'C', 'UGC': 'C', 'UGA': '*', 'UGG': 'W', 'CGU': 'R', 'CGC': 'R', 'CGA': 'R', 'CGG': 'R', 'AGU': 'S', 'AGC': 'S', 'AGA': 'R', 'AGG': 'R', 'GGU': 'G', 'GGC': 'G', 'GGA': 'G', 'GGG': 'G' };
+
+  function runTranslation() {
+    if(currentMRNAs.length === 0) return;
+
+    if (currentMRNAs.length > 1) {
+      let len0 = currentMRNAs[0].mrna.length;
+      let len1 = currentMRNAs[1].mrna.length;
+      if (len0 !== len1) {
+        showToast("警告: 比較する塩基配列の長さが異なります。先に「アプリ⑤」でアライメントを行ってください。", "warning");
+      }
     }
 
-    function copyAminoAcids() {
-        if(!currentMRNAs || currentMRNAs.length === 0) return;
-        
-        let aaText = '';
-        currentMRNAs.forEach((seqObj, index) => {
-            let rna = seqObj.mrna;
-            let aaSeq = '';
-            for(let i=0; i < rna.length - 2; i+=3) {
-                let cod = rna.substring(i, i+3);
-                if(cod.includes('-')) continue;
-                let aa = codonTable[cod] || 'X';
-                aaSeq += aa === '*' ? '*' : aa;
-            }
-            if(index > 0) aaText += '\n\n';
-            aaText += `>${seqObj.name}\n${aaSeq}`;
-        });
+    let rnaWT = currentMRNAs[0].mrna;
+    let rnaMut = currentMRNAs.length > 1 ? currentMRNAs[1].mrna : rnaWT;
 
-        const textarea = document.createElement('textarea');
-        textarea.value = aaText;
-        document.body.appendChild(textarea);
-        textarea.select();
-        try {
-            document.execCommand('copy');
-            showToast("📋 アミノ酸配列をクリップボードにコピーしました");
-        } catch (err) {
-            showToast("⚠️ コピーに失敗しました");
-        }
-        document.body.removeChild(textarea);
+    let container = document.getElementById('proteinResult');
+    container.innerHTML = ''; 
+    let frag = document.createDocumentFragment();
+    
+    let mutPositions = [];
+    let limit = Math.min(rnaMut.length, 3000);
+
+    for(let i=0; i < limit - 2; i+=3) {
+      let codMut = rnaMut.substring(i, i+3);
+      let codWT = rnaWT.substring(i, i+3);
+      
+      if(codMut.includes('-')) continue; 
+
+      let aaMut = codonTable[codMut] || 'X';
+      let aaWT = codonTable[codWT] || 'X';
+      
+      let pos = Math.floor(i/3) + 1;
+      
+      // 突然変異判定 (PDF規格準拠)
+      let isMutated = (currentMRNAs.length > 1 && aaMut !== aaWT && aaWT !== 'X' && aaMut !== 'X');
+      
+      if (isMutated) mutPositions.push(pos);
+
+      let aaData = aminoAcids[aaMut] || { code3: 'Unk', name: 'Unknown', property: '不明', groupClass: 'aa-unknown' };
+
+      let div = document.createElement('div');
+      let className = `codon-box ${aaData.groupClass}`;
+      
+      if(codMut === 'AUG') className += " codon-start";
+      if(aaMut === '*') className += " codon-stop";
+      if(isMutated) className += " codon-mutated";
+      
+      div.className = className;
+      
+      let tooltipText = `残基番号: ${pos}\n${aaData.code3} (${aaData.name})\n${aaData.property}`;
+      if(isMutated) {
+        let dWT = aminoAcids[aaWT] || { code3: 'Unk', property: '不明' };
+        tooltipText = `突然変異箇所 (残基 ${pos})\n[野生型] ${dWT.code3} (${dWT.property})\n ↓\n[突然変異体] ${aaData.code3} (${aaData.property})`;
+      }
+      if(aaMut !== '?') div.setAttribute('data-tooltip', tooltipText);
+
+      div.innerHTML = `
+        <div class="mRNA-codon">${codMut}</div>
+        <div class="amino-acid">${aaMut === '*' ? 'STOP' : aaMut}</div>
+        ${isMutated ? '<div class="mut-badge">!</div>' : ''}
+      `;
+      frag.appendChild(div);
     }
 
-    // --- 💡 ツールチップ見切れ防止（グローバル表示パッチ） ---
-    document.addEventListener('DOMContentLoaded', () => {
-        // グローバルなツールチップ要素を生成してBody直下に追加
-        const tooltip = document.createElement('div');
-        tooltip.id = 'global-tooltip';
-        document.body.appendChild(tooltip);
+    container.appendChild(frag);
 
-        // イベント委譲によりホバーを監視
-        document.body.addEventListener('mouseover', (e) => {
-            const box = e.target.closest('.codon-box[data-tooltip]');
-            if (box) {
-                tooltip.innerText = box.getAttribute('data-tooltip');
-                tooltip.style.display = 'block';
-                tooltip.className = ''; 
-                
-                // 初期の座標計算
-                const rect = box.getBoundingClientRect();
-                tooltip.style.top = (rect.bottom + 5) + 'px';
-                tooltip.style.left = (rect.left + rect.width / 2) + 'px';
-                tooltip.style.transform = 'translateX(-50%)';
-                
-                // 描画後にサイズを取得して画面外へのはみ出しを調整
-                requestAnimationFrame(() => {
-                    const ttRect = tooltip.getBoundingClientRect();
-                    let topPos = rect.bottom + 5;
-                    let leftPos = rect.left + rect.width / 2;
-                    let arrowClass = 'show-bottom'; 
-
-                    // 画面下にはみ出る場合は上側に表示を切り替え
-                    if (topPos + ttRect.height > window.innerHeight) {
-                        topPos = rect.top - ttRect.height - 5;
-                        arrowClass = 'show-top'; 
-                    }
-                    
-                    // 左右のはみ出し調整
-                    if (leftPos - ttRect.width / 2 < 5) {
-                        leftPos = 5 + ttRect.width / 2;
-                    } else if (leftPos + ttRect.width / 2 > window.innerWidth - 5) {
-                        leftPos = window.innerWidth - ttRect.width / 2 - 5;
-                    }
-
-                    tooltip.style.top = topPos + 'px';
-                    tooltip.style.left = leftPos + 'px';
-                    tooltip.style.transform = `translateX(-50%)`;
-                    tooltip.classList.add(arrowClass);
-                    tooltip.style.opacity = '1';
-                });
-            }
-        });
-
-        // ホバーアウトで非表示
-        document.body.addEventListener('mouseout', (e) => {
-            const box = e.target.closest('.codon-box[data-tooltip]');
-            if (box) {
-                tooltip.style.opacity = '0';
-                tooltip.style.display = 'none';
-            }
-        });
+    requestAnimationFrame(() => {
+      const boxes = Array.from(container.querySelectorAll('.codon-box:not(.codon-stop)'));
+      if (boxes.length > 0) {
+        const paddingTotal = 32; 
+        const boxWidth = 44; 
+        const gap = 5; 
+        const parentWidth = container.parentElement.clientWidth;
+        const availableWidth = parentWidth - paddingTotal;
+        const maxCols = Math.floor((availableWidth + gap) / (boxWidth + gap));
+        const totalBoxes = container.querySelectorAll('.codon-box').length;
+        const cols = Math.min(maxCols, totalBoxes);
+        const exactWidth = cols * boxWidth + (cols - 1) * gap;
         
-        // パネル内のスクロール時にツールチップが置き去りになるのを防ぐ
-        document.addEventListener('scroll', () => {
-            tooltip.style.opacity = '0';
-            tooltip.style.display = 'none';
-        }, true);
+        container.style.width = (exactWidth + paddingTotal) + 'px';
+        container.style.margin = '0 auto';
+        container.style.justifyContent = 'flex-start';
+      }
     });
 
-    // --- 追加パッチ: .codon-box以外の全般的なツールチップ(ボタン等)のサポート ---
-    document.body.addEventListener('mouseover', (e) => {
-        const btn = e.target.closest('[data-tooltip]:not(.codon-box)');
-        if (btn) {
-            const tooltip = document.getElementById('global-tooltip');
-            tooltip.innerText = btn.getAttribute('data-tooltip');
-            tooltip.style.display = 'block';
-            tooltip.className = ''; 
-            
-            const rect = btn.getBoundingClientRect();
-            tooltip.style.top = (rect.bottom + 5) + 'px';
-            tooltip.style.left = (rect.left + rect.width / 2) + 'px';
-            tooltip.style.transform = 'translateX(-50%)';
-            
-            requestAnimationFrame(() => {
-                const ttRect = tooltip.getBoundingClientRect();
-                let topPos = rect.bottom + 5;
-                let leftPos = rect.left + rect.width / 2;
-                let arrowClass = 'show-bottom'; 
+    // ガイドライン第6項⑥ プレーンテキストによる通知
+    const alertBox = document.getElementById('mutationAlertContainer');
+    if (mutPositions.length > 0) {
+      localStorage.setItem('bio_edu_suite_mutations', JSON.stringify(mutPositions));
+      alertBox.style.display = 'block';
+      alertBox.className = 'dynamic-hint';
+      alertBox.innerHTML = `アミノ酸配列の変化を ${mutPositions.length} 箇所検出しました。<br>突然変異残基番号: ${mutPositions.join(', ')}<br><br>この突然変異データは自動的にシステムに保存されました。<br>続いてアプリ⑬を開き、「突然変異を同期」ボタンを押して影響を確認してください。`;
+    } else if (currentMRNAs.length > 1) {
+      alertBox.style.display = 'block';
+      alertBox.className = 'dynamic-hint';
+      alertBox.innerHTML = `アミノ酸配列の変化は検出されませんでした。<br>DNAの塩基配列において突然変異が起きていてもアミノ酸配列が変わらない（同義置換）可能性が高いです。`;
+    } else {
+      alertBox.style.display = 'none'; 
+    }
 
-                if (topPos + ttRect.height > window.innerHeight) {
-                    topPos = rect.top - ttRect.height - 5;
-                    arrowClass = 'show-top'; 
-                }
-                
-                if (leftPos - ttRect.width / 2 < 5) {
-                    leftPos = 5 + ttRect.width / 2;
-                } else if (leftPos + ttRect.width / 2 > window.innerWidth - 5) {
-                    leftPos = window.innerWidth - ttRect.width / 2 - 5;
-                }
+    document.getElementById('statusText').innerText = "ステータス: 翻訳完了。マウスを乗せてアミノ酸の性質を確認してください。";
+    document.getElementById('copyAaBtn').disabled = false;
+  }
 
-                tooltip.style.top = topPos + 'px';
-                tooltip.style.left = leftPos + 'px';
-                tooltip.style.transform = `translateX(-50%)`;
-                tooltip.classList.add(arrowClass);
-                tooltip.style.opacity = '1';
-            });
-        }
+  function copyAminoAcids() {
+    if(!currentMRNAs || currentMRNAs.length === 0) return;
+    
+    let aaText = '';
+    currentMRNAs.forEach((seqObj, index) => {
+      let rna = seqObj.mrna;
+      let aaSeq = '';
+      for(let i=0; i < rna.length - 2; i+=3) {
+        let cod = rna.substring(i, i+3);
+        if(cod.includes('-')) continue;
+        let aa = codonTable[cod] || 'X';
+        aaSeq += aa === '*' ? '*' : aa;
+      }
+      if(index > 0) aaText += '\n\n';
+      aaText += `>${seqObj.name}\n${aaSeq}`;
     });
 
-    document.body.addEventListener('mouseout', (e) => {
-        const btn = e.target.closest('[data-tooltip]:not(.codon-box)');
-        if (btn) {
-            const tooltip = document.getElementById('global-tooltip');
-            tooltip.style.opacity = '0';
-            tooltip.style.display = 'none';
-        }
-    });
+    const textarea = document.createElement('textarea');
+    textarea.value = aaText;
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      document.execCommand('copy');
+      showToast("アミノ酸配列をクリップボードにコピーしました", "success");
+    } catch (err) {
+      showToast("コピーに失敗しました", "error");
+    }
+    document.body.removeChild(textarea);
+  }
 
 </script>
 </body>
