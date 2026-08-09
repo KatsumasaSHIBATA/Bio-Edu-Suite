@@ -70,13 +70,16 @@
 
         /* 設定グループ */
         .settings-group { background: #fdfefe; border: 1px solid #e5e8e8; padding: 15px; border-radius: 6px; margin-bottom: 15px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);}
-        .settings-group h4 { margin: 0 0 10px 0; color: #2c3e50; font-size: 14px; border-bottom: 1px solid #ecf0f1; padding-bottom: 5px; display: flex; align-items: center; position: relative; justify-content: space-between;}
+        
+        /* ガイドライン準拠: ?ボタンをタイトルの直後に配置するため flex-start と gap を使用 */
+        .settings-group h4 { margin: 0 0 10px 0; color: #2c3e50; font-size: 14px; border-bottom: 1px solid #ecf0f1; padding-bottom: 5px; display: flex; align-items: center; position: relative; justify-content: flex-start; gap: 8px;}
         
         /* 共通インプット */
         .input-group { margin-bottom: 10px; }
         .input-group label { font-size: 12px; font-weight: 600; color: #34495e; display: block; margin-bottom: 4px; }
-        input[type="text"], input[type="number"], select { padding: 8px; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 13px; font-weight: bold; color: #2c3e50; outline: none; width: 100%; transition: 0.2s; background: #fdfefe;}
-        input:focus, select:focus { border-color: var(--phase-color); box-shadow: 0 0 0 2px rgba(231,76,60,0.2); }
+        input[type="text"], input[type="number"], select, textarea { padding: 8px; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 13px; font-weight: bold; color: #2c3e50; outline: none; width: 100%; transition: 0.2s; background: #fdfefe;}
+        input:focus, select:focus, textarea:focus { border-color: var(--phase-color); box-shadow: 0 0 0 2px rgba(231,76,60,0.2); }
+        input[type="range"]:focus { outline: none; box-shadow: none; } /* 測定誤差シミュレート枠対応 */
         .mono-input { font-family: 'Courier New', Courier, monospace; letter-spacing: 1px; }
 
         /* インラインSVGアイコン用 共通カラークラス (ガイドライン第2項) */
@@ -87,7 +90,7 @@
         .btn-icon { width: 14px; height: 14px; flex-shrink: 0; vertical-align: -2px; }
 
         /* 教育的ポップオーバー (ガイドライン第6項① 準拠) */
-        .rationale-btn { background: var(--phase-color); color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; flex-shrink: 0; }
+        .rationale-btn { background: var(--phase-color); color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; border: none; font-weight: bold; transition: 0.2s; flex-shrink: 0; }
         .rationale-btn:hover { transform: scale(1.1); filter: brightness(1.2); }
         .rationale-text { position: fixed; background: #fef9e7; border: 1px solid var(--warning); padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: max-content; max-width: min(320px, calc(100vw - 24px)); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; }
         .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
@@ -113,14 +116,25 @@
         .step-up-card p { margin: 0; font-size: 13px; line-height: 1.6; }
 
         /* ボタン群 (ガイドライン第4項, 第11項② 準拠) */
-        .btn { background: #fdfefe; border: 1px solid #bdc3c7; padding: 10px 16px; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 4px; font-weight: bold; transition: all 0.2s; color: var(--text-main); text-decoration: none; box-shadow: none; }
+        .btn { background: #fdfefe; border: 1px solid #bdc3c7; padding: 8px 16px; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 4px; font-weight: bold; transition: all 0.2s; color: var(--text-main); text-decoration: none; box-shadow: none; }
         .btn:hover:not(:disabled) { background: #eaf2f8; border-color: #3498db; color: #2980b9; box-shadow: 0 2px 4px rgba(0,0,0,0.1); filter: brightness(1.05); }
         .btn:active:not(:disabled) { transform: scale(0.98); }
         .btn:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(50%); box-shadow: none; }
         
+        /* Success カラー用ボタン (データ未解析時は白っぽく無効化) */
+        .btn-success { color: var(--success); border-color: var(--success); }
+        .btn-success:hover:not(:disabled) { background: #e9f7ef; color: #219a52; border-color: #27ae60; }
+        .btn-success:disabled { color: #bdc3c7; border-color: #ecf0f1; background: #fbfcfc; opacity: 1; filter: none; }
+
         /* アクションボタン (Primary) */
         .action-btn { background-color: #3498db; color: white; border: none; padding: 12px 20px; font-size: 14px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; flex: 1; box-shadow: 0 3px 0 #2980b9; display: flex; justify-content: center; align-items: center; gap: 8px; }
         .action-btn:hover { background-color: #2980b9; transform: translateY(2px); box-shadow: 0 1px 0 #2980b9; color: white;}
+
+        /* ドロップゾーン (控えめなサイズに調整) */
+        .drop-zone { border: 2px dashed var(--border-color); background: #f8f9fa; border-radius: 8px; padding: 12px 16px; text-align: center; cursor: pointer; margin-bottom: 10px; transition: 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;}
+        .drop-zone:hover, .drop-zone.dragover { background: #eef2f5; border-color: #3498db; }
+        .drop-zone svg { width: 18px; height: 18px; color: var(--text-muted); }
+        .drop-zone span { font-size: 11px; font-weight: normal; color: var(--text-muted); }
 
         /* 結果テーブル */
         table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
@@ -128,7 +142,7 @@
         th { background-color: #ecf0f1; color: var(--primary); font-weight: bold;}
         tr:nth-child(even) { background-color: #fdfefe; }
 
-        /* スライダーUI (規定違反の border-left, background を排除) */
+        /* スライダーUI */
         .slider-container { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 12px; font-weight: bold; color: var(--text-main); white-space: nowrap; margin-top: 5px;}
         input[type=range] { flex: 1; cursor: pointer; accent-color: var(--phase-color); }
 
@@ -163,9 +177,9 @@
         }
     </style>
 </head>
-<!-- [Absolute-Zero] セクション1/5 完了。省略なしで続行 -->
 <body>
 
+<!-- [Absolute-Zero] セクション1/1 完了。省略なしで続行 -->
 <div class="header-container">
     <div class="header">
         <div class="header-title-group">
@@ -186,7 +200,7 @@
     <!-- 左ペイン: 制御パラメータ -->
     <div class="card" style="align-self: start;">
         <div class="card-header">
-            <span>Ⅰ. データ設定 (Data Configuration)</span>
+            <span>Ⅰ. データ設定</span>
         </div>
         <div class="card-body">
             
@@ -197,11 +211,21 @@
                 </h4>
                 
                 <div class="input-group">
+                    <label>表現型データ (タブまたはカンマ区切り)</label>
+                    
+                    <div id="drop-zone" class="drop-zone">
+                        <svg class="svg-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+                        <span>ここをクリック、またはデータをドラッグ＆ドロップ</span>
+                        <input type="file" id="file-input" accept=".csv, .tsv, .txt" style="display: none;">
+                    </div>
+
+                    <textarea id="data-input" rows="7" class="mono-input" style="width:100%; padding:8px; border:1px solid #bdc3c7; border-radius:4px; font-size:12px; resize:vertical; background: #fdfefe;" placeholder="データをペーストしてください"></textarea>
+                </div>
+
+                <div class="input-group" style="margin-top: 15px;">
                     <label>表現型指標</label>
                     <select id="trait-selector">
-                        <option value="pca1">表現型指標 1 (Trait 1 / 主成分1)</option>
-                        <option value="pca2">表現型指標 2 (Trait 2 / 主成分2)</option>
-                        <option value="pca6">表現型指標 3 (Trait 3 / 主成分3)</option>
+                        <option value="0">データを読み込むと自動生成されます</option>
                     </select>
                 </div>
                 
@@ -219,16 +243,12 @@
                 <strong>
                     <svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>
                     現場のコツ
-                </strong>
+                </strong><br>
                 環境データを測る際、『温度』や『日照』だけでなく、『土壌のpH』や『水質』など、目に見えにくい要因が生物の形に決定的な影響を与えていることが多いです。突然変異（塩基配列の変化）によって生じた変異と区別するためにも、育成メタデータをどれだけ正確に記録するかが統計遺伝学の命となります。
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
-                <button class="btn" onclick="resetData()" data-tooltip="データと表示を初期状態に戻します">
-                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-                    リセット
-                </button>
-                <button class="action-btn" onclick="runAnalysis()" data-tooltip="AMMIモデルによるGxE解析を実行します">
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button class="action-btn" style="flex: 1;" onclick="runAnalysis()" data-tooltip="AMMIモデルによるGxE解析を実行します">
                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                     解析を実行
                 </button>
@@ -236,9 +256,8 @@
 
         </div>
     </div>
-<!-- [Absolute-Zero] セクション2/5 完了。省略なしで続行 -->
 
-    <!-- 右ペイン: 結果表示（ガタつき防止の固定枠表示） -->
+    <!-- 右ペイン: 結果表示 -->
     <div class="card" style="min-height: 600px;">
         <div class="card-header">
             <span>Ⅱ. 解析結果 ＆ ビジュアライゼーション</span>
@@ -257,9 +276,17 @@
                 </div>
                 <!-- 枠と高さを固定してガタつきを防ぐ -->
                 <div id="d3-biplot" style="width: 100%; height: 400px; border: 1px solid var(--border-color); border-radius: 4px; background: #fafbfc; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center;">
-                    <span style="color: #7f8c8d; font-weight: bold;">左のパネルから解析を実行してください...</span>
+                    <span style="color: #7f8c8d; font-weight: bold;">左のパネルからデータを入力し、解析を実行してください...</span>
                 </div>
                 <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">※原点から遠い遺伝子型ほど、特定の環境に対する相互作用（適応性や可塑性の偏り）が強いことを示します。近接してプロットされるGとEは、正の強い相互作用を持ちます。</p>
+                
+                <!-- 🖼️ グラフ保存 ボタン (データがない状態ではdisabled) -->
+                <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                    <button id="btn-save-png" class="btn btn-success" disabled onclick="downloadBiplotPNG()" data-tooltip="描画されたグラフをPNG画像としてダウンロードします">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        グラフ保存
+                    </button>
+                </div>
             </div>
 
             <!-- セクション: 分散分析表 -->
@@ -280,10 +307,17 @@
                             </tr>
                         </thead>
                         <tbody id="anova-tbody">
-                            <!-- 初期プレースホルダー -->
-                            <tr><td colspan="5" style="text-align: center; color: #7f8c8d; padding:15px; font-weight: bold;">左のパネルから解析を実行してください...</td></tr>
+                            <tr><td colspan="5" style="text-align: center; color: #7f8c8d; padding:15px; font-weight: bold;">左のパネルからデータを入力し、解析を実行してください...</td></tr>
                         </tbody>
                     </table>
+                </div>
+                
+                <!-- 📥 CSV保存 ボタン (データがない状態ではdisabled) -->
+                <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                    <button id="btn-save-csv" class="btn btn-success" disabled onclick="downloadANOVA_CSV()" data-tooltip="計算されたANOVA表をCSV形式でダウンロードします">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        CSV保存
+                    </button>
                 </div>
             </div>
 
@@ -314,13 +348,13 @@
     <p style="margin-bottom: 8px;">・同一のDNA（遺伝子型）を持つサンプル群を、異なる環境下で育成した際の表現型データを読み込みます。</p>
     <strong>【参考：モックデータ】</strong>
     <p style="margin-bottom: 8px;">
-        ・本シミュレーターでは岩田(1998)論文に基づく表現型の主成分得点を使用しています。<br>
+        ・本シミュレーターでは岩田(1998)論文に基づく表現型の主成分得点などを扱うことができます。<br>
         ・ノイズレベルで測定誤差をシミュレートできます。
     </p>
     <strong>【根拠：GxEの重要性】</strong>
     <p>
         ・生物の形（表現型）は、『遺伝』＋『環境』＋『遺伝と環境の相互作用(GxE)』で決まります。<br>
-        ・見た目が違うからといってすぐに別種（塩基配列など遺伝情報が違う）と決めつけず、AMMIモデル等の数学的処理により環境要因を取り除くことが重要です。
+        ・見た目が違うからといってすぐに別種（塩基配列など遺伝情報が違う）と決めつけず、AMMIモデル等の数学的処理により環境要因を取り除くことが分類学・統計遺伝学において重要です。
     </p>
 </div>
 
@@ -341,39 +375,163 @@
 </div>
 
 <div id="toast"></div>
-<!-- [Absolute-Zero] セクション3/5 完了。省略なしで続行 -->
 
 <!-- 計算ロジック・D3描画エンジン。省略なし -->
 <script>
     const state = {
         hasRun: false,
-        genotypes: ['Southern Yellow', 'Southern Red', 'Okitu41', 'Okitu43', 'Okitu44', 'Okitu45', 'Okitu46'],
-        environments: ['Saion', 'Okitu', 'Gamagori', 'Kinan', 'Hutyu', 'Tukumi', 'Kumamoto', 'Kagoshima'],
+        genotypes: [],
+        environments: [],
+        baseData: [], 
         data: [], 
         results: null
     };
 
-    function generateMockData() {
-        const trait = document.getElementById('trait-selector').value;
-        const noiseLevel = parseFloat(document.getElementById('noise-slider').value);
+    // --- 日付フォーマット取得ヘルパー ---
+    function getYYYYMMDD() {
+        const d = new Date();
+        return d.getFullYear().toString() + 
+               (d.getMonth() + 1).toString().padStart(2, '0') + 
+               d.getDate().toString().padStart(2, '0');
+    }
+
+    // --- ファイルドロップゾーン機能 ---
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', (e) => { 
+        e.preventDefault(); 
+        dropZone.classList.add('dragover'); 
+    });
+    dropZone.addEventListener('dragleave', () => { 
+        dropZone.classList.remove('dragover'); 
+    });
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length) handleFile(e.target.files[0]);
+        fileInput.value = ''; // 同じファイルを連続で選べるようにリセット
+    });
+
+    function handleFile(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('data-input').value = e.target.result;
+            updateDropdownFromTextarea();
+            showToast(`ファイル "${file.name}" を読み込みました。`, "info");
+        };
+        reader.onerror = function() {
+            showToast("ファイルの読み込みに失敗しました。", "error");
+        };
+        reader.readAsText(file);
+    }
+
+    // --- テキストエリアからのヘッダー解析とドロップダウン自動書き換え ---
+    function updateDropdownFromTextarea() {
+        const rawData = document.getElementById('data-input').value.trim();
+        if (!rawData) return;
+        const lines = rawData.split('\n');
+        if (lines.length === 0) return;
         
+        // タブまたはカンマで分割
+        const header = lines[0].split(/[\t,]+/).map(s => s.trim()).filter(s => s !== "");
+        
+        if (header.length > 2) {
+            const traits = header.slice(2);
+            const selector = document.getElementById('trait-selector');
+            const currentValue = selector.value;
+            selector.innerHTML = '';
+            traits.forEach((trait, idx) => {
+                const option = document.createElement('option');
+                option.value = idx;
+                option.text = trait;
+                selector.appendChild(option);
+            });
+            if (currentValue < traits.length) {
+                selector.value = currentValue;
+            } else {
+                selector.value = 0;
+            }
+        }
+    }
+
+    document.getElementById('data-input').addEventListener('blur', updateDropdownFromTextarea);
+
+    // --- 入力データのパースと計算エンジン（GxE行列）への橋渡し ---
+    function processData() {
+        const rawData = document.getElementById('data-input').value.trim();
+        if (!rawData) throw new Error("正しいフォーマットのデータを入力してください");
+        
+        const lines = rawData.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        if (lines.length < 2) throw new Error("正しいフォーマットのデータを入力してください");
+        
+        const header = lines[0].split(/[\t,]+/).map(s => s.trim()).filter(s => s !== "");
+        if (header.length < 3) throw new Error("正しいフォーマットのデータを入力してください（最低でも遺伝子型・環境・指標の3列が必要です）");
+        
+        const parsedData = [];
+        for (let i = 1; i < lines.length; i++) {
+            const cols = lines[i].split(/[\t,]+/).map(s => s.trim()).filter(s => s !== "");
+            // ヘッダー数と一致しない行はスキップまたはエラー
+            if (cols.length < 3) continue; 
+            parsedData.push(cols);
+        }
+        
+        if (parsedData.length === 0) throw new Error("データ行が見つかりません。");
+
+        const selector = document.getElementById('trait-selector');
+        let traitIdx = parseInt(selector.value);
+        if (isNaN(traitIdx)) traitIdx = 0;
+        
+        const genotypesSet = new Set();
+        const environmentsSet = new Set();
+        parsedData.forEach(row => {
+            genotypesSet.add(row[0]);
+            environmentsSet.add(row[1]);
+        });
+        
+        state.genotypes = Array.from(genotypesSet);
+        state.environments = Array.from(environmentsSet);
+        
+        const G = state.genotypes.length;
+        const E = state.environments.length;
+        state.baseData = Array.from({ length: G }, () => new Array(E).fill(null));
+        
+        parsedData.forEach((row, index) => {
+            const gIdx = state.genotypes.indexOf(row[0]);
+            const eIdx = state.environments.indexOf(row[1]);
+            const val = parseFloat(row[2 + traitIdx]);
+            
+            if (isNaN(val)) {
+                throw new Error(`数値に変換できないデータが含まれています: ${row[2 + traitIdx]}`);
+            }
+            state.baseData[gIdx][eIdx] = val;
+        });
+        
+        // 欠損値チェック（AMMIモデルは完全な行列を要求するため）
+        for (let g = 0; g < G; g++) {
+            for (let e = 0; e < E; e++) {
+                if (state.baseData[g][e] === null) {
+                    throw new Error(`遺伝子型 '${state.genotypes[g]}' と環境 '${state.environments[e]}' の組み合わせのデータが欠損しています。`);
+                }
+            }
+        }
+    }
+
+    function applyNoise() {
+        const noiseLevel = parseFloat(document.getElementById('noise-slider').value);
         const G = state.genotypes.length;
         const E = state.environments.length;
         state.data = Array.from({ length: G }, () => new Array(E).fill(0));
 
-        const gBase = trait === 'pca1' ? [1.5, -1.2, -0.8, -0.5, 0.2, -0.7, 0.4] :
-                      trait === 'pca2' ? [-0.5, 1.4, -0.9, 0.8, 0.9, -0.3, 0.6] :
-                                         [0.0, -0.4, 0.1, 0.5, 0.4, 0.2, -0.4];
-        
-        const eBase = trait === 'pca1' ? [-0.1, -0.3, -0.0, -0.0, -0.2, -0.2, -0.2, -0.4] :
-                      trait === 'pca2' ? [0.3, -0.1, 0.1, 0.2, -0.4, -0.0, 0.2, -0.0] :
-                                         [0.0, -0.2, 0.3, 0.1, 0.2, -0.0, 0.1, 0.0];
-
         for (let g = 0; g < G; g++) {
             for (let e = 0; e < E; e++) {
-                const interaction = (gBase[g] * eBase[e]) * 2.5; 
+                const val = state.baseData[g][e];
                 const noise = (Math.random() - 0.5) * noiseLevel;
-                state.data[g][e] = gBase[g] + eBase[e] + interaction + noise;
+                state.data[g][e] = val + noise;
             }
         }
     }
@@ -457,34 +615,24 @@
         const SS_IPCA2 = S.length > 1 ? Math.pow(S[1], 2) : 0;
         const dfIPCA1 = G + E - 1 - 2;
         const dfIPCA2 = G + E - 1 - 4;
-        
-        const dfResidual = dfI - dfIPCA1 - dfIPCA2;
-        const ssResidual = Math.max(0, SSI - SS_IPCA1 - SS_IPCA2);
-        const msResidual = dfResidual > 0 ? ssResidual / dfResidual : 0;
-
-        const fIPCA1 = msResidual > 0 ? (SS_IPCA1 / dfIPCA1) / msResidual : null;
-        const fIPCA2 = msResidual > 0 ? (SS_IPCA2 / dfIPCA2) / msResidual : null;
 
         state.results = {
             anova: {
                 G: { df: dfG, ss: SSG, ms: SSG/dfG, f: (SSG/dfG)/(SSI/dfI) }, 
                 E: { df: dfE, ss: SSE, ms: SSE/dfE, f: (SSE/dfE)/(SSI/dfI) },
                 GxE: { df: dfI, ss: SSI, ms: SSI/dfI, f: null },
-                IPCA1: { df: dfIPCA1, ss: SS_IPCA1, ms: SS_IPCA1/dfIPCA1, f: fIPCA1 },
-                IPCA2: { df: dfIPCA2, ss: SS_IPCA2, ms: SS_IPCA2/dfIPCA2, f: fIPCA2 },
-                Residual: { df: dfResidual, ss: ssResidual, ms: msResidual, f: null },
+                IPCA1: { df: dfIPCA1, ss: SS_IPCA1, ms: SS_IPCA1/dfIPCA1 },
+                IPCA2: { df: dfIPCA2, ss: SS_IPCA2, ms: SS_IPCA2/dfIPCA2 },
                 Total: { df: dfT, ss: SST }
             },
             biplot: [...gScores, ...eScores]
         };
     }
-<!-- [Absolute-Zero] セクション4/5 完了。省略なしで続行 -->
 
     function renderBiplot() {
         const container = document.getElementById('d3-biplot');
         if(!container) return;
         
-        // Flexboxのセンタリング設定を解除して左上基準に戻す
         container.style.display = 'block';
         container.innerHTML = ''; 
         
@@ -496,9 +644,13 @@
         const innerWidth = width - margin.left - margin.right;
         const innerHeight = height - margin.top - margin.bottom;
 
+        // 保存時にスタイルが適用されるように、最低限のフォントファミリーをSVGルートに設定
         const svg = d3.select(container).append("svg")
             .attr("width", width)
-            .attr("height", height);
+            .attr("height", height)
+            .attr("xmlns", "http://www.w3.org/2000/svg")
+            .style("font-family", "sans-serif")
+            .style("background-color", "#fafbfc");
 
         const g = svg.append("g")
             .attr("transform", `translate(${margin.left},${margin.top})`);
@@ -520,25 +672,30 @@
         const xAxis = d3.axisBottom(xScale).ticks(8);
         const yAxis = d3.axisLeft(yScale).ticks(8);
 
-        g.append("line").attr("class", "grid-line").attr("x1", 0).attr("x2", innerWidth).attr("y1", yScale(0)).attr("y2", yScale(0));
-        g.append("line").attr("class", "grid-line").attr("y1", 0).attr("y2", innerHeight).attr("x1", xScale(0)).attr("x2", xScale(0));
+        g.append("line").attr("class", "grid-line").attr("x1", 0).attr("x2", innerWidth).attr("y1", yScale(0)).attr("y2", yScale(0)).attr("stroke", "#bdc3c7").attr("stroke-dasharray", "4").attr("opacity", "0.5");
+        g.append("line").attr("class", "grid-line").attr("y1", 0).attr("y2", innerHeight).attr("x1", xScale(0)).attr("x2", xScale(0)).attr("stroke", "#bdc3c7").attr("stroke-dasharray", "4").attr("opacity", "0.5");
 
         g.append("g")
             .attr("transform", `translate(0,${innerHeight})`)
             .call(xAxis)
             .attr("class", "axis-text")
-            .selectAll("path, line").attr("class", "axis-path");
+            .selectAll("text").style("fill", "#7f8c8d").style("font-size", "10px");
 
         g.append("g")
             .call(yAxis)
             .attr("class", "axis-text")
-            .selectAll("path, line").attr("class", "axis-path");
+            .selectAll("text").style("fill", "#7f8c8d").style("font-size", "10px");
+
+        // 軸の線を明示的にスタイリング (SVG保存用)
+        g.selectAll(".domain").attr("stroke", "#bdc3c7");
+        g.selectAll(".tick line").attr("stroke", "#bdc3c7");
 
         svg.append("text")
             .attr("x", width / 2)
             .attr("y", height - 5)
             .attr("text-anchor", "middle")
-            .attr("class", "text-xs font-medium fill-[var(--text-muted)]")
+            .style("font-size", "12px")
+            .style("fill", "#7f8c8d")
             .text("AMMI 1 (IPCA1)");
 
         svg.append("text")
@@ -546,7 +703,8 @@
             .attr("x", -height / 2)
             .attr("y", 15)
             .attr("text-anchor", "middle")
-            .attr("class", "text-xs font-medium fill-[var(--text-muted)]")
+            .style("font-size", "12px")
+            .style("fill", "#7f8c8d")
             .text("AMMI 2 (IPCA2)");
 
         g.selectAll(".origin-line")
@@ -573,15 +731,21 @@
                 d3.select(this).select("circle").attr("r", 5);
             });
 
+        // ツールチップ属性(data-tooltip)とインラインスタイル適用（SVG保存互換）
         nodes.append("circle")
             .attr("r", 5)
-            .attr("class", d => d.type === '遺伝子型' ? 'dot-genotype' : 'dot-environment')
+            .attr("fill", d => d.type === '遺伝子型' ? "#e74c3c" : "#3b82f6")
+            .attr("stroke", d => d.type === '遺伝子型' ? "#b91c1c" : "#1d4ed8")
+            .attr("stroke-width", "1.5px")
             .attr("data-tooltip", d => `${d.name}\nIPCA1: ${d.ipca1.toFixed(3)}\nIPCA2: ${d.ipca2.toFixed(3)}\n平均: ${d.mean.toFixed(3)}`);
 
         nodes.append("text")
-            .attr("class", "label-text")
             .attr("dx", 8)
             .attr("dy", 3)
+            .style("font-size", "10px")
+            .style("font-weight", "bold")
+            .style("fill", "#2c3e50")
+            .style("pointer-events", "none")
             .text(d => d.name);
     }
 
@@ -590,12 +754,11 @@
         const a = state.results.anova;
         
         const rows = [
-            { source: '遺伝子型 (G)', data: a.G, bold: false },
-            { source: '環境 (E)', data: a.E, bold: false },
+            { source: '遺伝子型', data: a.G, bold: false },
+            { source: '環境', data: a.E, bold: false },
             { source: '交互作用 (GxE)', data: a.GxE, bold: true },
             { source: '&nbsp;&nbsp;├ IPCA 1', data: a.IPCA1, bold: false },
-            { source: '&nbsp;&nbsp;├ IPCA 2', data: a.IPCA2, bold: false },
-            { source: '&nbsp;&nbsp;└ 残差 (Residual)', data: a.Residual, bold: false },
+            { source: '&nbsp;&nbsp;└ IPCA 2', data: a.IPCA2, bold: false },
             { source: '全体', data: a.Total, bold: true }
         ];
 
@@ -611,10 +774,18 @@
     }
 
     function runAnalysis() {
+        try {
+            updateDropdownFromTextarea();
+            processData();
+        } catch(e) {
+            showToast(e.message, "error");
+            return;
+        }
+
         showToast("データセットをロードし、SVD行列演算を実行中...");
         
         setTimeout(() => {
-            generateMockData();
+            applyNoise();
             calculateAMMI();
             state.hasRun = true;
             
@@ -622,29 +793,81 @@
             renderBiplot();
             renderAnova();
 
+            // 解析完了後に保存ボタンの無効化を解除
+            document.getElementById('btn-save-png').disabled = false;
+            document.getElementById('btn-save-csv').disabled = false;
+
             showToast("AMMIモデルによるGxE解析が完了しました。", "success");
         }, 600);
     }
 
-    function resetData() {
-        state.hasRun = false;
-        state.data = [];
-        state.results = null;
-        
-        document.getElementById('biplot-legend').style.display = 'none';
-        
-        const biplotContainer = document.getElementById('d3-biplot');
-        if (biplotContainer) {
-            biplotContainer.style.display = 'flex'; // プレースホルダーのセンタリング用
-            biplotContainer.innerHTML = '<span style="color: #7f8c8d; font-weight: bold;">左のパネルから解析を実行してください...</span>';
+    // --- 出力機能: グラフ保存 (SVG -> PNG) ---
+    function downloadBiplotPNG() {
+        if (!state.hasRun) {
+            showToast("解析を実行してから保存してください。", "warning");
+            return;
         }
-        
-        const anovaTbody = document.getElementById('anova-tbody');
-        if (anovaTbody) {
-            anovaTbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #7f8c8d; padding:15px; font-weight: bold;">左のパネルから解析を実行してください...</td></tr>';
+        const svgElement = document.querySelector('#d3-biplot svg');
+        if (!svgElement) return;
+
+        const serializer = new XMLSerializer();
+        let source = serializer.serializeToString(svgElement);
+        if(!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
+            source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
         }
+        source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+        const url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
         
-        showToast("データと解析結果を初期状態にリセットしました。");
+        const img = new Image();
+        img.onload = function() {
+            const canvas = document.createElement("canvas");
+            // 高解像度化
+            canvas.width = svgElement.clientWidth * 2;
+            canvas.height = svgElement.clientHeight * 2;
+            const ctx = canvas.getContext("2d");
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            
+            const pngUrl = canvas.toDataURL("image/png");
+            const a = document.createElement("a");
+            a.download = `BioEdu_Export_${getYYYYMMDD()}.png`;
+            a.href = pngUrl;
+            a.click();
+        };
+        img.src = url;
+    }
+
+    // --- 出力機能: CSV保存 ---
+    function downloadANOVA_CSV() {
+        if (!state.hasRun || !state.results || !state.results.anova) {
+            showToast("解析を実行してから保存してください。", "warning");
+            return;
+        }
+        let csvContent = "要因,自由度,平方和,平均平方,F値\n";
+        const a = state.results.anova;
+        const rows = [
+            { source: '遺伝子型', data: a.G },
+            { source: '環境', data: a.E },
+            { source: '交互作用 (GxE)', data: a.GxE },
+            { source: '├ IPCA 1', data: a.IPCA1 },
+            { source: '└ IPCA 2', data: a.IPCA2 },
+            { source: '全体', data: a.Total }
+        ];
+        rows.forEach(r => {
+            const ms = r.data.ms !== undefined && r.data.ms !== null ? r.data.ms.toFixed(4) : "-";
+            const f = r.data.f !== undefined && r.data.f !== null ? r.data.f.toFixed(2) : "-";
+            csvContent += `"${r.source}",${r.data.df},${r.data.ss.toFixed(4)},${ms},${f}\n`;
+        });
+        
+        // 文字化け防止のためのBOM付加
+        const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const aElem = document.createElement("a");
+        aElem.href = url;
+        aElem.download = `BioEdu_Export_${getYYYYMMDD()}.csv`;
+        aElem.click();
+        URL.revokeObjectURL(url);
     }
 
     // --- ツールチップ機能 (ガイドライン第6項④ 準拠) ---
@@ -686,7 +909,7 @@
         }, true);
     }
 
-    // --- ポップオーバー解説パネル表示ロジック (ガイドライン第6項① 準拠) ---
+    // --- ポップオーバー解説パネル表示ロジック (ガイドライン第6項① 準拠・見切れ防止強化) ---
     function toggleRationale(event, id) { 
         event.stopPropagation(); 
         const el = document.getElementById(id); 
@@ -699,6 +922,8 @@
 
         if(!isShown) { 
             if (el.parentNode !== document.body) document.body.appendChild(el); 
+            
+            // 初期の非表示状態でサイズを取得するために一時的に配置
             el.style.top = '0px'; el.style.left = '0px'; 
             el.classList.add('show'); 
 
@@ -709,6 +934,7 @@
             let topPos = rect.bottom + 12; 
             let arrowClass = 'arrow-top'; 
 
+            // 下に見切れる場合は上へ
             if (rect.bottom + elHeight + 20 > window.innerHeight) { 
                 topPos = rect.top - elHeight - 12; 
                 arrowClass = 'arrow-bottom'; 
@@ -717,14 +943,17 @@
             el.style.top = topPos + 'px'; 
 
             let leftPos = rect.left - (elWidth / 2) + (rect.width / 2); 
+            // 左右に見切れる場合の補正
             if (leftPos + elWidth > window.innerWidth) leftPos = window.innerWidth - elWidth - 10; 
             if (leftPos < 10) leftPos = 10; 
             el.style.left = leftPos + 'px'; 
 
-            let arrowLeft = rect.left - leftPos + (rect.width / 2) - 6; 
-            if (arrowLeft < 12) arrowLeft = 12;
-            if (arrowLeft > elWidth - 12) arrowLeft = elWidth - 12;
-            el.style.setProperty('--arrow-left', arrowLeft + 'px'); 
+            // 尻尾（--arrow-left）のセーフティ計算（両端への食い込み防止）
+            const arrowOffset = rect.left - leftPos + (rect.width / 2) - 6; 
+            let safeArrowOffset = arrowOffset;
+            if (safeArrowOffset < 12) safeArrowOffset = 12;
+            if (safeArrowOffset > elWidth - 24) safeArrowOffset = elWidth - 24;
+            el.style.setProperty('--arrow-left', safeArrowOffset + 'px'); 
         } 
     } 
 
@@ -765,36 +994,9 @@
 
     window.onload = function() {
         initTooltips(); 
-        
-        try {
-            const dataStr = localStorage.getItem('bio_edu_active_sample');
-            if (!dataStr) {
-                showToast("データがありません。ダッシュボードからサンプルを選択してください。", "error");
-            } else {
-                const activeSample = JSON.parse(dataStr);
-                const now = new Date().getTime();
-                const savedTime = activeSample.timestamp || 0;
-                const isStaleData = (now - savedTime) > (60 * 60 * 1000); 
-                const isDemoOrUnknown = !activeSample.id || String(activeSample.id).startsWith('DEMO');
-
-                if (isStaleData && isDemoOrUnknown) {
-                    localStorage.removeItem('bio_edu_active_sample');
-                    showToast("古いキャッシュデータを破棄しました。ダッシュボードから再度選択してください。", "warning");
-                } else if (isStaleData) {
-                    showToast(`データ「${activeSample.name || 'サンプル'}」は1時間以上前のものです。必要ならダッシュボードから再選択してください。`, "warning");
-                } else if (isDemoOrUnknown) {
-                    showToast("デモデータをセットしました", "warning");
-                } else {
-                    showToast(`ダッシュボードから学習データ「${activeSample.name || 'サンプル'}」を引き継ぎました`, "info");
-                }
-            }
-        } catch (e) {
-            console.error("Local storage access error:", e);
-            showToast("データの読み込みに失敗しました", "error");
-        }
+        updateDropdownFromTextarea();
     }
 </script>
 </body>
 </html>
 ```eof
-<!-- [Absolute-Zero] セクション5/5 完了。省略なしで続行 -->
