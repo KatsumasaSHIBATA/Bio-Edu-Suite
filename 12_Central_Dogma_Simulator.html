@@ -30,7 +30,7 @@
   body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Noto Sans JP'; font-size: 14px; background-color: var(--bg-color); color: var(--text-main); margin: 0; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
   
   /* ガイドライン第5項 改行崩れ・テキスト折り返しの補正 */
-  body, .card, p, div, .bench-tip, .step-up-card, .rationale-text, .assist-panel, .dynamic-hint { word-break: normal; overflow-wrap: anywhere; line-height: 1.6; }
+  body, .card, p, div, .bench-tip, .step-up-card, .rationale-text, .assist-panel, .dynamic-hint, .dynamic-info { word-break: normal; overflow-wrap: anywhere; line-height: 1.6; }
   .label-title, .no-wrap { white-space: nowrap; }
 
   /* 共通ユーティリティクラス（インラインスタイル撲滅用） */
@@ -52,7 +52,8 @@
   .right-panel { display: flex; flex-direction: column; gap: 24px; flex: 1; min-width: 0; }
   
   .card { background: var(--card-bg); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: visible !important; display: flex; flex-direction: column; border-top: 4px solid var(--phase-color); }
-  .card-header { background: var(--secondary); color: white; padding: 12px 16px; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; position: relative; }
+  /* ヘッダー高さの完全同期（min-height追加） */
+  .card-header { background: var(--secondary); color: white; padding: 12px 16px; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; position: relative; min-height: 50px; }
   .card-body { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
 
   /* ガイドライン第2項 インラインSVGアイコン用共通カラークラス */
@@ -61,6 +62,7 @@
   .svg-danger { color: var(--danger); }
   .header-icon { width: 24px; height: 24px; flex-shrink: 0; }
   .btn-icon { width: 16px; height: 16px; flex-shrink: 0; margin-right: 4px; }
+  .tooltip-icon { width: 12px; height: 12px; vertical-align: -1px; margin-right: 4px; }
 
   /* ガイドライン第6項② 現場のコツ専用デザイン */
   .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px 16px; border-radius: 0 4px 4px 0; font-size: 12px; color: var(--text-main); line-height: 1.6; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
@@ -68,6 +70,7 @@
 
   /* ガイドライン第6項⑥ 動的ヒントのフラットデザイン */
   .dynamic-hint { background: #fdf2f2; border: 1px solid #f8d7da; color: #721c24; padding: 12px 16px; border-radius: 6px; font-weight: bold; font-size: 12px; text-align: left; }
+  .dynamic-info { background: #e8f8f5; border: 1px solid #27ae60; color: #1e8449; padding: 12px 16px; border-radius: 6px; font-weight: bold; font-size: 12px; text-align: left; }
 
   /* ガイドライン第6項① 根拠 (Rationale ポップオーバー) */
   .rationale-btn { background: var(--phase-color); color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; flex-shrink: 0; }
@@ -83,8 +86,8 @@
   .rationale-text.arrow-top::before { top: -14px; border-color: transparent transparent var(--warning) transparent; }
   .rationale-text.arrow-bottom::before { bottom: -14px; border-color: var(--warning) transparent transparent transparent; }
 
-  /* ガイドライン第6項④ カスタムツールチップ */
-  .custom-tooltip { position: fixed; background: rgba(44, 62, 80, 0.95); color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 11px; pointer-events: none; z-index: 9999; opacity: 0; transition: opacity 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-weight: normal; line-height: 1.4; display: none; white-space: normal; width: max-content; max-width: min(320px, 90vw); text-align: center; }
+  /* ガイドライン第6項④ カスタムツールチップ (正規設計: white-space normal) */
+  .custom-tooltip { position: fixed; background: rgba(44, 62, 80, 0.95); color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 11px; pointer-events: none; z-index: 9999; opacity: 0; transition: opacity 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-weight: normal; line-height: 1.4; display: none; white-space: normal; width: max-content; max-width: min(320px, 90vw); text-align: center; box-sizing: border-box; }
   .custom-tooltip::after { content: ''; position: absolute; border-width: 5px; border-style: solid; left: 50%; transform: translateX(-50%); }
   .custom-tooltip.show-top::after { top: 100%; border-color: rgba(44, 62, 80, 0.95) transparent transparent transparent; }
   .custom-tooltip.show-bottom::after { bottom: 100%; border-color: transparent transparent rgba(44, 62, 80, 0.95) transparent; }
@@ -116,12 +119,16 @@
   textarea:focus { border-color: var(--phase-color); box-shadow: 0 0 0 2px rgba(230, 126, 34, 0.2); }
 
   /* 解析結果エリア共通 */
-  .result-box { background: #1a252f; border-radius: 4px; padding: 16px; color: #ecf0f1; font-family: 'Courier New', Courier, monospace; overflow-x: auto; overflow-y: auto; font-size: 14px; line-height: 1.6; height: 200px; word-wrap: break-word; white-space: pre-wrap; box-shadow: inset 0 2px 10px rgba(0,0,0,0.5); }
+  .result-box { background: #1a252f; border-radius: 4px; padding: 16px; color: #ecf0f1; font-family: 'Courier New', Courier, monospace; overflow-x: auto; overflow-y: auto; font-size: 14px; line-height: 1.6; height: 200px; word-wrap: break-word; box-shadow: inset 0 2px 10px rgba(0,0,0,0.5); }
   
   /* マスター・アライメント用クラス群 (JS動的生成用) */
   .alignment-viewer { background: #0b0b0b; padding: 16px; border-radius: 4px; overflow-x: auto; overflow-y: hidden; margin-bottom: 8px; }
-  .alignment-row { display: flex; align-items: center; height: 26px; white-space: nowrap; font-family: 'Courier New', Consolas, monospace; font-size: 14px; }
-  .seq-name { width: 140px; color: #f1c40f; font-size: 12px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Noto Sans JP'; overflow: hidden; text-overflow: ellipsis; text-align: left; margin-right: 16px; flex-shrink: 0; }
+  /* 折り返し改行を許容するため min-height に設定 */
+  .alignment-row { display: flex; align-items: center; min-height: 26px; white-space: nowrap; font-family: 'Courier New', Consolas, monospace; font-size: 14px; }
+  
+  /* 矛盾したCSS（overflow等）を完全削除し、クリーンな折り返し指定へ是正 */
+  .seq-name { width: 140px; color: #f1c40f; font-size: 12px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Noto Sans JP'; text-align: left; margin-right: 16px; flex-shrink: 0; white-space: normal; word-break: break-all; }
+  
   .seq-prefix { color: #f1c40f; font-weight: bold; width: 30px; text-align: right; margin-right: 8px; flex-shrink: 0; }
   .seq-suffix { color: #f1c40f; font-weight: bold; width: 30px; margin-left: 8px; flex-shrink: 0; }
   .seq-info { color: #7f8c8d; font-size: 11px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Noto Sans JP'; margin-left: 16px; flex-shrink: 0; }
@@ -129,6 +136,7 @@
   .unaligned-alert { color: var(--danger); margin-left: 10px; }
   .seq-truncated { color: #7f8c8d; letter-spacing: normal; }
   .consensus-match { color: #ecf0f1; }
+  /* インラインスタイル撲滅対応: クラス一元化 */
   .consensus-mismatch { color: transparent; }
 
   .rna-base { font-weight: bold; letter-spacing: 1px; }
@@ -197,7 +205,6 @@
   </style>
 </head>
 <body>
-
 <div class="header-container">
   <div class="header">
     <div>
@@ -239,13 +246,12 @@
         
         <div id="inputHintCompare" class="dynamic-hint" style="display:none;">
           【比較解析の注意点（パイプライン連携）】<br>
-          NCBI等から取得したDNAの塩基配列を複数そのまま比較すると、開始位置（UTR）のズレにより、翻訳フレームが狂って全て突然変異（真っ赤）として検出されることがあります。<br>
+          NCBI等から取得したDNAの塩基配列を複数そのまま比較すると、開始位置（UTR）のズレにより、翻訳フレームが狂って全て変異（真っ赤）として検出されることがあります。<br>
           正確に比較するには、必ずアプリ⑤（DNA Alignment Studio）でアライメントとトリミングを行ってから、データをここにペーストしてください。
         </div>
 
       </div>
     </div>
-
     <!-- Ⅱ. 転写 -->
     <div class="card">
       <div class="card-header">
@@ -292,7 +298,6 @@
     </div>
 
   </div>
-
   <!-- 右側：結果表示ビューア -->
   <div class="right-panel">
     
@@ -335,7 +340,6 @@
   </div>
 
 </div>
-
 <div class="status-bar">
   <span id="statusText">ステータス: ステップ1 - FASTA形式の塩基配列を入力してください（複数可）。</span>
   <span id="posText">塩基配列: 0 件</span>
@@ -363,7 +367,7 @@
     setTimeout(() => { toast.classList.remove("show"); }, 3000);
   }
 
-  // --- カスタムツールチップ（ガイドライン第6項④ 準拠） ---
+  // --- カスタムツールチップ（ガイドライン第6項④ 準拠 / 正規設計） ---
   function initTooltips() { 
     const tooltip = document.createElement('div'); 
     tooltip.className = 'custom-tooltip'; 
@@ -372,8 +376,8 @@
     document.body.addEventListener('mouseover', (e) => { 
       const target = e.target.closest('[data-tooltip]'); 
       if (target && !target.classList.contains('rationale-btn')) { 
-        // 取得した文字列内の改行文字を<br>タグに置換して挿入（インラインスタイルでの改行潰れを回避）
-        tooltip.innerHTML = target.getAttribute('data-tooltip').replace(/\n/g, '<br>'); 
+        // テンプレートリテラル内で<br>が組み込まれている前提で、そのままinnerHTMLへ流し込む
+        tooltip.innerHTML = target.getAttribute('data-tooltip'); 
         tooltip.style.display = 'block'; 
         const rect = target.getBoundingClientRect(); 
         const ttRect = tooltip.getBoundingClientRect(); 
@@ -398,7 +402,6 @@
     }); 
   } 
   window.addEventListener('DOMContentLoaded', initTooltips);
-
   // --- 教育的UIモジュール①: 根拠ポップオーバー（ガイドライン第6項① 準拠 / offsetWidthベース） ---
   function toggleRationale(event, id) { 
     event.stopPropagation(); 
@@ -457,7 +460,6 @@
       el.classList.remove('show', 'arrow-top', 'arrow-bottom'); 
     }); 
   }, true); 
-
   const dropZone = document.getElementById('dropZone');
   ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => { dropZone.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); }, false); });
   dropZone.addEventListener('dragover', () => dropZone.classList.add('dragover'));
@@ -508,7 +510,8 @@
       }
     }
     if(currentSeq) seqs.push({name: currentName, seq: currentSeq});
-    if(!hasHeader && seqs.length === 1) seqs[0].name = "Input Sequence";
+    // PDF規格準拠：IT用語の徹底排除 (第7次監査是正)
+    if(!hasHeader && seqs.length === 1) seqs[0].name = "入力塩基配列";
     return seqs;
   }
 
@@ -526,7 +529,6 @@
       document.getElementById('inputHintCompare').style.display = 'none';
     }
   }
-
   let currentMRNAs = [];
 
   function runTranscription() {
@@ -544,7 +546,7 @@
     
     htmlOutput += `<div class="alignment-viewer">`;
     
-    // ツールチップによる文字表示の二重化を防ぐため、data-tooltipを削除
+    // 省略のない配列名の表示とレイアウト保護の設計
     let generateRow = (name, prefix, seqHtml, suffix, info) => {
       return `<div class="alignment-row">` +
              `<div class="seq-name">${name}</div>` +
@@ -593,7 +595,8 @@
         if (b1 && b2 && b1 === b2 && b1 !== '-') {
           matchHTML += `<span class="rna-base consensus-match">|</span>`;
         } else {
-          matchHTML += `<span class="rna-base consensus-mismatch">&nbsp;</span>`; 
+          // インラインスタイル撲滅。CSSの.consensus-mismatchで透過管理
+          matchHTML += `<span class="rna-base consensus-mismatch">_</span>`; 
         }
       }
       htmlOutput += generateRow("", "", matchHTML, "", ""); // 相同性バー行
@@ -617,10 +620,12 @@
     let resultBox = document.getElementById('mrnaResult');
     resultBox.innerHTML = htmlOutput;
     
+    // 強制レイアウト保護（wordBreak等のCSSを元に戻し、正規プロパティを適用）
+    resultBox.style.whiteSpace = "normal"; 
+    
     document.getElementById('btnTranslate').disabled = false;
     document.getElementById('statusText').innerText = "ステータス: 転写完了。塩基の色付けが適用されました。続いて「翻訳」を実行してください。";
   }
-
   const aminoAcids = {
     'A': { code3: 'Ala', name: 'Alanine', property: '非極性 (疎水性)', groupClass: 'aa-nonpolar' },
     'R': { code3: 'Arg', name: 'Arginine', property: '塩基性 (+)', groupClass: 'aa-basic' },
@@ -696,13 +701,17 @@
       
       div.className = className;
       
-      let tooltipText = `残基番号: ${pos}\n${aaData.code3} (${aaData.name})\n${aaData.property}`;
+      // 改行を <br> タグで定義（正規の設計）
+      let tooltipText = `残基番号: ${pos}<br>${aaData.code3} (${aaData.name})<br>${aaData.property}`;
       if(isMutated) {
         let dWT = aminoAcids[aaWT] || { code3: 'Unk', property: '不明' };
-        let warningSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;vertical-align:-1px;margin-right:4px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
-        // インラインの左寄せ設定と微調整用空白を完全に撤去し、全体のセンタリング（.custom-tooltip準拠）に統一
-        tooltipText = `${warningSvg}突然変異箇所 (残基 ${pos})\n[野生型] ${dWT.code3} (${dWT.property})\n↓\n[突然変異体] ${aaData.code3} (${aaData.property})`;
+        // インラインスタイル撤去・SVG属性へのwidth/height明記による巨大化バグの絶対阻止
+        let warningSvg = `<svg class="svg-hint tooltip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+        
+        // 用語統一: 「変異箇所」（バリアントとしての意味付け）
+        tooltipText = `${warningSvg}変異箇所 (残基 ${pos})<br>[野生型] ${dWT.code3} (${dWT.property})<br>↓<br>[突然変異体] ${aaData.code3} (${aaData.property})`;
       }
+      
       if(aaMut !== '?') div.setAttribute('data-tooltip', tooltipText);
 
       div.innerHTML = `
@@ -714,18 +723,15 @@
     }
 
     container.appendChild(frag);
-
     // 行幅の正確なシミュレーションとフィット（右余白はみ出しバグ修正）
     requestAnimationFrame(() => {
       const boxes = Array.from(container.querySelectorAll('.codon-box'));
       if (boxes.length > 0) {
-        // スクロールバーの影響を排除して自然な状態での親幅を計算するため、一旦リセット
         container.style.width = '100%';
         container.style.margin = '0';
         
         const paddingTotal = 32; 
         const gap = 5; 
-        // 実際のコンテナのクライアント幅（スクロールバーを除いた表示領域）
         const availableWidth = container.clientWidth - paddingTotal;
         
         let maxLineWidth = 0;
@@ -746,26 +752,25 @@
         }
         if (currentLineWidth > maxLineWidth) maxLineWidth = currentLineWidth;
         
-        // スクロールバーやボーダーの幅を合算（これを忘れると幅が足りずはみ出します）
         const extraWidth = container.offsetWidth - container.clientWidth;
         
-        // 最終的なコンテナ幅をピッタリに設定
         container.style.width = (maxLineWidth + paddingTotal + extraWidth) + 'px';
         container.style.margin = '0 auto';
         container.style.justifyContent = 'flex-start';
       }
     });
 
-    // ガイドライン第6項⑥ プレーンテキストによる通知
+    // アラート出力 (ハリボテ排除・カラールールに基づくクラス適用)
     const alertBox = document.getElementById('mutationAlertContainer');
     if (mutPositions.length > 0) {
       localStorage.setItem('bio_edu_suite_mutations', JSON.stringify(mutPositions));
       alertBox.style.display = 'block';
-      alertBox.className = 'dynamic-hint';
-      alertBox.innerHTML = `アミノ酸配列の変化を ${mutPositions.length} 箇所検出しました。<br>突然変異残基番号: ${mutPositions.join(', ')}<br><br>この突然変異データは自動的にシステムに保存されました。<br>続いてアプリ⑬を開き、「突然変異を同期」ボタンを押して影響を確認してください。`;
+      alertBox.className = 'dynamic-hint'; // Danger系 (赤)
+      // 用語統一: 変異残基番号、変異データ、変異を同期
+      alertBox.innerHTML = `アミノ酸配列の変化を ${mutPositions.length} 箇所検出しました。<br>変異残基番号: ${mutPositions.join(', ')}<br><br>この変異データは自動的にシステムに保存されました。<br>続いてアプリ⑬を開き、「変異を同期」ボタンを押して影響を確認してください。`;
     } else if (currentMRNAs.length > 1) {
       alertBox.style.display = 'block';
-      alertBox.className = 'dynamic-hint';
+      alertBox.className = 'dynamic-info'; // Success系 (緑)
       alertBox.innerHTML = `アミノ酸配列の変化は検出されませんでした。<br>DNAの塩基配列において突然変異が起きていてもアミノ酸配列が変わらない（同義置換）可能性が高いです。`;
     } else {
       alertBox.style.display = 'none'; 
@@ -808,4 +813,3 @@
 </script>
 </body>
 </html>
-```eof
