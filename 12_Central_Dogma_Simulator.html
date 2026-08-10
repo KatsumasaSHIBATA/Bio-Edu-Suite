@@ -99,6 +99,10 @@
   .btn-secondary:hover:not(:disabled) { background-color: #eaf2f8; border-color: #3498db; color: #2980b9; }
   .btn-block { width: 100%; }
 
+  /* コピーボタンの高さ調整（mRNAヘッダーと高さを揃える） */
+  #copyAaBtn { padding: 4px 12px; font-size: 11px; height: 26px; }
+  #copyAaBtn .btn-icon { width: 14px; height: 14px; }
+
   /* 入力フォーム類 */
   .form-group { display: flex; flex-direction: column; gap: 8px; }
   .form-group label { font-size: 13px; font-weight: 600; color: var(--secondary); }
@@ -368,7 +372,8 @@
     document.body.addEventListener('mouseover', (e) => { 
       const target = e.target.closest('[data-tooltip]'); 
       if (target && !target.classList.contains('rationale-btn')) { 
-        tooltip.innerHTML = target.getAttribute('data-tooltip'); 
+        // 取得した文字列内の改行文字を<br>タグに置換して挿入（インラインスタイルでの改行潰れを回避）
+        tooltip.innerHTML = target.getAttribute('data-tooltip').replace(/\n/g, '<br>'); 
         tooltip.style.display = 'block'; 
         const rect = target.getBoundingClientRect(); 
         const ttRect = tooltip.getBoundingClientRect(); 
@@ -539,9 +544,10 @@
     
     htmlOutput += `<div class="alignment-viewer">`;
     
+    // ツールチップによる文字表示の二重化を防ぐため、data-tooltipを削除
     let generateRow = (name, prefix, seqHtml, suffix, info) => {
       return `<div class="alignment-row">` +
-             `<div class="seq-name" data-tooltip="${name}">${name}</div>` +
+             `<div class="seq-name">${name}</div>` +
              `<span class="seq-prefix">${prefix}</span>` +
              `<span>${seqHtml}</span>` +
              `<span class="seq-suffix">${suffix}</span>` +
@@ -572,23 +578,38 @@
       return { name: seqObj.name, seqHtml: coloredRNA, length: seqObj.mrna.length, raw: displayRNA };
     });
 
-    rnaRows.forEach(row => {
-      htmlOutput += generateRow(row.name, "5'-", row.seqHtml, "-3'", `(${row.length} bp)`);
-    });
-
     if (currentMRNAs.length > 1) {
-      let consensusHTML = '';
-      let len = Math.max(rnaRows[0].raw.length, rnaRows[1].raw.length);
+      // NCBI BLASTスタイル (Seq1 -> Match -> Seq2)
+      let seq1 = rnaRows[0];
+      let seq2 = rnaRows[1];
+
+      htmlOutput += generateRow(seq1.name, "5'-", seq1.seqHtml, "-3'", `(${seq1.length} bp)`);
+
+      let matchHTML = '';
+      let len = Math.max(seq1.raw.length, seq2.raw.length);
       for(let i=0; i<len; i++) {
-        let b1 = rnaRows[0].raw[i];
-        let b2 = rnaRows[1].raw[i];
+        let b1 = seq1.raw[i];
+        let b2 = seq2.raw[i];
         if (b1 && b2 && b1 === b2 && b1 !== '-') {
-          consensusHTML += `<span class="rna-base consensus-match">*</span>`;
+          matchHTML += `<span class="rna-base consensus-match">|</span>`;
         } else {
-          consensusHTML += `<span class="rna-base consensus-mismatch">_</span>`; 
+          matchHTML += `<span class="rna-base consensus-mismatch">&nbsp;</span>`; 
         }
       }
-      htmlOutput += generateRow("Consensus", "", consensusHTML, "", "");
+      htmlOutput += generateRow("", "", matchHTML, "", ""); // 相同性バー行
+      
+      htmlOutput += generateRow(seq2.name, "5'-", seq2.seqHtml, "-3'", `(${seq2.length} bp)`);
+
+      // 3配列以上ある場合のフォールバック表示
+      for (let j = 2; j < rnaRows.length; j++) {
+        let seq = rnaRows[j];
+        htmlOutput += generateRow(seq.name, "5'-", seq.seqHtml, "-3'", `(${seq.length} bp)`);
+      }
+    } else {
+      // 通常モード
+      rnaRows.forEach(row => {
+        htmlOutput += generateRow(row.name, "5'-", row.seqHtml, "-3'", `(${row.length} bp)`);
+      });
     }
     
     htmlOutput += `</div>`;
@@ -678,7 +699,9 @@
       let tooltipText = `残基番号: ${pos}\n${aaData.code3} (${aaData.name})\n${aaData.property}`;
       if(isMutated) {
         let dWT = aminoAcids[aaWT] || { code3: 'Unk', property: '不明' };
-        tooltipText = `突然変異箇所 (残基 ${pos})\n[野生型] ${dWT.code3} (${dWT.property})\n ↓\n[突然変異体] ${aaData.code3} (${aaData.property})`;
+        let warningSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;vertical-align:-1px;margin-right:4px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+        // インラインの左寄せ設定と微調整用空白を完全に撤去し、全体のセンタリング（.custom-tooltip準拠）に統一
+        tooltipText = `${warningSvg}突然変異箇所 (残基 ${pos})\n[野生型] ${dWT.code3} (${dWT.property})\n↓\n[突然変異体] ${aaData.code3} (${aaData.property})`;
       }
       if(aaMut !== '?') div.setAttribute('data-tooltip', tooltipText);
 
@@ -692,20 +715,42 @@
 
     container.appendChild(frag);
 
+    // 行幅の正確なシミュレーションとフィット（右余白はみ出しバグ修正）
     requestAnimationFrame(() => {
-      const boxes = Array.from(container.querySelectorAll('.codon-box:not(.codon-stop)'));
+      const boxes = Array.from(container.querySelectorAll('.codon-box'));
       if (boxes.length > 0) {
-        const paddingTotal = 32; 
-        const boxWidth = 44; 
-        const gap = 5; 
-        const parentWidth = container.parentElement.clientWidth;
-        const availableWidth = parentWidth - paddingTotal;
-        const maxCols = Math.floor((availableWidth + gap) / (boxWidth + gap));
-        const totalBoxes = container.querySelectorAll('.codon-box').length;
-        const cols = Math.min(maxCols, totalBoxes);
-        const exactWidth = cols * boxWidth + (cols - 1) * gap;
+        // スクロールバーの影響を排除して自然な状態での親幅を計算するため、一旦リセット
+        container.style.width = '100%';
+        container.style.margin = '0';
         
-        container.style.width = (exactWidth + paddingTotal) + 'px';
+        const paddingTotal = 32; 
+        const gap = 5; 
+        // 実際のコンテナのクライアント幅（スクロールバーを除いた表示領域）
+        const availableWidth = container.clientWidth - paddingTotal;
+        
+        let maxLineWidth = 0;
+        let currentLineWidth = 0;
+        
+        for (let i = 0; i < boxes.length; i++) {
+          const box = boxes[i];
+          const boxW = box.classList.contains('codon-stop') ? 56 : 44;
+          
+          if (currentLineWidth === 0) {
+            currentLineWidth = boxW;
+          } else if (currentLineWidth + gap + boxW <= availableWidth) {
+            currentLineWidth += gap + boxW;
+          } else {
+            if (currentLineWidth > maxLineWidth) maxLineWidth = currentLineWidth;
+            currentLineWidth = boxW;
+          }
+        }
+        if (currentLineWidth > maxLineWidth) maxLineWidth = currentLineWidth;
+        
+        // スクロールバーやボーダーの幅を合算（これを忘れると幅が足りずはみ出します）
+        const extraWidth = container.offsetWidth - container.clientWidth;
+        
+        // 最終的なコンテナ幅をピッタリに設定
+        container.style.width = (maxLineWidth + paddingTotal + extraWidth) + 'px';
         container.style.margin = '0 auto';
         container.style.justifyContent = 'flex-start';
       }
@@ -763,3 +808,4 @@
 </script>
 </body>
 </html>
+```eof
