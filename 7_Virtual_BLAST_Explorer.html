@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Virtual BLAST Explorer v31.0 | Bio-Edu Suite</title>
     <style>
-        /* テーマカラー規格（ガイドライン第3項） */
         :root {
-            /* 【共通】ベースカラー・ステータスカラー */
             --primary: #2c3e50;        /* ダークネイビー (主要テキスト) */
             --secondary: #34495e;      /* ネイビー (サブヘッダー) */
             --bg-color: #f0f3f4;       /* ライトグレー (背景) */
@@ -18,168 +16,120 @@
             --success: #27ae60;        /* 成功・保存 */
             --danger: #e74c3c;         /* エラー・警告 */
             --warning: #f39c12;        /* ヒント・教育ポップオーバー */
-
-            /* 【アプリ個別】フェーズカラー (Phase 1 & 2) */
             --phase-color: #1abc9c;
             --phase-color-hover: #16a085;
         }
 
         *, *::before, *::after { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Noto Sans JP'; background-color: #f0f3f4; color: var(--text-main); margin: 0; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; font-size: 14px; line-height: 1.6; }
         
-        /* タイポグラフィ規格（ガイドライン第11項①） */
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Noto Sans JP'; 
-            background-color: var(--bg-color); 
-            color: var(--text-main); 
-            margin: 0; 
-            display: flex; 
-            flex-direction: column; 
-            min-height: 100vh; 
-            overflow-x: hidden; 
-            font-size: 14px; 
-            line-height: 1.6;
-        }
-        
-        .sequence-text { 
-            font-family: 'Courier New', Consolas, monospace; 
-            letter-spacing: 1px; 
-        }
-        
-        /* 改行崩れ・テキスト折り返しの補正（ガイドライン第5項） */
         body, .card, p, div, .bench-tip, .step-up-card, .rationale-text, .assist-panel, .dynamic-hint { word-break: normal; overflow-wrap: anywhere; line-height: 1.6; }
         .label-title, .no-wrap { white-space: nowrap; }
 
-        /* ヘッダー・バッジ規格（ガイドライン第5項・第9項④） */
         .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid var(--phase-color); display: flex; justify-content: center; position: sticky; top: 0; z-index: 30; box-shadow: 0 2px 10px rgba(0,0,0,0.15); flex-shrink: 0; }
         .header { width: 100%; max-width: 1400px; padding: 12px 20px; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; position: relative; }
         .header h1 { margin: 0; font-size: 20px; font-weight: 700; color: #fff; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
-        .header p { margin: 4px 0 0 0; font-size: 11px; color: var(--phase-color); font-weight: 600; }
+        .header p { margin: 4px 0 0 0; font-size: 11px; color: var(--phase-color); font-weight: 600; letter-spacing: 0.5px; }
         .version-badge { position: absolute; right: 20px; top: 15px; background: var(--secondary); color: var(--phase-color); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid var(--phase-color); }
 
         .main-content { width: 100%; max-width: 1400px; margin: 0 auto; padding: 15px; display: flex; flex-wrap: wrap; gap: 15px; flex: 1; align-items: flex-start; }
         
-        /* コンテナ設計 */
         .card { background: var(--card-bg); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; border-top: 4px solid var(--secondary); flex: 1; min-width: 350px; }
         .card-header { background: var(--secondary); color: white; padding: 10px 15px; font-size: 14px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
         .card-body { padding: 15px; display: flex; flex-direction: column; gap: 10px; position: relative; } 
 
-        /* 根拠表示用スタイル（ガイドライン第6項①） */
         .rationale-btn { background: var(--phase-color); color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; flex-shrink: 0; }
         .rationale-btn:hover { transform: scale(1.1); filter: brightness(1.2); }
 
-        .rationale-text { position: fixed; background: #fef9e7; border: 1px solid var(--warning); padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: max-content; max-width: min(320px, calc(100vw - 24px)); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; } 
-        .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; } 
-        .rationale-text strong { color: #d35400; display: block; margin-bottom: 4px; font-size: 12px; } 
-
-        /* 吹き出しの尻尾 (三角形) */ 
-        .rationale-text::after { content: ''; position: absolute; border-width: 6px; border-style: solid; left: var(--arrow-left, 50%); } 
-        .rationale-text.arrow-top::after { top: -12px; border-color: transparent transparent #fef9e7 transparent; } 
-        .rationale-text.arrow-bottom::after { bottom: -12px; border-color: #fef9e7 transparent transparent transparent; } 
-        .rationale-text::before { content: ''; position: absolute; border-width: 7px; border-style: solid; left: calc(var(--arrow-left, 50%) - 1px); } 
-        .rationale-text.arrow-top::before { top: -14px; border-color: transparent transparent var(--warning) transparent; } 
+        .rationale-text { position: fixed; background: #fef9e7; border: 1px solid var(--warning); padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: max-content; max-width: min(320px, calc(100vw - 24px)); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; }
+        .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
+        .rationale-text strong { color: #d35400; display: block; margin-bottom: 4px; font-size: 12px; }
+        
+        .rationale-text::after { content: ''; position: absolute; border-width: 6px; border-style: solid; left: var(--arrow-left, 50%); }
+        .rationale-text.arrow-top::after { top: -12px; border-color: transparent transparent #fef9e7 transparent; }
+        .rationale-text.arrow-bottom::after { bottom: -12px; border-color: #fef9e7 transparent transparent transparent; }
+        .rationale-text::before { content: ''; position: absolute; border-width: 7px; border-style: solid; left: calc(var(--arrow-left, 50%) - 1px); }
+        .rationale-text.arrow-top::before { top: -14px; border-color: transparent transparent var(--warning) transparent; }
         .rationale-text.arrow-bottom::before { bottom: -14px; border-color: var(--warning) transparent transparent transparent; }
 
-        /* ヘッダーアイコン・SVGアイコン定義（ガイドライン第2項） */
-        .header-icon { width: 20px; height: 20px; vertical-align: -3px; margin-right: 6px; flex-shrink: 0; }
-        .btn-icon { width: 14px; height: 14px; vertical-align: -2px; flex-shrink: 0; }
-        
-        .svg-hint { color: var(--warning); } 
-        .svg-info { color: inherit; } 
-        .svg-danger { color: var(--danger); } 
+        .svg-hint { color: var(--warning); }
+        .svg-info { color: inherit; }
+        .svg-danger { color: var(--danger); }
+        .header-icon { width: 20px; height: 20px; vertical-align: -3px; margin-right: 6px; flex-shrink: 0; stroke: currentColor; }
+        .btn-icon { width: 14px; height: 14px; vertical-align: -2px; flex-shrink: 0; stroke: currentColor; }
 
-        /* ドラッグ＆ドロップエリア（ガイドライン第9項①） */
-        .drop-zone { border: 2px dashed var(--border-color); background: #f8f9fa; border-radius: 8px; padding: 16px; text-align: center; transition: 0.2s; cursor: pointer; margin-bottom: 5px;}
-        .drop-zone:hover, .drop-zone.dragover { background: #e8f8f5; border-color: var(--phase-color); }
-        .drop-zone p { margin: 0; font-size: 11px; color: var(--text-muted); font-weight: bold; pointer-events: none; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        
+        .drop-zone { border: 2px dashed var(--border-color); border-radius: 8px; padding: 16px; text-align: center; background: #f8f9fa; transition: 0.2s; cursor: pointer; margin-bottom: 5px; }
+        .drop-zone:hover, .drop-zone.dragover { background: #eaf2f8; border-color: var(--primary); }
+        .drop-zone p { margin: 0; font-size: 12px; color: var(--primary); font-weight: bold; pointer-events: none; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
         input[type="file"] { display: none; }
 
-        textarea { width: 100%; height: 70px; font-family: 'Courier New', Consolas, monospace; font-size: 10px; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; resize: vertical; outline: none; transition: 0.2s; background: #fdfefe; }
+        textarea { width: 100%; height: 70px; font-family: 'Courier New', Consolas, monospace; font-size: 11px; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; resize: vertical; outline: none; transition: 0.2s; background: #fdfefe; letter-spacing: 1px; }
         textarea:focus { border-color: var(--phase-color); box-shadow: 0 0 0 2px rgba(26, 188, 156, 0.2); }
 
-        /* ボタン規定（ガイドライン第11項②・第4項） */
-        .btn { background: #fdfefe; border: 1px solid var(--border-color); padding: 8px 16px; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; border-radius: 4px; font-weight: bold; transition: all 0.2s; color: var(--text-main); width: fit-content; box-shadow: none; }
-        .btn:hover:not(:disabled) { box-shadow: 0 2px 4px rgba(0,0,0,0.1); filter: brightness(1.05); border-color: var(--phase-color); color: var(--phase-color); }
-        .btn:active:not(:disabled) { transform: scale(0.98); box-shadow: none; }
-        
+        .btn { background: #fdfefe; border: 1px solid var(--border-color); padding: 8px 16px; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 4px; font-weight: bold; transition: all 0.2s; color: var(--text-main); text-decoration: none; width: fit-content; box-shadow: none; }
+        .btn:hover:not(:disabled) { box-shadow: 0 2px 4px rgba(0,0,0,0.1); filter: brightness(1.05); }
+        .btn:active:not(:disabled) { transform: scale(0.98); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(50%); box-shadow: none; }
         .btn-primary { background: #3498db; color: white; border-color: #2980b9; }
-        .btn-primary:hover:not(:disabled) { color: white; border-color: #2980b9; }
-        
+        .btn-primary:hover:not(:disabled) { color: white; }
         .btn-danger { background: var(--danger); color: white; border-color: #c0392b; }
-        .btn-danger:hover:not(:disabled) { color: white; border-color: #c0392b; }
-        
-        .btn-sm { font-size: 10px; padding: 4px 8px; }
+        .btn-sm { font-size: 11px; padding: 4px 10px; }
 
-        /* 入力フォームのフォーカス（ガイドライン第11項③） */
-        .primer-input { padding: 8px 10px; font-family: monospace; border: 1px solid var(--border-color); border-radius: 4px; font-size: 13px; background: #fafafa; outline: none; transition: 0.2s; font-weight: bold; width: 100%; box-sizing: border-box;}
-        .primer-input:focus { border-color: var(--phase-color); box-shadow: 0 0 0 2px rgba(26, 188, 156, 0.2); background: #fff; }
-
-        /* スコアリング設定パネル */
-        .scoring-panel { display: flex; justify-content: space-between; align-items: center; background: #ecf0f1; padding: 10px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid var(--border-color); flex-wrap: wrap; gap: 10px;}
-        .score-item { display: flex; align-items: center; gap: 5px; }
+        .scoring-panel { display: flex; justify-content: space-between; align-items: center; background: #ecf0f1; padding: 12px; border-radius: 4px; font-size: 12px; font-weight: bold; border: 1px solid var(--border-color); flex-wrap: wrap; gap: 10px;}
+        .score-item { display: flex; align-items: center; gap: 6px; }
         .score-input { width: 50px; padding: 4px; border: 1px solid var(--border-color); border-radius: 3px; font-weight: bold; text-align: center; }
-        
-        .db-status { font-size: 11px; color: #8e44ad; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: #f5eef8; padding: 5px 10px; border-radius: 4px; border: 1px solid #ebdef0;}
+        .score-input:focus { outline: none; border-color: var(--phase-color); box-shadow: 0 0 0 2px rgba(26, 188, 156, 0.2); }
 
-        /* 結果パネル */
         .result-card { flex: 1.8; min-width: 500px; }
         .result-header { background: var(--secondary); }
         
-        table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: left; }
-        th, td { border-bottom: 1px solid var(--border-color); padding: 8px; }
-        th { background-color: #eaeded; color: var(--text-main); }
-        tr:hover { background-color: #f8f9f9; cursor: pointer; }
-        .hit-row.selected { background-color: #d5f5e3; border-left: 4px solid var(--success); }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
+        th, td { border-bottom: 1px solid var(--border-color); padding: 10px 8px; }
+        th { background-color: #f8f9fa; color: var(--primary); font-weight: bold; }
+        tr:hover { background-color: #f8f9fa; cursor: pointer; }
+        .hit-row.selected { background-color: #eaf2f8; border-left: 4px solid var(--primary); }
         
         .evalue-good { color: var(--success); font-weight: bold; }
         .evalue-bad { color: var(--danger); font-weight: bold; }
 
-        /* アライメント詳細表示 */
         .alignment-detail { background: #1a252f; color: #ecf0f1; padding: 15px; border-radius: 4px; font-size: 12px; line-height: 1.5; overflow-x: auto; margin-top: 10px; display: none; box-shadow: inset 0 5px 15px rgba(0,0,0,0.5); }
         .aln-row { display: flex; white-space: pre; }
-        .aln-label { width: 130px; color: #3498db; font-weight: bold; flex-shrink: 0; font-family: 'Courier New', Consolas, monospace; }
+        .sequence-text { font-family: 'Courier New', Consolas, monospace; letter-spacing: 1px; }
+        .aln-label { width: 90px; color: #3498db; font-weight: bold; flex-shrink: 0; }
         .match-char { color: #2ecc71; font-weight: bold; }
-        .mismatch-char { color: var(--danger); font-weight: bold; background: rgba(231,76,60,0.2); }
+        .mismatch-char { color: #e74c3c; font-weight: bold; background: rgba(231,76,60,0.2); }
         .gap-char { color: #95a5a6; }
-        .aln-pipe { color: var(--border-color); }
+        .aln-pipe { color: #bdc3c7; }
 
-        /* 外部連携パネル */
-        .external-link-panel { background: #eafaf1; border: 1px solid var(--success); padding: 15px; border-radius: 4px; margin-top: 15px; }
-        .external-link-panel p { margin: 0 0 12px 0; font-size: 12px; color: #1e8449; line-height: 1.5; }
-        .btn-external { background: #ffffff; border: 1px solid var(--success); color: var(--success); padding: 10px; width: fit-content; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 5px; font-size: 12px; text-decoration: none;}
-        .btn-external:hover { background: #d5f5e3; box-shadow: 0 2px 5px rgba(39, 174, 96, 0.2); transform: scale(0.98); }
+        .external-link-panel { background: #e8f8f5; border: 1px solid #a3e4d7; padding: 16px; border-radius: 4px; margin-top: 16px; }
+        .external-link-panel p { margin: 0 0 12px 0; font-size: 13px; color: var(--primary); line-height: 1.6; }
+        .external-link-panel.secondary-match { background: #fdfefe; border-color: var(--border-color); }
 
-        /* --- アシストパネル＆動的ヒント＆ステップアップUI（ガイドライン第6項③・⑥・⑦） --- */
-        .assist-panel { background: #fadbd8; border-left: 4px solid var(--danger); padding: 15px; margin-top: 15px; border-radius: 4px; } 
-        .assist-title { font-weight: bold; color: #c0392b; display: flex; align-items: center; gap: 5px; font-size: 14px;} 
-        .assist-reason { font-size: 13px; color: #7f8c8d; margin-top: 5px; } 
-        .assist-fix { font-size: 13px; color: var(--primary); font-weight: bold; margin-top: 8px; background: #fff; padding: 10px; border-radius: 4px; border: 1px solid var(--danger); } 
+        .step-up-card { background: #f8f9fa; border: 1px solid #d1d5db; padding: 20px; border-radius: 8px; margin-top: 25px; color: var(--text-main); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .step-up-card h3 { color: var(--primary); margin-top: 0; font-size: 15px; display: flex; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 12px; }
+        .step-up-card h3 svg { margin-right: 8px; width: 20px; height: 20px; flex-shrink: 0; stroke: currentColor; }
+        .step-up-card p { margin: 0; font-size: 13px; line-height: 1.6; }
 
-        .dynamic-hint { background: #fdf2f2; border: 1px solid #f8d7da; color: #721c24; padding: 10px 12px; border-radius: 6px; font-weight: bold; font-size: 11px; text-align: left; }
-
-        .step-up-card { background: #f8f9fa; border: 1px solid #d1d5db; padding: 20px; border-radius: 8px; margin-top: 25px; color: var(--text-main); box-shadow: 0 2px 4px rgba(0,0,0,0.02); width: 100%; } 
-        .step-up-card h3 { color: var(--text-main); margin-top: 0; font-size: 15px; display: flex; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 12px; } 
-        .step-up-card h3 svg { margin-right: 8px; width: 20px; height: 20px; flex-shrink: 0; } 
-        .step-up-card p { margin: 0; font-size: 13px; line-height: 1.6; } 
-
-        /* 共通フッター */
         .footer { width: 100%; background: #1a252f; padding: 12px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; flex-shrink: 0; margin-top: auto; border-top: 1px solid var(--primary); }
 
-        /* --- STREAMING_CHUNK:Styling notifications and tooltips... --- */
-        /* --- トースト通知 --- */
         #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 12px 24px; border-radius: 30px; font-weight: bold; font-size: 13px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 100000; pointer-events: none; text-align: center; max-width: 90vw; box-sizing: border-box; word-break: auto-phrase; }
         #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
         #toast.error { background: var(--danger); }
         #toast.warning { background: var(--warning); color: #7e5109; }
         #toast.info { background: var(--phase-color); }
 
-        /* --- ツールチップ --- */
-        .custom-tooltip { position: fixed; background: rgba(44, 62, 80, 0.95); color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 11px; pointer-events: none; z-index: 9999; opacity: 0; transition: opacity 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-weight: normal; line-height: 1.4; display: none; white-space: normal; width: max-content; max-width: min(320px, 90vw); text-align: center; box-sizing: border-box; } 
-        .custom-tooltip::after { content: ''; position: absolute; border-width: 5px; border-style: solid; left: 50%; transform: translateX(-50%); } 
-        .custom-tooltip.show-top::after { top: 100%; border-color: rgba(44, 62, 80, 0.95) transparent transparent transparent; } 
+        .custom-tooltip { position: fixed; background: rgba(44, 62, 80, 0.95); color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 11px; pointer-events: none; z-index: 9999; opacity: 0; transition: opacity 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-weight: normal; line-height: 1.4; display: none; white-space: normal; width: max-content; max-width: min(320px, 90vw); text-align: center; box-sizing: border-box; }
+        .custom-tooltip::after { content: ''; position: absolute; border-width: 5px; border-style: solid; left: 50%; transform: translateX(-50%); }
+        .custom-tooltip.show-top::after { top: 100%; border-color: rgba(44, 62, 80, 0.95) transparent transparent transparent; }
         .custom-tooltip.show-bottom::after { bottom: 100%; border-color: transparent transparent rgba(44, 62, 80, 0.95) transparent; }
 
-        /* --- 📱 スマホ最適化 --- */
+        .assist-panel { background: #fadbd8; border-left: 4px solid var(--danger); padding: 15px; margin-top: 15px; border-radius: 4px; }
+        .assist-title { font-weight: bold; color: #c0392b; display: flex; align-items: center; gap: 5px; font-size: 14px;}
+        .assist-reason { font-size: 13px; color: #7f8c8d; margin-top: 5px; }
+
+        .dynamic-hint { background: #fdf2f2; border: 1px solid #f8d7da; color: #721c24; padding: 10px 12px; border-radius: 6px; font-weight: bold; font-size: 11px; text-align: left; }
+
         @media screen and (max-width: 768px) {
             .main-content { padding: 10px; flex-direction: column !important; }
             .card { min-width: 100% !important; margin-bottom: 10px; }
@@ -192,15 +142,16 @@
 
         .toolbar-row { display: flex; width: 100%; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
         .step-label { font-size: 13px; font-weight: bold; color: var(--primary); min-width: 100px; display: flex; align-items: center; padding-top: 5px; }
+        .primer-input { padding: 8px 10px; font-family: 'Segoe UI', sans-serif; border: 1px solid var(--border-color); border-radius: 4px; font-size: 13px; background: #fafafa; outline: none; transition: 0.2s; font-weight: bold; width: 100%; box-sizing: border-box;}
+        .primer-input:focus { border-color: var(--phase-color); box-shadow: 0 0 0 2px rgba(26, 188, 156, 0.2); background: #fff; }
     </style>
 </head>
 <body>
 
-<!-- --- STREAMING_CHUNK:Rendering application header... --- -->
 <div class="header-container">
     <div class="header">
         <div>
-            <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>Virtual BLAST &amp; E-value Explorer</h1>
+            <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>Virtual BLAST &amp; E-value Explorer</h1>
             <p>Bio-Edu Suite: Phase 2 / Sequence Homology Search & Scoring Simulator</p>
         </div>
         <div class="version-badge">v31.0</div>
@@ -214,54 +165,65 @@
         <div class="card-body">
             
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <label style="font-size:12px; font-weight:bold; color:var(--primary);">1. DNAの塩基配列を入力 
+                <label style="font-size:13px; font-weight:bold; color:var(--primary);">1. DNAの塩基配列を入力 
                     <button class="rationale-btn" onclick="toggleRationale(event, 'rat_blast')">?</button>
                 </label>
             </div>
             
             <div id="rat_blast" class="rationale-text">
                 <strong>【根拠：BLASTはどうやって種を特定するのか？】</strong>
-                BLASTは、未知の塩基配列（クエリ）とデータベースの塩基配列（対象）を総当たりで比較します。ただ一致を探すのではなく、<strong>【スコアリング】</strong>一致なら加点、不一致や欠失なら減点という数学的な計算を行い、最もスコアが高い（似ている）塩基配列を探し出します。
+                BLASTは、未知の塩基配列（Query）とデータベースの塩基配列（Subject）を総当たりで比較します。ただ一致を探すのではなく、<strong>【一致なら加点、不一致や欠失なら減点】</strong>という数学的なスコアリングを行い、最もスコアが高い（似ている）塩基配列を探し出します。
             </div>
             
             <div class="drop-zone" id="queryDropZone" onclick="document.getElementById('queryInputFile').click()" data-tooltip="ローカルの塩基配列ファイル(.fasta, .txt)を直接読み込めます">
-                <p><svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> ここをクリック、または DNA塩基配列データ をドラッグ＆ドロップ</p>
+                <p><svg class="btn-icon" viewBox="0 0 24 24" fill="none"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg> ここをクリック、または DNA塩基配列データ をドラッグ＆ドロップ</p>
                 <input type="file" id="queryInputFile" accept=".fasta,.fas,.txt,.seq" onchange="handleQueryFile(event)">
             </div>
             <textarea id="queryInput" placeholder="DNAの塩基配列データを入力するか、ファイルを読み込んでください" class="sequence-text"></textarea>
             
             <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 4px; padding-right: 2px;">
-                <span onclick="loadShortSequence()" style="font-size: 11px; color: #2980b9; cursor: pointer; font-weight: bold; transition: 0.2s; display:flex; align-items:center; gap:4px;" onmouseover="this.style.color='#1abc9c'" onmouseout="this.style.color='#2980b9'" data-tooltip="短い塩基配列を読み込み、同定が難しくなる（E-valueが上がる）ことを体験します"><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg> サンプル短配列を試す</span>
+                <span onclick="loadShortSequence()" style="font-size: 12px; color: #2980b9; cursor: pointer; font-weight: bold; transition: 0.2s; display: flex; align-items: center; gap: 4px;" onmouseover="this.style.color='#1abc9c'" onmouseout="this.style.color='#2980b9'" data-tooltip="短い塩基配列を読み込み、同定が難しくなる（E-valueが上がる）ことを体験します">
+                    <svg class="svg-hint btn-icon" viewBox="0 0 24 24" fill="none"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg> サンプル短配列を試す
+                </span>
                 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_evalue')">?</button>
             </div>
             
             <div style="border-top: 1px dashed var(--border-color); margin: 5px 0;"></div>
 
-            <!-- --- STREAMING_CHUNK:Rendering scoring parameters... --- -->
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <label style="font-size:12px; font-weight:bold; color:var(--primary);">2. スコアリング・パラメータ 
+                <label style="font-size:13px; font-weight:bold; color:var(--primary);">2. スコアリング・パラメータ 
                     <button class="rationale-btn" onclick="toggleRationale(event, 'rat_scoring')">?</button>
                 </label>
+            </div>
+
+            <div id="rat_evalue" class="rationale-text">
+                <strong>【根拠：E-value（期待値）の罠とは？】</strong>
+                E-valueとは、偶然その塩基配列がデータベース内で一致してしまう確率のことです。
+                <strong>【統計的有意性】</strong>
+                「ATG」のような短い塩基配列は、どんな生物にも偶然存在します。検索する塩基配列が短すぎるとE-valueが跳ね上がり、「同率1位」ばかりになって種同定が不可能になります（DNAバーコーディングの限界）。
             </div>
 
             <div id="rat_scoring" class="rationale-text">
                 <strong>【実験：ペナルティの重さを変えてみよう】</strong>
                 重要なのは「Matchと減点の比率」です。
-                ・<b>Match（一致）の加点だけを大きくした場合：</b> 少し似ているだけの塩基配列でもスコアが爆発的に高くなり、遠縁の生物も無理やり「似ている」と誤判定（偽陽性）してしまいます。
-                ・<b>Gap（隙間）の減点を軽くした場合：</b> 無理やりギャップを大量に入れて文字を合わせようとするため、進化的におかしい「不自然なアライメント」が生成されます。
-                ・<b>Mismatchの減点を重くした場合：</b> 少しの突然変異も許さなくなるため、近縁種すら検索に引っかからなくなってしまいます。
+                <strong>【Match（一致）の加点だけを大きくした場合】</strong>
+                ・少し似ているだけの塩基配列でもスコアが爆発的に高くなり、遠縁の生物も無理やり「似ている」と誤判定（偽陽性）してしまいます。
+                <strong>【Gap（隙間）の減点を軽くした場合】</strong>
+                ・無理やりギャップを大量に入れて文字を合わせようとするため、進化的におかしい「不自然なアライメント」が生成されます。
+                <strong>【Mismatchの減点を重くした場合】</strong>
+                ・少しの突然変異も許さなくなるため、近縁種すら検索に引っかからなくなってしまいます。
             </div>
 
             <div class="scoring-panel">
-                <span class="score-item"><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Match: <input type="number" id="valMatch" class="score-input" value="1" step="1"></span>
-                <span class="score-item"><svg class="svg-danger" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Mismatch: <input type="number" id="valMismatch" class="score-input" value="-2" step="1" max="0"></span>
-                <span class="score-item"><svg class="svg-info" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg> Gap: <input type="number" id="valGap" class="score-input" value="-5" step="1" max="0"></span>
+                <span class="score-item"><svg class="btn-icon svg-info" style="color:var(--success)" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5"/></svg> Match: <input type="number" id="valMatch" class="score-input" value="1" step="1"></span>
+                <span class="score-item"><svg class="btn-icon svg-danger" viewBox="0 0 24 24" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Mismatch: <input type="number" id="valMismatch" class="score-input" value="-2" step="1" max="0"></span>
+                <span class="score-item"><svg class="btn-icon svg-info" style="color:var(--text-muted)" viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"/></svg> Gap: <input type="number" id="valGap" class="score-input" value="-5" step="1" max="0"></span>
             </div>
 
             <div style="border-top: 1px dashed var(--border-color); margin: 5px 0;"></div>
 
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <label style="font-size:12px; font-weight:bold; color:var(--primary);">3. 検索対象データベース (Local DB) 
+                <label style="font-size:13px; font-weight:bold; color:var(--primary);">3. 検索対象データベース (Local DB) 
                     <button class="rationale-btn" onclick="toggleRationale(event, 'rat_db')">?</button>
                 </label>
             </div>
@@ -269,15 +231,14 @@
             <div id="rat_db" class="rationale-text">
                 <strong>【根拠：データベースのカスタマイズ】</strong>
                 このアプリは初期状態で「モデル生物」のデータが自動でセットされます。
-                プリセットを切り替えるか、複数の塩基配列が入ったFASTAまたはJSONファイルを下の枠にドロップして読み込んでください。自分だけのオリジナルデータベースを作って検索実験ができます！
+                プリセットを切り替えるか、複数の塩基配列が入ったFASTAまたはJSONファイルを下の枠にドロップして読み込んでください。自分だけのオリジナルデータベースを作って検索実験ができます。
             </div>
 
-            <div style="background: #f8f9fa; border: 1px solid var(--border-color); border-radius: 4px; padding: 10px; display: flex; flex-direction: column; gap: 10px;">
-                <!-- プリセット選択UI -->
+            <div style="background: #f8f9fa; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 12px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
-                    <div style="display: flex; align-items: center; gap: 5px; flex: 1;">
-                        <label style="font-size:11px; font-weight:bold; color:var(--text-main); white-space: nowrap;">プリセット選択:</label>
-                        <select id="presetSelector" onchange="loadPresetDB()" style="padding: 4px; border-radius: 4px; border: 1px solid var(--border-color); font-size: 11px; flex: 1; outline: none; background: white; cursor: pointer;">
+                    <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
+                        <label style="font-size:12px; font-weight:bold; color:var(--primary); white-space: nowrap;">プリセット選択:</label>
+                        <select id="presetSelector" onchange="loadPresetDB()" style="padding: 6px; border-radius: 4px; border: 1px solid var(--border-color); font-size: 12px; flex: 1; outline: none; background: white; cursor: pointer;">
                             <option value="model">モデル生物 (18S/16S, ITS, COI 等)</option>
                             <option value="animal">動物 (COI)</option>
                             <option value="plant">植物 (rbcL, matK)</option>
@@ -288,57 +249,48 @@
                     </div>
                 </div>
 
-                <!-- 読み込み中のカートリッジ表示 -->
-                <div id="currentLoadedDataInfo" style="font-size:11px; color:#1e8449; font-weight:bold; background: #eafaf1; padding: 6px 10px; border-radius: 4px; border: 1px solid #a9dfbf;">
+                <div id="currentLoadedDataInfo" style="font-size:12px; color:var(--primary); font-weight:bold; background: #eaf2f8; padding: 8px 12px; border-radius: 4px; border: 1px solid #d6eaf8;">
                     現在読み込み中: [プリセット] モデル生物 (0種)
                 </div>
 
-                <div style="font-size: 11px; color: var(--primary); font-weight: bold; display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-size: 12px; color: var(--primary); font-weight: bold; display: flex; justify-content: space-between; align-items: center;">
                     <span id="dbCountText">現在の登録生物種: 11 種</span>
-                    <button class="btn btn-sm" onclick="toggleDBList(event)" data-tooltip="登録されている全生物種の一覧を確認します"><svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> 一覧</button>
+                    <button class="btn btn-sm" onclick="toggleDBList(event)" data-tooltip="登録されている全生物種の一覧を確認します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none"><path d="M9 3h6v3H9zM8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg> 一覧</button>
                 </div>
 
                 <div class="toolbar-row" style="flex-wrap: nowrap; align-items: center; gap: 8px;">
                     <span class="step-label" style="font-size: 12px; color: var(--primary); white-space: nowrap; padding-top: 0; min-width: auto; margin-right: 2px;">NCBI</span>
                     <button class="rationale-btn" style="margin-left: 0; flex-shrink: 0;" onclick="toggleRationale(event, 'rat_ncbi')">?</button>
-                    <input type="text" id="ncbiAccession" class="primer-input" style="flex:1; min-width: 100px; padding: 6px 10px;" placeholder="Accession No. を入力" onkeypress="if(event.keyCode===13) importFromNCBI()">
-                    <button class="btn btn-primary" onclick="importFromNCBI()" style="flex-shrink:0; font-size: 13px; padding: 6px 12px;" data-tooltip="NCBIからFASTA形式で塩基配列データを取得し、ローカルデータベースに追加します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18z"/></svg> 取得</button>
+                    <input type="text" id="ncbiAccession" class="primer-input" style="flex:1; min-width: 100px;" placeholder="Accession No. を入力" onkeypress="if(event.keyCode===13) importFromNCBI()">
+                    <button class="btn btn-primary" onclick="importFromNCBI()" data-tooltip="NCBIからFASTA形式で塩基配列データを取得し、ローカルデータベースに追加します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18z"/></svg> 取得</button>
                 </div>
             </div>
 
-            <!-- --- STREAMING_CHUNK:Rendering toolbar and actions... --- -->
             <div class="drop-zone" id="dbDropZone" onclick="document.getElementById('dbInputFile').click()" data-tooltip="複数の塩基配列を含むFASTAまたはJSONファイルを一括で読み込めます" style="margin-top: 5px;">
-                <p><svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> ここをクリック、または カスタムDB(FASTA/JSON) をドラッグ＆ドロップ</p>
+                <p><svg class="btn-icon" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14"/></svg> ここをクリック、またはカスタムDB(FASTA/JSON)をドロップ</p>
                 <input type="file" id="dbInputFile" accept=".fasta,.fas,.txt,.seq,.json" onchange="handleDBFile(event)">
             </div>
             
             <div id="rat_ncbi" class="rationale-text">
-                <strong>【根拠：NCBI Cloud Importとは？】</strong>
+                <strong>【NCBI Cloud Importとは？】</strong>
                 NCBI (National Center for Biotechnology Information) のデータベースから、指定したAccession No.の塩基配列データをインターネット経由で直接ダウンロードし、ローカルデータベースに追加します。
             </div>
 
-            <div style="display:flex; justify-content:center; margin-top:10px;">
-                <button class="btn btn-primary" onclick="runVirtualBlast()" data-tooltip="データベースと照合し、最も相同性の高い生物種を検索します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> 解析を実行</button>
-            </div>
-            
-            <div id="rat_evalue" class="rationale-text">
-                <strong>【根拠：E-value（期待値）の罠とは？】</strong>
-                E-valueとは<strong>【統計的有意性】</strong>偶然その塩基配列がデータベース内で一致してしまう確率です。
-                「ATG」のような短い塩基配列は、どんな生物にも偶然存在します。検索する塩基配列が短すぎるとE-valueが跳ね上がり、「同率1位」ばかりになって種同定が不可能になります（DNAバーコーディングの限界）。
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button class="btn btn-primary" style="width: 100%;" onclick="runVirtualBlast()" data-tooltip="データベースと照合し、最も相同性の高い生物種を検索します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none"><polygon points="5 3 19 12 5 21 5 3"/></svg> 解析を実行</button>
             </div>
 
         </div>
     </div>
 
-    <!-- --- STREAMING_CHUNK:Rendering results section... --- -->
     <div class="card result-card">
         <div class="card-header result-header">
             <span style="color: white;">Ⅱ. 検索結果 (Hits & Alignment)</span>
         </div>
-        <div class="card-body" style="background:#f0f3f4; padding:15px;">
+        <div class="card-body" style="background:var(--bg-color); padding:15px;">
             
             <div style="background:white; border:1px solid var(--border-color); border-radius:4px; overflow:hidden;">
-                <div style="background:#eaeded; padding:8px 10px; font-size:12px; font-weight:bold; color:var(--primary); border-bottom:1px solid var(--border-color);">
+                <div style="background:#f8f9fa; padding:10px 12px; font-size:13px; font-weight:bold; color:var(--primary); border-bottom:1px solid var(--border-color);">
                     1. Top Hits (スコア順)
                 </div>
                 <div style="overflow-x: auto; max-height:200px; overflow-y:auto;">
@@ -359,22 +311,21 @@
                 </div>
             </div>
 
-            <div id="alignmentPanel" class="alignment-detail sequence-text">
+            <div id="alignmentPanel" class="alignment-detail">
             </div>
 
             <div id="ncbiLinkPanel" style="display:none;"></div>
 
-        </div>
-    </div>
+            <div class="step-up-card">
+                <h3><svg viewBox="0 0 24 24" fill="none"><path d="M15 3h6v6M21 3l-9 9M19 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"/></svg> より高度な解析ツールへ</h3>
+                <p>このシミュレーターで「スコア計算」と「E-value」の仕組みを理解したら、いよいよ全世界のDNAデータが蓄積された本物の<strong>「NCBI BLAST」</strong>にアクセスしてみましょう。塩基配列が、地球上のどの生物なのか特定できるはずです。</p>
+            </div>
 
-    <div class="step-up-card">
-        <h3><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M15 3h6v6M21 3l-9 9M19 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"/></svg> より高度な解析ツールへ</h3>
-        <p>このシミュレーターで「スコア計算」と「E-value」の仕組みを理解したら、いよいよ全世界のDNAデータが蓄積された本物の<b>「NCBI BLAST」</b>にアクセスしてみましょう。塩基配列が、地球上のどの生物なのか特定できるはずです。</p>
+        </div>
     </div>
 
 </div>
 
-<!-- --- STREAMING_CHUNK:Rendering footer and modal elements... --- -->
 <div class="footer">
     &copy; 2026 Bio-Edu Suite v31.0 | Developed for Bioinformatics & Wet-Lab Education
 </div>
@@ -382,21 +333,18 @@
 <div id="toast"></div>
 <div id="globalTooltip" class="custom-tooltip"></div>
 
-<!-- データベース一覧用ポップオーバー (独立したモーダルとして再定義。茶色の尻尾や黄色い枠を排除) -->
-<div id="dbListPopover" style="background: #ffffff; border: 1px solid var(--border-color); width: 700px; max-width: 95vw; display: none; flex-direction: column; z-index: 1010; padding: 0; box-shadow: 0 4px 20px rgba(0,0,0,0.3); border-radius: 6px; overflow: hidden; max-height: 60vh;">
-    <div style="background: var(--secondary); color: white; padding: 8px 12px; font-weight: bold; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center;">
-        <span><svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> 登録データベース一覧</span>
-        <span style="font-size: 10px; font-weight: normal; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px;" id="dbListPopoverCount">0 種</span>
+<!-- データベース一覧用ポップオーバー (白背景・グレー枠線に修正) -->
+<div id="dbListPopover" style="position: fixed; z-index: 1010; background: #ffffff; border: 1px solid var(--border-color); border-radius: 6px; width: 700px; max-width: 95vw; display: none; flex-direction: column; padding: 0; box-shadow: 0 4px 20px rgba(0,0,0,0.3); overflow: hidden; max-height: 60vh;">
+    <div style="background: var(--secondary); color: white; padding: 10px 15px; font-weight: bold; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
+        <span style="display: flex; align-items: center; gap: 6px;"><svg class="btn-icon" viewBox="0 0 24 24" fill="none"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg> 登録データベース一覧</span>
+        <span style="font-size: 11px; font-weight: normal; background: rgba(0,0,0,0.3); padding: 4px 8px; border-radius: 4px;" id="dbListPopoverCount">0 種</span>
     </div>
-    <div id="dbListContent" style="padding: 0; font-size: 11px; color: var(--primary); overflow-y: auto; flex: 1; display: flex; flex-direction: column; min-height: 0; -webkit-overflow-scrolling: touch;"></div>
+    <div id="dbListContent" style="padding: 0; font-size: 12px; color: var(--primary); overflow-y: auto; flex: 1; display: flex; flex-direction: column; min-height: 0; -webkit-overflow-scrolling: touch;"></div>
 </div>
 
-<!-- 1. まず外に出したデータを読み込む -->
 <script src="preset_db.js"></script>
 
 <script>
-    // --- STREAMING_CHUNK:Javascript initialization... ---
-    // --- トースト通知 ---
     function showToast(msg, type = "") {
         const toast = document.getElementById('toast');
         if (!toast) return;
@@ -411,7 +359,6 @@
         setTimeout(() => { toast.classList.remove("show"); }, 3000);
     }
 
-    // --- ツールチップ制御 ---
     const tooltip = document.getElementById('globalTooltip');
     
     document.body.addEventListener('mouseover', (e) => {
@@ -466,20 +413,17 @@
         tooltip.style.opacity = '0';
         tooltip.style.display = 'none';
         document.querySelectorAll('.rationale-text').forEach(node => {
-            node.classList.remove('show', 'arrow-top', 'arrow-bottom');
+            node.classList.remove('show');
         });
-        // 意図しない非表示を防ぐため、スクロールイベントで #dbListPopover は閉じない
+        document.getElementById('dbListPopover').style.display = 'none';
     }, true);
 
-    // --- STREAMING_CHUNK:Popover logic functions... ---
-    // --- 教育的UIモジュール①: 根拠ポップオーバー（ガイドライン第6項① 準拠 / フリップ計算付き絶対配置） ---
     function toggleRationale(event, id) {
         event.stopPropagation();
         const el = document.getElementById(id);
         const btn = event.currentTarget;
         const isShown = el.classList.contains('show');
 
-        // 他のポップオーバーを閉じる
         document.querySelectorAll('.rationale-text').forEach(node => {
             node.classList.remove('show', 'arrow-top', 'arrow-bottom');
         });
@@ -490,94 +434,75 @@
             el.style.top = '0px'; el.style.left = '0px';
             el.classList.add('show');
 
-            // フリップ計算による絶対配置
             const elHeight = el.offsetHeight;
             const elWidth  = el.offsetWidth;
             const rect = btn.getBoundingClientRect();
 
-            let topPos = rect.bottom + 10;
+            let topPos = rect.bottom + 12;
             let arrowClass = 'arrow-top';
-            // 画面下端に見切れる場合は上側に配置
             if (rect.bottom + elHeight + 20 > window.innerHeight) {
-                topPos = rect.top - elHeight - 10;
+                topPos = rect.top - elHeight - 12;
                 arrowClass = 'arrow-bottom';
             }
-            el.style.top = topPos + 'px';
-
-            // 左右位置の調整（幅は固定値ではなく offsetWidth で動的算出）
-            const btnCenter = rect.left + rect.width / 2;
-            let leftPos = btnCenter - elWidth / 2;
-            if (leftPos + elWidth > window.innerWidth - 10) leftPos = window.innerWidth - elWidth - 10;
+            
+            let leftPos = rect.left - (elWidth / 2) + (rect.width / 2);
+            if (leftPos + elWidth > window.innerWidth) leftPos = window.innerWidth - elWidth - 10;
             if (leftPos < 10) leftPos = 10;
+            
+            el.classList.add(arrowClass);
+            el.style.top = topPos + 'px';
             el.style.left = leftPos + 'px';
 
-            // 吹き出しの尻尾をボタン中央へ追従させる
-            let arrowLeft = btnCenter - leftPos;
-            if (arrowLeft < 12) arrowLeft = 12;
-            if (arrowLeft > elWidth - 12) arrowLeft = elWidth - 12;
-            el.classList.remove('arrow-top', 'arrow-bottom');
-            el.classList.add(arrowClass);
-            el.style.setProperty('--arrow-left', arrowLeft + 'px');
+            const arrowOffset = rect.left - leftPos + (rect.width / 2) - 6;
+            el.style.setProperty('--arrow-left', arrowOffset + 'px');
         }
     }
 
-    // 外部クリックで閉じる
     document.addEventListener('click', (e) => {
-        if (!e.target.closest('.rationale-text') && !e.target.closest('.rationale-btn')) {
+        if (!e.target.closest('#dbListPopover') && !e.target.closest('.rationale-text') && !e.target.closest('.rationale-btn') && !e.target.closest('button[onclick="toggleDBList(event)"]')) {
             document.querySelectorAll('.rationale-text').forEach(node => {
                 node.classList.remove('show', 'arrow-top', 'arrow-bottom');
             });
-        }
-        if (!e.target.closest('#dbListPopover') && !e.target.closest('.btn-sm')) {
-            const dbPopover = document.getElementById('dbListPopover');
-            if (dbPopover) dbPopover.style.display = 'none';
+            document.getElementById('dbListPopover').style.display = 'none';
         }
     });
 
-    // --- DB一覧ポップオーバーの制御 ---
     function toggleDBList(e) {
         if(e) e.stopPropagation();
         
         const el = document.getElementById('dbListPopover');
         const isFlex = (el.style.display === 'flex');
         
-        // 他のポップオーバーを全て閉じる
         document.querySelectorAll('.rationale-text').forEach(node => {
             node.classList.remove('show', 'arrow-top', 'arrow-bottom');
         });
 
         if(!isFlex) {
-            // リストの動的生成
-            let html = '<div style="overflow-x:auto; flex:1; min-height:0; display:flex; flex-direction:column;"><table style="width:100%; border-collapse:collapse; min-width: 650px; text-align: left; font-size: 11px;">';
-            html += `<thead style="position: sticky; top: 0; background: #eaeded; z-index: 10; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+            let html = '<div style="overflow-x:auto; flex:1; min-height:0; display:flex; flex-direction:column;"><table style="width:100%; border-collapse:collapse; min-width: 650px; text-align: left; font-size: 12px;">';
+            html += `<thead style="position: sticky; top: 0; background: #f8f9fa; z-index: 10; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
                         <tr style="color: var(--primary);">
-                            <th style="padding: 8px; border-bottom: 1px solid var(--border-color); white-space: nowrap;">Accession No.</th>
-                            <th style="padding: 8px; border-bottom: 1px solid var(--border-color);">生物種 (学名 / 和名)</th>
-                            <th style="padding: 8px; border-bottom: 1px solid var(--border-color); white-space: nowrap;">遺伝子マーカー</th>
-                            <th style="padding: 8px; border-bottom: 1px solid var(--border-color); white-space: nowrap;">データ種別</th>
-                            <th style="padding: 8px; border-bottom: 1px solid var(--border-color); white-space: nowrap; text-align: right;">配列長</th>
+                            <th style="padding: 10px 12px; border-bottom: 1px solid var(--border-color); white-space: nowrap;">Accession No.</th>
+                            <th style="padding: 10px 12px; border-bottom: 1px solid var(--border-color);">生物種 (学名 / 和名)</th>
+                            <th style="padding: 10px 12px; border-bottom: 1px solid var(--border-color); white-space: nowrap;">遺伝子マーカー</th>
+                            <th style="padding: 10px 12px; border-bottom: 1px solid var(--border-color); white-space: nowrap;">データ種別</th>
+                            <th style="padding: 10px 12px; border-bottom: 1px solid var(--border-color); white-space: nowrap; text-align: right;">配列長</th>
                         </tr>
                      </thead><tbody>`;
 
-            // 生物種名でソート
             let sortedDB = [...localDB].sort((a, b) => a.name.localeCompare(b.name, 'ja'));
 
             sortedDB.forEach((db, index) => {
-                const bg = index % 2 === 0 ? '#fff' : '#f8f9f9';
+                const bg = index % 2 === 0 ? '#ffffff' : '#f8f9fa';
                 let idDisplay = db.id;
-                // ★ダミーIDでも404にならないよう、NCBIの統合検索ページへリンク先を変更
                 let idLink = idDisplay !== '-' ? `<a href="https://www.ncbi.nlm.nih.gov/search/all/?term=${encodeURIComponent(idDisplay)}" target="_blank" style="color:#2980b9; text-decoration:underline;">${idDisplay}</a>` : '-';
                 
-                // 生物名から遺伝子名を分離して純化する
                 let displayName = db.name;
                 if (db.gene && db.gene !== '-') {
                     displayName = displayName.replace(` (${db.gene})`, '').replace(`(${db.gene})`, '').trim();
                 }
 
-                // 遺伝子マーカー列 (Top Hitsとデザインを統一)
-                let geneDisplay = db.gene && db.gene !== '-' ? `<span style="background: #eaf2f8; padding: 2px 6px; border-radius: 4px; font-size: 10px; color: #2980b9; font-weight: bold;">${db.gene}</span>` : '-';
+                let geneDisplay = db.gene && db.gene !== '-' ? `<span style="background: #eaf2f8; padding: 2px 6px; border-radius: 4px; font-size: 11px; color: #2980b9; font-weight: bold;">${db.gene}</span>` : '-';
                 
-                // 配列長の算出
                 let seqLength = db.seq ? db.seq.length : 0;
                 let baseLabel = db.seqBase;
                 if (baseLabel === 'Unknown' || baseLabel === '部分配列') {
@@ -586,11 +511,11 @@
                 let lengthDisplay = `${baseLabel} (${seqLength.toLocaleString()} bp)`;
 
                 html += `<tr style="border-bottom:1px solid #ecf0f1; background:${bg};">
-                    <td style="padding:8px; font-family:monospace; font-weight:bold;">${idLink}</td>
-                    <td style="padding:8px; font-style:italic; color:var(--secondary);">${displayName}</td>
-                    <td style="padding:8px;">${geneDisplay}</td>
-                    <td style="padding:8px; color:var(--secondary);">${db.isMito}</td>
-                    <td style="padding:8px; color:var(--secondary); text-align: right; font-family: monospace;">${lengthDisplay}</td>
+                    <td style="padding:10px 12px; font-family:monospace; font-weight:bold;">${idLink}</td>
+                    <td style="padding:10px 12px; font-style:italic; color:var(--secondary);">${displayName}</td>
+                    <td style="padding:10px 12px;">${geneDisplay}</td>
+                    <td style="padding:10px 12px; color:var(--secondary);">${db.isMito}</td>
+                    <td style="padding:10px 12px; color:var(--secondary); text-align: right; font-family: monospace;">${lengthDisplay}</td>
                 </tr>`;
             });
             html += '</tbody></table></div>';
@@ -600,10 +525,7 @@
 
             el.style.display = 'flex';
             
-            // 座標計算
-            const btn = e.currentTarget || e.target.closest('.btn') || e.target;
-            const btnRect = btn.getBoundingClientRect();
-            el.style.position = 'fixed';
+            const btnRect = e.target.getBoundingClientRect();
             
             if (window.innerWidth <= 768) {
                 el.style.top = 'auto';
@@ -641,8 +563,6 @@
         }
     }
 
-    // --- STREAMING_CHUNK:Database core definitions... ---
-    // --- 教育用ローカルデータベース ---
     let localDB = [];
     const DB_SIZE = 10000000000; 
 
@@ -650,16 +570,9 @@
         if (!gene || gene === '-') return fallback;
         const g = gene.toLowerCase();
         
-        // ミトコンドリアの主要マーカー
         if (['coi', 'co1', 'cox1', 'cytb', '12s', 'nd1', 'd-loop'].includes(g)) return 'ミトコンドリア';
-        
-        // 葉緑体の主要マーカー
         if (['rbcl', 'matk', 'trnl', 'psba', 'trnh'].includes(g)) return '葉緑体';
-        
-        // 核ゲノム・リボソームの主要マーカー
         if (['16s', '18s', '28s', 'its', 'its1', 'its2', '5.8s'].includes(g)) return '核ゲノム';
-        
-        // ウイルスの主要マーカー
         if (['spike', 's', 'ha', 'na', 'gp', 'env', 'capsid', 'vp1', 'e', 'pol'].includes(g)) return 'ウイルスゲノム';
         
         return fallback;
@@ -674,13 +587,6 @@
         const text = document.getElementById('presetSelector').options[document.getElementById('presetSelector').selectedIndex].text;
         
         localDB = [];
-        
-        // presetDBが読み込まれていない場合のフェールセーフ
-        if (typeof presetDB === 'undefined' || !presetDB[val]) {
-            showToast("データベースファイル(preset_db.js)が読み込めませんでした。", "error");
-            return;
-        }
-
         presetDB[val].forEach(item => {
             localDB.push({
                 id: item.accession,
@@ -696,7 +602,6 @@
         showToast(`プリセットを「${text}」に切り替えました。`);
     }
 
-    // --- ドラッグ＆ドロップ処理 (Query) ---
     const queryDropZone = document.getElementById('queryDropZone');
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(name => queryDropZone.addEventListener(name, e => {e.preventDefault(); e.stopPropagation();}));
     queryDropZone.addEventListener('dragover', () => queryDropZone.classList.add('dragover'));
@@ -720,7 +625,6 @@
                     seq += line.toUpperCase().replace(/[^ATGC]/g, '');
                 }
             });
-            // FASTA形式以外（純粋な塩基配列）の場合はファイル名を使う
             if(!currentQueryName && e.target.files[0]) {
                 currentQueryName = e.target.files[0].name;
             }
@@ -731,7 +635,6 @@
         if(e.target.files[0]) reader.readAsText(e.target.files[0]);
     }
 
-    // --- ドラッグ＆ドロップ処理 (Custom DB) ---
     const dbDropZone = document.getElementById('dbDropZone');
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(name => dbDropZone.addEventListener(name, e => {e.preventDefault(); e.stopPropagation();}));
     dbDropZone.addEventListener('dragover', () => dbDropZone.classList.add('dragover'));
@@ -749,7 +652,7 @@
             if(file.name.toLowerCase().endsWith('.json')) {
                 try {
                     const jsonData = JSON.parse(ev.target.result);
-                    localDB = []; // カートリッジとして入れ替える
+                    localDB = [];
                     let addedCount = 0;
                     jsonData.forEach(item => {
                         localDB.push({
@@ -769,7 +672,6 @@
                     showToast("JSONファイルの解析に失敗しました。", "error");
                 }
             } else {
-                // FASTA形式の処理 (追加モード)
                 const lines = ev.target.result.split('\n');
                 let currentName = "", currentSeq = "";
                 let addedCount = 0;
@@ -820,11 +722,9 @@
 
     function loadShortSequence() {
         document.getElementById('queryInput').value = "ATCACACCCACTA";
-        showToast("短い塩基配列を読み込みました。「解析を実行」してE-valueの変化を確認してください。");
+        showToast("短い塩基配列を読み込みました。「解析を実行」をクリックしてE-valueの変化を確認してください。");
     }
 
-    // --- STREAMING_CHUNK:Algorithms and Logic... ---
-    // --- Smith-Waterman Local Alignment ---
     function smithWaterman(query, subject, match, mismatch, gap) {
         let m = query.length;
         let n = subject.length;
@@ -849,7 +749,6 @@
             }
         }
 
-        // Traceback
         let alignQ = "", alignS = "", alignPipe = "";
         let i = maxI, j = maxJ;
         let matches = 0, totalLen = 0;
@@ -903,7 +802,7 @@
         let query = rawInput.split('\n').filter(line => !line.startsWith('>')).join('').toUpperCase().replace(/[^ATGC]/g, '');
 
         if (!query || query.length < 5) {
-            showToast("解析を実行するには最低5塩基以上のDNAの塩基配列を入力してください。", "error");
+            showToast("解析を実行するには最低5塩基以上のDNA塩基配列を入力してください。", "error");
             return;
         }
         
@@ -932,21 +831,20 @@
         document.getElementById('ncbiLinkPanel').style.display = 'none'; 
     }
 
-    // --- STREAMING_CHUNK:Result rendering UI... ---
     function renderHitsTable() {
         let tbody = document.getElementById('hitsTableBody');
         let html = "";
 
         currentResults.forEach((res, idx) => {
             let eClass = res.evalueNum < 0.01 ? "evalue-good" : "evalue-bad";
-            let geneDisplay = res.gene && res.gene !== '-' ? `<span style="background: #eaf2f8; padding: 2px 6px; border-radius: 4px; font-size: 10px; color: #2980b9; font-weight: bold;">${res.gene}</span>` : '-';
+            let geneDisplay = res.gene && res.gene !== '-' ? `<span style="background: #eaf2f8; padding: 2px 6px; border-radius: 4px; font-size: 11px; color: #2980b9; font-weight: bold;">${res.gene}</span>` : '-';
             html += `
                 <tr class="hit-row" onclick="showAlignment(${idx}, this)">
                     <td style="font-weight:bold; font-style:italic;">${res.name}</td>
                     <td>${geneDisplay}</td>
                     <td style="font-family:monospace;">${res.score}</td>
                     <td>${res.identity} %</td>
-                    <td class="${eClass}">${res.evalue}</td>
+                    <td class="${eClass}" style="font-family:monospace;">${res.evalue}</td>
                 </tr>
             `;
         });
@@ -972,11 +870,9 @@
             let rawInput = document.getElementById('queryInput').value;
             let queryGene = "";
             
-            // クエリがFASTA形式の場合、ヘッダーから遺伝子名を推測するインテリジェント判定
             if(rawInput.startsWith('>')) {
                 let header = rawInput.split('\n')[0].toUpperCase();
                 
-                // 核ゲノム・リボソーム
                 if(header.includes('16S')) queryGene = '16S';
                 else if(header.includes('18S')) queryGene = '18S';
                 else if(header.includes('28S')) queryGene = '28S';
@@ -985,20 +881,17 @@
                 else if(header.includes('ITS1')) queryGene = 'ITS1';
                 else if(header.includes('ITS') || header.includes('INTERNAL TRANSCRIBED SPACER')) queryGene = 'ITS';
                 
-                // 動物・ミトコンドリア
                 else if(header.includes('COI') || header.includes('COX1') || header.includes('CO1') || header.includes('CYTOCHROME C OXIDASE')) queryGene = 'COI';
                 else if(header.includes('CYTB') || header.includes('CYTOCHROME B')) queryGene = 'cytb';
                 else if(header.includes('12S')) queryGene = '12S';
                 else if(header.includes('D-LOOP') || header.includes('CONTROL REGION')) queryGene = 'D-loop';
                 else if(header.includes('ND1')) queryGene = 'ND1';
                 
-                // 植物・葉緑体
                 else if(header.includes('RBCL') || header.includes('RIBULOSE-1,5-BISPHOSPHATE')) queryGene = 'rbcL';
                 else if(header.includes('MATK') || header.includes('MATURASE K')) queryGene = 'matK';
                 else if(header.includes('TRNL')) queryGene = 'trnL';
                 else if(header.includes('PSBA')) queryGene = 'psbA';
                 
-                // ウイルス
                 else if(header.includes('SPIKE') || header.includes('SURFACE GLYCOPROTEIN')) queryGene = 'Spike';
                 else if(header.includes('HEMAGGLUTININ')) queryGene = 'HA';
                 else if(header.includes('NEURAMINIDASE')) queryGene = 'NA';
@@ -1009,18 +902,16 @@
             let subjGene = res.gene && res.gene !== '-' ? res.gene : "";
             
             if (queryGene && subjGene && queryGene !== subjGene) {
-                hintMsg = `比較対象の遺伝子マーカーが異なります（クエリ: <b>${queryGene}</b> vs 対象: <b>${subjGene}</b>）。同じ遺伝子マーカー同士で比較してみましょう。`;
+                hintMsg = `比較対象の遺伝子マーカーが異なります（クエリ: <strong>${queryGene}</strong> vs 対象: <strong>${subjGene}</strong>）。同じ遺伝子マーカー同士で比較してみましょう。`;
             } else if (subjGene) {
-                 hintMsg = `比較対象の遺伝子マーカーが異なります。同じ遺伝子マーカー同士で比較してみましょう。（対象の遺伝子マーカーは <b>${subjGene}</b> です。クエリの遺伝子マーカーが異なるか、塩基配列が短すぎる可能性があります。）`;
+                 hintMsg = `比較対象の遺伝子マーカーが異なります。同じ遺伝子マーカー同士で比較してみましょう。（対象の遺伝子は <strong>${subjGene}</strong> です。クエリの遺伝子が異なるか、塩基配列が短すぎる可能性があります。）`;
             }
 
-            // ガイドライン第6項③ アシストパネル規定
             panel.innerHTML = `
-                <div class="assist-panel">
-                    <div class="assist-title"><svg class="svg-danger btn-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> 解析エラー</div>
+                <div class="assist-panel" style="margin-top: 0;">
+                    <div class="assist-title"><svg class="btn-icon svg-danger" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> No Hit</div>
                     <div class="assist-reason">${hintMsg}</div>
-                </div>
-            `;
+                </div>`;
             linkPanel.style.display = 'none'; 
             return;
         }
@@ -1043,36 +934,33 @@
         }
 
         let html = `
-            <div style="margin-bottom:10px; color:#f1c40f; border-bottom:1px solid var(--secondary); padding-bottom:5px; font-family: 'Segoe UI', sans-serif;">
-                対象生物とのアライメント: <b style="font-style:italic;">${res.name}</b> (最大スコア: ${res.score}, E-value: ${res.evalue})
+            <div style="margin-bottom:12px; color:#ecf0f1; border-bottom:1px solid #34495e; padding-bottom:8px; font-size: 13px;">
+                Alignment with <strong style="font-style:italic; color: #3498db;">${res.name}</strong> (Score: ${res.score}, E-value: ${res.evalue})
             </div>
-            <div class="aln-row"><span class="aln-label">クエリ(Query) :</span>${fmtQ}</div>
-            <div class="aln-row"><span class="aln-label">              </span><span class="aln-pipe">${res.alignPipe}</span></div>
-            <div class="aln-row"><span class="aln-label">対象(Subject) :</span>${fmtS}</div>
+            <div class="aln-row sequence-text"><span class="aln-label">クエリ :</span>${fmtQ}</div>
+            <div class="aln-row sequence-text"><span class="aln-label">        </span><span class="aln-pipe">${res.alignPipe}</span></div>
+            <div class="aln-row sequence-text"><span class="aln-label">対象   :</span>${fmtS}</div>
         `;
         
         if (res.evalueNum >= 0.01) {
-            // ガイドライン第6項⑥ 動的ヒント規定（フラットデザイン化・アイコンなし）
             html += `
-            <div class="dynamic-hint" style="margin-top:15px;">
-                警告: E-value が高すぎます！
-                この一致は「偶然の突然変異によるランダムマッチ」である可能性が高いです。塩基配列が短すぎるか、生物種が全く異なります。
+            <div class="dynamic-hint" style="margin-top: 15px;">
+                警告: E-value が高すぎます！この一致は偶然の突然変異によるランダムマッチである可能性が高いです。塩基配列が短すぎるか、生物種が全く異なります。
             </div>`;
         }
 
         panel.innerHTML = html;
 
         if (res.evalueNum < 0.01 && idx === 0) {
-            // 404エラーを防ぐため、NCBIの統合検索(search/all/?term=)へリンク先を変更
             linkPanel.innerHTML = `
             <div class="external-link-panel">
                 <p>
-                    <svg class="svg-hint btn-icon" style="color: var(--success);" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> 相同性が非常に高く、この塩基配列は <strong style="font-style:italic;">${res.name}</strong> であるとほぼ確定できます。<br>
+                    <svg class="svg-info btn-icon" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> 相同性が非常に高く、この塩基配列は <strong style="font-style:italic;">${res.name}</strong> であるとほぼ確定できます。<br>
                     より高度な <strong>種の詳細情報 (Taxonomy)</strong> や <strong>遺伝子データ</strong> 等を確認したい場合は、本家の NCBI Database をご参照ください。
                 </p>
                 <a href="https://www.ncbi.nlm.nih.gov/search/all/?term=${encodeURIComponent(res.id)}" target="_blank" style="text-decoration:none;">
-                    <button class="btn-external">
-                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M15 3h6v6M21 3l-9 9M19 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"/></svg> NCBIを開く
+                    <button class="btn btn-primary" style="width: fit-content; display: inline-flex;">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none"><path d="M15 3h6v6M21 3l-9 9M19 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"/></svg> NCBIを開く
                     </button>
                 </a>
             </div>
@@ -1080,10 +968,10 @@
             linkPanel.style.display = 'block';
         } else if (res.evalueNum < 0.01 && idx > 0) {
             linkPanel.innerHTML = `
-            <div class="external-link-panel" style="background: #fdfefe; border-color: var(--border-color);">
+            <div class="external-link-panel secondary-match">
                 <p style="color: var(--text-muted);">
-                    <svg class="svg-info btn-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg> <strong style="font-style:italic;">${res.name}</strong> とも部分的な相同性（E-value: ${res.evalue}）が認められますが、最大スコアの生物種が他に存在します。<br>
-                    ※種を同定（特定）する場合は、リストの一番上にある「Top Hit」の生物を確認してください。
+                    <svg class="svg-info btn-icon" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> <strong style="font-style:italic;">${res.name}</strong> とも部分的な相同性（E-value: ${res.evalue}）が認められますが、スコアが最も高い種が他に存在します。<br>
+                    種を同定（特定）する場合は、リストの一番上にある「Top Hit」の生物を確認してください。
                 </p>
             </div>
             `;
@@ -1093,8 +981,6 @@
         }
     }
 
-    // --- STREAMING_CHUNK:NCBI Fetching Integration... ---
-    // --- NCBI API連携ロジック ---
     async function importFromNCBI() {
         const rawInput = document.getElementById('ncbiAccession').value.trim();
         if (!rawInput) {
@@ -1102,7 +988,6 @@
             return;
         }
         
-        // ID部分のみサニタイズ
         let cleanAccession = rawInput.replace(/[\s　]+/g, ''); 
         cleanAccession = cleanAccession.replace(/[^A-Za-z0-9_.-]/g, '');
 
@@ -1117,7 +1002,6 @@
         try {
             const response = await fetch(url);
             if (!response.ok) {
-                console.warn(`HTTP error! status: ${response.status}`);
                 showToast("NCBIサーバーとの通信に失敗しました。", "error");
                 return;
             }
@@ -1125,7 +1009,6 @@
             text = text.trim(); 
             
             if (text.includes("Failed to understand id") || text.includes("Error") || !text.startsWith('>')) {
-                console.warn("NCBI API Error Response:", text);
                 showToast("Accession No.に誤りがあるか、データベースに存在しません。", "error");
                 return;
             }
@@ -1175,13 +1058,11 @@
             }
             document.getElementById('ncbiAccession').value = '';
         } catch (error) {
-            console.warn("Failed to fetch from NCBI:", error);
             showToast("データの取得中にエラーが発生しました。", "error");
         }
     }
 
     window.addEventListener('DOMContentLoaded', (event) => {
-        // 初期状態としてモデル生物のプリセットをロード
         loadPresetDB();
     });
 </script>
