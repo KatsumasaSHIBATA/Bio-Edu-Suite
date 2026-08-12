@@ -183,7 +183,7 @@
             
             <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 4px; padding-right: 2px;">
                 <span onclick="loadShortSequence()" style="font-size: 12px; color: #2980b9; cursor: pointer; font-weight: bold; transition: 0.2s; display: flex; align-items: center; gap: 4px;" onmouseover="this.style.color='#1abc9c'" onmouseout="this.style.color='#2980b9'" data-tooltip="短い塩基配列を読み込み、同定が難しくなる（E-valueが上がる）ことを体験します">
-                    <svg class="svg-hint btn-icon" viewBox="0 0 24 24" fill="none"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg> サンプル短配列を試す
+                    サンプル短配列を試す
                 </span>
                 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_evalue')">?</button>
             </div>
@@ -234,11 +234,14 @@
                 プリセットを切り替えるか、複数の塩基配列が入ったFASTAまたはJSONファイルを下の枠にドロップして読み込んでください。自分だけのオリジナルデータベースを作って検索実験ができます。
             </div>
 
-            <div style="background: #f8f9fa; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 12px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
-                    <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
-                        <label style="font-size:12px; font-weight:bold; color:var(--primary); white-space: nowrap;">プリセット選択:</label>
-                        <select id="presetSelector" onchange="loadPresetDB()" style="padding: 6px; border-radius: 4px; border: 1px solid var(--border-color); font-size: 12px; flex: 1; outline: none; background: white; cursor: pointer;">
+            <div style="background: #f8f9fa; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 16px;">
+                
+                <!-- ① ベースDBの選択 -->
+                <div>
+                    <label style="font-size:13px; font-weight:bold; color:var(--primary); margin-bottom: 8px; display: block;">① ベースDBの選択 <span style="font-size: 11px; font-weight: normal; color: var(--text-muted);">(※選択すると現在のDBが置き換わります)</span></label>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: stretch;">
+                        <select id="presetSelector" onchange="loadPresetDB()" style="padding: 8px; border-radius: 4px; border: 1px solid var(--border-color); font-size: 13px; flex: 1; outline: none; background: white; cursor: pointer; min-width: 200px;">
+                            <option value="" disabled selected>--- プリセットから選択 ---</option>
                             <option value="model">モデル生物 (18S/16S, ITS, COI 等)</option>
                             <option value="animal">動物 (COI)</option>
                             <option value="plant">植物 (rbcL, matK)</option>
@@ -246,29 +249,49 @@
                             <option value="bacteria">細菌・アーキア (16S)</option>
                             <option value="viruses">ウイルス・病原体 (Spike, HA 等)</option>
                         </select>
+                        <div class="drop-zone" id="dbBaseDropZone" onclick="document.getElementById('dbBaseInputFile').click()" data-tooltip="カスタムDB(FASTA/JSON)を読み込み、現在のDBと置き換えます" style="margin: 0; flex: 2; padding: 8px; min-width: 250px;">
+                            <p style="font-size: 11px;"><svg class="btn-icon" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14"/></svg>カスタムDBをドロップして置き換え</p>
+                            <input type="file" id="dbBaseInputFile" accept=".fasta,.fas,.txt,.seq,.json" onchange="handleDBFile(event, true)" style="display:none;">
+                        </div>
                     </div>
                 </div>
 
-                <div id="currentLoadedDataInfo" style="font-size:12px; color:var(--primary); font-weight:bold; background: #eaf2f8; padding: 8px 12px; border-radius: 4px; border: 1px solid #d6eaf8;">
-                    現在読み込み中: [プリセット] モデル生物 (0種)
+                <div style="border-top: 1px dashed var(--border-color);"></div>
+
+                <!-- 現在のアクティブDB -->
+                <div>
+                    <label style="font-size:12px; font-weight:bold; color:var(--primary); margin-bottom: 8px; display: block;">現在のアクティブDB</label>
+                    <div id="currentLoadedDataInfo" style="font-size:12px; color:var(--primary); font-weight:bold; background: #eaf2f8; padding: 8px 12px; border-radius: 4px; border: 1px solid #d6eaf8; margin-bottom: 8px;">
+                        読み込み中: [空のデータベース] (0種)
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                        <span id="dbCountText" style="font-size: 13px; font-weight: bold; color: var(--success); display: flex; align-items: center; gap: 6px;"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" style="color: var(--success);"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg> 現在の登録生物種: 0 種</span>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-sm" style="background: #fdfefe;" onclick="toggleDBList(event)" data-tooltip="現在のデータベースの中身を確認します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none"><path d="M9 3h6v3H9zM8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg> 一覧を見る</button>
+                            <button class="btn btn-sm btn-danger" onclick="resetLocalDB()" data-tooltip="データベースを空にします（NCBI単体検索用）"><svg class="btn-icon" viewBox="0 0 24 24" fill="none"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>  リセット</button>
+                        </div>
+                    </div>
                 </div>
 
-                <div style="font-size: 12px; color: var(--primary); font-weight: bold; display: flex; justify-content: space-between; align-items: center;">
-                    <span id="dbCountText">現在の登録生物種: 11 種</span>
-                    <button class="btn btn-sm" onclick="toggleDBList(event)" data-tooltip="登録されている全生物種の一覧を確認します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none"><path d="M9 3h6v3H9zM8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg> 一覧</button>
-                </div>
+                <div style="border-top: 1px dashed var(--border-color);"></div>
 
-                <div class="toolbar-row" style="flex-wrap: nowrap; align-items: center; gap: 8px;">
-                    <span class="step-label" style="font-size: 12px; color: var(--primary); white-space: nowrap; padding-top: 0; min-width: auto; margin-right: 2px;">NCBI</span>
-                    <button class="rationale-btn" style="margin-left: 0; flex-shrink: 0;" onclick="toggleRationale(event, 'rat_ncbi')">?</button>
-                    <input type="text" id="ncbiAccession" class="primer-input" style="flex:1; min-width: 100px;" placeholder="Accession No. を入力" onkeypress="if(event.keyCode===13) importFromNCBI()">
-                    <button class="btn btn-primary" onclick="importFromNCBI()" data-tooltip="NCBIからFASTA形式で塩基配列データを取得し、ローカルデータベースに追加します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18z"/></svg> 取得</button>
+                <!-- ② データの追加 (任意) -->
+                <div>
+                    <label style="font-size:13px; font-weight:bold; color:var(--primary); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">② データの追加 (任意) <span style="font-size: 11px; font-weight: normal; color: var(--text-muted);">(※現在のDBに合体させます)</span>
+                        <button class="rationale-btn" style="margin-left: 0;" onclick="toggleRationale(event, 'rat_ncbi')">?</button>
+                    </label>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: stretch;">
+                        <div class="toolbar-row" style="flex-wrap: nowrap; align-items: center; gap: 8px; flex: 1; min-width: 250px; background: white; padding: 6px 10px; border-radius: 4px; border: 1px solid var(--border-color); margin: 0;">
+                            <span class="step-label" style="font-size: 12px; color: var(--primary); white-space: nowrap; padding-top: 0; min-width: auto; margin-right: 2px;">NCBI</span>
+                            <input type="text" id="ncbiAccession" class="primer-input" style="flex:1; min-width: 100px; padding: 4px 8px; border: none; box-shadow: none; background: transparent; border-bottom: 1px solid var(--border-color); border-radius: 0; font-family: monospace;" placeholder="Accession No.を入力" onkeypress="if(event.keyCode===13) importFromNCBI()">
+                            <button class="btn btn-primary" style="padding: 8px 12px; font-size: 11px;" onclick="importFromNCBI()" data-tooltip="NCBIからFASTA形式で塩基配列データを取得し、ローカルデータベースに追加します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> 追加</button>
+                        </div>
+                        <div class="drop-zone" id="dbAddDropZone" onclick="document.getElementById('dbAddInputFile').click()" data-tooltip="FASTAファイルを読み込み、現在のDBに追加します" style="margin: 0; flex: 1; padding: 8px; min-width: 250px;">
+                            <p style="font-size: 11px;"><svg class="btn-icon" viewBox="0 0 24 24" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> ＋ FASTAをドロップして追加</p>
+                            <input type="file" id="dbAddInputFile" accept=".fasta,.fas,.txt,.seq" onchange="handleDBFile(event, false)" style="display:none;">
+                        </div>
+                    </div>
                 </div>
-            </div>
-
-            <div class="drop-zone" id="dbDropZone" onclick="document.getElementById('dbInputFile').click()" data-tooltip="複数の塩基配列を含むFASTAまたはJSONファイルを一括で読み込めます" style="margin-top: 5px;">
-                <p><svg class="btn-icon" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14"/></svg> ここをクリック、またはカスタムDB(FASTA/JSON)をドロップ</p>
-                <input type="file" id="dbInputFile" accept=".fasta,.fas,.txt,.seq,.json" onchange="handleDBFile(event)">
             </div>
             
             <div id="rat_ncbi" class="rationale-text">
@@ -276,8 +299,8 @@
                 NCBI (National Center for Biotechnology Information) のデータベースから、指定したAccession No.の塩基配列データをインターネット経由で直接ダウンロードし、ローカルデータベースに追加します。
             </div>
 
-            <div style="display:flex; gap:10px; margin-top:10px;">
-                <button class="btn btn-primary" style="width: 100%;" onclick="runVirtualBlast()" data-tooltip="データベースと照合し、最も相同性の高い生物種を検索します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none"><polygon points="5 3 19 12 5 21 5 3"/></svg> 解析を実行</button>
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 14px;" onclick="runVirtualBlast()" data-tooltip="データベースと照合し、最も相同性の高い生物種を検索します"><svg class="btn-icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none"><polygon points="5 3 19 12 5 21 5 3"/></svg> 解析を実行</button>
             </div>
 
         </div>
@@ -334,7 +357,7 @@
 <div id="globalTooltip" class="custom-tooltip"></div>
 
 <!-- データベース一覧用ポップオーバー (白背景・グレー枠線に修正) -->
-<div id="dbListPopover" style="position: fixed; z-index: 1010; background: #ffffff; border: 1px solid var(--border-color); border-radius: 6px; width: 700px; max-width: 95vw; display: none; flex-direction: column; padding: 0; box-shadow: 0 4px 20px rgba(0,0,0,0.3); overflow: hidden; max-height: 60vh;">
+<div id="dbListPopover" style="position: fixed; z-index: 1010; background: #ffffff; border: 1px solid var(--border-color); border-radius: 6px; width: 900px; max-width: 95vw; display: none; flex-direction: column; padding: 0; box-shadow: 0 4px 20px rgba(0,0,0,0.3); overflow: hidden; max-height: 60vh;">
     <div style="background: var(--secondary); color: white; padding: 10px 15px; font-weight: bold; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
         <span style="display: flex; align-items: center; gap: 6px;"><svg class="btn-icon" viewBox="0 0 24 24" fill="none"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg> 登録データベース一覧</span>
         <span style="font-size: 11px; font-weight: normal; background: rgba(0,0,0,0.3); padding: 4px 8px; border-radius: 4px;" id="dbListPopoverCount">0 種</span>
@@ -478,11 +501,11 @@
         });
 
         if(!isFlex) {
-            let html = '<div style="overflow-x:auto; flex:1; min-height:0; display:flex; flex-direction:column;"><table style="width:100%; border-collapse:collapse; min-width: 650px; text-align: left; font-size: 12px;">';
+            let html = '<div style="overflow-x:auto; flex:1; min-height:0; display:flex; flex-direction:column;"><table style="width:100%; border-collapse:collapse; min-width: 800px; text-align: left; font-size: 12px;">';
             html += `<thead style="position: sticky; top: 0; background: #f8f9fa; z-index: 10; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
                         <tr style="color: var(--primary);">
                             <th style="padding: 10px 12px; border-bottom: 1px solid var(--border-color); white-space: nowrap;">Accession No.</th>
-                            <th style="padding: 10px 12px; border-bottom: 1px solid var(--border-color);">生物種 (学名 / 和名)</th>
+                            <th style="padding: 10px 12px; border-bottom: 1px solid var(--border-color); white-space: nowrap;">生物種 (学名 / 和名)</th>
                             <th style="padding: 10px 12px; border-bottom: 1px solid var(--border-color); white-space: nowrap;">遺伝子マーカー</th>
                             <th style="padding: 10px 12px; border-bottom: 1px solid var(--border-color); white-space: nowrap;">データ種別</th>
                             <th style="padding: 10px 12px; border-bottom: 1px solid var(--border-color); white-space: nowrap; text-align: right;">配列長</th>
@@ -511,11 +534,11 @@
                 let lengthDisplay = `${baseLabel} (${seqLength.toLocaleString()} bp)`;
 
                 html += `<tr style="border-bottom:1px solid #ecf0f1; background:${bg};">
-                    <td style="padding:10px 12px; font-family:monospace; font-weight:bold;">${idLink}</td>
-                    <td style="padding:10px 12px; font-style:italic; color:var(--secondary);">${displayName}</td>
-                    <td style="padding:10px 12px;">${geneDisplay}</td>
-                    <td style="padding:10px 12px; color:var(--secondary);">${db.isMito}</td>
-                    <td style="padding:10px 12px; color:var(--secondary); text-align: right; font-family: monospace;">${lengthDisplay}</td>
+                    <td style="padding:10px 12px; font-family:monospace; font-weight:bold; white-space: nowrap;">${idLink}</td>
+                    <td style="padding:10px 12px; font-style:italic; color:var(--secondary); white-space: nowrap;">${displayName}</td>
+                    <td style="padding:10px 12px; white-space: nowrap;">${geneDisplay}</td>
+                    <td style="padding:10px 12px; color:var(--secondary); white-space: nowrap;">${db.isMito}</td>
+                    <td style="padding:10px 12px; color:var(--secondary); text-align: right; font-family: monospace; white-space: nowrap;">${lengthDisplay}</td>
                 </tr>`;
             });
             html += '</tbody></table></div>';
@@ -536,7 +559,7 @@
                 el.style.maxHeight = '70vh';
             } else {
                 el.style.transform = 'none';
-                el.style.width = '700px';
+                el.style.width = '900px';
                 
                 let topPos = btnRect.bottom + 8;
                 let leftPos = btnRect.left;
@@ -553,8 +576,8 @@
                     el.style.maxHeight = Math.max(200, maxAvailableHeight) + 'px';
                 }
                 
-                if (leftPos + 700 > window.innerWidth) {
-                    leftPos = window.innerWidth - 720; 
+                if (leftPos + 900 > window.innerWidth) {
+                    leftPos = window.innerWidth - 920; 
                 }
                 el.style.left = leftPos + 'px';
             }
@@ -579,11 +602,19 @@
     }
 
     function updateDBCount() {
-        document.getElementById('dbCountText').innerText = `現在の登録生物種: ${localDB.length} 種`;
+        document.getElementById('dbCountText').innerHTML = `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" style="color: var(--success);"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg> 現在の登録生物種: ${localDB.length} 種`;
+    }
+
+    function resetLocalDB() {
+        localDB = [];
+        updateDBCount();
+        document.getElementById('currentLoadedDataInfo').innerText = `読み込み中: [空のデータベース] (0種)`;
+        showToast(`データベースをリセットしました。NCBIから直接検索できます。`, "warning");
     }
 
     function loadPresetDB() {
         const val = document.getElementById('presetSelector').value;
+        if (!val) return;
         const text = document.getElementById('presetSelector').options[document.getElementById('presetSelector').selectedIndex].text;
         
         localDB = [];
@@ -598,7 +629,7 @@
             });
         });
         updateDBCount();
-        document.getElementById('currentLoadedDataInfo').innerText = `現在読み込み中: [プリセット] ${text} (${localDB.length}種)`;
+        document.getElementById('currentLoadedDataInfo').innerText = `読み込み中: [プリセット] ${text} (${localDB.length}種)`;
         showToast(`プリセットを「${text}」に切り替えました。`);
     }
 
@@ -635,16 +666,25 @@
         if(e.target.files[0]) reader.readAsText(e.target.files[0]);
     }
 
-    const dbDropZone = document.getElementById('dbDropZone');
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(name => dbDropZone.addEventListener(name, e => {e.preventDefault(); e.stopPropagation();}));
-    dbDropZone.addEventListener('dragover', () => dbDropZone.classList.add('dragover'));
-    dbDropZone.addEventListener('dragleave', () => dbDropZone.classList.remove('dragover'));
-    dbDropZone.addEventListener('drop', e => {
-        dbDropZone.classList.remove('dragover');
-        handleDBFile({ target: { files: e.dataTransfer.files } });
+    const dbBaseDropZone = document.getElementById('dbBaseDropZone');
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(name => dbBaseDropZone.addEventListener(name, e => {e.preventDefault(); e.stopPropagation();}));
+    dbBaseDropZone.addEventListener('dragover', () => dbBaseDropZone.classList.add('dragover'));
+    dbBaseDropZone.addEventListener('dragleave', () => dbBaseDropZone.classList.remove('dragover'));
+    dbBaseDropZone.addEventListener('drop', e => {
+        dbBaseDropZone.classList.remove('dragover');
+        handleDBFile({ target: { files: e.dataTransfer.files } }, true);
     });
 
-    function handleDBFile(e) {
+    const dbAddDropZone = document.getElementById('dbAddDropZone');
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(name => dbAddDropZone.addEventListener(name, e => {e.preventDefault(); e.stopPropagation();}));
+    dbAddDropZone.addEventListener('dragover', () => dbAddDropZone.classList.add('dragover'));
+    dbAddDropZone.addEventListener('dragleave', () => dbAddDropZone.classList.remove('dragover'));
+    dbAddDropZone.addEventListener('drop', e => {
+        dbAddDropZone.classList.remove('dragover');
+        handleDBFile({ target: { files: e.dataTransfer.files } }, false);
+    });
+
+    function handleDBFile(e, forceReplace = false) {
         const file = e.target.files[0];
         if(!file) return;
         const reader = new FileReader();
@@ -652,7 +692,9 @@
             if(file.name.toLowerCase().endsWith('.json')) {
                 try {
                     const jsonData = JSON.parse(ev.target.result);
-                    localDB = [];
+                    if (forceReplace) {
+                        localDB = [];
+                    }
                     let addedCount = 0;
                     jsonData.forEach(item => {
                         localDB.push({
@@ -666,8 +708,8 @@
                         addedCount++;
                     });
                     updateDBCount();
-                    document.getElementById('currentLoadedDataInfo').innerText = `現在読み込み中: [外部JSON] ${file.name} (${localDB.length}種)`;
-                    showToast(`JSONデータベースを読み込みました (${addedCount}件)`);
+                    document.getElementById('currentLoadedDataInfo').innerText = forceReplace ? `読み込み中: [外部JSON] ${file.name} (${localDB.length}種)` : `読み込み中: [外部JSON追加済] ${file.name} (合計: ${localDB.length}種)`;
+                    showToast(`JSONデータベースを${forceReplace ? '読み込み' : '追加し'}ました (${addedCount}件)`);
                 } catch(err) {
                     showToast("JSONファイルの解析に失敗しました。", "error");
                 }
@@ -676,6 +718,11 @@
                 let currentName = "", currentSeq = "";
                 let addedCount = 0;
                 let skippedCount = 0;
+                
+                if (forceReplace) {
+                    localDB = [];
+                }
+
                 lines.forEach(line => {
                     line = line.trim();
                     if (line.startsWith('>')) {
@@ -706,14 +753,14 @@
                 }
                 updateDBCount();
                 
-                document.getElementById('currentLoadedDataInfo').innerText = `現在読み込み中: [外部FASTA追加済] ${file.name} (合計: ${localDB.length}種)`;
+                document.getElementById('currentLoadedDataInfo').innerText = forceReplace ? `読み込み中: [外部FASTA] ${file.name} (${localDB.length}種)` : `読み込み中: [外部FASTA追加済] ${file.name} (合計: ${localDB.length}種)`;
                 
                 if (skippedCount > 0 && addedCount === 0) {
                     showToast(`読み込んだ塩基配列は既に登録されています（スキップ: ${skippedCount}件）。`, "warning");
                 } else if (skippedCount > 0) {
                     showToast(`${addedCount} 件を登録しました（既に登録済みの ${skippedCount} 件はスキップしました）。`);
                 } else {
-                    showToast(`${addedCount} 件の塩基配列をローカルデータベースに追加しました！`);
+                    showToast(`${addedCount} 件の塩基配列をローカルデータベースに${forceReplace ? '登録' : '追加'}しました！`);
                 }
             }
         };
@@ -1047,7 +1094,7 @@
             }
             updateDBCount();
             
-            document.getElementById('currentLoadedDataInfo').innerText = `現在読み込み中: [外部NCBI追加済] (合計: ${localDB.length}種)`;
+            document.getElementById('currentLoadedDataInfo').innerText = `読み込み中: [外部NCBI追加済] (合計: ${localDB.length}種)`;
 
             if (skippedCount > 0 && addedCount === 0) {
                 showToast(`${cleanAccession} は既に登録されています。`, "warning");
@@ -1063,7 +1110,8 @@
     }
 
     window.addEventListener('DOMContentLoaded', (event) => {
-        loadPresetDB();
+        // 初期状態を「空」にするため、プリセットの自動読み込みを無効化
+        // loadPresetDB();
     });
 </script>
 
