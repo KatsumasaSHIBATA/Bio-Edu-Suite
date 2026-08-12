@@ -287,7 +287,7 @@
                             <button class="btn btn-primary" style="padding: 8px 12px; font-size: 11px;" onclick="importFromNCBI()" data-tooltip="NCBIからFASTA形式で塩基配列データを取得し、ローカルデータベースに追加します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> 追加</button>
                         </div>
                         <div class="drop-zone" id="dbAddDropZone" onclick="document.getElementById('dbAddInputFile').click()" data-tooltip="FASTAファイルを読み込み、現在のDBに追加します" style="margin: 0; flex: 1; padding: 8px; min-width: 250px;">
-                            <p style="font-size: 11px;"><svg class="btn-icon" viewBox="0 0 24 24" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> ＋ FASTAをドロップして追加</p>
+                            <p style="font-size: 11px;"><svg class="btn-icon" viewBox="0 0 24 24" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>FASTAファイルをドロップして追加</p>
                             <input type="file" id="dbAddInputFile" accept=".fasta,.fas,.txt,.seq" onchange="handleDBFile(event, false)" style="display:none;">
                         </div>
                     </div>
