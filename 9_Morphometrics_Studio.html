@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📐 Morphometrics Studio v31.0 | Bio-Edu Suite</title>
+    <title>⑨ Morphometrics Studio | Bio-Edu Suite</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         :root {
@@ -108,10 +108,10 @@
         .algo-selector input { display: none; }
         .algo-selector input:checked + label { background: var(--phase-color); color: white; }
 
-        /* ドロップゾーン (ガイドライン第9項① 準拠) - 横並びに修正 */
-        .drop-zone { border: 2px dashed var(--border-color); background: #f8f9fa; border-radius: 8px; padding: 16px; text-align: center; transition: 0.2s; cursor: pointer; margin-bottom: 5px; display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 8px; }
+        /* ドロップゾーン (ガイドライン第9項① v32.0 準拠) */
+        .drop-zone { border: 2px dashed var(--border-color); background: #f8f9fa; border-radius: 8px; padding: 16px; margin-bottom: 5px; display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 8px; width: 100%; max-width: 450px; min-height: 60px; box-sizing: border-box; cursor: pointer; transition: 0.2s; overflow: hidden; }
         .drop-zone:hover, .drop-zone.dragover { background: #ebf5fb; border-color: var(--phase-color); }
-        .drop-zone p { margin: 0; font-size: 12px; color: #7f8c8d; font-weight: bold; pointer-events: none; }
+        .drop-zone p { margin: 0; font-size: 12px; font-weight: bold; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
         .drop-zone svg { width: 20px; height: 20px; color: #95a5a6; pointer-events: none; flex-shrink: 0; }
         input[type="file"] { display: none; }
 
@@ -180,7 +180,7 @@
             }
         }
     </style>
-<!-- [Absolute-Zero] セクション1/4 完了。省略なしで続行 -->
+<!-- セクション1/4 完了 -->
 </head>
 <body>
 
@@ -195,8 +195,7 @@
             </h1>
             <p>Bio-Edu Suite: Phase 3 / Strict EFA & Lance-Williams Clustering</p>
         </div>
-        <!-- 必須修正事項: v31.0へのバージョン完全同期 -->
-        <div class="version-badge">v31.0</div>
+        <div class="version-badge">v32.0</div>
     </div>
 </div>
 
@@ -343,10 +342,14 @@
                 </div>
             </div>
             
-            <div style="margin-top: 10px; display: flex; justify-content: flex-end;">
-                <button class="btn btn-success" id="save-btn" onclick="saveToDashboard()" disabled data-tooltip="ダッシュボード(Phase 1)へ解析結果を書き戻します">
-                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-                    ノートに記録
+            <div style="margin-top: 10px; display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap;">
+                <button class="btn" id="copy-tsv-btn" onclick="copyToMorphoTSV()" disabled data-tooltip="統計解析(Phase 5)向けのTSV形式でコピーします">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                    ⑪向け形態TSVをコピー
+                </button>
+                <button class="btn btn-success" id="copy-json-btn" onclick="copyToIntegrativeJSON()" disabled data-tooltip="統合分類(Phase 4)向けのJSON形式でコピーします">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                    ⑩向け統合JSONをコピー
                 </button>
             </div>
         </div>
@@ -452,11 +455,10 @@
 <!-- 必須修正事項: ツールチップUI復元 -->
 <div id="d3-tooltip" class="custom-tooltip"></div>
 <div id="toast"></div>
-<!-- フッター文言はSuite全体で完全統一 (ガイドライン第9項④) -->
-<!-- 必須修正事項: v31.0へのバージョン完全同期 -->
-<div class="footer">&copy; 2026 Bio-Edu Suite v31.0 | Developed for Bioinformatics & Wet-Lab Education</div>
+<div class="footer">&copy; 2026 Bio-Edu Suite v32.0 | Developed for Bioinformatics & Wet-Lab Education</div>
 
-<!-- [Absolute-Zero] セクション2/4 完了。省略なしで続行 -->
+<!-- セクション2/4 完了 -->
+
 <script>
     // --- ツールチップ & ポップオーバー (UI/UX 統合 v31.0 準拠) ---
     // 必須修正事項: 勝手なリファクタリングを排除し、直接DOM要素を取得する形式へ復元
@@ -626,72 +628,100 @@
 
 
     // ==========================================
-    // 統合データ管理 (バッチ対応)
+    // 統合データ管理 (バッチ対応 / sessionStorage手動バケツリレー準拠)
     // ==========================================
     let analysisResult = null;
-    let activeSample = null;
     
     window.onload = () => {
         try {
-            const samplesStr = localStorage.getItem('bio_edu_samples');
-            let samples = [];
-            if (samplesStr && samplesStr !== "{}" && samplesStr !== "null") {
-                samples = JSON.parse(samplesStr);
+            // ダッシュボード等からの自動連携(localStorage)を廃止し、明示的なsessionStorage受取へ移行
+            const transferData = sessionStorage.getItem('bio_edu_transfer_data');
+            let morphSamples = [];
+            
+            if (transferData) {
+                const samples = JSON.parse(transferData);
+                morphSamples = samples.filter(s => s.morphData && s.morphData.trim() !== "");
             }
-
-            let morphSamples = samples.filter(s => s.morphData && s.morphData.trim() !== "");
 
             if (morphSamples.length === 0) {
                 document.getElementById('active-sample-info').innerHTML = `
-                    <div style="display:flex; justify-content:space-between; align-items:center; color: var(--text-muted);">
-                        <span><strong>Target:</strong> データ未連携 (ダッシュボードからデータを作成してください)</span>
-                        <span style="background:var(--border-color); color:white; padding:2px 6px; border-radius:10px; font-size:10px; font-weight:bold;">未選択</span>
+                    <div style="display:flex; justify-content:space-between; align-items:center; color: var(--text-muted); gap: 10px;">
+                        <span style="flex: 1; min-width: 0; word-break: break-word;"><strong>Target:</strong> データ未受信 (手動で入力するか、ファイルをドロップしてください)</span>
+                        <span style="background:var(--border-color); color:white; padding:2px 6px; border-radius:10px; font-size:10px; font-weight:bold; flex-shrink: 0; white-space: nowrap;">未選択</span>
                     </div>
                 `;
-                setTimeout(() => { showToast("形態データを持つサンプルがありません", "warning"); }, 500);
+                setTimeout(() => { showToast("データが手動入力モードで起動しました", "info"); }, 500);
                 return;
             }
 
-            activeSample = morphSamples[0];
+            // エクスポート時のID紐付けのためにグローバルに保持
+            window.transferredSamples = morphSamples;
             let combinedData = morphSamples.map(s => s.morphData.trim()).join("\n");
             
             document.getElementById('chain-code-input').value = combinedData;
             document.getElementById('route_a').checked = true;
             
             document.getElementById('active-sample-info').innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span><strong>Target:</strong> バッチ読み込み完了 <span style="color:var(--text-muted); font-size:10px;">(${morphSamples.length} samples)</span></span>
-                    <span style="background:var(--success); color:white; padding:2px 6px; border-radius:10px; font-size:10px; font-weight:bold;">連携済</span>
+                <div style="display:flex; justify-content:space-between; align-items:center; gap: 10px;">
+                    <span style="flex: 1; min-width: 0; word-break: break-word;"><strong>Target:</strong> バッチデータ受信完了 <span style="color:var(--text-muted); font-size:10px;">(${morphSamples.length} samples)</span></span>
+                    <span style="background:var(--success); color:white; padding:2px 6px; border-radius:10px; font-size:10px; font-weight:bold; flex-shrink: 0; white-space: nowrap;">データ受取済</span>
                 </div>
             `;
             
             switchRoute();
-            setTimeout(() => { showToast(`ダッシュボードから ${morphSamples.length} 件のサンプルをバッチ読み込みしました`, "info"); }, 500);
+            setTimeout(() => { showToast(`前工程から ${morphSamples.length} 件のサンプルを受信しました`, "success"); }, 500);
 
         } catch (e) {
             console.error("Data Load Error:", e);
-            showToast("データのバッチ引き継ぎに失敗しました", "error");
+            showToast("データの受取に失敗しました", "error");
         }
     };
 
-    function saveToDashboard() {
-        if (!activeSample || !analysisResult) return;
+    // ⑪向け形態TSVコピー関数 (PC1/PC2スコア表)
+    function copyToMorphoTSV() {
+        if (!globalPCA || globalSamples.length === 0) return;
         
-        let storedSamples = JSON.parse(localStorage.getItem('bio_edu_samples') || '[]');
-        let targetIndex = storedSamples.findIndex(s => s.id === activeSample.id);
+        let tsvLines = ["Sample_Name\tPC1_Score\tPC2_Score"];
+        globalSamples.forEach((sample, i) => {
+            tsvLines.push(`${sample.name}\t${globalPCA.pc1[i].toFixed(6)}\t${globalPCA.pc2[i].toFixed(6)}`);
+        });
+
+        navigator.clipboard.writeText(tsvLines.join("\n"))
+            .then(() => showToast("⑪向け形態TSVをクリップボードにコピーしました！", "success"))
+            .catch(err => showToast("コピーに失敗しました", "error"));
+    }
+
+    // ⑩向け統合JSONコピー関数 (サンプルID紐付け)
+    function copyToIntegrativeJSON() {
+        if (!globalPCA || globalSamples.length === 0) return;
         
-        if (targetIndex > -1) {
-            storedSamples[targetIndex].morphResult = analysisResult;
-            localStorage.setItem('bio_edu_samples', JSON.stringify(storedSamples));
-            
-            activeSample.morphResult = analysisResult;
-            activeSample.timestamp = new Date().getTime();
-            localStorage.setItem('bio_edu_active_sample', JSON.stringify(activeSample));
-            
-            showToast("解析結果をノートに記録しました！", "success");
-        } else {
-            showToast("元データが見つかりません。", "error");
-        }
+        let exportData = {
+            metadata: {
+                source: "Morphometrics_Studio",
+                timestamp: new Date().toISOString(),
+                method: "EFA_PCA",
+                featureMode: currentFeatureMode
+            },
+            samples: []
+        };
+
+        globalSamples.forEach((sample, i) => {
+            // 受信したサンプルデータがあればIDを引き継ぐ
+            let originalSample = window.transferredSamples ? window.transferredSamples.find(s => s.name === sample.name || s.id === sample.name) : null;
+            let sampleId = originalSample ? originalSample.id : `SAMP_${new Date().getTime()}_${i}`;
+
+            exportData.samples.push({
+                id: sampleId,
+                name: sample.name,
+                pc1: globalPCA.pc1[i],
+                pc2: globalPCA.pc2[i],
+                efaFeatures: sample.features
+            });
+        });
+
+        navigator.clipboard.writeText(JSON.stringify(exportData, null, 2))
+            .then(() => showToast("⑩向け統合JSONをクリップボードにコピーしました！", "success"))
+            .catch(err => showToast("コピーに失敗しました", "error"));
     }
 
     function switchRoute() {
@@ -700,7 +730,11 @@
         document.getElementById('route-b-controls').style.display = (route === 'B') ? 'block' : 'none';
         document.getElementById('viz-route-a').style.display = (route === 'A') ? 'flex' : 'none';
         document.getElementById('viz-route-b').style.display = (route === 'B') ? 'flex' : 'none';
-        document.getElementById('save-btn').disabled = true;
+        
+        // コピーボタンの初期化
+        document.getElementById('copy-json-btn').disabled = true;
+        document.getElementById('copy-tsv-btn').disabled = true;
+        
         logStatus(`[SYSTEM] 解析ルート ${route} に切り替えました。`);
     }
 
@@ -749,7 +783,7 @@
         }
         ctx.putImageData(idata, 0, 0);
     }
-<!-- [Absolute-Zero] セクション3/4 完了。省略なしで続行 -->
+<!-- セクション3/4 完了 -->
 
     function extractAndAppend() {
         if (!window.currentImageData) {
@@ -813,24 +847,7 @@
         const ta = document.getElementById('chain-code-input');
         ta.value = ta.value ? ta.value + "\n" + outStr : outStr;
         
-        // 必須修正事項: 学術的・教育的コメントの完全復元
-        // ★双方向データシンク（逆連携）の実装: 抽出データを新規サンプルとして保存する
-        try {
-            let storedSamples = JSON.parse(localStorage.getItem('bio_edu_samples') || '[]');
-            const newSample = {
-                id: 'SAMP_' + new Date().getTime() + '_' + Math.floor(Math.random()*1000),
-                name: name,
-                timestamp: new Date().getTime(),
-                morphData: outStr,
-                source: 'Morphometrics_Studio'
-            };
-            storedSamples.push(newSample);
-            localStorage.setItem('bio_edu_samples', JSON.stringify(storedSamples));
-            showToast(`抽出完了: ${name} を保存しました`, "success");
-        } catch (e) {
-            console.error("Save Error:", e);
-            showToast("ダッシュボードへの保存に失敗しました", "error");
-        }
+        showToast(`抽出完了: ${name} のコードを追記しました`, "success");
     }
 
     /** =========================================================
@@ -897,7 +914,11 @@
             resetSliders();
             
             analysisResult = { type: 'efa_pca', mode: currentFeatureMode, sampleCount: globalSamples.length, timestamp: new Date().toISOString() };
-            document.getElementById('save-btn').disabled = false;
+            
+            // エクスポートボタンを有効化
+            document.getElementById('copy-json-btn').disabled = false;
+            document.getElementById('copy-tsv-btn').disabled = false;
+            
             addLogEntry("Route A (EFA/PCA)", `調和数:${harmonics}, モード:${currentFeatureMode}`, `標準化およびPCA完了 (${globalSamples.length} samples)`);
         } else {
             logStatus(`[ERROR] PCAには2つ以上のサンプルが必要です。`, "error");
@@ -1199,7 +1220,11 @@
                 type: 'clustering', method: linkMethod, distance: distMethod,
                 sampleCount: parsedData.sampleNames.length, timestamp: new Date().toISOString()
             };
-            document.getElementById('save-btn').disabled = false;
+            
+            // クラスタリングの場合も一旦有効化（必要に応じてエクスポート機能を拡張可能）
+            document.getElementById('copy-json-btn').disabled = false;
+            document.getElementById('copy-tsv-btn').disabled = false;
+            
             logStatus(`[SUCCESS] クラスタリング完了。樹状図を描画しました。`);
             addLogEntry("Route B (Cluster)", `${distMethod} / ${linkMethod}`, `完了 (${parsedData.sampleNames.length} samples)`);
         } catch (err) {
@@ -1403,4 +1428,3 @@
 </script>
 </body>
 </html>
-<!-- [Absolute-Zero] セクション4/4 完了。省略なしで続行 -->
