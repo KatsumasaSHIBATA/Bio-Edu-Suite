@@ -405,7 +405,7 @@
         <div class="form-group">
           <label>形態データ</label>
           <textarea id="morphData" class="form-control" placeholder="チェーンコードや計測値などを入力"></textarea>
-          <div class="help-text">後で ⑨ Morphometrics Studio に送って楕円フーリエ解析やクラスター分析を行えます。</div>
+          <div class="help-text">後で⑤ Morphometrics Studio に送って楕円フーリエ解析やクラスター分析を行えます。</div>
         </div>
 
         <hr style="border: 0; border-top: 1px solid #ecf0f1; margin: 20px 0;">
@@ -413,7 +413,7 @@
         <div class="form-group">
           <label>塩基配列データ</label>
           <textarea id="dnaData" class="form-control" placeholder="FASTA形式で塩基配列を入力"></textarea>
-          <div class="help-text">後で DNAラボ (⑤ DNA Alignment Studio) に送って同定・系統解析を行えます。</div>
+          <div class="help-text">後で DNAラボ (⑤ DNA Alignment Studio) や 統合検証ルーム に送って同定・系統解析を行えます。</div>
         </div>
       </div>
       <div class="modal-footer">
@@ -425,14 +425,14 @@
 
   <!-- カスタム確認ダイアログ -->
   <div class="modal-overlay" id="confirmModal" style="z-index: 2100;">
-    <div class="modal-content" style="max-width: 420px; border-top-color: var(--danger);">
-      <div class="modal-header">
-        <h3 id="confirmTitle">確認</h3>
-        <button class="modal-close" onclick="closeConfirm()" data-tooltip="閉じる"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    <div class="modal-content" style="max-width: 400px; border-top: none; text-align: center;">
+      <div class="modal-body" style="padding: 30px 20px 10px;">
+        <svg class="svg-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 42px; height: 42px; margin-bottom: 12px; opacity: 0.9;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        <h3 id="confirmTitle" style="margin: 0 0 10px 0; font-size: 16px; color: var(--primary);">確認</h3>
+        <div id="confirmMessage" style="font-size: 13px; line-height: 1.6; color: var(--text-main);"></div>
       </div>
-      <div class="modal-body" id="confirmMessage" style="font-size: 13px; line-height: 1.6;"></div>
-      <div class="modal-footer">
-        <button class="btn" style="background: #bdc3c7; color: white;" onclick="closeConfirm()">キャンセル</button>
+      <div class="modal-footer" style="border-top: none; background: white; justify-content: center; gap: 12px; padding-bottom: 30px;">
+        <button class="btn btn-secondary" onclick="closeConfirm()">キャンセル</button>
         <button class="btn" id="confirmOkBtn" style="background: var(--danger); color: white;">削除する</button>
       </div>
     </div>
