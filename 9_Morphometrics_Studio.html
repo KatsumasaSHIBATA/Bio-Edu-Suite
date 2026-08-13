@@ -214,9 +214,9 @@
 
             <div class="algo-selector" data-tooltip="データに合わせて解析ルートを切り替えます">
                 <input type="radio" id="route_a" name="route" value="A" checked onchange="switchRoute()">
-                <label for="route_a">Route A (画像/EFA -> PCA)</label>
+                <label for="route_a">Route A (画像/EFA ▶︎ PCA)</label>
                 <input type="radio" id="route_b" name="route" value="B" onchange="switchRoute()">
-                <label for="route_b">Route B (計測値 -> 樹状図)</label>
+                <label for="route_b">Route B (計測値 ▶︎ 樹状図)</label>
             </div>
 
             <!-- ================= Route A コントロール ================= -->
@@ -261,7 +261,10 @@
                             </div>
                             <div style="display: flex; gap: 5px; flex-wrap: wrap;">
                                 <input type="text" id="imgSampleName" placeholder="サンプル名を入力" style="flex: 1; min-width: 120px;">
-                                <button class="btn btn-primary" onclick="extractAndAppend()" data-tooltip="画像から輪郭を抽出しチェーンコードを生成します">抽出 -></button>
+                                <button class="btn btn-primary" onclick="extractAndAppend()" data-tooltip="画像から輪郭を抽出しチェーンコードを生成します">
+                                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                    抽出
+                                </button>
                             </div>
                         </div>
                         <div style="width: 80px; height: 80px; border: 1px dashed #bdc3c7; background: #fff; border-radius: 4px; overflow: hidden; position: relative; flex-shrink: 0;">
@@ -635,11 +638,18 @@
     window.onload = () => {
         try {
             // ダッシュボード等からの自動連携(localStorage)を廃止し、明示的なsessionStorage受取へ移行
+            // Dashboard側は 'bio_edu_bulk_data' キーで送信してくるため両方に対応
+            const bulkData = sessionStorage.getItem('bio_edu_bulk_data');
             const transferData = sessionStorage.getItem('bio_edu_transfer_data');
             let morphSamples = [];
             
-            if (transferData) {
-                const samples = JSON.parse(transferData);
+            if (bulkData) {
+                const parsed = JSON.parse(bulkData);
+                const samples = parsed.samples || [];
+                morphSamples = samples.filter(s => s.morphData && s.morphData.trim() !== "");
+            } else if (transferData) {
+                const parsed = JSON.parse(transferData);
+                const samples = parsed.samples || parsed;
                 morphSamples = samples.filter(s => s.morphData && s.morphData.trim() !== "");
             }
 
@@ -686,9 +696,7 @@
             tsvLines.push(`${sample.name}\t${globalPCA.pc1[i].toFixed(6)}\t${globalPCA.pc2[i].toFixed(6)}`);
         });
 
-        navigator.clipboard.writeText(tsvLines.join("\n"))
-            .then(() => showToast("⑪向け形態TSVをクリップボードにコピーしました！", "success"))
-            .catch(err => showToast("コピーに失敗しました", "error"));
+        fallbackCopyTextToClipboard(tsvLines.join("\n"), "⑪向け形態TSVをクリップボードにコピーしました！");
     }
 
     // ⑩向け統合JSONコピー関数 (サンプルID紐付け)
@@ -719,9 +727,31 @@
             });
         });
 
-        navigator.clipboard.writeText(JSON.stringify(exportData, null, 2))
-            .then(() => showToast("⑩向け統合JSONをクリップボードにコピーしました！", "success"))
-            .catch(err => showToast("コピーに失敗しました", "error"));
+        fallbackCopyTextToClipboard(JSON.stringify(exportData, null, 2), "⑩向け統合JSONをクリップボードにコピーしました！");
+    }
+
+    // iframe等のセキュリティ制約を回避するための確実なコピー関数
+    function fallbackCopyTextToClipboard(text, successMsg) {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.top = "0";
+        textArea.style.left = "0";
+        textArea.style.position = "fixed";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                showToast(successMsg, "success");
+            } else {
+                showToast("コピーに失敗しました", "error");
+            }
+        } catch (err) {
+            showToast("コピーに失敗しました", "error");
+        }
+        document.body.removeChild(textArea);
     }
 
     function switchRoute() {
@@ -932,11 +962,21 @@
             line = line.trim();
             if(line === '') continue;
             const parts = line.split(/\s+/);
-            const endIndex = parts.indexOf('-1');
-            if(endIndex === -1) continue;
+            
+            // 末尾の -1 がなくても最後までパースできるように緩和
+            let endIndex = parts.indexOf('-1');
+            if (endIndex === -1) endIndex = parts.length;
+            
             let codes = [];
+            let startIndex = 1;
+            
+            // SHAPE形式ヘッダーの自動判定 (長さ、X/Y座標、W/Hなどが前置されている場合)
+            if (parts.length > 6 && (parts[4].includes('.') || parts[5].includes('.') || parts[2] === '0')) {
+                startIndex = 6;
+            }
+
             // 必須修正事項: コメントの完全復元
-            for(let i=parts.length > 5 ? 5 : 1; i<endIndex; i++) { // SHAPE形式のヘッダー対応
+            for(let i=startIndex; i<endIndex; i++) { // SHAPE形式のヘッダー対応
                 let val = parseInt(parts[i], 10);
                 if(val >= 0 && val <= 7) codes.push(val);
             }
@@ -1234,7 +1274,8 @@
     }
 
     function parseCSV(csvText, orientation) {
-        const lines = csvText.trim().split('\n').map(l => l.split(',').map(s => s.trim()));
+        // カンマだけでなく、タブや連続する空白でも正しく区切れるように正規表現を使用
+        const lines = csvText.trim().split('\n').map(l => l.split(/[,\t\s]+/).filter(s => s !== ""));
         let sampleNames = [];
         let dataMatrix = []; 
 
