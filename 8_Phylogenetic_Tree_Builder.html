@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phylogenetic Tree Builder v31.0 | Bio-Edu Suite</title>
+    <title>⑧ Phylogenetic Tree Builder | Bio-Edu Suite</title>
     <style>
         /* テーマカラー規格（ガイドライン第3項） */
         :root {
@@ -81,6 +81,7 @@
             align-items: center; 
             gap: 8px; 
         }
+        .header-icon { width: 24px; height: 24px; flex-shrink: 0; }
         .header p { 
             margin: 4px 0 0 0; 
             font-size: 11px; 
@@ -132,6 +133,7 @@
             display: flex; 
             align-items: center; 
             justify-content: space-between; 
+            min-height: 56px; /* ヘッダー帯の高さ揃え対応 */
         }
         .card-body { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
 
@@ -390,50 +392,65 @@
         .algo-selector input { display: none; }
         .algo-selector input:checked + label { background: #3498db; color: white; }
 
-        /* ドロップゾーン (ガイドライン第9項①) */
-        .drop-zone { 
+        /* ドロップゾーン規定更新 (ガイドラインv32.0 準拠) */
+        .drop-zone {
             border: 2px dashed var(--border-color); 
-            background: #f8f9fa; 
-            border-radius: 8px; 
-            padding: 16px; 
-            text-align: center; 
-            transition: 0.2s; 
-            cursor: pointer; 
+            border-radius: 8px;
+            padding: 16px;
+            background: #f8f9fa;
+            display: flex;
+            flex-direction: row; 
+            flex-wrap: nowrap; 
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            max-width: 450px; 
+            min-height: 60px; 
+            box-sizing: border-box;
+            cursor: pointer;
+            transition: 0.2s;
+            overflow: hidden; 
             margin-bottom: 8px;
         }
         .drop-zone:hover, .drop-zone.dragover { background: #e8f8f5; border-color: var(--phase-color); }
         .drop-zone p { 
             margin: 0; 
-            font-size: 11px; 
-            color: #7f8c8d; 
+            font-size: 12px; 
+            color: var(--text-muted); 
             font-weight: bold; 
             pointer-events: none; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 6px;
+            white-space: nowrap; 
+            overflow: hidden;
+            text-overflow: ellipsis; 
+        }
+        .drop-zone svg {
+            flex-shrink: 0; 
         }
         input[type="file"] { display: none; }
 
-        /* タイポグラフィ・等幅 (ガイドライン第11項①) */
-        textarea { 
-            width: 100%; 
-            height: 70px; 
-            font-family: 'Courier New', Consolas, monospace; 
-            letter-spacing: 1px;
-            font-size: 11px; 
-            padding: 8px; 
-            border: 1px solid var(--border-color); 
-            border-radius: 4px; 
-            box-sizing: border-box; 
-            resize: vertical; 
-            outline: none; 
-            transition: 0.2s; 
-            background: #fdfefe; 
-            white-space: pre; 
+        /* ペーストエリア規定更新 (ガイドラインv32.0 準拠) */
+        .paste-area {
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 12px;
+            background: #fdfefe;
+            width: 100%;
+            max-width: 450px;
+            min-height: 100px;
+            font-family: 'Courier New', Consolas, monospace;
+            font-size: 12px;
+            resize: vertical;
+            box-sizing: border-box;
+            white-space: pre;
             overflow-x: auto;
+            outline: none;
+            transition: 0.2s;
         }
-        textarea:focus { border-color: var(--phase-color); box-shadow: 0 0 0 2px rgba(26, 188, 156, 0.2); }
+        .paste-area:focus {
+            border-color: var(--phase-color);
+            box-shadow: 0 0 0 2px rgba(26, 188, 156, 0.2);
+        }
 
         /* ボタン形状・フィット (ガイドライン第11項②) */
         .btn { 
@@ -483,6 +500,26 @@
         }
         .btn-sm { font-size: 11px; padding: 6px 12px; }
         .btn-icon { width: 14px; height: 14px; flex-shrink: 0; }
+
+        /* Newickコピーツール用スタイル (無効時:白, 有効時:緑) */
+        .btn-newick {
+            background: #fff;
+            color: var(--text-main);
+            border-color: var(--border-color);
+        }
+        .btn-newick:not(:disabled) {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+        }
+        .btn-newick:hover:not(:disabled) {
+            background: #229954; 
+            border-color: #1e8449;
+            color: white;
+        }
+        .btn-newick:not(:disabled) svg {
+            stroke: white; 
+        }
 
         /* 行列表⽰テーブル */
         .matrix-container { overflow-x: auto; width: 100%; border: 1px solid #ecf0f1; background: #fff;}
@@ -645,10 +682,10 @@
 <div class="header-container">
     <div class="header">
         <div>
-            <h1><svg class="header-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12h6M8 6v12M8 6h6M8 18h6"/><circle cx="17.5" cy="6" r="2.5"/><circle cx="17.5" cy="18" r="2.5"/></svg>Phylogenetic Tree Builder</h1>
+            <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>Phylogenetic Tree Builder</h1>
             <p>Bio-Edu Suite: Phase 2 / Matrix Calculation & UPGMA/NJ/MP Clustering Emulator</p>
         </div>
-        <div class="version-badge">v31.0</div>
+        <div class="version-badge">v32.0</div>
     </div>
 </div>
 
@@ -692,11 +729,12 @@
             </div>
             
             <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" data-tooltip="ファイルを選択またはドラッグ＆ドロップしてください">
-                <p><svg class="btn-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg> ここをクリック、または アライメント済みFASTAデータをドラッグ＆ドロップ</p>
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                <p>ここをクリック、または アライメント済みFASTAデータをドラッグ＆ドロップ</p>
                 <input type="file" id="fileInput" accept=".fasta,.fas,.txt,.seq" onchange="handleFiles(event)">
             </div>
             
-            <textarea id="fastaInput" placeholder="アライメント済みの塩基配列またはアミノ酸配列（FASTA形式）を入力"></textarea>
+            <textarea id="fastaInput" class="paste-area" placeholder="アライメント済みの塩基配列またはアミノ酸配列（FASTA形式）を入力"></textarea>
 
             <div id="rat_seq_type" class="rationale-text">
                 <strong>【根拠：塩基配列とアミノ酸配列の使い分け】</strong><br>
@@ -791,7 +829,10 @@
             <div style="margin-top: 16px; border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; background: #fff;">
                 <div style="background: #eaeded; padding: 12px 16px; font-weight: bold; font-size: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color);">
                     <span style="color: var(--text-main);">解析ログ (履歴)</span>
-                    <button class="btn btn-sm" id="btnDownloadLog" onclick="downloadLogCSV()" disabled style="background:#fff; border-color:var(--border-color); box-shadow:none;" data-tooltip="履歴をCSVで保存します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3v12M7 10l5 5 5-5M4 19h16"/></svg> CSV保存</button>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn btn-sm btn-newick" id="btnCopyNewick" onclick="copyNewick()" disabled data-tooltip="現在の系統樹をNewick形式でクリップボードにコピーします"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg> 系統樹(Newick)をコピー</button>
+                        <button class="btn btn-sm" id="btnDownloadLog" onclick="downloadLogCSV()" disabled style="background:#fff; border-color:var(--border-color); box-shadow:none;" data-tooltip="履歴をCSVで保存します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3v12M7 10l5 5 5-5M4 19h16"/></svg> CSV保存</button>
+                    </div>
                 </div>
                 <div style="max-height: 200px; overflow-y: auto;">
                     <table class="log-table" style="width: 100%; text-align: left; border-collapse: collapse; font-size: 11px;">
@@ -969,7 +1010,7 @@
 
 <div id="toast"></div>
 
-<div class="footer">&copy; 2026 Bio-Edu Suite v31.0 | Developed for Bioinformatics & Wet-Lab Education</div>
+<div class="footer">&copy; 2026 Bio-Edu Suite v32.0 | Developed for Bioinformatics & Wet-Lab Education</div>
 
 <!-- [Absolute-Zero] セクション3/4 完了。省略なしで続行 -->
 
@@ -1104,6 +1145,10 @@
         document.getElementById('btnSaveImg').disabled = true;
         document.getElementById('treeExplanation').style.display = 'none';
         document.getElementById('autoDiagPanel').style.display = 'none';
+        
+        const btnCopyNewick = document.getElementById('btnCopyNewick');
+        if (btnCopyNewick) btnCopyNewick.disabled = true;
+        
         const canvas = document.getElementById('treeCanvas');
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1232,6 +1277,8 @@
         document.getElementById('btnNextStep').style.display = 'none'; 
         document.getElementById('btnExportCSV').disabled = false;
         document.getElementById('btnSaveImg').disabled = false;
+        const btnCopyNewick = document.getElementById('btnCopyNewick');
+        if (btnCopyNewick) btnCopyNewick.disabled = true;
         
         const algo = document.querySelector('input[name="algo"]:checked').value;
         if(algo === "NJ") {
@@ -1354,6 +1401,40 @@
         let bsPart = lastLog.bs === 'なし' ? '0' : parseInt(lastLog.bs);
         a.download = `${lastLog.algo}_Bootstrap_${bsPart}_Result.csv`; 
         a.click();
+    }
+    
+    function generateNewick(node) {
+        if (!node) return "";
+        if (!node.left && !node.right) {
+            // Newick形式ではスペースをアンダースコアにするのが一般的
+            return formatScientificName(node.name).replace(/\s+/g, '_') + (node.edge !== undefined ? ":" + node.edge.toFixed(5) : "");
+        }
+        let leftStr = generateNewick(node.left);
+        let rightStr = generateNewick(node.right);
+        
+        let bsStr = (node.bootstrap !== undefined) ? node.bootstrap : "";
+        let edgeStr = (node.edge !== undefined) ? ":" + node.edge.toFixed(5) : "";
+        
+        return "(" + leftStr + "," + rightStr + ")" + bsStr + edgeStr;
+    }
+
+    function copyNewick() {
+        let outgroupName = document.getElementById('outgroupSelect').value;
+        let root = clusters.find(c => c.active);
+        if (outgroupName) root = getRoutedTree(root, outgroupName);
+        
+        if (!root) {
+            showToast("コピーする系統樹がありません", "error");
+            return;
+        }
+        
+        let newick = generateNewick(root) + ";";
+        
+        navigator.clipboard.writeText(newick).then(() => {
+            showToast("系統樹(Newick形式)をクリップボードにコピーしました", "success");
+        }).catch(err => {
+            showToast("コピーに失敗しました", "error");
+        });
     }
     
     // ====== 最節約法 (MP法) ステップ・シミュレーション用ロジック ======
@@ -2340,6 +2421,7 @@
                 let finalRoot = clusters.find(c => c.active);
                 if (outgroupName) finalRoot = getRoutedTree(finalRoot, outgroupName);
                 addLogEntry(algo, 0, finalRoot);
+                document.getElementById('btnCopyNewick').disabled = false;
             }
         } else {
             renderMatrix(); 
@@ -2373,6 +2455,7 @@
         let finalRoot = clusters.find(c => c.active);
         if (outgroupName) finalRoot = getRoutedTree(finalRoot, outgroupName);
         addLogEntry(algo, iterations, finalRoot);
+        document.getElementById('btnCopyNewick').disabled = false;
     }
 
     function buildTreeSilentAndGetClades(seqs, algo) {
