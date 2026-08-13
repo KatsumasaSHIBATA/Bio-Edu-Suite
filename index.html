@@ -103,6 +103,8 @@
     .btn { padding: 8px 16px; border: none; border-radius: 4px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: fit-content; }
     .btn-primary { background-color: var(--phase-color); color: white; }
     .btn-primary:hover { filter: brightness(1.05); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .btn-secondary { background-color: #fdfefe; color: var(--text-main); border: 1px solid var(--border-color); }
+    .btn-secondary:hover { background-color: #f4f6f7; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     .btn:active { transform: scale(0.98); }
 
     /* サンプルグリッド */
@@ -208,7 +210,6 @@
     /* リンクボタンのカラー（ガイドライン第4項準拠） */
     .link-dna { color: white; background: #1abc9c; border: 1px solid #16a085; }
     .link-morph { color: white; background: #3498db; border: 1px solid #2980b9; }
-    .link-integ { color: white; background: #8e44ad; border: 1px solid #71368a; }
     .link-disabled { opacity: 0.6; pointer-events: none; filter: grayscale(80%); box-shadow: none; cursor: not-allowed; }
 
     /* モーダル */
@@ -265,7 +266,7 @@
       .bulk-action-buttons { grid-template-columns: 1fr; }
     }
   </style>
-  <!-- [Absolute-Zero] セクション1/3 (CSS) 完了。省略なしで続行 -->
+  <!-- セクション1/3 (CSS) 完了 -->
 </head>
 <body>
 
@@ -314,8 +315,8 @@
       <div class="nav-header extra">Extra: 拡張パッケージ</div>
       <a href="lab_packs.html" class="nav-item extra" target="_blank" rel="noopener noreferrer">Lab Packs (教材パック)</a>
     </div>
-    <!-- フッターのバージョンをv31.0へ完全同期 -->
-    <div class="system-status">&copy; 2026 Bio-Edu Suite v31.0 | Developed for Bioinformatics & Wet-Lab Education</div>
+    <!-- フッターのバージョンをv32.0へ完全同期 -->
+    <div class="system-status">&copy; 2026 Bio-Edu Suite v32.0 | Developed for Bioinformatics & Wet-Lab Education</div>
   </div>
 
   <!-- メインコンテンツ -->
@@ -355,16 +356,16 @@
       </div>
       <div class="bulk-action-buttons">
         <button id="btnBulkDna" class="btn link-dna" onclick="dispatchBulk('dna')">
-          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
           ⑤ DNA Alignment Studio へ
         </button>
         <button id="btnBulkMorph" class="btn link-morph" onclick="dispatchBulk('morph')">
-          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
           ⑨ Morphometrics Studio へ
         </button>
-        <button id="btnBulkInteg" class="btn link-integ" onclick="dispatchBulk('integ')">
-          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-          ⑩ Taxonomy Explorer へ
+        <button id="btnBulkCopyEnv" class="btn btn-secondary" onclick="copyEnvDataTSV()">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+          環境メタデータをコピー (TSV)
         </button>
       </div>
     </div>
@@ -389,6 +390,14 @@
           <label>サンプルID</label>
           <input type="text" id="sampleId" class="form-control" placeholder="例: 20260731_1223_Tokyo">
           <div class="help-text">未入力時は日時が自動付与されます。末尾に生息場所（ハビタット）・条件などを自由に付与できます。</div>
+        </div>
+        
+        <hr style="border: 0; border-top: 1px solid #ecf0f1; margin: 20px 0;">
+
+        <div class="form-group">
+          <label>環境メタデータ</label>
+          <textarea id="envData" class="form-control" placeholder="採取地、水温、pHなどを入力"></textarea>
+          <div class="help-text">デジタル野帳として、サンプルの採集環境に関する記録を保持します。⑪ Statistical Genetics Lab 向けのデータとして利用できます。</div>
         </div>
         
         <hr style="border: 0; border-top: 1px solid #ecf0f1; margin: 20px 0;">
@@ -430,7 +439,7 @@
   </div>
 
   <div id="toast"></div>
-  <!-- [Absolute-Zero] セクション2/3 (HTML) 完了。省略なしで続行 -->
+  <!-- セクション2/3 (HTML) 完了 -->
 
   <script>
     // --- データの初期化とローカルストレージ連携 ---
@@ -460,6 +469,7 @@
           {
             id: generateBaseId() + "_Demo",
             name: "Demo_Lineage_A",
+            envData: "採取地: 東京\n水温: 22.5℃",
             morphData: "5 4 4 5 4 6 5 6 5 5 5 6 6 5 6 6 6 6 6 6 6 6 6 6 6 6 6 7 6 6 6 7 6 6 6 6 6 6 6 7 6 6 6 6 6 6 6 6 6 6 6 7 6 6 6 6 6 6 6 7 6 6 6 6 6 6 6 7",
             dnaData: ">Demo_Lineage_A\nATGCGTACTGACGTACGTACTGACGTACTGACGTACGTACTGACGTACGT",
             date: new Date().toISOString()
@@ -501,9 +511,11 @@
       samples.sort((a, b) => new Date(b.date) - new Date(a.date));
 
       samples.forEach(sample => {
+        const hasEnv = sample.envData && sample.envData.trim() !== "";
         const hasMorph = sample.morphData && sample.morphData.trim() !== "";
         const hasDna = sample.dnaData && sample.dnaData.trim() !== "";
         
+        const envBadge = hasEnv ? `<span class="badge ok">環境メタデータあり</span>` : `<span class="badge none">環境メタデータ未登録</span>`;
         const morphBadge = hasMorph ? `<span class="badge ok">形態データあり</span>` : `<span class="badge none">形態未登録</span>`;
         const dnaBadge = hasDna ? `<span class="badge ok">塩基配列あり</span>` : `<span class="badge none">塩基配列未登録</span>`;
 
@@ -522,7 +534,8 @@
             <button class="btn-delete" onclick="deleteSample('${sample.id}', event)" data-tooltip="削除する"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
           </div>
           <div class="card-body" onclick="editSample('${sample.id}')">
-            <div class="status-badges">${morphBadge}${dnaBadge}</div>
+            <div class="status-badges">${envBadge}${morphBadge}${dnaBadge}</div>
+            ${hasEnv ? `<div class="data-preview" data-tooltip="環境メタデータを編集">${escapeHTML(sample.envData.substring(0, 30))}...</div>` : ''}
             ${hasMorph ? `<div class="data-preview" data-tooltip="形態データを編集">${escapeHTML(sample.morphData.substring(0, 30))}...</div>` : ''}
             ${hasDna ? `<div class="data-preview" data-tooltip="塩基配列を編集">${escapeHTML(sample.dnaData.substring(0, 30))}...</div>` : ''}
           </div>
@@ -549,23 +562,25 @@
         // 選択された全てのサンプルがデータ要件を満たしているかチェック
         let canSendMorph = true;
         let canSendDna = true;
+        let canCopyEnv = true;
         
         checkboxes.forEach(cb => {
           const sample = samples.find(s => s.id === cb.value);
           if (sample) {
             if (!sample.morphData || sample.morphData.trim() === "") canSendMorph = false;
             if (!sample.dnaData || sample.dnaData.trim() === "") canSendDna = false;
+            if (!sample.envData || sample.envData.trim() === "") canCopyEnv = false;
           }
         });
 
         const btnMorph = document.getElementById('btnBulkMorph');
         const btnDna = document.getElementById('btnBulkDna');
-        const btnInteg = document.getElementById('btnBulkInteg');
+        const btnCopyEnv = document.getElementById('btnBulkCopyEnv');
 
-        // データ不足のアプリへの送信ボタンを無効化
+        // データ不足のアプリへの送信・処理ボタンを無効化
         btnMorph.classList.toggle('link-disabled', !canSendMorph);
         btnDna.classList.toggle('link-disabled', !canSendDna);
-        btnInteg.classList.toggle('link-disabled', !(canSendMorph && canSendDna));
+        btnCopyEnv.classList.toggle('link-disabled', !canCopyEnv);
 
         panel.classList.add('show');
       } else {
@@ -600,14 +615,38 @@
       } else if (type === 'dna') {
         targetUrl = '5_DNA_Alignment_Studio.html'; 
         showToast(`${selectedSamples.length}件のデータを ⑤ DNA Alignment Studio に転送しました`, "info");
-      } else if (type === 'integ') {
-        targetUrl = '10_integrative_taxonomy_studio.html';
-        showToast(`${selectedSamples.length}件のデータを ⑩ Taxonomy Explorer (統合版) に転送しました`, "info");
       }
 
       if(targetUrl) {
         setTimeout(() => { window.open(targetUrl, '_blank'); }, 500);
       }
+    }
+
+    // --- TSVコピー処理 ---
+    function copyEnvDataTSV() {
+      const checkboxes = document.querySelectorAll('.sample-checkbox:checked');
+      if (checkboxes.length === 0) return;
+      
+      const selectedIds = Array.from(checkboxes).map(cb => cb.value);
+      const selectedSamples = selectedIds.map(id => samples.find(s => s.id === id)).filter(Boolean);
+      
+      if (selectedSamples.length === 0) return;
+
+      let tsv = "Sample_ID\tSample_Name\tEnvironment_Metadata\n";
+      selectedSamples.forEach(s => {
+        // メタデータ内の改行やタブをスペースに置換し、1行のデータとして保つ
+        const env = (s.envData || "").replace(/\n/g, ' ').replace(/\t/g, ' ');
+        tsv += `${s.id}\t${s.name}\t${env}\n`;
+      });
+      
+      navigator.clipboard.writeText(tsv).then(() => {
+        // チェックボックスの選択状態を解除して再描画
+        document.querySelectorAll('.sample-checkbox').forEach(cb => cb.checked = false);
+        renderSamples();
+        showToast("環境メタデータをTSV形式でクリップボードにコピーしました", "success");
+      }).catch(err => {
+        showToast("データのコピーに失敗しました", "error");
+      });
     }
 
     // --- モーダル・CRUD操作 ---
@@ -616,6 +655,7 @@
       document.getElementById('originalSampleId').value = "";
       document.getElementById('sampleId').value = "";
       document.getElementById('sampleName').value = "";
+      document.getElementById('envData').value = "";
       document.getElementById('morphData').value = "";
       document.getElementById('dnaData').value = "";
       document.getElementById('sampleModal').style.display = 'flex';
@@ -633,6 +673,7 @@
       document.getElementById('originalSampleId').value = sample.id;
       document.getElementById('sampleId').value = sample.id;
       document.getElementById('sampleName').value = sample.name;
+      document.getElementById('envData').value = sample.envData || "";
       document.getElementById('morphData').value = sample.morphData || "";
       document.getElementById('dnaData').value = sample.dnaData || "";
       document.getElementById('sampleModal').style.display = 'flex';
@@ -642,6 +683,7 @@
       const originalId = document.getElementById('originalSampleId').value;
       const inputId = document.getElementById('sampleId').value.trim();
       const name = document.getElementById('sampleName').value.trim();
+      const env = document.getElementById('envData').value.trim();
       const morph = document.getElementById('morphData').value.trim();
       const dna = document.getElementById('dnaData').value.trim();
 
@@ -661,12 +703,13 @@
         if (index !== -1) {
           samples[index].id = finalId;
           samples[index].name = name;
+          samples[index].envData = env;
           samples[index].morphData = morph;
           samples[index].dnaData = dna;
           samples[index].date = new Date().toISOString();
         }
       } else {
-        samples.push({ id: finalId, name: name, morphData: morph, dnaData: dna, date: new Date().toISOString() });
+        samples.push({ id: finalId, name: name, envData: env, morphData: morph, dnaData: dna, date: new Date().toISOString() });
       }
 
       saveToStorage(); renderSamples(); closeModal();
@@ -803,6 +846,6 @@
       return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag]));
     }
   </script>
-  <!-- [Absolute-Zero] セクション3/3 (JS) 完了。省略なしで続行 -->
+  <!-- セクション3/3 (JS) 完了 -->
 </body>
 </html>
