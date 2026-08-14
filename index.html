@@ -25,7 +25,7 @@
     *, *::before, *::after { box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; }
 
-    /* 改行崩れ・テキスト折り返しの補正（ガイドライン第4項） */
+    /* 改行崩れ・テキスト折り返しの補正（ガイドライン第5項） */
     body, .card, p, div, .bench-tip, .pro-invite, .rationale-text, .assist-panel { word-break: normal; overflow-wrap: anywhere; line-height: 1.6; }
     .label-title, .no-wrap { white-space: nowrap; }
 
@@ -34,7 +34,7 @@
     .sidebar-overlay { display: none; }
 
     /* サイドバー */
-    .sidebar { width: 280px; background-color: var(--primary); color: white; display: flex; flex-direction: column; flex-shrink: 0; transition: left 0.3s ease; z-index: 1001; box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
+    .sidebar { width: 280px; background-color: var(--primary); color: white; display: flex; flex-direction: column; flex-shrink: 0; transition: left 0.3s ease; z-index: 10; box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
     .logo-area { padding: 20px; background-color: #1a252f; border-bottom: 4px solid var(--phase-color); text-align: center; }
     .logo-area h1 { margin: 0; color: #fff; font-size: 20px; font-weight: 700; letter-spacing: 1px; }
     .logo-area p { margin: 5px 0 0 0; color: var(--phase-color); font-size: 11px; }
@@ -73,14 +73,14 @@
     /* メインコンテンツ */
     .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
     
-    .topbar { background: var(--card-bg); height: 60px; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 10; position: relative; }
+    .topbar { background: var(--card-bg); height: 60px; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 30; position: relative; }
     .topbar h2 { margin: 0; font-size: 18px; color: var(--primary); display: flex; align-items: center; gap: 5px; }
     
     /* 教育的ポップオーバー (フリップ対応/クリック起動) */
     .rationale-wrapper { position: relative; display: inline-block; }
-    .rationale-btn { background: var(--phase-color); color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; border: none; font-weight: bold; transition: 0.2s; flex-shrink: 0; }
+    .rationale-btn { background: var(--phase-color); color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; border: none; font-weight: bold; transition: 0.2s; flex-shrink: 0; margin-left: 5px; }
     .rationale-btn:hover { transform: scale(1.1); filter: brightness(1.2); }
-    .rationale-text { position: fixed; background: #fef9e7; border: 1px solid #f39c12; padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: max-content; max-width: min(320px, calc(100vw - 24px)); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; }
+    .rationale-text { position: fixed; background: #fef9e7; border: 1px solid var(--warning); padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: max-content; max-width: min(320px, calc(100vw - 24px)); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; }
     .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
     .rationale-text strong { color: #d35400; display: block; margin-bottom: 4px; font-size: 12px; }
     
@@ -92,9 +92,10 @@
     .rationale-text.arrow-top::before { top: -14px; border-color: transparent transparent var(--warning) transparent; }
     .rationale-text.arrow-bottom::before { bottom: -14px; border-color: var(--warning) transparent transparent transparent; }
     
-    /* ヘッダーアイコン（インラインSVG / stroke="currentColor" で見出し色に同期） */
-    .header-icon { width: 20px; height: 20px; vertical-align: -3px; margin-right: 6px; flex-shrink: 0; }
-    .btn-icon { width: 14px; height: 14px; vertical-align: -2px; flex-shrink: 0; }
+    /* ヘッダーアイコン（インラインSVG / ガイドライン第2項準拠 24px固定） */
+    .header-icon { width: 24px; height: 24px; flex-shrink: 0; margin-right: 6px; }
+    .btn-icon { width: 16px; height: 16px; vertical-align: -3px; flex-shrink: 0; }
+    .svg-danger { color: var(--danger); }
     
     .content-area { flex: 1; padding: 25px; overflow-y: auto; padding-bottom: 120px; /* 一括送信パネル分の余白 */ }
 
@@ -179,7 +180,7 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
-      z-index: 1000;
+      z-index: 100;
       transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       width: 90%;
       max-width: 800px;
@@ -201,7 +202,7 @@
       gap: 12px;
     }
     .bulk-action-buttons .btn {
-      width: 100%;
+      width: 100%; /* サイドパネル内の主要アクションは100%許可 */
       display: flex;
       align-items: center;
       justify-content: center;
@@ -209,13 +210,15 @@
 
     /* リンクボタンのカラー（ガイドライン第4項準拠） */
     .link-dna { color: white; background: #1abc9c; border: 1px solid #16a085; }
+    .link-dna:hover { filter: brightness(1.05); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     .link-morph { color: white; background: #3498db; border: 1px solid #2980b9; }
-    .link-disabled { opacity: 0.6; pointer-events: none; filter: grayscale(80%); box-shadow: none; cursor: not-allowed; }
+    .link-morph:hover { filter: brightness(1.05); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .link-disabled { opacity: 0.6; pointer-events: none; filter: grayscale(80%); box-shadow: none !important; cursor: not-allowed; }
 
     /* モーダル */
-    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(2px); }
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(2px); }
     /* ガイドライン第8項: 幅の完全統一 (width: 400px) */
-    .modal-content { background: white; border-radius: 8px; width: 400px; max-width: 95vw; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border-top: 6px solid var(--phase-color);}
+    .modal-content { background: white; border-radius: 8px; width: 400px; max-width: 95vw; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border-top: 6px solid var(--phase-color); z-index: 1010;}
     .modal-header { padding: 15px 20px; background: #f8f9f9; color: var(--primary); border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ecf0f1; }
     .modal-header h3 { margin: 0; font-size: 16px; }
     .modal-close { background: none; border: none; color: #7f8c8d; font-size: 20px; cursor: pointer; padding: 0 5px; font-weight: bold; }
@@ -249,7 +252,7 @@
     /* レスポンシブ対応 */
     @media (max-width: 768px) {
       body { flex-direction: column; }
-      .mobile-header { display: flex; justify-content: space-between; align-items: center; background-color: #1a252f; padding: 15px 20px; border-bottom: 4px solid var(--phase-color); z-index: 1000; }
+      .mobile-header { display: flex; justify-content: space-between; align-items: center; background-color: #1a252f; padding: 15px 20px; border-bottom: 4px solid var(--phase-color); z-index: 30; }
       .mobile-header h1 { margin: 0; color: #fff; font-size: 18px; font-weight: 700; letter-spacing: 1px; text-align: center; }
       .hamburger-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: flex-start; width: 30px; height: 30px;}
       .sidebar { position: fixed; top: 0; left: -100%; width: 280px; height: 100dvh; z-index: 1002; transition: left 0.3s ease; }
@@ -314,8 +317,8 @@
       <div class="nav-header extra">Extra: 拡張パッケージ</div>
       <a href="lab_packs.html" class="nav-item extra" target="_blank" rel="noopener noreferrer">Lab Packs (教材パック)</a>
     </div>
-    <!-- フッターのバージョンをv32.0へ完全同期 -->
-    <div class="system-status">&copy; 2026 Bio-Edu Suite v32.0 | Developed for Bioinformatics & Wet-Lab Education</div>
+    <!-- フッターのバージョンをv32.1へ完全同期 -->
+    <div class="system-status">&copy; 2026 Bio-Edu Suite v32.1 | Developed for Bioinformatics & Wet-Lab Education</div>
   </div>
 
   <!-- メインコンテンツ -->
@@ -386,9 +389,9 @@
         </div>
         
         <div class="form-group">
-          <label>サンプルID</label>
+          <label>Sample ID (自動付与)</label>
           <input type="text" id="sampleId" class="form-control" placeholder="例: 20260731_1223_Tokyo">
-          <div class="help-text">未入力時は日時が自動付与されます。末尾に生息場所（ハビタット）・条件などを自由に付与できます。</div>
+          <div class="help-text">LIMS用の一意なIDです。末尾に生息場所（ハビタット）・条件などを自由に追記できます。</div>
         </div>
         
         <hr style="border: 0; border-top: 1px solid #ecf0f1; margin: 20px 0;">
@@ -423,7 +426,7 @@
   </div>
 
   <!-- カスタム確認ダイアログ -->
-  <div class="modal-overlay" id="confirmModal" style="z-index: 2100;">
+  <div class="modal-overlay" id="confirmModal">
     <div class="modal-content" style="max-width: 400px; border-top: none; text-align: center;">
       <div class="modal-body" style="padding: 30px 20px 10px;">
         <svg class="svg-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 42px; height: 42px; margin-bottom: 12px; opacity: 0.9;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
@@ -463,38 +466,46 @@
       if (data) {
         samples = JSON.parse(data);
       } else {
-        // [UPDATE] リアルな検証用デモデータ（A湖畔 vs B川上流の4検体）に差し替えました
+        // [UPDATE] よりリアルなCOI遺伝子ベースのデモデータ（地域個体群の変異・外来種）に刷新
         samples = [
           {
             id: generateBaseId() + "_A1",
             name: "Pop_Alpha_01",
-            envData: "採取地: A湖畔 (止水域)\n水温: 24.5℃\npH: 7.2\n塩分濃度: 0.1%\n特記事項: 浅瀬の水草帯で採取。体色がやや明るい。",
+            envData: "採取地: A湖畔 (止水域)\n水温: 24.5℃\npH: 7.2\n塩分濃度: 0.1%\n特記事項: 浅瀬の水草帯で採取。体高が高く丸みを帯びる。",
             morphData: "5 5 4 5 5 6 6 5 6 6 7 6 6 6 7 7 6 7 6 6 7 6 5 6 5 5 4 5 5 4 3 4 3 2 3 2 1 2 1 1 0 1 0 0 1 0 1 2 1 2 3 2 3 4",
-            dnaData: ">Pop_Alpha_01\nATGCGTACTGACGTACGTACTGACGTACTGACGTACGTACTGACGTACGTACTGACGTAC",
-            date: new Date(Date.now() - 30000).toISOString()
+            dnaData: ">Pop_Alpha_01\nATGTTCATTAACCGATGATTATTCTCAACTAACCATAAAGATATCGGAACTCTATATCTA",
+            date: new Date(Date.now() - 40000).toISOString()
           },
           {
             id: generateBaseId() + "_A2",
             name: "Pop_Alpha_02",
             envData: "採取地: A湖畔 (止水域)\n水温: 24.8℃\npH: 7.1\n塩分濃度: 0.1%\n特記事項: 泥底で採取。同所的な個体。",
             morphData: "5 4 4 5 5 5 6 5 6 7 6 7 7 6 7 6 6 7 6 6 6 6 5 5 4 5 4 4 3 4 3 3 2 2 1 2 1 1 0 0 0 1 0 1 1 2 2 3 2 3 3 4 3 4",
-            dnaData: ">Pop_Alpha_02\nATGCGTACTGACGTACGTACTGACGTACTGACGTACGTACTGACGTACGTACTGACGTAC",
-            date: new Date(Date.now() - 20000).toISOString()
+            dnaData: ">Pop_Alpha_02\nATGTTCATTAACCGATGATTATTCTCAACTAACCATAAAGATATTGGAACTCTATATCTA",
+            date: new Date(Date.now() - 30000).toISOString()
           },
           {
             id: generateBaseId() + "_B1",
             name: "Pop_Beta_01",
-            envData: "採取地: B川上流 (流水域)\n水温: 15.2℃\npH: 6.8\n塩分濃度: 0.0%\n特記事項: 流れが速い岩場で採取。流線型の傾向。",
+            envData: "採取地: B川上流 (流水域)\n水温: 15.2℃\npH: 6.8\n塩分濃度: 0.0%\n特記事項: 流れが速い岩場で採取。流線型の傾向が強い。",
             morphData: "4 3 3 4 4 4 5 4 5 5 5 6 5 5 6 6 5 6 5 5 5 4 4 3 3 3 2 2 1 2 1 1 0 1 0 0 7 0 7 7 6 7 6 7 7 6 7 6 5 6 5 5 4 5",
-            dnaData: ">Pop_Beta_01\nATGCGTACTGACGTACGTACTGACGTACTGACGTACGTACTGACGTACGTATTGACGTAC",
-            date: new Date(Date.now() - 10000).toISOString()
+            dnaData: ">Pop_Beta_01\nATGTTCATCAACCGATGATTATTCTCAACTAACCATAAAGATATCGGAACTCTTTACCTA",
+            date: new Date(Date.now() - 20000).toISOString()
           },
           {
             id: generateBaseId() + "_B2",
             name: "Pop_Beta_02",
             envData: "採取地: B川上流 (流水域)\n水温: 15.5℃\npH: 6.9\n塩分濃度: 0.0%\n特記事項: 淵で採取。",
             morphData: "4 4 3 4 4 5 4 5 5 6 5 6 6 5 6 5 5 4 4 4 3 3 2 3 2 2 1 1 0 1 0 7 0 7 7 6 6 7 6 7 7 6 7 6 6 5 6 5 5 4 4 5 4 4",
-            dnaData: ">Pop_Beta_02\nATGCGTACTGACGTACGTACTGACGTACTGACGTACGTACTGACGTACGTATTGACGTAC",
+            dnaData: ">Pop_Beta_02\nATGTTCATCAACCGATGATTATTCTCAACTAACCATAAAGATATCGGAACTCTTTACCTG",
+            date: new Date(Date.now() - 10000).toISOString()
+          },
+          {
+            id: generateBaseId() + "_Gamma_Alien",
+            name: "Alien_Gamma_01",
+            envData: "採取地: A湖畔 (人工水路付近)\n水温: 25.1℃\npH: 7.4\n塩分濃度: 0.1%\n特記事項: 最近目撃されるようになった不明種。他の個体より大型。",
+            morphData: "6 6 5 6 6 7 7 6 7 7 7 6 7 6 6 5 5 4 3 2 3 2 1 0 1 0 7 6 7 6 5 4 5 4 3 2 3 2 1 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6",
+            dnaData: ">Alien_Gamma_01\nATGTTCATCAACCGATGACTATTCTCAACAAACCACAAAGATATCGGAACCCTATATCTA",
             date: new Date().toISOString()
           }
         ];
@@ -513,7 +524,8 @@
       const dd = String(now.getDate()).padStart(2, '0');
       const hh = String(now.getHours()).padStart(2, '0');
       const min = String(now.getMinutes()).padStart(2, '0');
-      return `${yyyy}${mm}${dd}_${hh}${min}`;
+      const sec = String(now.getSeconds()).padStart(2, '0');
+      return `${yyyy}${mm}${dd}_${hh}${min}${sec}`;
     }
 
     // --- UIレンダリング ---
@@ -620,9 +632,17 @@
       
       if (selectedSamples.length === 0) return;
 
-      // ガイドラインおよび指示に基づき sessionStorage へ一括データを保存
+      // [UPDATE] ガイドラインおよび指示に基づき sessionStorage へ一括データを厳密な構造で保存（idの完全保証）
+      const exportSamples = selectedSamples.map(s => ({
+        id: s.id || generateBaseId(),
+        name: s.name || "Unknown_Sample",
+        envData: s.envData || "",
+        morphData: s.morphData || "",
+        dnaData: s.dnaData || ""
+      }));
+
       sessionStorage.setItem('bio_edu_bulk_data', JSON.stringify({
-        samples: selectedSamples,
+        samples: exportSamples,
         timestamp: new Date().getTime()
       }));
       
@@ -676,7 +696,10 @@
     function openModal() {
       document.getElementById('modalTitle').innerText = "サンプルの登録";
       document.getElementById('originalSampleId').value = "";
-      document.getElementById('sampleId').value = "";
+      
+      // LIMS強化: 登録時に一意のIDをUI上で確実に見せ、保持させる
+      document.getElementById('sampleId').value = generateBaseId();
+      
       document.getElementById('sampleName').value = "";
       document.getElementById('envData').value = "";
       document.getElementById('morphData').value = "";
@@ -716,6 +739,7 @@
       let finalId = baseId;
       let counter = 2;
       
+      // IDの重複を厳格に防止
       while (samples.some(s => s.id === finalId && s.id !== originalId)) {
         finalId = `${baseId}-${counter}`;
         counter++;
