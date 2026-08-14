@@ -266,7 +266,6 @@
       .bulk-action-buttons { grid-template-columns: 1fr; }
     }
   </style>
-  <!-- セクション1/3 (CSS) 完了 -->
 </head>
 <body>
 
@@ -405,7 +404,7 @@
         <div class="form-group">
           <label>形態データ</label>
           <textarea id="morphData" class="form-control" placeholder="チェーンコードや計測値などを入力"></textarea>
-          <div class="help-text">後で⑤ Morphometrics Studio に送って楕円フーリエ解析やクラスター分析を行えます。</div>
+          <div class="help-text">後で⑨ Morphometrics Studio に送って楕円フーリエ解析やクラスター分析を行えます。</div>
         </div>
 
         <hr style="border: 0; border-top: 1px solid #ecf0f1; margin: 20px 0;">
@@ -413,11 +412,11 @@
         <div class="form-group">
           <label>塩基配列データ</label>
           <textarea id="dnaData" class="form-control" placeholder="FASTA形式で塩基配列を入力"></textarea>
-          <div class="help-text">後で DNAラボ (⑤ DNA Alignment Studio) や 統合検証ルーム に送って同定・系統解析を行えます。</div>
+          <div class="help-text">後で DNAラボ (⑤ DNA Alignment Studio) に送って同定・系統解析を行えます。</div>
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn" style="background: #bdc3c7; color: white;" onclick="closeModal()">キャンセル</button>
+        <button class="btn btn-secondary" onclick="closeModal()">キャンセル</button>
         <button class="btn btn-primary" onclick="saveSample()">保存</button>
       </div>
     </div>
@@ -439,7 +438,6 @@
   </div>
 
   <div id="toast"></div>
-  <!-- セクション2/3 (HTML) 完了 -->
 
   <script>
     // --- データの初期化とローカルストレージ連携 ---
@@ -465,13 +463,38 @@
       if (data) {
         samples = JSON.parse(data);
       } else {
+        // [UPDATE] リアルな検証用デモデータ（A湖畔 vs B川上流の4検体）に差し替えました
         samples = [
           {
-            id: generateBaseId() + "_Demo",
-            name: "Demo_Lineage_A",
-            envData: "採取地: 東京\n水温: 22.5℃",
-            morphData: "5 4 4 5 4 6 5 6 5 5 5 6 6 5 6 6 6 6 6 6 6 6 6 6 6 6 6 7 6 6 6 7 6 6 6 6 6 6 6 7 6 6 6 6 6 6 6 6 6 6 6 7 6 6 6 6 6 6 6 7 6 6 6 6 6 6 6 7",
-            dnaData: ">Demo_Lineage_A\nATGCGTACTGACGTACGTACTGACGTACTGACGTACGTACTGACGTACGT",
+            id: generateBaseId() + "_A1",
+            name: "Pop_Alpha_01",
+            envData: "採取地: A湖畔 (止水域)\n水温: 24.5℃\npH: 7.2\n塩分濃度: 0.1%\n特記事項: 浅瀬の水草帯で採取。体色がやや明るい。",
+            morphData: "5 5 4 5 5 6 6 5 6 6 7 6 6 6 7 7 6 7 6 6 7 6 5 6 5 5 4 5 5 4 3 4 3 2 3 2 1 2 1 1 0 1 0 0 1 0 1 2 1 2 3 2 3 4",
+            dnaData: ">Pop_Alpha_01\nATGCGTACTGACGTACGTACTGACGTACTGACGTACGTACTGACGTACGTACTGACGTAC",
+            date: new Date(Date.now() - 30000).toISOString()
+          },
+          {
+            id: generateBaseId() + "_A2",
+            name: "Pop_Alpha_02",
+            envData: "採取地: A湖畔 (止水域)\n水温: 24.8℃\npH: 7.1\n塩分濃度: 0.1%\n特記事項: 泥底で採取。同所的な個体。",
+            morphData: "5 4 4 5 5 5 6 5 6 7 6 7 7 6 7 6 6 7 6 6 6 6 5 5 4 5 4 4 3 4 3 3 2 2 1 2 1 1 0 0 0 1 0 1 1 2 2 3 2 3 3 4 3 4",
+            dnaData: ">Pop_Alpha_02\nATGCGTACTGACGTACGTACTGACGTACTGACGTACGTACTGACGTACGTACTGACGTAC",
+            date: new Date(Date.now() - 20000).toISOString()
+          },
+          {
+            id: generateBaseId() + "_B1",
+            name: "Pop_Beta_01",
+            envData: "採取地: B川上流 (流水域)\n水温: 15.2℃\npH: 6.8\n塩分濃度: 0.0%\n特記事項: 流れが速い岩場で採取。流線型の傾向。",
+            morphData: "4 3 3 4 4 4 5 4 5 5 5 6 5 5 6 6 5 6 5 5 5 4 4 3 3 3 2 2 1 2 1 1 0 1 0 0 7 0 7 7 6 7 6 7 7 6 7 6 5 6 5 5 4 5",
+            dnaData: ">Pop_Beta_01\nATGCGTACTGACGTACGTACTGACGTACTGACGTACGTACTGACGTACGTATTGACGTAC",
+            date: new Date(Date.now() - 10000).toISOString()
+          },
+          {
+            id: generateBaseId() + "_B2",
+            name: "Pop_Beta_02",
+            envData: "採取地: B川上流 (流水域)\n水温: 15.5℃\npH: 6.9\n塩分濃度: 0.0%\n特記事項: 淵で採取。",
+            morphData: "4 4 3 4 4 5 4 5 5 6 5 6 6 5 6 5 5 4 4 4 3 3 2 3 2 2 1 1 0 1 0 7 0 7 7 6 6 7 6 7 7 6 7 6 6 5 6 5 5 4 4 5 4 4",
+            dnaData: ">Pop_Beta_02\nATGCGTACTGACGTACGTACTGACGTACTGACGTACGTACTGACGTACGTATTGACGTAC",
             date: new Date().toISOString()
           }
         ];
@@ -846,6 +869,5 @@
       return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag]));
     }
   </script>
-  <!-- セクション3/3 (JS) 完了 -->
 </body>
 </html>
