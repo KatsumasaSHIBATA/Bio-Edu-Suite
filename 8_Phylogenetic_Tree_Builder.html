@@ -682,7 +682,7 @@
 <div class="header-container">
     <div class="header">
         <div>
-            <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>Phylogenetic Tree Builder</h1>
+            <h1><svg class="header-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>Phylogenetic Tree Builder</h1>
             <p>Bio-Edu Suite: Phase 2 / Matrix Calculation & UPGMA/NJ/MP Clustering Emulator</p>
         </div>
         <div class="version-badge">v32.0</div>
@@ -1328,6 +1328,20 @@
         a.href = canvas.toDataURL("image/png");
         a.download = "phylogenetic_tree.png";
         a.click();
+    }
+
+    function getCladeId(node) {
+        if (!node) return "";
+        if (!node.left && !node.right) return node.name;
+        let leaves = [];
+        function collectLeaves(n) {
+            if (!n) return;
+            if (!n.left && !n.right) leaves.push(n.name);
+            collectLeaves(n.left);
+            collectLeaves(n.right);
+        }
+        collectLeaves(node);
+        return leaves.sort().join(',');
     }
 
     function extractCladeLogs(node) {
