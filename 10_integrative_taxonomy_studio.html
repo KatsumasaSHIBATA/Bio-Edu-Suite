@@ -25,7 +25,6 @@
             --success: #27ae60;
             --danger: #e74c3c;
             --warning: #f39c12;
-            --btn-primary: #3498db;
         }
 
         *, *::before, *::after { box-sizing: border-box; }
@@ -56,8 +55,8 @@
         .main-content { width: 100%; max-width: 1400px; margin: 24px auto; padding: 0 20px; display: flex; flex-direction: column; gap: 24px; flex: 1; }
 
         /* Shared Card Styles */
-        .card { background: var(--card-bg); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; width: 100%; border: 1px solid var(--border-color); }
-        .card-header { background: var(--secondary); color: white; padding: 12px 18px; font-size: 15px; font-weight: bold; display: flex; justify-content: flex-start; gap: 8px; align-items: center; border-top: 4px solid var(--phase-color); }
+        .card { background: var(--card-bg); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; width: 100%; }
+        .card-header { background: var(--secondary); color: white; padding: 12px 18px; font-size: 15px; font-weight: bold; display: flex; align-items: center; gap: 8px; border-radius: 4px 4px 0 0; border-top: 4px solid var(--phase-color); }
         .card-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
 
         /* Educational UI Modules */
@@ -65,7 +64,7 @@
         .bench-tip strong { color: #2980b9; display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 13px; }
 
         /* Popover & Tooltip */
-        .rationale-btn { background: var(--phase-color); color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; flex-shrink: 0; }
+        .rationale-btn { background: var(--phase-color); color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; border: none; font-weight: bold; transition: 0.2s; flex-shrink: 0; }
         .rationale-btn:hover { transform: scale(1.1); filter: brightness(1.2); }
         
         .rationale-text { position: fixed; background: #fef9e7; border: 1px solid var(--warning); padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: max-content; max-width: min(320px, calc(100vw - 24px)); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; }
@@ -101,7 +100,7 @@
         .input-label { font-weight: bold; font-size: 13px; display: block; margin-bottom: 8px; color: var(--text-main); }
 
         /* ボタン */
-        .btn-primary { background: var(--btn-primary); color: white; border: none; border-radius: 4px; padding: 8px 16px; font-size: 13px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: none; transition: 0.2s; width: fit-content; }
+        .btn-primary { background: #3498db; color: white; border: none; border-radius: 4px; padding: 8px 16px; font-size: 13px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: none; transition: 0.2s; width: fit-content; }
         .btn-primary:hover:not(:disabled) { filter: brightness(1.05); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .btn-primary:active:not(:disabled) { transform: scale(0.98); }
         .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(50%); }
@@ -129,19 +128,19 @@
 
         /* より高度な解析ツールへ */
         .step-up-card { background: #f8f9fa; border: 1px solid #d1d5db; padding: 20px; border-radius: 8px; margin-top: 25px; color: #2c3e50; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .step-up-card h3 { color: #2c3e50; margin-top: 0; font-size: 16px; display: flex; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 12px; }
-        .step-up-card h3 svg { margin-right: 10px; width: 22px; height: 22px; flex-shrink: 0; stroke: #34495e; stroke-width: 2.5; }
+        .step-up-card h3 { color: #2c3e50; margin-top: 0; font-size: 15px; display: flex; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 12px; }
+        .step-up-card h3 svg { margin-right: 8px; width: 20px; height: 20px; flex-shrink: 0; }
         .step-up-card p { margin: 0; font-size: 13px; line-height: 1.6; }
 
         /* スマートアラート (モーダル) */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: 0.2s; }
         .modal-overlay.show { opacity: 1; visibility: visible; }
-        .smart-alert-box { background: white; padding: 40px 30px; border-radius: 8px; width: 400px; max-width: 90vw; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 1010; transform: translateY(20px); transition: 0.2s; }
+        .smart-alert-box { background: white; padding: 30px; border-radius: 8px; width: 400px; max-width: 90vw; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 1010; transform: translateY(20px); transition: 0.2s; }
         .modal-overlay.show .smart-alert-box { transform: translateY(0); }
-        .alert-icon { color: #4a5568; margin-bottom: 20px; display: flex; justify-content: center; }
-        .alert-icon svg { width: 64px; height: 64px; }
-        .alert-title { margin: 0 0 15px 0; color: #2c3e50; font-size: 20px; font-weight: bold; }
-        .alert-message { color: #4a5568; font-size: 15px; line-height: 1.6; margin-bottom: 30px; word-break: normal; overflow-wrap: anywhere; }
+        .alert-icon { color: #5a6268; margin-bottom: 15px; }
+        .alert-icon svg { width: 48px; height: 48px; }
+        .alert-title { margin: 0 0 15px 0; color: #2c3e50; font-size: 18px; font-weight: bold; }
+        .alert-message { color: #2c3e50; font-size: 14px; line-height: 1.6; margin-bottom: 25px; word-break: normal; overflow-wrap: anywhere; }
         .alert-actions { display: flex; justify-content: center; gap: 10px; }
 
         .footer { width: 100%; background: #1a252f; padding: 12px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; margin-top: auto; border-top: 1px solid #2c3e50; flex-shrink: 0; }
@@ -168,7 +167,7 @@
         <h3 class="alert-title">確認</h3>
         <p class="alert-message" id="smart-alert-text"></p>
         <div class="alert-actions">
-            <button class="btn-primary" onclick="closeSmartAlert()" style="padding: 10px 30px; font-size: 14px;">閉じる</button>
+            <button class="btn-secondary" onclick="closeSmartAlert()">閉じる</button>
         </div>
     </div>
 </div>
@@ -195,7 +194,7 @@
     <!-- Ⅰ. データの統合 (Data Integration) -->
     <div class="card">
         <div class="card-header">
-            <span>Ⅰ. データの統合</span>
+            Ⅰ. データの統合
             <button class="rationale-btn" onclick="toggleRationale(event, 'rat_data')">?</button>
         </div>
         <div id="rat_data" class="rationale-text">
@@ -205,17 +204,17 @@
         <div class="card-body">
             <div class="bench-tip">
                 <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg> 現場のコツ</strong>
-                他の解析ツール（⑧ Tree Builder や ⑨ Morphometrics Studio）からデータをコピーして貼り付けてください。両方のデータに共通の Sample ID が存在している必要があります。
+                他の解析ツール（⑧ Phylogenetic Tree Builder や ⑨ Morphometrics Studio）からデータをコピーして貼り付けてください。両方のデータに共通の Sample ID が存在している必要があります。
             </div>
 
             <div style="display: flex; flex-wrap: wrap; gap: 24px;">
                 <div style="flex: 1; min-width: 320px;">
                     <label class="input-label">1. 分子系統樹 (Newick形式)</label>
-                    <textarea id="newick-input" class="paste-area" placeholder="[系統樹データ (Newick形式) をここに貼り付けてください]"></textarea>
+                    <textarea id="newick-input" class="paste-area" placeholder="ここに系統樹データ（Newick形式）を貼り付けてください"></textarea>
                 </div>
                 <div style="flex: 1; min-width: 320px;">
                     <label class="input-label">2. 形態データ (JSON形式)</label>
-                    <textarea id="json-input" class="paste-area" placeholder="[形態データ (JSON形式) をここに貼り付けてください]"></textarea>
+                    <textarea id="json-input" class="paste-area" placeholder="ここに形態データ（JSON形式）を貼り付けてください"></textarea>
                 </div>
             </div>
             
@@ -223,9 +222,6 @@
                 <button class="btn-primary" onclick="runIntegration()">
                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                     統合解析を実行
-                </button>
-                <button class="btn-secondary" onclick="loadDemoData()">
-                    サンプルデータを自動ペースト
                 </button>
             </div>
         </div>
@@ -236,7 +232,7 @@
         <!-- Ⅱ. 分子系統樹 (Molecular Phylogenetic Tree) -->
         <div class="card viewer-pane">
             <div class="card-header">
-                <span>Ⅱ. 分子系統樹</span>
+                Ⅱ. 分子系統樹
                 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_tree')">?</button>
             </div>
             <div id="rat_tree" class="rationale-text">
@@ -255,7 +251,7 @@
         <!-- Ⅲ. 形態空間モーフィング (Morphology PCA & Simulation) -->
         <div class="card viewer-pane">
             <div class="card-header">
-                <span>Ⅲ. 形態空間モーフィング</span>
+                Ⅲ. 形態空間モーフィング
                 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_morph')">?</button>
             </div>
             <div id="rat_morph" class="rationale-text">
@@ -275,7 +271,7 @@
     <!-- より高度な解析ツールへ -->
     <div class="step-up-card">
         <h3>
-            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            <svg class="header-icon" style="stroke-width: 2.5;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
             より高度な解析ツールへ
         </h3>
         <p>実際のDNAアラインメントや系統樹構築には、『MEGA』や『ClustalW』が使われる。また、形態データに基づく高度な幾何学的形態測定学の解析には、『MorphoJ』や『geomorph (Rパッケージ)』を活用して、進化の軌跡をさらに深く探究してみよう。</p>
@@ -414,22 +410,6 @@
     // ==========================================
     // Main Integration Logic
     // ==========================================
-    function loadDemoData() {
-        const demoNewick = "(((Sample_A:0.2, Sample_B:0.2):0.3, Sample_C:0.5):0.1, (Sample_D:0.4, Sample_E:0.4):0.2);";
-        const demoJson = [
-            {"id": "Sample_A", "pca": [-2.1, 1.5], "coeffs": {"a": [10, 2, -1], "b": [0, 1, 0], "c": [0, -1, 1], "d": [5, -2, 0]}},
-            {"id": "Sample_B", "pca": [-1.8, 1.2], "coeffs": {"a": [9, 3, -1], "b": [1, 1, 0], "c": [-1, -1, 1], "d": [4, -1, 0]}},
-            {"id": "Sample_C", "pca": [-0.5, -1.5], "coeffs": {"a": [5, 0, 1], "b": [0, -2, 1], "c": [2, 1, 0], "d": [8, 1, -1]}},
-            {"id": "Sample_D", "pca": [1.5, -0.2], "coeffs": {"a": [3, -2, 0], "b": [-1, 0, -1], "c": [0, 2, 2], "d": [12, 3, 1]}},
-            {"id": "Sample_E", "pca": [1.8, 0.4], "coeffs": {"a": [2, -1, 0], "b": [0, 1, -1], "c": [-1, 2, 1], "d": [10, 4, 1]}}
-        ];
-        
-        document.getElementById('newick-input').value = demoNewick;
-        document.getElementById('json-input').value = JSON.stringify(demoJson, null, 2);
-        
-        showToast('サンプルデータをペーストしました。', 'info');
-    }
-
     function runIntegration() {
         let newickStr = document.getElementById('newick-input').value.trim();
         let jsonStr = document.getElementById('json-input').value.trim();
