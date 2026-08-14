@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNA Alignment Studio v31.0 | Bio-Edu Suite</title>
+    <title>⑤ DNA Alignment Studio | Bio-Edu Suite</title>
     <style>
-        /* テーマカラー規格（ガイドライン第3項） */
         :root {
             --primary: #2c3e50;        
             --secondary: #34495e;      
@@ -38,10 +37,9 @@
         .main-content { width: 100%; max-width: 1400px; margin: 0 auto; padding: 15px; display: flex; flex-direction: column; gap: 24px; flex: 1; }
         
         .card { background: var(--card-bg); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; border-top: 4px solid var(--phase-color); flex-shrink: 0; }
-        .card-header { background: var(--secondary); color: white; padding: 10px 18px; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;}
+        .card-header { background: var(--secondary); color: white; padding: 10px 18px; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; min-height: 44px; }
         .card-body { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
 
-        /* 根拠表示用スタイル (ガイドライン第6項①準拠) */
         .rationale-btn { background: var(--phase-color); color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; flex-shrink: 0; }
         .rationale-btn:hover { transform: scale(1.1); filter: brightness(1.2); }
         
@@ -56,18 +54,17 @@
         .rationale-text.arrow-top::before { top: -14px; border-color: transparent transparent var(--warning) transparent; } 
         .rationale-text.arrow-bottom::before { bottom: -14px; border-color: var(--warning) transparent transparent transparent; }
 
-        /* インラインSVGアイコン用 共通カラークラス */ 
-        .svg-hint { color: var(--warning); } /* 💡 気づき・推奨用 (#f39c12) */ 
-        .svg-info { color: inherit; } /* ℹ️ 情報・ルール用 */ 
-        .svg-danger { color: var(--danger); } /* 🚨 警告・エラー用 (#e74c3c) */
+ 
+        .svg-hint { color: var(--warning); } 
+        .svg-info { color: inherit; } 
+        .svg-danger { color: var(--danger); } 
 
-        .header-icon { width: 20px; height: 20px; vertical-align: -3px; flex-shrink: 0; }
-        .btn-icon { width: 14px; height: 14px; vertical-align: -2px; flex-shrink: 0; }
+        .header-icon { width: 24px; height: 24px; flex-shrink: 0; margin-right: 6px; }
+        .btn-icon { width: 16px; height: 16px; vertical-align: -3px; flex-shrink: 0; }
 
         .toolbar-row { display: flex; width: 100%; gap: 12px; align-items: center; flex-wrap: wrap; }
         .step-label { font-size: 13px; font-weight: bold; color: var(--text-muted); min-width: 80px; display: flex; align-items: center; }
 
-        /* ガイドライン準拠のボタン指定 */
         .btn { background: #fdfefe; border: 1px solid var(--border-color); padding: 8px 16px; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; gap: 5px; border-radius: 4px; font-weight: bold; transition: all 0.2s; color: var(--text-main); white-space: nowrap; justify-content: center; width: fit-content; box-shadow: none; }
         .btn:hover:not(:disabled) { box-shadow: 0 2px 4px rgba(0,0,0,0.1); filter: brightness(1.05); }
         .btn:active:not(:disabled) { transform: scale(0.98); }
@@ -75,9 +72,8 @@
         
         .btn-primary { background: #3498db; color: white; border-color: #2980b9; }
         .btn-success { background: var(--success); color: white; border-color: #1e8449; }
-        .btn-option { background: var(--secondary); color: white; border-color: var(--primary); }
+        .btn-secondary { background: #fdfefe; color: var(--text-main); border-color: var(--border-color); }
         
-        /* 5.保存ボタン群を2行2列の均等グリッドに変更 */
         .export-flex { 
             display: grid; 
             grid-template-columns: 1fr 1fr; 
@@ -87,7 +83,7 @@
         .export-flex .btn { 
             margin: 0; 
             width: 100%; 
-            justify-content: center; /* ユーザー要望により中央揃えに変更 */
+            justify-content: center;
         }
 
         .drop-zone { border: 2px dashed var(--border-color); border-radius: 8px; padding: 16px; text-align: center; background: #f8f9fa; transition: 0.2s; cursor: pointer; flex: 1; max-width: 450px; display: flex; flex-direction: column; justify-content: center; }
@@ -165,10 +161,14 @@
         .search-bg { background-color: #f1c40f !important; color: var(--secondary) !important; font-weight: 900; z-index: 2; box-shadow: inset 0 0 0 2px #f39c12; }
 
         .header-primer-stats { 
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
             display: flex; gap: 15px; font-size: 12px; background: #1a252f; 
             padding: 6px 15px; border-radius: 4px; transition: opacity 0.2s; 
             align-items: center; box-shadow: inset 0 1px 3px rgba(0,0,0,0.3); 
-            opacity: 0; pointer-events: none; flex-wrap: wrap; 
+            opacity: 0; pointer-events: none; flex-wrap: wrap; z-index: 5;
         }
         .h-stat { display: flex; align-items: baseline; gap: 4px; color: #ecf0f1; font-weight: bold; }
         .val-seq { font-family: 'Courier New', Consolas, monospace; color: #f1c40f; font-weight: bold; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px; letter-spacing: 1px;}
@@ -216,7 +216,7 @@
             .version-badge { top: 10px; right: 10px; padding: 2px 6px; }
             
             .editor-card .card-header { flex-direction: column; align-items: flex-start; gap: 8px; padding: 10px; }
-            .header-primer-stats { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 6px 10px; width: 100%; margin-top: 0; }
+            .header-primer-stats { position: relative; top: auto; right: auto; transform: none; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 6px 10px; width: 100%; margin-top: 0; }
 
             .editor-container { -webkit-overflow-scrolling: touch; }
             .names-column { width: 160px !important; }
@@ -243,7 +243,6 @@
         .custom-tooltip.show-top::after { top: 100%; border-color: rgba(44, 62, 80, 0.95) transparent transparent transparent; }
         .custom-tooltip.show-bottom::after { bottom: 100%; border-color: transparent transparent rgba(44, 62, 80, 0.95) transparent; }
     </style>
-    <!-- [Absolute-Zero] セクション1/3 (CSS) 完了。省略なしで続行 -->
 </head>
 <body>
 
@@ -251,9 +250,9 @@
     <div class="header">
         <div>
             <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>DNA Alignment Studio</h1>
-            <p>Bio-Edu Suite: Phase 2 / Sequence Curation & Pipeline Hub</p>
+            <p>Bio-Edu Suite: Phase 2 / DNA Curation & Pipeline Hub</p>
         </div>
-        <div class="version-badge">v31.0</div>
+        <div class="version-badge">v32.1</div>
     </div>
 </div>
 
@@ -261,7 +260,7 @@
     
     <div class="control-grid">
         <div class="card">
-            <div class="card-header" style="justify-content: flex-start; padding: 10px 18px;">
+            <div class="card-header" style="justify-content: flex-start;">
                 <span>Ⅰ. in silico データ処理パネル</span>
             </div>
             <div class="card-body">
@@ -316,9 +315,15 @@
 
                 <div class="toolbar-row">
                     <span class="step-label">3. アライメント <button class="rationale-btn" onclick="toggleRationale(event, 'rat_msa')">?</button></span>
-                    <div style="display:flex; flex-direction:row; gap:8px; align-items:center; flex-wrap: wrap;">
-                        <button class="btn btn-primary" id="btnOptionMSA" onclick="runMSA()" disabled data-tooltip="チェックされた塩基配列の相同性を比較して整列させます"> MSA実行</button>
-                        <button class="btn btn-option" id="btnResetMSA" onclick="resetMSA()" disabled data-tooltip="実行されたアライメントを解除し、生データの状態に戻します">MSA解除</button>
+                    <div style="display: flex; flex-direction: row; gap: 8px; align-items: center; flex-wrap: wrap;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: max-content;">
+                            <button class="btn btn-primary" id="btnOptionMSA" onclick="runMSA()" disabled data-tooltip="チェックされた塩基配列の相同性を比較して整列させます">
+                                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> MSA実行
+                            </button>
+                            <button class="btn btn-secondary" id="btnResetMSA" onclick="resetMSA()" disabled data-tooltip="実行されたアライメントを解除し、生データの状態に戻します">
+                                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> MSA解除
+                            </button>
+                        </div>
                         <span style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">※段階的MSA: チェックした塩基配列のみが計算対象になります。</span>
                     </div>
                 </div>
@@ -326,7 +331,7 @@
                 <div class="toolbar-row" style="align-items: center;">
                     <span class="step-label">4. プライマー設計 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_design')">?</button></span>
                     <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; flex: 1;">
-                        <button class="btn btn-success" id="btnConserved" onclick="toggleConservedRegions()" disabled data-tooltip="塩基配列間で保存されている領域を強調表示します" style="min-width: 90px;">保存領域</button>
+                        <button class="btn btn-primary" id="btnConserved" onclick="toggleConservedRegions()" disabled data-tooltip="塩基配列間で保存されている領域を強調表示します" style="min-width: 90px;">保存領域</button>
                         <span style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">※塩基配列をドラッグ(長押し選択)で設計ナビが起動します。</span>
                     </div>
                     
@@ -335,9 +340,9 @@
                     <span class="step-label">5. 保存 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_export')">?</button></span>
                     <div class="export-flex">
                         <button class="btn btn-success" id="btnExportFasta" onclick="exportFastaAll()" disabled data-tooltip="FASTA形式でファイルとして保存します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg> FASTA保存</button>
-                        <button class="btn" id="btnCopyFasta" onclick="copyFastaAll()" disabled data-tooltip="FASTA形式でクリップボードにコピーします"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6v3H9zM8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg> FASTAコピー</button>
+                        <button class="btn btn-secondary" id="btnCopyFasta" onclick="copyFastaAll()" disabled data-tooltip="FASTA形式でクリップボードにコピーします"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6v3H9zM8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg> FASTAコピー</button>
                         <button class="btn btn-success" id="btnExportClustal" onclick="exportClustalAll()" disabled data-tooltip="CLUSTAL形式でファイルとして保存します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg> CLUSTAL保存</button>
-                        <button class="btn" id="btnCopyClustal" onclick="copyClustalAll()" disabled data-tooltip="CLUSTAL形式でクリップボードにコピーします"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6v3H9zM8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg> CLUSTALコピー</button>
+                        <button class="btn btn-secondary" id="btnCopyClustal" onclick="copyClustalAll()" disabled data-tooltip="CLUSTAL形式でクリップボードにコピーします"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6v3H9zM8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg> CLUSTALコピー</button>
                     </div>
                 </div>
             </div>
@@ -345,7 +350,7 @@
     </div>
 
     <div class="card editor-card">
-        <div class="card-header">
+        <div class="card-header" style="position: relative;">
             <span>Ⅱ. 塩基配列エディタ</span>
             
             <div id="primerStatsPanel" class="header-primer-stats">
@@ -373,12 +378,12 @@
             <div style="display: flex; flex-direction: column; gap: 5px;">
                 <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
                     <span style="font-size: 12px; font-weight: bold; color: var(--secondary); display: flex; align-items: center;">
-                        <svg class="svg-info" style="width: 16px; height: 16px; margin-right: 4px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <svg class="svg-info" style="width: 16px; height: 16px; margin-right: 4px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
                         モチーフ検索
                         <button class="rationale-btn" onclick="toggleRationale(event, 'rat_motif')">?</button>
                     </span>
                     <input type="text" id="searchInput" class="primer-input" style="width: 140px; text-transform: uppercase;" placeholder="塩基配列を入力" oninput="toggleHighlightBtn()" onkeypress="if(event.keyCode===13 && !document.getElementById('btnToggleHighlight').disabled) toggleHighlightAction()">
-                    <button class="btn btn-option" id="btnToggleHighlight" style="padding: 6px 12px; font-size: 11px; min-width: 90px;" onclick="toggleHighlightAction()" disabled data-tooltip="入力した塩基配列を検索してハイライトします"> ハイライト</button>
+                    <button class="btn btn-secondary" id="btnToggleHighlight" style="padding: 6px 12px; font-size: 11px; min-width: 90px;" onclick="toggleHighlightAction()" disabled data-tooltip="入力した塩基配列を検索してハイライトします"> ハイライト</button>
                 </div>
                 <span style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">※制限酵素部位などを検索できます。ギャップ(-)は無視されます。</span>
             </div>
@@ -440,11 +445,10 @@
 </div>
 
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v31.0 | Developed for Bioinformatics & Wet-Lab Education
+    &copy; 2026 Bio-Edu Suite v32.1 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
-<div id="toast">メッセージ</div>
-<!-- [Absolute-Zero] セクション2/3 (HTML) 完了。省略なしで続行 -->
+<div id="toast"></div>
 
 <script>
     let sequences = []; 
@@ -473,11 +477,11 @@
     
     let currentMouseX = 0;
     let autoScrollFrame = null;
-    let isHighlightActive = false; // 新規追加: モチーフ検索トグル状態
+    let isHighlightActive = false;
 
     function saveState() {
         let state = sequences.map(s => ({
-            name: s.name, data: [...s.data],
+            id: s.id, name: s.name, data: [...s.data],
             isFPrimerFasta: s.isFPrimerFasta, isRPrimerFasta: s.isRPrimerFasta,
             isSelected: s.isSelected,
             fStart: s.fStart, fEnd: s.fEnd, rStart: s.rStart, rEnd: s.rEnd,
@@ -494,7 +498,7 @@
 
     function restoreState(state) {
         sequences = state.map(s => ({
-            name: s.name, data: [...s.data],
+            id: s.id, name: s.name, data: [...s.data],
             isFPrimerFasta: s.isFPrimerFasta, isRPrimerFasta: s.isRPrimerFasta,
             isSelected: s.isSelected,
             fStart: s.fStart, fEnd: s.fEnd, rStart: s.rStart, rEnd: s.rEnd,
@@ -647,37 +651,46 @@
     window.addEventListener('DOMContentLoaded', () => {
         initTooltips();
         
-        // ダッシュボードからのデータ引き継ぎ処理
         const bulkDataJSON = sessionStorage.getItem('bio_edu_bulk_data');
         if (bulkDataJSON) {
             try {
                 const bulkData = JSON.parse(bulkDataJSON);
                 if (bulkData && bulkData.samples && bulkData.samples.length > 0) {
-                    // FASTA形式のテキストを生成
-                    let fastaText = "";
+                    
                     bulkData.samples.forEach(sample => {
                         if (sample.dnaData) {
-                            fastaText += sample.dnaData + "\n";
+                            let lines = sample.dnaData.split('\n');
+                            let seq = "";
+                            let headerName = sample.name;
+                            
+                            if (lines.length > 0 && lines[0].startsWith('>')) {
+                                headerName = lines[0].substring(1).trim();
+                                seq = lines.slice(1).join('').toUpperCase().replace(/[^A-Z-]/g, '');
+                            } else {
+                                seq = lines.join('').toUpperCase().replace(/[^A-Z-]/g, '');
+                            }
+
+                            sequences.push({
+                                id: sample.id, // エクスポート時のSample IDとして完全保持
+                                name: headerName,
+                                data: seq.split(''),
+                                isFPrimerFasta: false,
+                                isRPrimerFasta: false,
+                                isSelected: true
+                            });
                         }
                     });
                     
-                    if (fastaText) {
-                        // FASTAをパースして sequences 配列に格納する
-                        parseFasta(fastaText, "Imported_Samples");
-                        
-                        // 画面を更新して状態を進める
-                        renderEditorAsync();
-                        unlockStep(2);
-                        setRoute('A');
-                        saveState();
-                        
-                        showToast(`${bulkData.samples.length}件のサンプルを読み込みました`, "success");
-                    }
+                    renderEditorAsync();
+                    unlockStep(2);
+                    setRoute('A');
+                    saveState();
+                    
+                    showToast(`${bulkData.samples.length}件のサンプルを読み込みました`, "success");
                 }
             } catch (err) {
                 console.error("預かりデータのパースエラー:", err);
             }
-            // データを流し込んだ後、sessionStorage を空にする
             sessionStorage.removeItem('bio_edu_bulk_data');
         }
     });
@@ -759,13 +772,20 @@
         lines.forEach(line => {
             line = line.trim();
             if (line.startsWith('>')) {
-                if (currentName) sequences.push({ name: currentName, data: currentSeq.split(''), isFPrimerFasta: false, isRPrimerFasta: false, isSelected: true });
-                currentName = line.substring(1).split(' ')[0];
+                if (currentName) {
+                    sequences.push({ name: currentName, data: currentSeq.split(''), isFPrimerFasta: false, isRPrimerFasta: false, isSelected: true });
+                }
+                currentName = line.substring(1).trim();
                 currentSeq = "";
-            } else { currentSeq += line.toUpperCase().replace(/[^A-Z-]/g, ''); }
+            } else { 
+                currentSeq += line.toUpperCase().replace(/[^A-Z-]/g, ''); 
+            }
         });
-        if (currentName) sequences.push({ name: currentName, data: currentSeq.split(''), isFPrimerFasta: false, isRPrimerFasta: false, isSelected: true });
-        else if (currentSeq) sequences.push({ name: defaultName, data: currentSeq.split(''), isFPrimerFasta: false, isRPrimerFasta: false, isSelected: true });
+        if (currentName) {
+            sequences.push({ name: currentName, data: currentSeq.split(''), isFPrimerFasta: false, isRPrimerFasta: false, isSelected: true });
+        } else if (currentSeq) {
+            sequences.push({ name: defaultName, data: currentSeq.split(''), isFPrimerFasta: false, isRPrimerFasta: false, isSelected: true });
+        }
     }
 
     function handleDragStart(e) { dragSrcIndex = parseInt(this.dataset.index); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', dragSrcIndex); this.style.opacity = '0.4'; }
@@ -1231,7 +1251,7 @@
         const btn = document.getElementById('btnToggleHighlight');
         if(btn) {
             btn.innerHTML = `ハイライト`;
-            btn.className = "btn btn-option";
+            btn.className = "btn btn-secondary";
             btn.setAttribute('data-tooltip', '入力した塩基配列を検索してハイライトします');
         }
         toggleHighlightBtn(); reapplySearch(); renderEditorSync(); 
@@ -1246,7 +1266,7 @@
             isHighlightActive = false;
             if(btn) {
                 btn.innerHTML = `ハイライト`;
-                btn.className = "btn btn-option";
+                btn.className = "btn btn-secondary";
                 btn.setAttribute('data-tooltip', '入力した塩基配列を検索してハイライトします');
             }
             reapplySearch(); renderEditorSync();
@@ -1294,6 +1314,7 @@
     const sequenceGrid = document.getElementById('sequenceGrid');
 
     sequenceGrid.addEventListener('mousedown', function(e) {
+        currentMouseX = e.clientX; 
         if(e.target.classList.contains('base')) {
             isDragging = true; dragMode = 'individual';
             let row = parseInt(e.target.parentElement.dataset.row);
@@ -1490,12 +1511,19 @@
         copyToClipboardFallback(currentSelectedPrimer, "プライマーの塩基配列をコピーしました。すぐに注文等に利用できます。");
     }
 
+    function getFastaHeader(s) {
+        if (s.id && s.id !== s.name) {
+            return `>${s.id} ${s.name}`;
+        }
+        return `>${s.name}`;
+    }
+
     function exportFastaAll() {
         if(sequences.length === 0) return;
         let output = "";
         sequences.forEach(s => { 
             if(s.isFPrimerFasta || s.isRPrimerFasta || s.isSelected === false) return;
-            output += `>${s.name}\n${s.data.join('').replace(/-/g, 'N')}\n`; 
+            output += `${getFastaHeader(s)}\n${s.data.join('')}\n`; 
         });
         if(output === "") { showToast("出力対象が選択されていません", "warning"); return; }
         
@@ -1510,9 +1538,13 @@
 
     function exportClustalAll() {
         if(sequences.length === 0) return;
-        let output = "CLUSTAL formatted alignment by DNA Alignment Studio v31.0 (Bio-Edu Suite)\n\n";
+        let output = "CLUSTAL formatted alignment by DNA Alignment Studio v32.1 (Bio-Edu Suite)\n\n";
         let maxLen = Math.max(...sequences.map(s => s.data.length));
-        let namePad = Math.max(20, Math.max(...sequences.map(s => s.name.length)) + 4);
+        
+        let namePad = Math.max(20, Math.max(...sequences.map(s => {
+            return (s.id && s.id !== s.name) ? (s.id + " " + s.name).length : s.name.length;
+        })) + 4);
+
         let baseCounts = new Array(sequences.length).fill(0);
         let hasSelected = false;
         
@@ -1527,7 +1559,9 @@
                 for (let j = 0; j < blockLen; j++) {
                     let b = s.data[i + j] || '-'; seqPart += b; if (b !== '-') baseCounts[sIdx]++;
                 }
-                let nameStr = s.name.padEnd(namePad, ' ');
+                
+                let displayName = (s.id && s.id !== s.name) ? `${s.id} ${s.name}` : s.name;
+                let nameStr = displayName.padEnd(namePad, ' ');
                 output += `${nameStr}${seqPart}\t${baseCounts[sIdx]}\n`;
             }
             
@@ -1584,16 +1618,19 @@
         let output = "";
         sequences.forEach(s => { 
             if(s.isFPrimerFasta || s.isRPrimerFasta || s.isSelected === false) return;
-            output += `>${s.name}\n${s.data.join('').replace(/-/g, 'N')}\n`; 
+            output += `${getFastaHeader(s)}\n${s.data.join('')}\n`; 
         });
         copyToClipboardFallback(output.trim(), "FASTA形式で一括コピーしました");
     }
 
     function copyClustalAll() {
         if(sequences.length === 0) return;
-        let output = "CLUSTAL formatted alignment by DNA Alignment Studio v31.0 (Bio-Edu Suite)\n\n";
+        let output = "CLUSTAL formatted alignment by DNA Alignment Studio v32.1 (Bio-Edu Suite)\n\n";
         let maxLen = Math.max(...sequences.map(s => s.data.length));
-        let namePad = Math.max(20, Math.max(...sequences.map(s => s.name.length)) + 4);
+        let namePad = Math.max(20, Math.max(...sequences.map(s => {
+            return (s.id && s.id !== s.name) ? (s.id + " " + s.name).length : s.name.length;
+        })) + 4);
+
         let baseCounts = new Array(sequences.length).fill(0);
         let hasSelected = false;
         
@@ -1603,7 +1640,8 @@
                 let s = sequences[sIdx]; if (s.isSelected === false) continue;
                 hasSelected = true; let seqPart = "";
                 for (let j = 0; j < blockLen; j++) { let b = s.data[i + j] || '-'; seqPart += b; if (b !== '-') baseCounts[sIdx]++; }
-                let nameStr = s.name.padEnd(namePad, ' ');
+                let displayName = (s.id && s.id !== s.name) ? `${s.id} ${s.name}` : s.name;
+                let nameStr = displayName.padEnd(namePad, ' ');
                 output += `${nameStr}${seqPart}\t${baseCounts[sIdx]}\n`;
             }
             let consLine = "".padEnd(namePad, ' ');
@@ -1623,6 +1661,6 @@
     }
 
 </script>
-<!-- [Absolute-Zero] セクション3/3 (JS) 完了。省略なしで続行 -->
 </body>
 </html>
+```eof
