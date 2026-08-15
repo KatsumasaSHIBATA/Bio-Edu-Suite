@@ -1676,8 +1676,8 @@
     }
 
     function getFastaHeader(s) {
-        if (s.id && s.id !== s.name) {
-            return `>${s.id} ${s.name}`;
+        if (s.id && s.id.trim() !== "") {
+            return `>${s.id}`;
         }
         return `>${s.name}`;
     }
@@ -1705,10 +1705,6 @@
         let output = "CLUSTAL formatted alignment by DNA Alignment Studio v32.1 (Bio-Edu Suite)\n\n";
         let maxLen = Math.max(...sequences.map(s => s.data.length));
         
-        let namePad = Math.max(20, Math.max(...sequences.map(s => {
-            return (s.id && s.id !== s.name) ? (s.id + " " + s.name).length : s.name.length;
-        })) + 4);
-
         let baseCounts = new Array(sequences.length).fill(0);
         let hasSelected = false;
         
@@ -1724,12 +1720,11 @@
                     let b = s.data[i + j] || '-'; seqPart += b; if (b !== '-') baseCounts[sIdx]++;
                 }
                 
-                let displayName = (s.id && s.id !== s.name) ? `${s.id} ${s.name}` : s.name;
-                let nameStr = displayName.padEnd(namePad, ' ');
-                output += `${nameStr}${seqPart}\t${baseCounts[sIdx]}\n`;
+                let identifier = (s.id && s.id.trim() !== "") ? s.id : s.name;
+                output += `${identifier}\t${seqPart}\t${baseCounts[sIdx]}\n`;
             }
             
-            let consLine = "".padEnd(namePad, ' ');
+            let consLine = "\t";
             for (let j = 0; j < blockLen; j++) {
                 let col = i + j;
                 let bases = [];
@@ -1791,9 +1786,6 @@
         if(sequences.length === 0) return;
         let output = "CLUSTAL formatted alignment by DNA Alignment Studio v32.1 (Bio-Edu Suite)\n\n";
         let maxLen = Math.max(...sequences.map(s => s.data.length));
-        let namePad = Math.max(20, Math.max(...sequences.map(s => {
-            return (s.id && s.id !== s.name) ? (s.id + " " + s.name).length : s.name.length;
-        })) + 4);
 
         let baseCounts = new Array(sequences.length).fill(0);
         let hasSelected = false;
@@ -1804,11 +1796,10 @@
                 let s = sequences[sIdx]; if (s.isSelected === false) continue;
                 hasSelected = true; let seqPart = "";
                 for (let j = 0; j < blockLen; j++) { let b = s.data[i + j] || '-'; seqPart += b; if (b !== '-') baseCounts[sIdx]++; }
-                let displayName = (s.id && s.id !== s.name) ? `${s.id} ${s.name}` : s.name;
-                let nameStr = displayName.padEnd(namePad, ' ');
-                output += `${nameStr}${seqPart}\t${baseCounts[sIdx]}\n`;
+                let identifier = (s.id && s.id.trim() !== "") ? s.id : s.name;
+                output += `${identifier}\t${seqPart}\t${baseCounts[sIdx]}\n`;
             }
-            let consLine = "".padEnd(namePad, ' ');
+            let consLine = "\t";
             for (let j = 0; j < blockLen; j++) {
                 let col = i + j; let bases = [];
                 sequences.forEach(s => { if (!s.isFPrimerFasta && !s.isRPrimerFasta && s.data[col] !== undefined && s.data[col] !== '-' && s.isSelected !== false) bases.push(s.data[col]); });
