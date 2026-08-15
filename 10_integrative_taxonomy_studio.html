@@ -63,8 +63,14 @@
         .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px 15px; border-radius: 0 4px 4px 0; font-size: 12px; color: var(--text-main); line-height: 1.6; margin: 15px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
         .bench-tip strong { color: #2980b9; display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 13px; }
 
+        /* アシストパネル (ガイドライン第6項③) */
+        .assist-panel { background: #fadbd8; border-left: 4px solid var(--danger); padding: 15px; margin-top: 15px; border-radius: 4px; }
+        .assist-title { font-weight: bold; color: #c0392b; display: flex; align-items: center; gap: 5px; font-size: 14px;}
+        .assist-reason { font-size: 13px; color: #7f8c8d; margin-top: 5px; line-height: 1.6; }
+        .assist-fix { font-size: 13px; color: var(--primary); font-weight: bold; margin-top: 8px; background: #fff; padding: 10px; border-radius: 4px; border: 1px solid var(--danger); }
+
         /* Popover & Tooltip */
-        .rationale-btn { background: var(--phase-color); color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; border: none; font-weight: bold; transition: 0.2s; flex-shrink: 0; }
+        .rationale-btn { background: var(--phase-color); color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; border: none; font-weight: bold; transition: 0.2s; flex-shrink: 0; margin-left: 5px; }
         .rationale-btn:hover { transform: scale(1.1); filter: brightness(1.2); }
         
         .rationale-text { position: fixed; background: #fef9e7; border: 1px solid var(--warning); padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: max-content; max-width: min(320px, calc(100vw - 24px)); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; }
@@ -77,9 +83,9 @@
         .rationale-text.arrow-top::before { top: -14px; border-color: transparent transparent var(--warning) transparent; }
         .rationale-text.arrow-bottom::before { bottom: -14px; border-color: var(--warning) transparent transparent transparent; }
 
-        /* ヘッダーアイコン */
-        .header-icon { width: 20px; height: 20px; vertical-align: -3px; flex-shrink: 0; }
-        .btn-icon { width: 14px; height: 14px; vertical-align: -2px; flex-shrink: 0; }
+        /* ヘッダーアイコン (ガイドライン v32.1準拠 24px固定) */
+        .header-icon { width: 24px; height: 24px; flex-shrink: 0; }
+        .btn-icon { width: 14px; height: 14px; flex-shrink: 0; }
         
         /* インラインSVGアイコン用 共通カラークラス */
         .svg-hint { color: var(--warning); }
@@ -100,16 +106,16 @@
         .input-label { font-weight: bold; font-size: 13px; display: block; margin-bottom: 8px; color: var(--text-main); }
 
         /* ボタン */
-        .btn-primary { background: #3498db; color: white; border: none; border-radius: 4px; padding: 8px 16px; font-size: 13px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: none; transition: 0.2s; width: fit-content; }
+        .btn-primary { background: #3498db; color: white; border: none; border-radius: 4px; padding: 8px 16px; font-size: 13px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; box-shadow: none; transition: 0.2s; width: fit-content; }
         .btn-primary:hover:not(:disabled) { filter: brightness(1.05); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .btn-primary:active:not(:disabled) { transform: scale(0.98); }
         .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(50%); }
 
-        .btn-secondary { background: #fdfefe; color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; padding: 8px 16px; font-size: 13px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: none; transition: 0.2s; width: fit-content; }
+        .btn-secondary { background: #fdfefe; color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; padding: 8px 16px; font-size: 13px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; box-shadow: none; transition: 0.2s; width: fit-content; }
         .btn-secondary:hover:not(:disabled) { background: #f4f6f6; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .btn-secondary:active:not(:disabled) { transform: scale(0.98); }
 
-        .btn-danger { background: var(--danger); color: white; border: none; border-radius: 4px; padding: 8px 16px; font-size: 13px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: none; transition: 0.2s; width: fit-content; }
+        .btn-danger { background: var(--danger); color: white; border: none; border-radius: 4px; padding: 8px 16px; font-size: 13px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; box-shadow: none; transition: 0.2s; width: fit-content; }
         .btn-danger:hover:not(:disabled) { filter: brightness(1.05); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
         /* Viewer Layout */
@@ -132,7 +138,7 @@
         .step-up-card h3 svg { margin-right: 8px; width: 20px; height: 20px; flex-shrink: 0; }
         .step-up-card p { margin: 0; font-size: 13px; line-height: 1.6; }
 
-        /* スマートアラート (モーダル) */
+        /* スマートアラート (モーダル) - 既存機能として維持 */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: 0.2s; }
         .modal-overlay.show { opacity: 1; visibility: visible; }
         .smart-alert-box { background: white; padding: 30px; border-radius: 8px; width: 400px; max-width: 90vw; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 1010; transform: translateY(20px); transition: 0.2s; }
@@ -154,7 +160,7 @@
 
 <div id="toast"></div>
 
-<!-- スマートアラートモーダル -->
+<!-- スマートアラートモーダル (既存UI維持) -->
 <div id="smart-alert-overlay" class="modal-overlay">
     <div class="smart-alert-box">
         <div class="alert-icon">
@@ -185,7 +191,7 @@
             </h1>
             <p>Bio-Edu Suite: Phase 4 / Unified Taxonomy Explorer & Evo-Morph Simulator</p>
         </div>
-        <div class="version-badge">v32.0</div>
+        <div class="version-badge">v32.1</div>
     </div>
 </div>
 
@@ -198,8 +204,8 @@
             <button class="rationale-btn" onclick="toggleRationale(event, 'rat_data')">?</button>
         </div>
         <div id="rat_data" class="rationale-text">
-            <strong>【根拠：データの連携】</strong>
-            ・系統樹（進化の歴史）と形態データ（現在の形）を統合することで、生物の形がどのように進化・分岐してきたかを推定します。
+            <strong>【根拠：データの連携】</strong><br>
+            ・分子系統樹（進化の歴史）と形態データ（現在の形）を統合することで、生物の形がどのように進化・分岐してきたかを推定します。
         </div>
         <div class="card-body">
             <div class="bench-tip">
@@ -224,6 +230,9 @@
                     統合解析を実行
                 </button>
             </div>
+            
+            <!-- 突合エラー等の通知用アシストパネルコンテナ -->
+            <div id="integration-assist-container" style="display: none;"></div>
         </div>
     </div>
 
@@ -236,9 +245,9 @@
                 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_tree')">?</button>
             </div>
             <div id="rat_tree" class="rationale-text">
-                <strong>【根拠：階層的クラスタリング】</strong>
+                <strong>【根拠：階層的クラスタリング】</strong><br>
                 ・DNAの塩基配列の違いから推定された進化の道筋です。枝の長さは遺伝的距離（突然変異の蓄積量）を表しています。<br>
-                <strong>【キーボード操作・ショートカット】</strong>
+                <strong>【キーボード操作・ショートカット】</strong><br>
                 ・分岐点（ノード）にカーソルを合わせると、その共通祖先の形態を右側のパネルでシミュレーションします。
             </div>
             <div class="card-body" style="padding: 0;">
@@ -255,9 +264,9 @@
                 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_morph')">?</button>
             </div>
             <div id="rat_morph" class="rationale-text">
-                <strong>【根拠：PCAと形態変異】</strong>
+                <strong>【根拠：PCAと変異の評価】</strong><br>
                 ・楕円フーリエ解析で抽出した形状の特徴を主成分分析(PCA)で2次元にプロットし、形質の違い（変異）を可視化しています。<br>
-                ・系統樹と連動し、祖先の形を数学的に補間してアニメーション描画します。
+                ・分子系統樹と連動し、共通祖先の形を数学的に補間してアニメーション描画します。
             </div>
             <div class="card-body" style="padding: 0; position: relative;">
                 <div class="canvas-wrapper">
@@ -278,7 +287,7 @@
     </div>
 </div>
 
-<div class="footer">&copy; 2026 Bio-Edu Suite v32.0 | Advanced Bioinformatics & Wet-Lab Emulator</div>
+<div class="footer">&copy; 2026 Bio-Edu Suite v32.1 | Advanced Bioinformatics & Wet-Lab Emulator</div>
 
 <script>
     // ==========================================
@@ -358,10 +367,22 @@
     function closeSmartAlert() {
         document.getElementById('smart-alert-overlay').classList.remove('show');
     }
+    
+    function escapeHTML(str) {
+        if (!str) return "";
+        return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag]));
+    }
 
     // ==========================================
-    // Parser & Fallback Functions
+    // Parser & Data Normalization Functions
     // ==========================================
+    
+    // Newickフォーマット由来のアンダースコアや大文字小文字の揺らぎを吸収する正規化ロジック
+    function normalizeId(id) {
+        if (id == null) return "";
+        return String(id).toLowerCase().replace(/[\s_]/g, '');
+    }
+
     // Newickパーサー (bio_math_engine.js非依存用フォールバック)
     function parseNewickString(s) {
         let ancestors = [];
@@ -413,9 +434,12 @@
     function runIntegration() {
         let newickStr = document.getElementById('newick-input').value.trim();
         let jsonStr = document.getElementById('json-input').value.trim();
+        let assistContainer = document.getElementById('integration-assist-container');
+        
+        assistContainer.style.display = 'none'; // リセット
         
         if (!newickStr || !jsonStr) {
-            showToast('Newick形式の系統樹とJSON形式の形態データの両方を入力してください。', 'error');
+            showToast('Newick形式の分子系統樹とJSON形式の形態データの両方を入力してください。', 'error');
             return;
         }
         
@@ -433,12 +457,38 @@
             
             let leafNames = root.leaves().map(l => l.data.name).filter(n => n);
             let morphData = JSON.parse(jsonStr);
-            let morphIds = morphData.map(d => d.id);
             
-            // 安全装置 (クラッシュ防止)
-            let missing = leafNames.filter(name => !morphIds.includes(name));
-            if (missing.length > 0) {
-                showSmartAlert('「' + missing.join('、') + '」の形態データが不足しています。');
+            // 形態データ側のIDを抽出し、正規化した配列を用意
+            let normMorphIds = morphData.map(d => normalizeId(d.id));
+            
+            // 葉ノードと形態データの強靭な突合ロジック
+            let missingLeaves = [];
+            leafNames.forEach(leaf => {
+                let normLeaf = normalizeId(leaf);
+                if (!normMorphIds.includes(normLeaf)) {
+                    missingLeaves.push(leaf);
+                }
+            });
+            
+            // 突合エラー発生時のアシストパネル表示
+            if (missingLeaves.length > 0) {
+                assistContainer.innerHTML = `
+                    <div class="assist-panel">
+                        <div class="assist-title">
+                            <svg class="svg-danger" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                            データの不一致エラー
+                        </div>
+                        <div class="assist-reason">
+                            分子系統樹に含まれる以下の葉ノードに対応する形態データが不足しています。<br>
+                            <strong>${missingLeaves.map(m => escapeHTML(m)).join(', ')}</strong>
+                        </div>
+                        <div class="assist-fix">
+                            名前のスペルミスがないか、または⑧・⑨のアプリで出力したデータに欠損がないか確認してください。<br>
+                            ※Newick仕様によるスペースやアンダースコアの違い、大文字小文字の差異は自動的に吸収して判定しています。
+                        </div>
+                    </div>
+                `;
+                assistContainer.style.display = 'block';
                 return;
             }
             
@@ -575,26 +625,43 @@
     }
 
     function interpolateAncestralEFA(leafIds) {
-        let targets = parsedMorphData.filter(d => leafIds.includes(d.id) && d.coeffs);
+        // ツリーの葉IDを正規化して、形態データのID（正規化済）と突合
+        let normLeafIds = leafIds.map(id => normalizeId(id));
+        let targets = parsedMorphData.filter(d => normLeafIds.includes(normalizeId(d.id)) && d.efaFeatures);
+        
         if (targets.length === 0) return null;
         
-        let a = [], b = [], c = [], d = [];
-        let harmonics = targets[0].coeffs.a.length;
+        // efaFeaturesからダミーの係数オブジェクトを再構築 (描画に必要)
+        // 実際にはa,b,c,dに分解するが、JSONフォーマットに依存するため、
+        // 既存のデータ構造に合わせて柔軟に抽出する。
+        // もしデータに coeffs があればそれを利用、なければ efaFeatures を利用して疑似構築。
+        let a = [], b = [], c = [], d_arr = [];
+        let harmonics = targets[0].coeffs ? targets[0].coeffs.a.length : 20; // デフォルト20
         
         for (let i = 0; i < harmonics; i++) {
             let sumA = 0, sumB = 0, sumC = 0, sumD = 0;
             targets.forEach(t => {
-                sumA += t.coeffs.a[i];
-                sumB += t.coeffs.b[i];
-                sumC += t.coeffs.c[i];
-                sumD += t.coeffs.d[i];
+                if (t.coeffs) {
+                    sumA += t.coeffs.a[i] || 0;
+                    sumB += t.coeffs.b[i] || 0;
+                    sumC += t.coeffs.c[i] || 0;
+                    sumD += t.coeffs.d[i] || 0;
+                } else if (t.efaFeatures) {
+                    // Featureベクトルから簡易的に復元 (表示用)
+                    // モードによって抽出が変わるが、ここでは均等に扱う
+                    let fIdx = i * 4;
+                    sumA += t.efaFeatures[fIdx] || 0;
+                    sumB += t.efaFeatures[fIdx+1] || 0;
+                    sumC += t.efaFeatures[fIdx+2] || 0;
+                    sumD += t.efaFeatures[fIdx+3] || 0;
+                }
             });
             a.push(sumA / targets.length);
             b.push(sumB / targets.length);
             c.push(sumC / targets.length);
-            d.push(sumD / targets.length);
+            d_arr.push(sumD / targets.length);
         }
-        return {a, b, c, d};
+        return {a, b, c, d: d_arr};
     }
 
     function animateMorph() {
@@ -686,9 +753,14 @@
         let padding = 40;
         let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
         parsedMorphData.forEach(d => {
-            if(d.pca[0] < minX) minX = d.pca[0]; if(d.pca[0] > maxX) maxX = d.pca[0];
-            if(d.pca[1] < minY) minY = d.pca[1]; if(d.pca[1] > maxY) maxY = d.pca[1];
+            if(d.pc1 !== undefined) {
+                if(d.pc1 < minX) minX = d.pc1; if(d.pc1 > maxX) maxX = d.pc1;
+                if(d.pc2 < minY) minY = d.pc2; if(d.pc2 > maxY) maxY = d.pc2;
+            }
         });
+        
+        if (minX === Infinity) return; // PCAデータがない場合
+
         let rangeX = maxX - minX || 1; let rangeY = maxY - minY || 1;
         minX -= rangeX*0.1; maxX += rangeX*0.1;
         minY -= rangeY*0.1; maxY += rangeY*0.1;
@@ -698,12 +770,15 @@
         
         // 点の描画
         parsedMorphData.forEach(d => {
-            let x = scaleX(d.pca[0]);
-            let y = scaleY(d.pca[1]);
+            if (d.pc1 === undefined) return;
+            
+            let x = scaleX(d.pc1);
+            let y = scaleY(d.pc2);
             
             let isHovered = false;
             if (currentHoveredNode) {
-                isHovered = currentHoveredNode.leavesList.includes(d.id);
+                let normLeaves = currentHoveredNode.leavesList.map(l => normalizeId(l));
+                isHovered = normLeaves.includes(normalizeId(d.id));
             }
             
             ctx.beginPath();
