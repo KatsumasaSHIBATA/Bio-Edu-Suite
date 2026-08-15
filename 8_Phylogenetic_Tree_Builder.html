@@ -677,7 +677,6 @@
     </style>
 </head>
 <body>
-<!-- [Absolute-Zero] セクション1/4 完了。省略なしで続行 -->
 
 <div class="header-container">
     <div class="header">
@@ -685,7 +684,7 @@
             <h1><svg class="header-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>Phylogenetic Tree Builder</h1>
             <p>Bio-Edu Suite: Phase 2 / Matrix Calculation & UPGMA/NJ/MP Clustering Emulator</p>
         </div>
-        <div class="version-badge">v32.0</div>
+        <div class="version-badge">v32.1</div>
     </div>
 </div>
 
@@ -863,8 +862,6 @@
 
 </div>
 
-<!-- [Absolute-Zero] セクション2/4 完了。省略なしで続行 -->
-
 <!-- ====== ステップ式になったMP法モーダル ====== -->
 <div id="mpModal" class="modal-overlay">
     <div class="modal-content">
@@ -1012,9 +1009,7 @@
 
 <div id="toast"></div>
 
-<div class="footer">&copy; 2026 Bio-Edu Suite v32.0 | Developed for Bioinformatics & Wet-Lab Education</div>
-
-<!-- [Absolute-Zero] セクション3/4 完了。省略なしで続行 -->
+<div class="footer">&copy; 2026 Bio-Edu Suite v32.1 | Developed for Bioinformatics & Wet-Lab Education</div>
 
 <script>
     // --- ツールチップ機能 (ガイドライン第6項④ 準拠) ---
@@ -1195,33 +1190,36 @@
         reader.readAsText(e.target.files[0]);
     }
 
-    // 🔴 削除・廃止要件: 強引なフォーマット関数の廃止とハイブリッド化
+    // 🔴 削除・廃止要件対応: 古く厳格な正規表現の廃止
+    // 🟢 追加・実装要件対応: 「IDスルー（バイパス）条件」の大幅な緩和と逆転ロジック
     function formatScientificName(name) {
         let originalName = name.trim();
         
-        // パターンB: LIMS・独自ID由来 (例: 20260731_A1)
-        // 日付(8桁)_英数字 のようなフォーマットを正規表現で判定
-        const limsPattern = /^\d{8}_[a-zA-Z0-9]+$/;
-        if (limsPattern.test(originalName)) {
-            return originalName; // 一切の整形・カット処理をバイパスしてそのまま返す
+        // NCBIのアクセッションNo (例: NM_123456, AB123456)
+        const ncbiPattern = /[A-Z]{1,2}_?\d{4,}/i;
+        // 明らかに学名の体裁 (例: Homo sapiens) - 大文字で始まる単語 + 小文字の単語
+        const scientificNamePattern = /^[A-Z][a-z]+\s+[a-z]+/;
+        
+        if (ncbiPattern.test(originalName) || scientificNamePattern.test(originalName)) {
+            // パターンA: NCBI由来または学名
+            // NCBIのアクセッションNoなどを除去
+            let clean = originalName.replace(/[A-Z]{1,2}_?\d{4,}/ig, '').replace(/_/g, ' ').trim();
+            let parts = clean.split(/\s+/).filter(p => p.length > 0);
+            
+            // 学名記法 (Genus species) の場合の整形
+            if (parts.length >= 2) {
+                let genus = parts[0].charAt(0).toUpperCase();
+                let species = parts[1].replace(/[^a-zA-Z]/g, '').toLowerCase(); // 種小名はアルファベットのみ
+                if (species.length > 0) {
+                    return `${genus}. ${species}`; 
+                }
+            }
+            return clean.length > 0 ? clean : originalName;
         }
 
-        // パターンA: NCBI由来または学名
-        // NCBIのアクセッションNo (例: NM_123456) などを除去
-        let clean = originalName.replace(/[A-Z]{1,2}_?\d{4,}/ig, '').replace(/_/g, ' ').trim();
-        let parts = clean.split(/\s+/).filter(p => p.length > 0);
-        
-        // 学名記法 (Genus species) の場合の整形 (従来通り美しく)
-        if (parts.length >= 2) {
-            let genus = parts[0].charAt(0).toUpperCase();
-            let species = parts[1].replace(/[^a-zA-Z]/g, '').toLowerCase(); // 種小名はアルファベットのみ
-            if (species.length > 0) {
-                return `${genus}. ${species}`; 
-            }
-        }
-        
-        // 無条件での文字数カット(15文字)や、最初の単語だけの強引な抽出を廃止
-        return clean.length > 0 ? clean : originalName;
+        // 上記に該当しない文字列はすべて「独自ID」とみなし、一切の文字列加工・カットを行わずにそのまま返す
+        // (例: 20260731_Tokyo_A1 などのLIMS由来のIDを完璧に保護する)
+        return originalName;
     }
 
     function initMatrix() {
@@ -1267,7 +1265,7 @@
         originalNames.forEach(n => {
             let opt = document.createElement('option');
             opt.value = n;
-            opt.className = "scientific-name"; // 可能であればイタリックを適用
+            opt.className = "scientific-name"; 
             opt.text = `外群: ${formatScientificName(n)}`;
             outgroupSelect.appendChild(opt);
         });
@@ -1642,7 +1640,7 @@
         document.getElementById('mpStep2').style.display = 'none';
         document.getElementById('mpStep3').style.display = 'none';
     }
-// [Absolute-Zero] セクション4/4 完了。省略なしで続行
+
     function toggleMaskConservedSites() {
         isMasked = !isMasked;
         const btn = document.getElementById('btnMaskConserved');
