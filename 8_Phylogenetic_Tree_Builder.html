@@ -71,7 +71,6 @@
             justify-content: space-between; 
             position: relative; 
         }
-        
         .header h1 { 
             margin: 0; 
             font-size: 20px; 
@@ -125,7 +124,6 @@
             flex: 1; 
             min-width: 350px; 
         }
-        
         .card-header { 
             background: var(--secondary); 
             color: white; 
@@ -180,7 +178,6 @@
             pointer-events: none; 
             box-sizing: border-box; 
         }
-        
         .rationale-text.show { 
             opacity: 1; 
             visibility: visible; 
@@ -473,7 +470,6 @@
             box-shadow: none;
             width: fit-content;
         }
-        
         .btn:hover:not(:disabled) { 
             background: #eaf2f8; 
             border-color: #3498db; 
@@ -689,7 +685,7 @@
             <h1><svg class="header-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>Phylogenetic Tree Builder</h1>
             <p>Bio-Edu Suite: Phase 2 / Matrix Calculation & UPGMA/NJ/MP Clustering Emulator</p>
         </div>
-        <div class="version-badge">v32.1</div>
+        <div class="version-badge">v32.0</div>
     </div>
 </div>
 
@@ -746,7 +742,7 @@
             </div>
 
             <div style="display:flex; align-items:center; gap:10px; margin-top:8px;">
-                <button class="btn btn-primary" id="btnInit" onclick="initMatrix()" style="width: 100%;" data-tooltip="入力された塩基配列・アミノ酸配列を比較し、距離行列を作成します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 3h14v18H5zM8 7h8M8 11h2M12 11h2M16 11h2M8 15h2M12 15h2M16 15h2"/></svg> 行列作成</button>
+                <button class="btn btn-primary" id="btnInit" onclick="initMatrix()" style="width: 100%;" data-tooltip="入力された塩基配列を比較し、距離行列を作成します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 3h14v18H5zM8 7h8M8 11h2M12 11h2M16 11h2M8 15h2M12 15h2M16 15h2"/></svg> 行列作成</button>
                 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_matrix')" style="margin-left: 0;">?</button>
             </div>
 
@@ -780,7 +776,7 @@
 
             <div class="bench-tip">
                 <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg> 現場のコツ（MEGAのブラックボックスを開ける）</strong><br>
-                プロ用ソフトは一瞬で計算しますが、手計算の裏側を知らないとソフトの奴隷になります。上の表から「一番小さな数字」を探してクリックしてみましょう！<br>
+                プロ用ソフトは一瞬で計算しますが、という手計算の裏側を知らないとソフトの奴隷になります。上の表から「一番小さな数字」を探してクリックしてみましょう！<br>
                 <span style="color:#7f8c8d;">※最小値（同着）が複数ある場合はどれを選んでも正解です。</span>
             </div>
             
@@ -811,7 +807,10 @@
                     <option value="">外群指定(自動)</option>
                 </select>
             </span>
-            <button class="btn btn-sm" id="btnSaveImg" onclick="saveTreeImage()" disabled data-tooltip="構築された系統樹を画像として保存します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 5h18v14H3z"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M3 16l5-5 4 4 3-3 6 6"/></svg> 画像保存</button>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 260px;">
+                <button class="btn btn-sm" id="btnSaveImg" onclick="saveTreeImage()" disabled data-tooltip="構築された系統樹を画像として保存します" style="width: 100%;"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PNG保存</button>
+                <button class="btn btn-sm btn-newick" id="btnCopyNewick" onclick="copyNewick()" disabled data-tooltip="現在の系統樹をNewick形式でクリップボードにコピーします" style="width: 100%;"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg> Newickコピー</button>
+            </div>
         </div>
         <div class="card-body" style="background:var(--bg-color); padding:16px;">
             <div class="status-box" id="statusLog">
@@ -834,7 +833,6 @@
                 <div style="background: #eaeded; padding: 12px 16px; font-weight: bold; font-size: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color);">
                     <span style="color: var(--text-main);">解析ログ (履歴)</span>
                     <div style="display:flex; gap:8px;">
-                        <button class="btn btn-sm btn-newick" id="btnCopyNewick" onclick="copyNewick()" disabled data-tooltip="現在の系統樹をNewick形式でクリップボードにコピーします"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg> 系統樹(Newick)をコピー</button>
                         <button class="btn btn-sm" id="btnDownloadLog" onclick="downloadLogCSV()" disabled style="background:#fff; border-color:var(--border-color); box-shadow:none;" data-tooltip="履歴をCSVで保存します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3v12M7 10l5 5 5-5M4 19h16"/></svg> CSV保存</button>
                     </div>
                 </div>
@@ -1014,7 +1012,7 @@
 
 <div id="toast"></div>
 
-<div class="footer">&copy; 2026 Bio-Edu Suite v32.1 | Developed for Bioinformatics & Wet-Lab Education</div>
+<div class="footer">&copy; 2026 Bio-Edu Suite v32.0 | Developed for Bioinformatics & Wet-Lab Education</div>
 
 <!-- [Absolute-Zero] セクション3/4 完了。省略なしで続行 -->
 
@@ -1197,37 +1195,33 @@
         reader.readAsText(e.target.files[0]);
     }
 
+    // 🔴 削除・廃止要件: 強引なフォーマット関数の廃止とハイブリッド化
     function formatScientificName(name) {
-        let rawName = name.trim();
+        let originalName = name.trim();
         
         // パターンB: LIMS・独自ID由来 (例: 20260731_A1)
-        // 日付(8桁) + アンダースコア + 任意の英数字 のパターンに合致する場合は、
-        // 一切の整形・カット処理をバイパスし、そのまま出力する
-        if (/^\d{8}_[A-Z0-9]+$/i.test(rawName)) {
-            return rawName;
+        // 日付(8桁)_英数字 のようなフォーマットを正規表現で判定
+        const limsPattern = /^\d{8}_[a-zA-Z0-9]+$/;
+        if (limsPattern.test(originalName)) {
+            return originalName; // 一切の整形・カット処理をバイパスしてそのまま返す
         }
+
+        // パターンA: NCBI由来または学名
+        // NCBIのアクセッションNo (例: NM_123456) などを除去
+        let clean = originalName.replace(/[A-Z]{1,2}_?\d{4,}/ig, '').replace(/_/g, ' ').trim();
+        let parts = clean.split(/\s+/).filter(p => p.length > 0);
         
-        // パターンA: NCBI由来などの通常フォーマット
-        // NCBIのアクセッションNo (例: NM_001234, NM_001234.5, AB123456) を抽出
-        let accMatch = rawName.match(/^([A-Z]{1,2}_?\d+(?:\.\d+)?)/i);
-        let accStr = accMatch ? accMatch[1] : "";
-        
-        // アクセッションNoを除去した残りの部分を学名候補として処理
-        let clean = rawName.replace(/^([A-Z]{1,2}_?\d+(?:\.\d+)?)\s*/i, '').replace(/_/g, ' ').trim();
-        let parts = clean.split(/\s+/).map(p => p.replace(/[^a-zA-Z0-9-]/g, '')).filter(p => p.length > 0);
-        
-        // 長い学名記法の場合 (属名 + 種小名) は美しく整形
+        // 学名記法 (Genus species) の場合の整形 (従来通り美しく)
         if (parts.length >= 2) {
             let genus = parts[0].charAt(0).toUpperCase();
-            let species = parts[1].toLowerCase();
-            let sciName = `${genus}. ${species}`;
-            return accStr ? `${accStr} ${sciName}` : sciName;
+            let species = parts[1].replace(/[^a-zA-Z]/g, '').toLowerCase(); // 種小名はアルファベットのみ
+            if (species.length > 0) {
+                return `${genus}. ${species}`; 
+            }
         }
         
-        // 単語が1つだけの場合や、整形できない場合
-        // 無条件の文字数カット (substring(0, 15)) や最初の単語だけの抽出を廃止し、
-        // 情報を失わないように全体を返す
-        return rawName;
+        // 無条件での文字数カット(15文字)や、最初の単語だけの強引な抽出を廃止
+        return clean.length > 0 ? clean : originalName;
     }
 
     function initMatrix() {
@@ -1342,7 +1336,7 @@
         if(!initialMatrixCSV) return;
         const a = document.createElement('a'); 
         a.href = URL.createObjectURL(new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), initialMatrixCSV], { type: 'text/csv;charset=utf-8;' }));
-        a.download = "BioEdu_Export_" + new Date().toISOString().slice(0,10).replace(/-/g,"") + ".csv"; 
+        a.download = "distance_matrix.csv"; 
         a.click();
     }
 
@@ -1350,7 +1344,7 @@
         const canvas = document.getElementById('treeCanvas');
         const a = document.createElement('a');
         a.href = canvas.toDataURL("image/png");
-        a.download = "BioEdu_Export_PhylogeneticTree.png";
+        a.download = "phylogenetic_tree.png";
         a.click();
     }
 
@@ -1437,7 +1431,7 @@
         a.href = URL.createObjectURL(new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], { type: 'text/csv;charset=utf-8;' }));
         let lastLog = analysisLogs[analysisLogs.length - 1];
         let bsPart = lastLog.bs === 'なし' ? '0' : parseInt(lastLog.bs);
-        a.download = `BioEdu_Export_${lastLog.algo}_Bootstrap_${bsPart}.csv`; 
+        a.download = `${lastLog.algo}_Bootstrap_${bsPart}_Result.csv`; 
         a.click();
     }
     
@@ -1648,7 +1642,6 @@
         document.getElementById('mpStep2').style.display = 'none';
         document.getElementById('mpStep3').style.display = 'none';
     }
-
 // [Absolute-Zero] セクション4/4 完了。省略なしで続行
     function toggleMaskConservedSites() {
         isMasked = !isMasked;
