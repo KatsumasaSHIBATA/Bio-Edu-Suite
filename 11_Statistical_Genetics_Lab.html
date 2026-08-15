@@ -81,11 +81,12 @@
         input:focus, select:focus { border-color: var(--phase-color); box-shadow: 0 0 0 2px rgba(231,76,60,0.2); }
         input[type="range"]:focus { outline: none; box-shadow: none; } /* 測定誤差シミュレート枠対応 */
 
-        /* インラインSVGアイコン用 共通カラークラス (ガイドライン第2項) */
+        /* インラインSVGアイコン用 共通カラークラス (ガイドライン第2項 v32.1) */
         .svg-hint { color: var(--warning); }
         .svg-info { color: inherit; }
         .svg-danger { color: var(--danger); }
-        .header-icon { width: 20px; height: 20px; flex-shrink: 0; }
+        /* v32.1 ガイドライン防衛: SVGの巨大化を防ぐ絶対寸法指定 */
+        .header-icon { width: 24px; height: 24px; flex-shrink: 0; margin-right: 6px; }
         .btn-icon { width: 14px; height: 14px; flex-shrink: 0; vertical-align: -2px; }
 
         /* 教育的ポップオーバー (ガイドライン第6項① 準拠) */
@@ -120,13 +121,13 @@
         .btn:active:not(:disabled) { transform: scale(0.98); }
         .btn:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(50%); box-shadow: none; }
         
-        /* Success カラー用ボタン (データ未解析時は白っぽく無効化) */
+        /* Success カラー用ボタン (v32.1 ガイドライン第9項②: 動的発色ルール) */
         .btn-success { background: var(--success); color: white; border-color: var(--success); }
         .btn-success:hover:not(:disabled) { background: #219a52; border-color: #219a52; color: white; }
-        .btn-success:disabled { color: #bdc3c7; border-color: #ecf0f1; background: #fbfcfc; opacity: 1; filter: none; }
+        .btn-success:disabled { color: var(--text-muted); border-color: var(--border-color); background: var(--card-bg); opacity: 1; filter: none; }
 
-        /* アクションボタン (Primary) */
-        .action-btn { background-color: #3498db; color: white; border: none; padding: 12px 20px; font-size: 14px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; flex: 1; box-shadow: 0 3px 0 #2980b9; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        /* アクションボタン (Primary) (v32.1 ガイドライン例外許可: サイドパネル内は100%) */
+        .action-btn { background-color: #3498db; color: white; border: none; padding: 12px 20px; font-size: 14px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; width: 100%; box-shadow: 0 3px 0 #2980b9; display: flex; justify-content: center; align-items: center; gap: 8px; }
         .action-btn:hover { background-color: #2980b9; transform: translateY(2px); box-shadow: 0 1px 0 #2980b9; color: white;}
 
         /* ドロップゾーン (v32.0準拠: 横並び1行) */
@@ -182,7 +183,7 @@
 </head>
 <body>
 
-<!-- セクション1/4 完了: ヘッダー＆宣言領域 -->
+<!-- セクション1/4: ヘッダー＆宣言領域 (v32.1) -->
 <div class="header-container">
     <div class="header">
         <div class="header-title-group">
@@ -194,7 +195,7 @@
             </h1>
             <p>Bio-Edu Suite: Phase 5 / GxE & Diallel Simulator</p>
         </div>
-        <div class="version-badge">v32.0</div>
+        <div class="version-badge">v32.1</div>
     </div>
 </div>
 
@@ -215,25 +216,34 @@
                 
                 <div class="input-group">
                     <label>表現型データ (タブまたはカンマ区切り)</label>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">※1列目は必ず「Sample ID (遺伝子型)」として自動認識されます。</div>
                     
                     <div id="drop-zone" class="drop-zone">
                         <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-                        <span>ここをクリック、または表現型データをドラッグ＆ドロップ</span>
+                        <span>ここをクリック、またはデータをドラッグ＆ドロップ</span>
                         <input type="file" id="file-input" accept=".csv, .tsv, .txt" style="display: none;">
                     </div>
 
-                    <textarea id="data-input" rows="7" class="paste-area" placeholder="データをペーストしてください"></textarea>
+                    <textarea id="data-input" rows="7" class="paste-area" placeholder="ダッシュボードからデータをペーストしてください"></textarea>
+                </div>
+
+                <!-- ヘッダー動的推測によるセレクトボックス追加 -->
+                <div class="input-group" style="margin-top: 15px;">
+                    <label>環境メタデータ指標</label>
+                    <select id="env-selector">
+                        <option value="">データを読み込むと自動生成されます</option>
+                    </select>
                 </div>
 
                 <div class="input-group" style="margin-top: 15px;">
                     <label>表現型指標</label>
                     <select id="trait-selector">
-                        <option value="0">データを読み込むと自動生成されます</option>
+                        <option value="">データを読み込むと自動生成されます</option>
                     </select>
                 </div>
                 
                 <div class="input-group" style="margin-top: 15px;">
-                    <label>測定誤差のシミュレート</label>
+                    <label>測定誤差 (環境ノイズ) のシミュレート</label>
                     <div class="slider-container">
                         <span style="font-weight: normal;">小</span>
                         <input type="range" id="noise-slider" min="0" max="1" step="0.1" value="0.2">
@@ -242,7 +252,6 @@
                 </div>
             </div>
 
-<!-- セクション2/4 完了: UIパラメータ・アシスト要素 -->
             <div class="bench-tip">
                 <strong>
                     <svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>
@@ -252,7 +261,7 @@
             </div>
 
             <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <button class="action-btn" style="flex: 1;" onclick="runAnalysis()" data-tooltip="AMMIモデルによるGxE解析を実行します">
+                <button class="action-btn" onclick="runAnalysis()" data-tooltip="AMMIモデルによるGxE解析を実行します">
                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                     解析を実行
                 </button>
@@ -275,7 +284,7 @@
                     <button class="rationale-btn" onclick="toggleRationale(event, 'pop-biplot')">?</button>
                 </h4>
                 <div id="biplot-legend" class="flex items-center gap-4 text-xs text-[var(--primary)] mb-2 justify-end" style="display: none;">
-                    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-[var(--danger)] border border-red-700" style="display:inline-block;"></span> 遺伝子型</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-[var(--danger)] border border-red-700" style="display:inline-block;"></span> 遺伝子型 (Sample ID)</span>
                     <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-[#3b82f6] border border-[#1d4ed8]" style="display:inline-block;"></span> 環境</span>
                 </div>
                 <!-- 枠と高さを固定してガタつきを防ぐ -->
@@ -328,7 +337,6 @@
         </div>
     </div>
 
-<!-- セクション3/4 完了: 教育コンテンツ・ステップアップUI -->
     <!-- 独立ブロック: より高度な解析ツールへ枠 (常時表示) -->
     <div class="step-up-card">
         <h3>
@@ -342,19 +350,18 @@
 
 </div>
 
-<!-- フッター (v32.0 準拠) -->
+<!-- フッター (v32.1 準拠) -->
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v32.0 | Developed for Bioinformatics &amp; Wet-Lab Education
+    &copy; 2026 Bio-Edu Suite v32.1 | Developed for Bioinformatics &amp; Wet-Lab Education
 </div>
 
 <!-- Rationale Popover Elements (v31.0準拠 中黒箇条書き) -->
 <div id="pop-data" class="rationale-text">
     <strong>【根拠：データセットの設定】</strong>
     <p style="margin-bottom: 8px;">・同一のDNA（遺伝子型）を持つサンプル群を、異なる環境下で育成した際の表現型データを読み込みます。</p>
-    <strong>【参考：モックデータ】</strong>
+    <strong>【仕組み：自動推測】</strong>
     <p style="margin-bottom: 8px;">
-        ・本シミュレーターでは岩田(1998)論文に基づく表現型の主成分得点などを扱うことができます。<br>
-        ・ノイズレベルで測定誤差をシミュレートできます。
+        ・1列目をSample IDとみなし、残りの列のデータ（文字列か数値か）を動的に推測してドロップダウンを生成します。
     </p>
     <strong>【根拠：GxEの重要性】</strong>
     <p>
@@ -381,7 +388,6 @@
 
 <div id="toast"></div>
 
-<!-- 計算ロジック・D3描画エンジン。省略なし -->
 <script>
     const state = {
         hasRun: false,
@@ -435,38 +441,69 @@
         reader.readAsText(file);
     }
 
-    // --- テキストエリアからのヘッダー解析とドロップダウン自動書き換え ---
+    // --- テキストエリアからのヘッダー解析とドロップダウン自動書き換え (動的推測ロジック) ---
     function updateDropdownFromTextarea() {
         const rawData = document.getElementById('data-input').value.trim();
         if (!rawData) return;
         const lines = rawData.split('\n');
-        if (lines.length === 0) return;
+        if (lines.length < 2) return;
         
-        // タブまたはカンマで分割
         const header = lines[0].split(/[\t,]+/).map(s => s.trim()).filter(s => s !== "");
+        if (header.length < 2) return;
         
-        if (header.length > 2) {
-            const traits = header.slice(2);
-            const selector = document.getElementById('trait-selector');
-            const currentValue = selector.value;
-            selector.innerHTML = '';
-            traits.forEach((trait, idx) => {
-                const option = document.createElement('option');
-                option.value = idx;
-                option.text = trait;
-                selector.appendChild(option);
-            });
-            if (currentValue < traits.length) {
-                selector.value = currentValue;
-            } else {
-                selector.value = 0;
+        // データ行をサンプリングして型を判定
+        const types = new Array(header.length).fill('numeric');
+        let sampleCount = Math.min(lines.length - 1, 10);
+        for (let i = 1; i <= sampleCount; i++) {
+            const cols = lines[i].split(/[\t,]+/).map(s => s.trim());
+            for (let c = 1; c < cols.length; c++) { // 0列目はSample IDとしてスキップ
+                if (cols[c] !== "" && isNaN(Number(cols[c]))) {
+                    types[c] = 'categorical';
+                }
             }
         }
+        
+        const envSelector = document.getElementById('env-selector');
+        const traitSelector = document.getElementById('trait-selector');
+        
+        const currEnv = envSelector.value;
+        const currTrait = traitSelector.value;
+        
+        envSelector.innerHTML = '';
+        traitSelector.innerHTML = '';
+        
+        let envCount = 0;
+        let traitCount = 0;
+        
+        for(let c = 1; c < header.length; c++) {
+            const opt = document.createElement('option');
+            opt.value = c;
+            opt.text = header[c];
+            
+            if (types[c] === 'categorical') {
+                envSelector.appendChild(opt.cloneNode(true));
+                envCount++;
+            } else {
+                // 数値データは表現型としても環境としても使える可能性があるため両方に配置
+                traitSelector.appendChild(opt.cloneNode(true));
+                traitCount++;
+                envSelector.appendChild(opt.cloneNode(true));
+                envCount++;
+            }
+        }
+        
+        if (envCount === 0) envSelector.innerHTML = '<option value="">該当なし</option>';
+        if (traitCount === 0) traitSelector.innerHTML = '<option value="">該当なし</option>';
+        
+        // 以前の選択を復元（存在すれば）
+        if (Array.from(envSelector.options).some(o => o.value === currEnv)) envSelector.value = currEnv;
+        if (Array.from(traitSelector.options).some(o => o.value === currTrait)) traitSelector.value = currTrait;
     }
 
     document.getElementById('data-input').addEventListener('blur', updateDropdownFromTextarea);
 
-    // --- 入力データのパースと計算エンジン（GxE行列）への橋渡し ---
+    // --- STREAMING_CHUNK:Processing data and calculating AMMI model... ---
+    // 入力データのパースと計算エンジン（GxE行列）への橋渡し
     function processData() {
         const rawData = document.getElementById('data-input').value.trim();
         if (!rawData) throw new Error("正しいフォーマットのデータを入力してください");
@@ -475,29 +512,40 @@
         if (lines.length < 2) throw new Error("正しいフォーマットのデータを入力してください");
         
         const header = lines[0].split(/[\t,]+/).map(s => s.trim()).filter(s => s !== "");
-        if (header.length < 3) throw new Error("正しいフォーマットのデータを入力してください（最低でも遺伝子型・環境・指標の3列が必要です）");
+        if (header.length < 3) throw new Error("正しいフォーマットのデータを入力してください（最低でもSample ID、環境、指標の3列が必要です）");
         
-        const parsedData = [];
-        for (let i = 1; i < lines.length; i++) {
-            const cols = lines[i].split(/[\t,]+/).map(s => s.trim()).filter(s => s !== "");
-            // ヘッダー数と一致しない行はスキップまたはエラー
-            if (cols.length < 3) continue; 
-            parsedData.push(cols);
+        const envIdx = parseInt(document.getElementById('env-selector').value);
+        const traitIdx = parseInt(document.getElementById('trait-selector').value);
+        
+        if (isNaN(envIdx) || isNaN(traitIdx)) {
+            throw new Error("環境メタデータまたは表現型指標が選択されていません");
         }
-        
-        if (parsedData.length === 0) throw new Error("データ行が見つかりません。");
-
-        const selector = document.getElementById('trait-selector');
-        let traitIdx = parseInt(selector.value);
-        if (isNaN(traitIdx)) traitIdx = 0;
+        if (envIdx === traitIdx) {
+            throw new Error("環境メタデータと表現型指標に同じ列を指定することはできません");
+        }
         
         const genotypesSet = new Set();
         const environmentsSet = new Set();
-        parsedData.forEach(row => {
-            genotypesSet.add(row[0]);
-            environmentsSet.add(row[1]);
-        });
+        const parsedData = [];
         
+        for (let i = 1; i < lines.length; i++) {
+            const cols = lines[i].split(/[\t,]+/).map(s => s.trim());
+            // ヘッダー数と一致しない、または指定されたインデックスが範囲外の行はスキップ
+            if (cols.length <= Math.max(envIdx, traitIdx)) continue; 
+            
+            const g = cols[0]; // 1列目は必ずSample ID
+            const e = cols[envIdx];
+            const val = parseFloat(cols[traitIdx]);
+            
+            if (isNaN(val)) continue; // 数値以外はスキップ
+            
+            genotypesSet.add(g);
+            environmentsSet.add(e);
+            parsedData.push({g, e, val});
+        }
+        
+        if (parsedData.length === 0) throw new Error("有効なデータが見つかりません。列の指定が正しいか確認してください。");
+
         state.genotypes = Array.from(genotypesSet);
         state.environments = Array.from(environmentsSet);
         
@@ -505,23 +553,27 @@
         const E = state.environments.length;
         state.baseData = Array.from({ length: G }, () => new Array(E).fill(null));
         
-        parsedData.forEach((row, index) => {
-            const gIdx = state.genotypes.indexOf(row[0]);
-            const eIdx = state.environments.indexOf(row[1]);
-            const val = parseFloat(row[2 + traitIdx]);
+        // 同じSample IDかつ同じ環境のデータが複数ある場合は平均化して投入する
+        parsedData.forEach(row => {
+            const gIdx = state.genotypes.indexOf(row.g);
+            const eIdx = state.environments.indexOf(row.e);
             
-            if (isNaN(val)) {
-                throw new Error(`数値に変換できないデータが含まれています: ${row[2 + traitIdx]}`);
+            if (state.baseData[gIdx][eIdx] === null) {
+                state.baseData[gIdx][eIdx] = [];
             }
-            state.baseData[gIdx][eIdx] = val;
+            state.baseData[gIdx][eIdx].push(row.val);
         });
         
-        // 欠損値チェック（AMMIモデルは完全な行列を要求するため）
+        // 平均を計算して単一の値にする、かつ欠損値チェック
         for (let g = 0; g < G; g++) {
             for (let e = 0; e < E; e++) {
-                if (state.baseData[g][e] === null) {
-                    throw new Error(`遺伝子型 '${state.genotypes[g]}' と環境 '${state.environments[e]}' の組み合わせのデータが欠損しています。`);
+                const arr = state.baseData[g][e];
+                if (arr === null || arr.length === 0) {
+                    throw new Error(`Sample ID '${state.genotypes[g]}' と環境 '${state.environments[e]}' の組み合わせのデータが欠損しています。AMMIモデルは完全な行列を要求します。`);
                 }
+                // 平均値をセット
+                const sum = arr.reduce((a,b) => a+b, 0);
+                state.baseData[g][e] = sum / arr.length;
             }
         }
     }
@@ -634,6 +686,7 @@
         };
     }
 
+    // --- STREAMING_CHUNK:Rendering D3 charts and UI interactions... ---
     function renderBiplot() {
         const container = document.getElementById('d3-biplot');
         if(!container) return;
@@ -875,7 +928,8 @@
         URL.revokeObjectURL(url);
     }
 
-    // --- ツールチップ機能 (ガイドライン第6項④ 準拠) ---
+    // --- STREAMING_CHUNK:Initializing tooltips and layout fixes... ---
+    // ツールチップ機能 (ガイドライン第6項④ 準拠)
     function initTooltips() {
         if (document.getElementById('__bes_tooltip')) return;
         const tooltip = document.createElement('div');
@@ -914,7 +968,7 @@
         }, true);
     }
 
-    // --- ポップオーバー解説パネル表示ロジック (ガイドライン第6項① 準拠・見切れ防止強化) ---
+    // ポップオーバー解説パネル表示ロジック (ガイドライン第6項① 準拠・見切れ防止強化)
     function toggleRationale(event, id) { 
         event.stopPropagation(); 
         const el = document.getElementById(id); 
@@ -1002,6 +1056,5 @@
         updateDropdownFromTextarea();
     }
 </script>
-<!-- セクション4/4 完了: 計算エンジン＆D3.js描画スクリプト（欠損なし） -->
 </body>
 </html>
