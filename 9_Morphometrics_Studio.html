@@ -70,7 +70,7 @@
         .svg-hint { color: var(--warning); }
         .svg-info { color: inherit; }
         .svg-danger { color: var(--danger); }
-        .header-icon { width: 20px; height: 20px; flex-shrink: 0; }
+        .header-icon { width: 24px; height: 24px; flex-shrink: 0; margin-right: 6px; }
         .btn-icon { width: 14px; height: 14px; margin-right: 5px; flex-shrink: 0; vertical-align: middle; }
 
         /* 教育的ポップオーバー (ガイドライン第6項① 準拠) */
@@ -180,7 +180,6 @@
             }
         }
     </style>
-<!-- セクション1/4 完了 -->
 </head>
 <body>
 
@@ -191,11 +190,11 @@
                 <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
                     <path d="M3 21h18L3 3z"/><path d="M7 21v-2M11 21v-2M15 21v-2"/>
                 </svg>
-                Morphometrics Studio
+                ⑨ Morphometrics Studio
             </h1>
             <p>Bio-Edu Suite: Phase 3 / Strict EFA & Lance-Williams Clustering</p>
         </div>
-        <div class="version-badge">v32.0</div>
+        <div class="version-badge">v32.1</div>
     </div>
 </div>
 
@@ -260,7 +259,7 @@
                                 <span id="threshVal" style="font-size: 10px; font-family: monospace; width: 22px; text-align: right;">128</span>
                             </div>
                             <div style="display: flex; gap: 5px; flex-wrap: wrap;">
-                                <input type="text" id="imgSampleName" placeholder="サンプル名を入力" style="flex: 1; min-width: 120px;">
+                                <input type="text" id="imgSampleName" placeholder="Sample ID を入力" style="flex: 1; min-width: 120px;">
                                 <button class="btn btn-primary" onclick="extractAndAppend()" data-tooltip="画像から輪郭を抽出しチェーンコードを生成します">
                                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                                     抽出
@@ -455,16 +454,12 @@
     </div>
 </div>
 
-<!-- 必須修正事項: ツールチップUI復元 -->
 <div id="d3-tooltip" class="custom-tooltip"></div>
 <div id="toast"></div>
-<div class="footer">&copy; 2026 Bio-Edu Suite v32.0 | Developed for Bioinformatics & Wet-Lab Education</div>
-
-<!-- セクション2/4 完了 -->
+<div class="footer">&copy; 2026 Bio-Edu Suite v32.1 | Developed for Bioinformatics & Wet-Lab Education</div>
 
 <script>
     // --- ツールチップ & ポップオーバー (UI/UX 統合 v31.0 準拠) ---
-    // 必須修正事項: 勝手なリファクタリングを排除し、直接DOM要素を取得する形式へ復元
     const tooltip = document.getElementById('d3-tooltip');
 
     document.body.addEventListener('mouseover', (e) => {
@@ -666,15 +661,35 @@
 
             // エクスポート時のID紐付けのためにグローバルに保持
             window.transferredSamples = morphSamples;
-            let combinedData = morphSamples.map(s => s.morphData.trim()).join("\n");
+
+            // 生の数字列からなるチェーンコードに Sample ID 等のSHAPE互換ヘッダを付与
+            let combinedData = morphSamples.map(s => {
+                let raw = s.morphData.trim();
+                let codes = raw.split(/\s+/);
+                if(codes.length > 0 && !isNaN(codes[0])) {
+                    return `${s.id} ${codes.length} 0 0 1.0 1.0 ${raw} -1`;
+                }
+                return raw;
+            }).join("\n");
             
             document.getElementById('chain-code-input').value = combinedData;
             document.getElementById('route_a').checked = true;
             
+            // 左側リストに Sample ID と Name を正確に表示
+            let sampleListHTML = morphSamples.map(s => `
+                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #ecf0f1; padding:6px 0;">
+                    <span style="font-family:monospace; font-weight:bold; font-size:11px; color:var(--primary);">${escapeHTML(s.id)}</span>
+                    <span style="color:var(--text-muted); font-size:10px;">${escapeHTML(s.name)}</span>
+                </div>
+            `).join('');
+
             document.getElementById('active-sample-info').innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center; gap: 10px;">
-                    <span style="flex: 1; min-width: 0; word-break: break-word;"><strong>Target:</strong> バッチデータ受信完了 <span style="color:var(--text-muted); font-size:10px;">(${morphSamples.length} samples)</span></span>
-                    <span style="background:var(--success); color:white; padding:2px 6px; border-radius:10px; font-size:10px; font-weight:bold; flex-shrink: 0; white-space: nowrap;">データ受取済</span>
+                <div style="display:flex; justify-content:space-between; align-items:center; gap: 10px; margin-bottom: 8px;">
+                    <span style="flex: 1; min-width: 0; word-break: break-word; font-weight:bold; font-size:12px; color:var(--primary);">受信済みサンプル <span style="color:var(--text-muted); font-size:10px;">(${morphSamples.length} samples)</span></span>
+                    <span style="background:var(--success); color:white; padding:2px 6px; border-radius:10px; font-size:10px; font-weight:bold; flex-shrink: 0; white-space: nowrap;">連携済</span>
+                </div>
+                <div style="max-height: 120px; overflow-y: auto; background: white; border: 1px solid var(--border-color); border-radius: 4px; padding: 4px 8px;">
+                    ${sampleListHTML}
                 </div>
             `;
             
@@ -691,9 +706,13 @@
     function copyToMorphoTSV() {
         if (!globalPCA || globalSamples.length === 0) return;
         
-        let tsvLines = ["Sample_Name\tPC1_Score\tPC2_Score"];
+        let tsvLines = ["Sample_ID\tSample_Name\tPC1_Score\tPC2_Score"];
         globalSamples.forEach((sample, i) => {
-            tsvLines.push(`${sample.name}\t${globalPCA.pc1[i].toFixed(6)}\t${globalPCA.pc2[i].toFixed(6)}`);
+            let originalSample = window.transferredSamples ? window.transferredSamples.find(s => s.id === sample.name || s.name === sample.name) : null;
+            let sampleId = originalSample ? originalSample.id : `SAMP_${new Date().getTime()}_${i}`;
+            let sampleName = originalSample ? originalSample.name : sample.name;
+
+            tsvLines.push(`${sampleId}\t${sampleName}\t${globalPCA.pc1[i].toFixed(6)}\t${globalPCA.pc2[i].toFixed(6)}`);
         });
 
         fallbackCopyTextToClipboard(tsvLines.join("\n"), "⑪向け形態TSVをクリップボードにコピーしました！");
@@ -715,12 +734,13 @@
 
         globalSamples.forEach((sample, i) => {
             // 受信したサンプルデータがあればIDを引き継ぐ
-            let originalSample = window.transferredSamples ? window.transferredSamples.find(s => s.name === sample.name || s.id === sample.name) : null;
+            let originalSample = window.transferredSamples ? window.transferredSamples.find(s => s.id === sample.name || s.name === sample.name) : null;
             let sampleId = originalSample ? originalSample.id : `SAMP_${new Date().getTime()}_${i}`;
+            let sampleName = originalSample ? originalSample.name : sample.name;
 
             exportData.samples.push({
                 id: sampleId,
-                name: sample.name,
+                name: sampleName,
                 pc1: globalPCA.pc1[i],
                 pc2: globalPCA.pc2[i],
                 efaFeatures: sample.features
@@ -813,7 +833,6 @@
         }
         ctx.putImageData(idata, 0, 0);
     }
-<!-- セクション3/4 完了 -->
 
     function extractAndAppend() {
         if (!window.currentImageData) {
@@ -829,7 +848,6 @@
             return d[(y*w+x)*4] < 128; 
         }
 
-        // 必須修正事項: コメントの完全復元
         // Freeman Chain Code (8方向) Canvas座標系(下向き正)
         const dx = [1, 1, 0, -1, -1, -1, 0, 1];
         const dy = [0, -1, -1, -1, 0, 1, 1, 1]; 
@@ -907,7 +925,6 @@
             const coords = chainCodeToCoordinates(sample.codes);
             const rawCoeffs = computeEFA(coords, harmonics);
             
-            // 必須修正事項: コメントの完全復元
             // ★ 第1調和楕円に基づく厳密な標準化 (サイズ、回転、開始点) [Iwata 1998]
             const stdCoeffs = standardizeEFA(rawCoeffs);
             
@@ -918,7 +935,6 @@
                 globalMeanCoeffs[n].d += stdCoeffs[n].d / parsedData.length;
             }
 
-            // 必須修正事項: コメントの完全復元
             // モードに応じた特徴量抽出 (第1調和楕円の定数は除外)
             let features = [];
             for (let j = 0; j < harmonics; j++) {
@@ -975,7 +991,6 @@
                 startIndex = 6;
             }
 
-            // 必須修正事項: コメントの完全復元
             for(let i=startIndex; i<endIndex; i++) { // SHAPE形式のヘッダー対応
                 let val = parseInt(parts[i], 10);
                 if(val >= 0 && val <= 7) codes.push(val);
@@ -993,7 +1008,6 @@
     }
 
     function computeEFA(coords, numHarmonics) {
-        // 必須修正事項: 学術的・教育的コメントの完全復元
         // [Reference] Kuhl, F.P. and Giardina, C.R. (1982) "Elliptic Fourier features of a closed contour"
         // [Reference] 岩田洋佳 (1998) 「植物形態の楕円フーリエ記述子に基づく評価ならびに統計遺伝学的解析」式(2)〜(5)
         const K = coords.length - 1;
@@ -1024,7 +1038,6 @@
     }
 
     function standardizeEFA(coeffs) {
-        // 必須修正事項: 学術的・教育的コメントの完全復元
         // [Reference] 岩田洋佳 (1998) p.14-18 "2.4 楕円フーリエ記述子の標準化"
         if(coeffs.length === 0) return coeffs;
         let a1 = coeffs[0].a, b1 = coeffs[0].b, c1 = coeffs[0].c, d1 = coeffs[0].d;
@@ -1113,7 +1126,6 @@
             newFeatures[j] = globalPCA.means[j] + s1 * globalPCA.loadings1[j] + s2 * globalPCA.loadings2[j];
         }
 
-        // 必須修正事項: コメントの完全復元
         // Featureベクトルからフル係数に復元（除外された定数項を補完）
         let newCoeffs = [];
         let fIdx = 0;
@@ -1163,7 +1175,6 @@
 
         let scale = Math.min(w, h) * 0.35; 
         
-        // 必須修正事項: コメントの完全復元
         // 1. Mean Shape (Gray Dashed)
         let meanPts = getPts(globalMeanCoeffs);
         ctx.beginPath();
@@ -1176,7 +1187,6 @@
         ctx.strokeStyle = '#bdc3c7'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]); ctx.stroke();
         ctx.setLineDash([]);
 
-        // 必須修正事項: コメントの完全復元
         // 2. Current Shape (Blue Solid)
         let curPts = getPts(coeffs);
         ctx.beginPath();
@@ -1323,7 +1333,6 @@
     }
 
     function performClustering(data, sampleNames, distType, linkType) {
-        // 必須修正事項: 学術的・教育的コメントの完全復元
         // [Reference] 新納浩幸 (2007) 『Rで学ぶクラスタ解析』
         // 階層的クラスタリング: Lance-Williams Update Formula に基づくR言語(hclust)互換の距離更新エンジン
         const n = data.length;
@@ -1361,7 +1370,6 @@
             let cI = clusters[mergeI], cJ = clusters[mergeJ];
             cI.active = false; cJ.active = false;
 
-            // 必須修正事項: コメントの完全復元
             // ★ Lance-Williams更新式（UPGMA）の高さ算出の厳格化
             let newCluster = {
                 id: clusters.length, name: `Node${clusters.length}`, size: cI.size + cJ.size,
@@ -1376,7 +1384,6 @@
                 let d_ik = distMatrix[cI.id][clusters[k].id], d_jk = distMatrix[cJ.id][clusters[k].id], d_ij = minDist;
                 let ni = cI.size, nj = cJ.size, nk = clusters[k].size, newDist = 0;
 
-                // 必須修正事項: コメントの完全復元
                 // Lance-Williams 更新式
                 if (linkType === 'upgma') newDist = (ni * d_ik + nj * d_jk) / (ni + nj);
                 else if (linkType === 'complete') newDist = Math.max(d_ik, d_jk);
@@ -1465,6 +1472,11 @@
          .text(`Distance (Height)`);
          
          document.getElementById('tree-title-label').innerText = `Dendrogram: ${linkMethod.toUpperCase()} / ${distMethod}`;
+    }
+
+    function escapeHTML(str) {
+        if (!str) return "";
+        return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag]));
     }
 </script>
 </body>
