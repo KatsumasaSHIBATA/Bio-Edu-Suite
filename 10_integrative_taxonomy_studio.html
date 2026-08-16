@@ -204,7 +204,7 @@
             <button class="rationale-btn" onclick="toggleRationale(event, 'rat_data')">?</button>
         </div>
         <div id="rat_data" class="rationale-text">
-            <strong>【根拠：データの連携】</strong><br>
+            <strong>【根拠：データの連携】</strong>
             ・分子系統樹（進化の歴史）と形態データ（現在の形）を統合することで、生物の形がどのように進化・分岐してきたかを推定します。
         </div>
         <div class="card-body">
@@ -245,9 +245,9 @@
                 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_tree')">?</button>
             </div>
             <div id="rat_tree" class="rationale-text">
-                <strong>【根拠：階層的クラスタリング】</strong><br>
+                <strong>【根拠：階層的クラスタリング】</strong>
                 ・DNAの塩基配列の違いから推定された進化の道筋です。枝の長さは遺伝的距離（突然変異の蓄積量）を表しています。<br>
-                <strong>【キーボード操作・ショートカット】</strong><br>
+                <strong>【キーボード操作・ショートカット】</strong>
                 ・分岐点（ノード）にカーソルを合わせると、その共通祖先の形態を右側のパネルでシミュレーションします。
             </div>
             <div class="card-body" style="padding: 0;">
@@ -264,7 +264,7 @@
                 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_morph')">?</button>
             </div>
             <div id="rat_morph" class="rationale-text">
-                <strong>【根拠：PCAと変異の評価】</strong><br>
+                <strong>【根拠：PCAと変異の評価】</strong>
                 ・楕円フーリエ解析で抽出した形状の特徴を主成分分析(PCA)で2次元にプロットし、形質の違い（変異）を可視化しています。<br>
                 ・分子系統樹と連動し、共通祖先の形を数学的に補間してアニメーション描画します。
             </div>
@@ -624,43 +624,33 @@
         }
     }
 
+    // ★今回の主役：堅牢なダイレクト係数平均化ロジック
     function interpolateAncestralEFA(leafIds) {
         // ツリーの葉IDを正規化して、形態データのID（正規化済）と突合
         let normLeafIds = leafIds.map(id => normalizeId(id));
-        let targets = parsedMorphData.filter(d => normLeafIds.includes(normalizeId(d.id)) && d.efaFeatures);
+        // ⑨から送られてくる完全な係数データ(fullCoeffs)を持つサンプルのみを抽出
+        let targets = parsedMorphData.filter(d => normLeafIds.includes(normalizeId(d.id)) && d.fullCoeffs);
         
         if (targets.length === 0) return null;
         
-        // efaFeaturesからダミーの係数オブジェクトを再構築 (描画に必要)
-        // 実際にはa,b,c,dに分解するが、JSONフォーマットに依存するため、
-        // 既存のデータ構造に合わせて柔軟に抽出する。
-        // もしデータに coeffs があればそれを利用、なければ efaFeatures を利用して疑似構築。
         let a = [], b = [], c = [], d_arr = [];
-        let harmonics = targets[0].coeffs ? targets[0].coeffs.a.length : 20; // デフォルト20
+        // fullCoeffs は各調和数の係数オブジェクト {a, b, c, d} を格納した配列
+        let harmonics = targets[0].fullCoeffs.length; 
         
         for (let i = 0; i < harmonics; i++) {
             let sumA = 0, sumB = 0, sumC = 0, sumD = 0;
             targets.forEach(t => {
-                if (t.coeffs) {
-                    sumA += t.coeffs.a[i] || 0;
-                    sumB += t.coeffs.b[i] || 0;
-                    sumC += t.coeffs.c[i] || 0;
-                    sumD += t.coeffs.d[i] || 0;
-                } else if (t.efaFeatures) {
-                    // Featureベクトルから簡易的に復元 (表示用)
-                    // モードによって抽出が変わるが、ここでは均等に扱う
-                    let fIdx = i * 4;
-                    sumA += t.efaFeatures[fIdx] || 0;
-                    sumB += t.efaFeatures[fIdx+1] || 0;
-                    sumC += t.efaFeatures[fIdx+2] || 0;
-                    sumD += t.efaFeatures[fIdx+3] || 0;
-                }
+                sumA += t.fullCoeffs[i].a || 0;
+                sumB += t.fullCoeffs[i].b || 0;
+                sumC += t.fullCoeffs[i].c || 0;
+                sumD += t.fullCoeffs[i].d || 0;
             });
             a.push(sumA / targets.length);
             b.push(sumB / targets.length);
             c.push(sumC / targets.length);
             d_arr.push(sumD / targets.length);
         }
+        
         return {a, b, c, d: d_arr};
     }
 
