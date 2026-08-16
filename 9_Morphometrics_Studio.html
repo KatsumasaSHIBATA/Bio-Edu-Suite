@@ -112,12 +112,12 @@
         .drop-zone { border: 2px dashed var(--border-color); background: #f8f9fa; border-radius: 8px; padding: 16px; margin-bottom: 5px; display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 8px; width: 100%; max-width: 450px; min-height: 60px; box-sizing: border-box; cursor: pointer; transition: 0.2s; overflow: hidden; }
         .drop-zone:hover, .drop-zone.dragover { background: #ebf5fb; border-color: var(--phase-color); }
         .drop-zone p { margin: 0; font-size: 12px; font-weight: bold; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
-        .drop-zone svg { width: 20px; height: 20px; color: #95a5a6; pointer-events: none; flex-shrink: 0; }
+        .drop-zone svg { flex-shrink: 0; color: #95a5a6; pointer-events: none; }
         input[type="file"] { display: none; }
 
-        input[type="text"], input[type="number"], select, textarea { font-size: 12px; padding: 8px; border: 1px solid #bdc3c7; border-radius: 4px; box-sizing: border-box; outline: none; transition: 0.2s; background: #fdfefe; font-family: inherit; }
-        textarea { height: 90px; font-family: 'Courier New', Consolas, monospace; white-space: pre; overflow-x: auto; resize: vertical; width: 100%; }
-        input:focus, select:focus, textarea:focus { border-color: var(--phase-color); box-shadow: 0 0 0 2px rgba(52,152,219,0.2); }
+        input[type="text"], input[type="number"], select { font-size: 12px; padding: 8px; border: 1px solid #bdc3c7; border-radius: 4px; box-sizing: border-box; outline: none; transition: 0.2s; background: #fdfefe; font-family: inherit; }
+        .paste-area { border: 1px solid var(--border-color); border-radius: 4px; padding: 12px; background: #fdfefe; width: 100%; min-height: 100px; font-family: 'Courier New', Consolas, monospace; font-size: 12px; resize: vertical; box-sizing: border-box; outline: none; transition: 0.2s; white-space: pre; overflow-x: auto; }
+        input:focus, select:focus, .paste-area:focus { border-color: var(--phase-color); box-shadow: 0 0 0 2px rgba(52,152,219,0.2); }
 
         /* ボタン群 (ガイドライン第11項② 準拠) */
         .btn { background: #fdfefe; border: 1px solid #bdc3c7; padding: 8px 16px; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; font-weight: bold; transition: all 0.2s; color: #2c3e50; text-decoration: none; box-shadow: none; width: fit-content; }
@@ -190,7 +190,7 @@
                 <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
                     <path d="M3 21h18L3 3z"/><path d="M7 21v-2M11 21v-2M15 21v-2"/>
                 </svg>
-                ⑨ Morphometrics Studio
+                Morphometrics Studio
             </h1>
             <p>Bio-Edu Suite: Phase 3 / Strict EFA & Lance-Williams Clustering</p>
         </div>
@@ -231,8 +231,11 @@
                 </div>
 
                 <div class="drop-zone" id="dropZoneA" data-tooltip="チェーンコードファイルをドラッグ＆ドロップ">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline>
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="12" y1="18" x2="12" y2="12"/>
+                        <line x1="9" y1="15" x2="15" y2="15"/>
                     </svg>
                     <p>ここをクリック、またはチェーンコードファイルをドラッグ＆ドロップ</p>
                     <input type="file" id="fileInputA" accept=".chc,.dat,.txt">
@@ -281,7 +284,7 @@
                     オートトレースを行う際は、画像の影やゴミを拾わないように閾値（Threshold）を調整する職人技が必要。また、対象物を撮影する際は常に真上から同じ倍率で撮影するのが形態学の鉄則。
                 </div>
                 
-                <textarea id="chain-code-input" placeholder="チェーンコード（ Freeman Chain Code ）を入力してください"></textarea>
+                <textarea id="chain-code-input" class="paste-area" placeholder="チェーンコード（ Freeman Chain Code ）を入力してください"></textarea>
                 
                 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 5px; flex-wrap: wrap; gap: 5px;">
                     <label style="font-size:11px; font-weight:bold; color:#2c3e50;">調和数:</label>
@@ -314,14 +317,17 @@
                 </div>
 
                 <div class="drop-zone" id="dropZoneB" data-tooltip="CSVファイルをドラッグ＆ドロップ">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline>
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="12" y1="18" x2="12" y2="12"/>
+                        <line x1="9" y1="15" x2="15" y2="15"/>
                     </svg>
                     <p>ここをクリック、またはCSVファイルをドラッグ＆ドロップ</p>
                     <input type="file" id="fileInputB" accept=".csv">
                 </div>
 
-                <textarea id="csv-input" placeholder="計測データをCSV形式で入力してください"></textarea>
+                <textarea id="csv-input" class="paste-area" placeholder="計測データをCSV形式で入力してください"></textarea>
                 
                 <div style="display:flex; gap: 5px; margin-bottom: 5px; flex-wrap: wrap;">
                     <select id="data-direction"><option value="col">列がサンプル</option><option value="row">行がサンプル</option></select>
@@ -743,7 +749,8 @@
                 name: sampleName,
                 pc1: globalPCA.pc1[i],
                 pc2: globalPCA.pc2[i],
-                efaFeatures: sample.features
+                efaFeatures: sample.features,
+                fullCoeffs: sample.fullCoeffs
             });
         });
 
