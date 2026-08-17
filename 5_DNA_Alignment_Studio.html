@@ -260,7 +260,7 @@
     <div class="header">
         <div>
             <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>DNA Alignment Studio</h1>
-            <p>Bio-Edu Suite: Phase 2 / Sequence Curation & Pipeline Hub</p>
+            <p>Bio-Edu Suite: Phase 2 / DNA Curation & Pipeline Hub</p>
         </div>
         <div class="version-badge">v32.1</div>
     </div>
@@ -281,11 +281,25 @@
                     ・自分が使った「プライマー F/R」をアンカーとして検索し、ノイズを省いた「本当に必要な領域」だけを特定・整列します。<br>
                     ※制限酵素部位などを探す場合は、下のエディタ内にある「モチーフ検索」を使用してください。
                 </div>
-                <div id="rat_msa" class="rationale-text">
+                
+                <!-- MSAとスコア計算の根拠を統合 -->
+                <div id="rat_msa_score" class="rationale-text">
                     <strong>【根拠：MSA(多重整列)とは？】</strong>
                     ・進化の過程で生じた「欠失や挿入」を補正するため、塩基配列の間に「ギャップ(-)」を挿入しながら、すべてのサンプルの相同な位置を縦にピタリと合わせる高度なアルゴリズムです。<br>
-                    ・これにより、真の変異（一塩基多型等）が浮かび上がります。
+                    ・これにより、真の変異（一塩基多型等）が浮かび上がります。<br>
+                    <strong>【数学的な尺度：スコア計算（Sum-of-Pairsスコアなど）】</strong>
+                    ・コンピューターは見た目ではなく、足し算と引き算の「合計得点（スコア）」でアライメントを評価しています。<br>
+                    ・一致（Match）: 縦の塩基が揃っていればプラス点（例：+5点）<br>
+                    ・不一致（Mismatch）: 違う塩基が並んでいたらマイナス点（例：-4点）<br>
+                    ・ギャップ（Gap）: ズレを補正するために - を入れるとマイナス点<br>
+                    <strong>【論理的説明のキモ：ギャップペナルティの考え方】</strong>
+                    ・説明する際、最も説得力があるのがこの「ギャップ」の扱いです。<br>
+                    ・生物のDNAの突然変異（欠失や挿入）が起こる時、「1文字ずつ3回バラバラに欠失する」よりも、「一度にまとめて3文字欠失する」方が、自然界では起こりやすいという原則があります。<br>
+                    ・そのため、高度なアルゴリズム（MAFFTやClustal Omega）は、「新しくギャップを開けること（Gap Open）」には非常に重いマイナス点を与え、「すでに開いたギャップを伸ばすこと（Gap Extension）」には軽いマイナス点しか与えません。<br>
+                    ・ダメなアライメント（簡易MSAなど）: ギャップ(-)が塩基の間にパラパラと塩を振ったように散らばっている（ペナルティ大）。<br>
+                    ・良いアライメント（MAFFTなど）: ギャップ(-)がひとまとまりのブロックになっている（ペナルティ小）。
                 </div>
+
                 <div id="rat_design" class="rationale-text">
                     <strong>【根拠：プライマー設計の適正パラメータ】</strong>
                     ・長さ (18〜25bp): 短すぎると特異性が下がり（他の場所にくっつく）、長すぎると結合効率が落ちます。<br>
@@ -324,18 +338,25 @@
                 </div>
 
                 <div class="toolbar-row">
-                    <span class="step-label">3. アライメント <button class="rationale-btn" onclick="toggleRationale(event, 'rat_msa')">?</button></span>
+                    <!-- 「？」を一つに統合し、内容を包括的に提示 -->
+                    <span class="step-label">3. アライメント <button class="rationale-btn" onclick="toggleRationale(event, 'rat_msa_score')">?</button></span>
                     <div style="display: flex; flex-direction: row; gap: 8px; align-items: center; flex-wrap: wrap;">
-                        <!-- MAFFT連携ボタン追加とスマートアライメント -->
-                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; width: max-content;">
-                            <button class="btn btn-primary" id="btnOptionMSA" onclick="runMSA()" disabled data-tooltip="ブラウザ内で簡易的な整列計算を行います" style="width: 100%; justify-content: center;">
-                                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> 簡易MSA
+                        <div style="display:flex; flex-direction:row; gap:8px; align-items:center; flex-wrap: wrap;">
+                            <!-- アルゴリズム選択プルダウン (テキスト短縮) -->
+                            <select id="msaAlgorithm" class="primer-input" style="padding: 6px; font-size: 12px; cursor: pointer; min-width: 140px;" data-tooltip="アルゴリズムを選択します。簡易(ブラウザ)または高精度(外部スパコン計算)が選べます。">
+                                <option value="simple">簡易MSA (ブラウザ)</option>
+                                <option value="mafft">高精度MSA (MAFFT)</option>
+                                <option value="clustalo">高精度MSA (ClustalΩ)</option>
+                            </select>
+                            
+                            <!-- 実行ボタン -->
+                            <button class="btn btn-primary" id="btnRunMSA" onclick="executeSelectedMSA()" disabled data-tooltip="選択したアルゴリズムで多重整列を実行します">
+                                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> 実行
                             </button>
-                            <button class="btn btn-primary" id="btnAdvancedMSA" onclick="runAdvancedMSA()" disabled data-tooltip="EBIのスーパーコンピュータを用いて高精度な整列計算を行います" style="width: 100%; justify-content: center;">
-                                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> 高精度MSA (MAFFT)
-                            </button>
-                            <button class="btn btn-secondary" id="btnResetMSA" onclick="resetMSA()" disabled data-tooltip="実行されたアライメントを解除し、生データの状態に戻します" style="width: 100%; justify-content: center;">
-                                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> MSA解除
+                            
+                            <!-- 解除ボタン -->
+                            <button class="btn btn-option" id="btnResetMSA" onclick="resetMSA()" disabled data-tooltip="実行されたアライメントを解除し、生データの状態に戻します">
+                                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> 解除
                             </button>
                         </div>
                         <span style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">※チェックした塩基配列のみが計算対象になります。</span>
@@ -370,7 +391,7 @@
             <div id="primerStatsPanel" class="header-primer-stats">
                 <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 15px; width: 100%;">
                     <span style="color: #f1c40f; font-weight: bold; display: flex; align-items: center;">プライマー設計ナビ:</span>
-                    <span class="h-stat" style="align-items: center;">選択配列: <span id="psSeq" class="val-seq" style="cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.6)'" onmouseout="this.style.background='rgba(0,0,0,0.3)'" onclick="copyPrimerSequence()" data-tooltip="クリックして完全な塩基配列をコピー">-</span></span>
+                    <span class="h-stat" style="align-items: center;">選択塩基配列: <span id="psSeq" class="val-seq" style="cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.6)'" onmouseout="this.style.background='rgba(0,0,0,0.3)'" onclick="copyPrimerSequence()" data-tooltip="クリックして完全な塩基配列をコピー">-</span></span>
                     <span class="h-stat">長さ: <span id="psLen" class="val-display">-</span><span class="val-target">bp (適正:18-25)</span></span>
                     <span class="h-stat">GC含量: <span id="psGC" class="val-display">-</span><span class="val-target">% (適正:40-60)</span></span>
                     <span class="h-stat">Tm値: <span id="psTm" class="val-display">-</span><span class="val-target">℃ (適正:55-65)</span></span>
@@ -494,17 +515,28 @@
     let isHighlightActive = false;
 
     // ==========================================
-    // EMBL-EBI MAFFT API 連携モジュール
+    // EMBL-EBI API 連携モジュール (MAFFT / Clustal Omega 両対応・堅牢化版)
     // ==========================================
-    async function runMafftViaEBI(fastaText, userEmail) {
-        const baseUrl = "https://www.ebi.ac.uk/Tools/services/rest/mafft";
+    /**
+     * EMBL-EBIのAPIを利用してアライメントを行う関数
+     * @param {string} fastaText - 整列前のFASTA文字列
+     * @param {string} userEmail - 連絡先メールアドレス
+     * @param {string} toolName - 'mafft' または 'clustalo'
+     */
+    async function runEbiApiMSA(fastaText, userEmail, toolName) {
+        const baseUrl = `https://www.ebi.ac.uk/Tools/services/rest/${toolName}`;
 
         const submitParams = new URLSearchParams();
         submitParams.append("email", userEmail);     
         submitParams.append("sequence", fastaText);  
-        submitParams.append("format", "fasta");      
+        
+        if (toolName === 'mafft') {
+            submitParams.append("format", "fasta");
+        } else if (toolName === 'clustalo') {
+            submitParams.append("outfmt", "fa"); 
+        }
 
-        console.log("EBIサーバーへ計算依頼を送信中...");
+        console.log(`EBIサーバー(${toolName})へ計算依頼を送信中...`);
         
         const submitResponse = await fetch(`${baseUrl}/run`, {
             method: "POST",
@@ -512,7 +544,11 @@
             body: submitParams.toString()
         });
 
-        if (!submitResponse.ok) throw new Error("EBIサーバーへのリクエストに失敗しました。");
+        if (!submitResponse.ok) {
+            let errText = "不明なエラー";
+            try { errText = await submitResponse.text(); } catch(e){}
+            throw new Error(`HTTP ${submitResponse.status} - ${errText}`);
+        }
         
         const jobId = await submitResponse.text();
         console.log(`受付完了。JobID: ${jobId} / 計算待ち...`);
@@ -524,19 +560,57 @@
 
             if (status === "FINISHED") break;
             if (status === "ERROR" || status === "FAILURE" || status === "NOT_FOUND") {
-                throw new Error(`EBIサーバーエラー: ${status}`);
+                throw new Error(`EBIジョブエラー: ${status}`);
             }
         }
 
         console.log("計算完了。結果を取得します。");
-        const resultResponse = await fetch(`${baseUrl}/result/${jobId}/fasta`);
+        let resultResponse;
         
+        if (toolName === 'mafft') {
+            resultResponse = await fetch(`${baseUrl}/result/${jobId}/fasta`);
+            if (!resultResponse.ok) resultResponse = await fetch(`${baseUrl}/result/${jobId}/out`);
+        } else {
+            resultResponse = await fetch(`${baseUrl}/result/${jobId}/fasta`);
+            if (!resultResponse.ok) resultResponse = await fetch(`${baseUrl}/result/${jobId}/aln-fasta`);
+            if (!resultResponse.ok) resultResponse = await fetch(`${baseUrl}/result/${jobId}/out`);
+        }
+
         if (!resultResponse.ok) {
-             const outResponse = await fetch(`${baseUrl}/result/${jobId}/out`);
-             return await outResponse.text();
+            throw new Error(`計算は完了しましたが、結果の取得に失敗しました (HTTP ${resultResponse.status})。`);
         }
 
         return await resultResponse.text();
+    }
+
+    // ==========================================
+    // アライメント評価スコア (Sum-of-Pairs) 計算
+    // ==========================================
+    /**
+     * アライメントの評価スコア（Sum-of-Pairs）を計算する関数
+     * ペナルティ設定：一致(+5), 不一致(-4), ギャップ(-2)
+     */
+    function calculateAlignmentScore() {
+        let targetSeqs = sequences.filter(s => !s.isFPrimerFasta && !s.isRPrimerFasta && s.isSelected !== false);
+        if(targetSeqs.length < 2) return 0;
+        
+        let score = 0;
+        let len = targetSeqs[0].data.length; 
+
+        for (let c = 0; c < len; c++) {
+            for (let i = 0; i < targetSeqs.length; i++) {
+                for (let j = i + 1; j < targetSeqs.length; j++) {
+                    let b1 = targetSeqs[i].data[c];
+                    let b2 = targetSeqs[j].data[c];
+                    
+                    if (b1 === '-' && b2 === '-') continue; 
+                    if (b1 === '-' || b2 === '-') score -= 2; 
+                    else if (b1 === b2) score += 5; 
+                    else score -= 4; 
+                }
+            }
+        }
+        return score;
     }
 
     function saveState() {
@@ -572,8 +646,7 @@
         const pR = document.getElementById('pR');
         const mismatchSlider = document.getElementById('mismatchSlider');
         const btnStep2 = document.getElementById('btnStep2');
-        const msaBtn = document.getElementById('btnOptionMSA');
-        const msaAdvBtn = document.getElementById('btnAdvancedMSA');
+        const btnRunMSA = document.getElementById('btnRunMSA');
         const st = document.getElementById('statusText');
         const step2Row = document.getElementById('step2Row');
         const selectedCount = sequences.filter(s => s.isSelected !== false && !s.isFPrimerFasta && !s.isRPrimerFasta).length;
@@ -582,8 +655,7 @@
             pF.disabled = true; pR.disabled = true; mismatchSlider.disabled = true;
             btnStep2.disabled = true; 
             if(step2Row) step2Row.style.opacity = "0.4";
-            if(msaBtn) msaBtn.disabled = selectedCount < 2; 
-            if(msaAdvBtn) msaAdvBtn.disabled = selectedCount < 2; 
+            if(btnRunMSA) btnRunMSA.disabled = selectedCount < 2; 
             document.getElementById('btnExportFasta').disabled = false; 
             document.getElementById('btnExportClustal').disabled = false; 
             document.getElementById('btnCopyFasta').disabled = false; 
@@ -594,8 +666,7 @@
             pF.disabled = false; pR.disabled = false; mismatchSlider.disabled = false;
             btnStep2.disabled = false; 
             if(step2Row) step2Row.style.opacity = "1";
-            if(msaBtn) msaBtn.disabled = selectedCount < 2; 
-            if(msaAdvBtn) msaAdvBtn.disabled = selectedCount < 2; 
+            if(btnRunMSA) btnRunMSA.disabled = selectedCount < 2; 
             st.innerText = "ステータス: 生データを読み込みました。プライマー F/Rを入力してノイズ領域を特定するか、自由にカットを行ってください。";
         }
         updateMSAButtonState();
@@ -789,10 +860,8 @@
 
     function updateMSAButtonState() {
         const selectedCount = sequences.filter(s => s.isSelected !== false && !s.isFPrimerFasta && !s.isRPrimerFasta).length;
-        const msaBtn = document.getElementById('btnOptionMSA');
-        const msaAdvBtn = document.getElementById('btnAdvancedMSA');
-        if (msaBtn) msaBtn.disabled = selectedCount < 2;
-        if (msaAdvBtn) msaAdvBtn.disabled = selectedCount < 2;
+        const btnRunMSA = document.getElementById('btnRunMSA');
+        if (btnRunMSA) btnRunMSA.disabled = selectedCount < 2;
     }
 
     const dropZone = document.getElementById('dropZone');
@@ -1132,6 +1201,19 @@
         return [align1, align2, ops];
     }
 
+    /**
+     * UIのプルダウンから選択されたアルゴリズムを実行する司令塔関数
+     */
+    async function executeSelectedMSA() {
+        const selectedAlgo = document.getElementById('msaAlgorithm').value;
+        
+        if (selectedAlgo === 'simple') {
+            runMSA(); 
+        } else if (selectedAlgo === 'mafft' || selectedAlgo === 'clustalo') {
+            await runAdvancedMSA(selectedAlgo); 
+        }
+    }
+
     function runMSA() {
         let targetSeqs = sequences.filter(s => !s.isFPrimerFasta && !s.isRPrimerFasta && s.isSelected !== false);
         if(targetSeqs.length < 2) { showToast("比較する塩基配列を2つ以上選択してください。", "warning"); return; }
@@ -1180,11 +1262,11 @@
                 }
             });
 
-            updateMutationsAndRender(); saveState(); 
-            const resetBtn = document.getElementById('btnResetMSA');
-            if(resetBtn) resetBtn.disabled = false;
-
-            document.getElementById('statusText').innerText = "ステータス: アライメント完了！変異（赤）や保存領域（薄緑）を確認し、ドラッグしてプライマーを設計してみましょう。";
+            updateMutationsAndRender(); saveState(); document.getElementById('btnResetMSA').disabled = false;
+            
+            const finalScore = calculateAlignmentScore();
+            document.getElementById('statusText').innerText = 
+                `ステータス: 簡易アライメント完了！変異と保存領域を確認してください。 [ Alignment Score: ${finalScore} ]`;
             
             document.getElementById('btnExportFasta').disabled = false; document.getElementById('btnExportClustal').disabled = false; 
             document.getElementById('btnCopyFasta').disabled = false; document.getElementById('btnCopyClustal').disabled = false; 
@@ -1193,28 +1275,25 @@
     }
 
     // ==========================================
-    // 🚀 高精度MSA (EBI MAFFT連携)
+    // 🚀 高精度MSA (EBI API連携)
     // ==========================================
-    async function runAdvancedMSA() {
+    async function runAdvancedMSA(toolName) {
         let targetSeqs = sequences.filter(s => !s.isFPrimerFasta && !s.isRPrimerFasta && s.isSelected !== false);
         if(targetSeqs.length < 2) { showToast("比較する塩基配列を2つ以上選択してください。", "warning"); return; }
         
         let inputFasta = "";
         targetSeqs.forEach((s, idx) => {
-            // MAFFT用に一意なID(インデックス)をヘッダにして送信
             inputFasta += `>seq_${idx}\n${s.data.join('').replace(/-/g, '')}\n`;
         });
 
-        document.getElementById('statusText').innerText = "ステータス: EBIスーパーコンピュータでMAFFT計算中... (数秒〜数十秒)";
-        document.getElementById('btnAdvancedMSA').disabled = true;
-        document.getElementById('btnOptionMSA').disabled = true;
+        let algoNameForStatus = toolName === 'mafft' ? 'MAFFT' : 'Clustal Omega';
+        document.getElementById('statusText').innerText = `ステータス: EBIスーパーコンピュータで ${algoNameForStatus} 計算中... (数秒〜数十秒)`;
+        document.getElementById('btnRunMSA').disabled = true;
         document.getElementById('btnResetMSA').disabled = true;
 
         try {
-            // メールアドレスを固定してMAFFT APIを実行
-            const alignedResult = await runMafftViaEBI(inputFasta, "k.shibata808@gmail.com");
+            const alignedResult = await runEbiApiMSA(inputFasta, "k.shibata808@gmail.com", toolName);
             
-            // 結果(FASTA) のパースと再マッピング
             const lines = alignedResult.split('\n');
             let currentIdx = -1;
             let currentSeq = "";
@@ -1269,15 +1348,20 @@
             saveState(); 
             
             document.getElementById('btnResetMSA').disabled = false;
-            document.getElementById('statusText').innerText = "ステータス: MAFFTアライメント完了！変異（赤）や保存領域（薄緑）を確認してください。";
-            showToast("MAFFTによる高精度アライメントが完了しました！", "success");
+            
+            const finalScore = calculateAlignmentScore();
+            let algoName = toolName === 'mafft' ? 'MAFFT' : 'Clustal Omega';
+            
+            document.getElementById('statusText').innerText = 
+                `ステータス: ${algoName} による高精度アライメント完了！ [ Alignment Score: ${finalScore} ]`;
+            showToast(`${algoName} によるアライメントが完了しました！`, "success");
 
             unlockStep(3);
 
         } catch (error) {
-            console.error("MAFFTエラー:", error);
+            console.error(`${algoNameForStatus}エラー:`, error);
             showToast("エラーが発生しました: " + error.message, "error");
-            document.getElementById('statusText').innerText = "ステータス: MAFFT計算に失敗しました。";
+            document.getElementById('statusText').innerText = `ステータス: ${algoNameForStatus}計算に失敗しました。`;
         } finally {
             updateMSAButtonState();
             if (sequences.filter(s => s.data.includes('-')).length > 0) {
@@ -1489,9 +1573,6 @@
         }
     });
 
-    // ==========================================
-    // 旧コードの安定したドラッグロジックを復元
-    // ==========================================
     document.addEventListener('mousemove', function(e) {
         if (!isDragging) return;
         currentMouseX = e.clientX;
@@ -1512,7 +1593,6 @@
         const namesWidth = namesCol.offsetWidth;
         const cellWidth = 22; 
         
-        // 旧ロジック: スクロールコンテナと名前列の固定軸から座標を算出
         const seqAreaLeft = rect.left + namesWidth;
         let relativeX = clientX - seqAreaLeft + wrap.scrollLeft;
         let col = Math.floor(relativeX / cellWidth);
@@ -1760,7 +1840,7 @@
         toast.className = "";
         void toast.offsetWidth; 
         toast.className = className;
-        setTimeout(() => { toast.classList.remove("show"); }, 3000);
+        setTimeout(() => { toast.classList.remove("show"); }, 5000);
     }
 
     function copyToClipboardFallback(text, successMessage) {
