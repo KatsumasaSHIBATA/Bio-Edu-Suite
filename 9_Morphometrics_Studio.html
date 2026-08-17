@@ -350,7 +350,8 @@
                 </div>
             </div>
             
-            <div style="margin-top: 10px; display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap;">
+            <!-- ガイドライン v32.0 準拠: Route B 時の安全装置として非表示制御を行うコンテナ -->
+            <div id="export-buttons-container" style="margin-top: 10px; display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap;">
                 <button class="btn" id="copy-tsv-btn" onclick="copyToMorphoTSV()" disabled data-tooltip="統計解析(Phase 5)向けのTSV形式でコピーします">
                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
                     ⑪向け形態TSVをコピー
@@ -448,7 +449,6 @@
     <!-- ガイドライン第6項⑦ 準拠: より高度な解析ツールへ -->
     <div class="step-up-card">
         <h3>
-            <!-- 外部へのリンク・発展を示す公式SVGへ置換 -->
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line>
             </svg>
@@ -791,6 +791,12 @@
         // コピーボタンの初期化
         document.getElementById('copy-json-btn').disabled = true;
         document.getElementById('copy-tsv-btn').disabled = true;
+
+        // ★ ガイドライン v32.0 準拠: Route B 選択時はエクスポートボタンエリアごと非表示にし、余白を適切に詰める
+        const exportContainer = document.getElementById('export-buttons-container');
+        if (exportContainer) {
+            exportContainer.style.display = (route === 'A') ? 'flex' : 'none';
+        }
         
         logStatus(`[SYSTEM] 解析ルート ${route} に切り替えました。`);
     }
@@ -1278,9 +1284,7 @@
                 sampleCount: parsedData.sampleNames.length, timestamp: new Date().toISOString()
             };
             
-            // クラスタリングの場合も一旦有効化（必要に応じてエクスポート機能を拡張可能）
-            document.getElementById('copy-json-btn').disabled = false;
-            document.getElementById('copy-tsv-btn').disabled = false;
+            // 【改修】Route B では後続アプリ向けのデータ算出が行われないため、エクスポートボタンの有効化は行わない。
             
             logStatus(`[SUCCESS] クラスタリング完了。樹状図を描画しました。`);
             addLogEntry("Route B (Cluster)", `${distMethod} / ${linkMethod}`, `完了 (${parsedData.sampleNames.length} samples)`);
