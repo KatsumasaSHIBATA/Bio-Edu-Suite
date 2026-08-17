@@ -213,7 +213,17 @@
     .link-dna:hover { filter: brightness(1.05); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     .link-morph { color: white; background: #3498db; border: 1px solid #2980b9; }
     .link-morph:hover { filter: brightness(1.05); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .link-disabled { opacity: 0.6; pointer-events: none; filter: grayscale(80%); box-shadow: none !important; cursor: not-allowed; }
+    
+    /* ガイドライン第9項② 動的発色ルールの適用 */
+    .btn:disabled, .link-disabled { 
+      background-color: #fdfefe !important; 
+      color: #bdc3c7 !important; 
+      border-color: #e1e8ed !important; 
+      box-shadow: none !important; 
+      cursor: not-allowed !important; 
+      pointer-events: none; 
+      filter: none !important; 
+    }
 
     /* モーダル */
     .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(2px); }
@@ -366,14 +376,14 @@
           ⑨ Morphometrics Studio へ
         </button>
         <button id="btnBulkCopyEnv" class="btn btn-secondary" onclick="copyEnvDataTSV()">
-          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
           環境メタデータをコピー (TSV)
         </button>
       </div>
     </div>
   </div>
 
-  <!-- 登録・編集モーダル -->
+  <!-- 登録・編集モーダル (構造化・UI引き算対応) -->
   <div class="modal-overlay" id="sampleModal">
     <div class="modal-content">
       <div class="modal-header">
@@ -384,22 +394,28 @@
         <input type="hidden" id="originalSampleId">
         
         <div class="form-group">
-          <label>サンプル名 / 仮の種名 <span style="color:var(--danger); font-size:12px; font-weight:normal; margin-left:4px;">必須</span></label>
-          <input type="text" id="sampleName" class="form-control" placeholder="サンプルの識別名を入力">
+          <label>系統・個体群 <span style="color:var(--danger); font-size:12px; font-weight:normal; margin-left:4px;">必須</span></label>
+          <input type="text" id="sampleName" class="form-control" placeholder="例: Pop_Alpha、野生型、突然変異体など">
         </div>
         
         <div class="form-group">
           <label>Sample ID (自動付与)</label>
           <input type="text" id="sampleId" class="form-control" placeholder="例: 20260731_1223_Tokyo">
-          <div class="help-text">LIMS用の一意なIDです。末尾に生息場所（ハビタット）・条件などを自由に追記できます。</div>
+          <div class="help-text">LIMS用の一意なIDです。末尾に採集場所などを自由に追記できます。</div>
         </div>
         
         <hr style="border: 0; border-top: 1px solid #ecf0f1; margin: 20px 0;">
 
         <div class="form-group">
-          <label>環境メタデータ</label>
-          <textarea id="envData" class="form-control" placeholder="採取地、水温、pHなどを入力"></textarea>
-          <div class="help-text">デジタル野帳として、サンプルの採集環境に関する記録を保持します。⑪ Statistical Genetics Lab 向けのデータとして利用できます。</div>
+          <label>環境カテゴリ</label>
+          <input type="text" id="envCategory" class="form-control" placeholder="例: A湖畔、B山林など">
+          <div class="help-text">⑪ Statistical Genetics Lab で「環境(E)」要因として解析されます。</div>
+        </div>
+        
+        <div class="form-group">
+          <label>特記事項</label>
+          <textarea id="envNote" class="form-control" placeholder="自由記述のメモを入力（※出力には含まれません）" style="min-height: 80px;"></textarea>
+          <div class="help-text">画面上だけの記録です。解析ノイズとなる長文データを構造から切り離します。</div>
         </div>
         
         <hr style="border: 0; border-top: 1px solid #ecf0f1; margin: 20px 0;">
@@ -467,43 +483,49 @@
         samples = JSON.parse(data);
       } else {
         // [UPDATE] よりリアルなCOI遺伝子ベースのデモデータ（地域個体群の変異・外来種）に刷新
+        // 2025年版PDFに準拠した用語（野生型、変異、突然変異体など）を使用
         samples = [
           {
             id: generateBaseId() + "_A1",
-            name: "Pop_Alpha_01",
-            envData: "採取地: A湖畔 (止水域)\n水温: 24.5℃\npH: 7.2\n塩分濃度: 0.1%\n特記事項: 浅瀬の水草帯で採取。体高が高く丸みを帯びる。",
+            name: "Pop_Alpha_01 (野生型)",
+            envCategory: "A湖畔",
+            envNote: "水温: 24.5℃\npH: 7.2\n塩分濃度: 0.1%\n特記事項: 浅瀬の水草帯で採取。体高が高く丸みを帯びる。",
             morphData: "5 5 4 5 5 6 6 5 6 6 7 6 6 6 7 7 6 7 6 6 7 6 5 6 5 5 4 5 5 4 3 4 3 2 3 2 1 2 1 1 0 1 0 0 1 0 1 2 1 2 3 2 3 4",
             dnaData: ">Pop_Alpha_01\nATGTTCATTAACCGATGATTATTCTCAACTAACCATAAAGATATCGGAACTCTATATCTA",
             date: new Date(Date.now() - 40000).toISOString()
           },
           {
             id: generateBaseId() + "_A2",
-            name: "Pop_Alpha_02",
-            envData: "採取地: A湖畔 (止水域)\n水温: 24.8℃\npH: 7.1\n塩分濃度: 0.1%\n特記事項: 泥底で採取。同所的な個体。",
+            name: "Pop_Alpha_02 (野生型)",
+            envCategory: "A湖畔",
+            envNote: "水温: 24.8℃\npH: 7.1\n塩分濃度: 0.1%\n特記事項: 泥底で採取。同所的な個体。",
             morphData: "5 4 4 5 5 5 6 5 6 7 6 7 7 6 7 6 6 7 6 6 6 6 5 5 4 5 4 4 3 4 3 3 2 2 1 2 1 1 0 0 0 1 0 1 1 2 2 3 2 3 3 4 3 4",
             dnaData: ">Pop_Alpha_02\nATGTTCATTAACCGATGATTATTCTCAACTAACCATAAAGATATTGGAACTCTATATCTA",
             date: new Date(Date.now() - 30000).toISOString()
           },
           {
             id: generateBaseId() + "_B1",
-            name: "Pop_Beta_01",
-            envData: "採取地: B川上流 (流水域)\n水温: 15.2℃\npH: 6.8\n塩分濃度: 0.0%\n特記事項: 流れが速い岩場で採取。流線型の傾向が強い。",
+            name: "Pop_Beta_01 (変異)",
+            envCategory: "B川上流",
+            envNote: "水温: 15.2℃\npH: 6.8\n塩分濃度: 0.0%\n特記事項: 流れが速い岩場で採取。流線型の傾向が強い。",
             morphData: "4 3 3 4 4 4 5 4 5 5 5 6 5 5 6 6 5 6 5 5 5 4 4 3 3 3 2 2 1 2 1 1 0 1 0 0 7 0 7 7 6 7 6 7 7 6 7 6 5 6 5 5 4 5",
             dnaData: ">Pop_Beta_01\nATGTTCATCAACCGATGATTATTCTCAACTAACCATAAAGATATCGGAACTCTTTACCTA",
             date: new Date(Date.now() - 20000).toISOString()
           },
           {
             id: generateBaseId() + "_B2",
-            name: "Pop_Beta_02",
-            envData: "採取地: B川上流 (流水域)\n水温: 15.5℃\npH: 6.9\n塩分濃度: 0.0%\n特記事項: 淵で採取。",
+            name: "Pop_Beta_02 (変異)",
+            envCategory: "B川上流",
+            envNote: "水温: 15.5℃\npH: 6.9\n塩分濃度: 0.0%\n特記事項: 淵で採取。",
             morphData: "4 4 3 4 4 5 4 5 5 6 5 6 6 5 6 5 5 4 4 4 3 3 2 3 2 2 1 1 0 1 0 7 0 7 7 6 6 7 6 7 7 6 7 6 6 5 6 5 5 4 4 5 4 4",
             dnaData: ">Pop_Beta_02\nATGTTCATCAACCGATGATTATTCTCAACTAACCATAAAGATATCGGAACTCTTTACCTG",
             date: new Date(Date.now() - 10000).toISOString()
           },
           {
             id: generateBaseId() + "_Gamma_Alien",
-            name: "Alien_Gamma_01",
-            envData: "採取地: A湖畔 (人工水路付近)\n水温: 25.1℃\npH: 7.4\n塩分濃度: 0.1%\n特記事項: 最近目撃されるようになった不明種。他の個体より大型。",
+            name: "Alien_Gamma_01 (突然変異体)",
+            envCategory: "A湖畔",
+            envNote: "水温: 25.1℃\npH: 7.4\n塩分濃度: 0.1%\n特記事項: 最近目撃されるようになった不明種。他の個体より大型。",
             morphData: "6 6 5 6 6 7 7 6 7 7 7 6 7 6 6 5 5 4 3 2 3 2 1 0 1 0 7 6 7 6 5 4 5 4 3 2 3 2 1 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6",
             dnaData: ">Alien_Gamma_01\nATGTTCATCAACCGATGACTATTCTCAACAAACCACAAAGATATCGGAACCCTATATCTA",
             date: new Date().toISOString()
@@ -546,11 +568,15 @@
       samples.sort((a, b) => new Date(b.date) - new Date(a.date));
 
       samples.forEach(sample => {
-        const hasEnv = sample.envData && sample.envData.trim() !== "";
+        // 古いデータとの互換性を保ちつつ新しい構造化に対応
+        const envCat = sample.envCategory || "";
+        const envNote = sample.envNote || sample.envData || "";
+        
+        const hasEnv = envCat.trim() !== "";
         const hasMorph = sample.morphData && sample.morphData.trim() !== "";
         const hasDna = sample.dnaData && sample.dnaData.trim() !== "";
         
-        const envBadge = hasEnv ? `<span class="badge ok">環境メタデータあり</span>` : `<span class="badge none">環境メタデータ未登録</span>`;
+        const envBadge = hasEnv ? `<span class="badge ok">環境カテゴリあり</span>` : `<span class="badge none">環境カテゴリ未登録</span>`;
         const morphBadge = hasMorph ? `<span class="badge ok">形態データあり</span>` : `<span class="badge none">形態未登録</span>`;
         const dnaBadge = hasDna ? `<span class="badge ok">塩基配列あり</span>` : `<span class="badge none">塩基配列未登録</span>`;
 
@@ -570,9 +596,10 @@
           </div>
           <div class="card-body" onclick="editSample('${sample.id}')">
             <div class="status-badges">${envBadge}${morphBadge}${dnaBadge}</div>
-            ${hasEnv ? `<div class="data-preview" data-tooltip="環境メタデータを編集">${escapeHTML(sample.envData.substring(0, 30))}...</div>` : ''}
-            ${hasMorph ? `<div class="data-preview" data-tooltip="形態データを編集">${escapeHTML(sample.morphData.substring(0, 30))}...</div>` : ''}
-            ${hasDna ? `<div class="data-preview" data-tooltip="塩基配列を編集">${escapeHTML(sample.dnaData.substring(0, 30))}...</div>` : ''}
+            ${hasEnv ? `<div class="data-preview" data-tooltip="環境カテゴリ">${escapeHTML(envCat)}</div>` : ''}
+            ${envNote ? `<div class="data-preview" data-tooltip="特記事項">${escapeHTML(envNote.substring(0, 30))}...</div>` : ''}
+            ${hasMorph ? `<div class="data-preview" data-tooltip="形態データ">${escapeHTML(sample.morphData.substring(0, 30))}...</div>` : ''}
+            ${hasDna ? `<div class="data-preview" data-tooltip="塩基配列">${escapeHTML(sample.dnaData.substring(0, 30))}...</div>` : ''}
           </div>
         `;
         grid.appendChild(card);
@@ -604,7 +631,7 @@
           if (sample) {
             if (!sample.morphData || sample.morphData.trim() === "") canSendMorph = false;
             if (!sample.dnaData || sample.dnaData.trim() === "") canSendDna = false;
-            if (!sample.envData || sample.envData.trim() === "") canCopyEnv = false;
+            if (!sample.envCategory || sample.envCategory.trim() === "") canCopyEnv = false;
           }
         });
 
@@ -632,11 +659,12 @@
       
       if (selectedSamples.length === 0) return;
 
-      // [UPDATE] ガイドラインおよび指示に基づき sessionStorage へ一括データを厳密な構造で保存（idの完全保証）
+      // [UPDATE] ガイドラインおよび指示に基づき sessionStorage へ一括データを厳密な構造で保存
       const exportSamples = selectedSamples.map(s => ({
         id: s.id || generateBaseId(),
         name: s.name || "Unknown_Sample",
-        envData: s.envData || "",
+        envCategory: s.envCategory || "",
+        envNote: s.envNote || s.envData || "",
         morphData: s.morphData || "",
         dnaData: s.dnaData || ""
       }));
@@ -665,7 +693,7 @@
       }
     }
 
-    // --- TSVコピー処理 ---
+    // --- TSVコピー処理 (引き算と構造化の適用) ---
     function copyEnvDataTSV() {
       const checkboxes = document.querySelectorAll('.sample-checkbox:checked');
       if (checkboxes.length === 0) return;
@@ -675,18 +703,17 @@
       
       if (selectedSamples.length === 0) return;
 
-      let tsv = "Sample_ID\tSample_Name\tEnvironment_Metadata\n";
+      // 出力列の厳格化：Sample_ID | 系統・個体群 | 環境カテゴリ に固定
+      let tsv = "Sample_ID\t系統・個体群\t環境カテゴリ\n";
       selectedSamples.forEach(s => {
-        // メタデータ内の改行やタブをスペースに置換し、1行のデータとして保つ
-        const env = (s.envData || "").replace(/\n/g, ' ').replace(/\t/g, ' ');
-        tsv += `${s.id}\t${s.name}\t${env}\n`;
+        tsv += `${s.id}\t${s.name}\t${s.envCategory || ''}\n`;
       });
       
       navigator.clipboard.writeText(tsv).then(() => {
         // チェックボックスの選択状態を解除して再描画
         document.querySelectorAll('.sample-checkbox').forEach(cb => cb.checked = false);
         renderSamples();
-        showToast("環境メタデータをTSV形式でクリップボードにコピーしました", "success");
+        showToast("環境データをTSV形式でクリップボードにコピーしました", "success");
       }).catch(err => {
         showToast("データのコピーに失敗しました", "error");
       });
@@ -701,7 +728,8 @@
       document.getElementById('sampleId').value = generateBaseId();
       
       document.getElementById('sampleName').value = "";
-      document.getElementById('envData').value = "";
+      document.getElementById('envCategory').value = "";
+      document.getElementById('envNote').value = "";
       document.getElementById('morphData').value = "";
       document.getElementById('dnaData').value = "";
       document.getElementById('sampleModal').style.display = 'flex';
@@ -719,7 +747,8 @@
       document.getElementById('originalSampleId').value = sample.id;
       document.getElementById('sampleId').value = sample.id;
       document.getElementById('sampleName').value = sample.name;
-      document.getElementById('envData').value = sample.envData || "";
+      document.getElementById('envCategory').value = sample.envCategory || "";
+      document.getElementById('envNote').value = sample.envNote || sample.envData || "";
       document.getElementById('morphData').value = sample.morphData || "";
       document.getElementById('dnaData').value = sample.dnaData || "";
       document.getElementById('sampleModal').style.display = 'flex';
@@ -729,11 +758,12 @@
       const originalId = document.getElementById('originalSampleId').value;
       const inputId = document.getElementById('sampleId').value.trim();
       const name = document.getElementById('sampleName').value.trim();
-      const env = document.getElementById('envData').value.trim();
+      const envCategory = document.getElementById('envCategory').value.trim();
+      const envNote = document.getElementById('envNote').value.trim();
       const morph = document.getElementById('morphData').value.trim();
       const dna = document.getElementById('dnaData').value.trim();
 
-      if (!name) { showToast("サンプル名を入力してください", "error"); return; }
+      if (!name) { showToast("系統・個体群名を入力してください", "error"); return; }
 
       let baseId = inputId !== "" ? inputId : generateBaseId();
       let finalId = baseId;
@@ -750,13 +780,15 @@
         if (index !== -1) {
           samples[index].id = finalId;
           samples[index].name = name;
-          samples[index].envData = env;
+          samples[index].envCategory = envCategory;
+          samples[index].envNote = envNote;
           samples[index].morphData = morph;
           samples[index].dnaData = dna;
           samples[index].date = new Date().toISOString();
+          delete samples[index].envData; // 古いプロパティを削除してクレンジング
         }
       } else {
-        samples.push({ id: finalId, name: name, envData: env, morphData: morph, dnaData: dna, date: new Date().toISOString() });
+        samples.push({ id: finalId, name: name, envCategory: envCategory, envNote: envNote, morphData: morph, dnaData: dna, date: new Date().toISOString() });
       }
 
       saveToStorage(); renderSamples(); closeModal();
