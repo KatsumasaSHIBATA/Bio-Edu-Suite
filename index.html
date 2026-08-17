@@ -376,7 +376,7 @@
           ⑨ Morphometrics Studio へ
         </button>
         <button id="btnBulkCopyEnv" class="btn btn-secondary" onclick="copyEnvDataTSV()">
-          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
           環境メタデータをコピー (TSV)
         </button>
       </div>
@@ -482,53 +482,45 @@
       if (data) {
         samples = JSON.parse(data);
       } else {
-        // [UPDATE] よりリアルなCOI遺伝子ベースのデモデータ（地域個体群の変異・外来種）に刷新
-        // 2025年版PDFに準拠した用語（野生型、変異、突然変異体など）を使用
+        // [UPDATE] AMMIモデルが正常に回る「直交したデータセット」に再構築（2系統 × 2環境）
+        // 系統(G): 野生型, 突然変異体 (2025年版PDF準拠)
+        // 環境(E): A湖畔, B川上流
         samples = [
           {
-            id: generateBaseId() + "_A1",
-            name: "Pop_Alpha_01 (野生型)",
+            id: generateBaseId() + "_WT_A",
+            name: "野生型",
             envCategory: "A湖畔",
-            envNote: "水温: 24.5℃\npH: 7.2\n塩分濃度: 0.1%\n特記事項: 浅瀬の水草帯で採取。体高が高く丸みを帯びる。",
+            envNote: "水温: 24.5℃\npH: 7.2\n特記事項: 浅瀬の水草帯で採取。止水環境のため体高が高く丸みを帯びる。",
             morphData: "5 5 4 5 5 6 6 5 6 6 7 6 6 6 7 7 6 7 6 6 7 6 5 6 5 5 4 5 5 4 3 4 3 2 3 2 1 2 1 1 0 1 0 0 1 0 1 2 1 2 3 2 3 4",
-            dnaData: ">Pop_Alpha_01\nATGTTCATTAACCGATGATTATTCTCAACTAACCATAAAGATATCGGAACTCTATATCTA",
+            dnaData: ">WildType_A\nATGTTCATTAACCGATGATTATTCTCAACTAACCATAAAGATATCGGAACTCTATATCTA",
             date: new Date(Date.now() - 40000).toISOString()
           },
           {
-            id: generateBaseId() + "_A2",
-            name: "Pop_Alpha_02 (野生型)",
-            envCategory: "A湖畔",
-            envNote: "水温: 24.8℃\npH: 7.1\n塩分濃度: 0.1%\n特記事項: 泥底で採取。同所的な個体。",
-            morphData: "5 4 4 5 5 5 6 5 6 7 6 7 7 6 7 6 6 7 6 6 6 6 5 5 4 5 4 4 3 4 3 3 2 2 1 2 1 1 0 0 0 1 0 1 1 2 2 3 2 3 3 4 3 4",
-            dnaData: ">Pop_Alpha_02\nATGTTCATTAACCGATGATTATTCTCAACTAACCATAAAGATATTGGAACTCTATATCTA",
+            id: generateBaseId() + "_WT_B",
+            name: "野生型",
+            envCategory: "B川上流",
+            envNote: "水温: 15.2℃\npH: 6.8\n特記事項: 流れの速い岩場で採取。流水環境のため流線型の傾向が強い。",
+            morphData: "4 3 3 4 4 4 5 4 5 5 5 6 5 5 6 6 5 6 5 5 5 4 4 3 3 3 2 2 1 2 1 1 0 1 0 0 7 0 7 7 6 7 6 7 7 6 7 6 5 6 5 5 4 5",
+            dnaData: ">WildType_B\nATGTTCATTAACCGATGATTATTCTCAACTAACCATAAAGATATCGGAACTCTATATCTA",
             date: new Date(Date.now() - 30000).toISOString()
           },
           {
-            id: generateBaseId() + "_B1",
-            name: "Pop_Beta_01 (変異)",
-            envCategory: "B川上流",
-            envNote: "水温: 15.2℃\npH: 6.8\n塩分濃度: 0.0%\n特記事項: 流れが速い岩場で採取。流線型の傾向が強い。",
-            morphData: "4 3 3 4 4 4 5 4 5 5 5 6 5 5 6 6 5 6 5 5 5 4 4 3 3 3 2 2 1 2 1 1 0 1 0 0 7 0 7 7 6 7 6 7 7 6 7 6 5 6 5 5 4 5",
-            dnaData: ">Pop_Beta_01\nATGTTCATCAACCGATGATTATTCTCAACTAACCATAAAGATATCGGAACTCTTTACCTA",
+            id: generateBaseId() + "_MUT_A",
+            name: "突然変異体",
+            envCategory: "A湖畔",
+            envNote: "水温: 25.1℃\npH: 7.4\n特記事項: 最近目撃されるようになった変異個体。A湖畔のため丸みはあるが、全体的に大型でいびつ。",
+            morphData: "6 6 5 6 6 7 7 6 7 7 7 6 7 6 6 5 5 4 3 2 3 2 1 0 1 0 7 6 7 6 5 4 5 4 3 2 3 2 1 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6",
+            dnaData: ">Mutant_A\nATGTTCATCAACCGATGACTATTCTCAACAAACCACAAAGATATCGGAACCCTATATCTA",
             date: new Date(Date.now() - 20000).toISOString()
           },
           {
-            id: generateBaseId() + "_B2",
-            name: "Pop_Beta_02 (変異)",
+            id: generateBaseId() + "_MUT_B",
+            name: "突然変異体",
             envCategory: "B川上流",
-            envNote: "水温: 15.5℃\npH: 6.9\n塩分濃度: 0.0%\n特記事項: 淵で採取。",
-            morphData: "4 4 3 4 4 5 4 5 5 6 5 6 6 5 6 5 5 4 4 4 3 3 2 3 2 2 1 1 0 1 0 7 0 7 7 6 6 7 6 7 7 6 7 6 6 5 6 5 5 4 4 5 4 4",
-            dnaData: ">Pop_Beta_02\nATGTTCATCAACCGATGATTATTCTCAACTAACCATAAAGATATCGGAACTCTTTACCTG",
+            envNote: "水温: 15.5℃\npH: 6.9\n特記事項: B川上流の変異個体。流線型ベースだが、同じく大型化している。",
+            morphData: "5 4 4 5 5 5 6 5 6 6 6 7 6 6 7 6 6 5 4 3 4 3 2 1 2 1 0 1 0 7 0 6 7 6 6 5 6 5 4 3 4 3 2 3 4 5 6 7 0 1 2 3 4 5",
+            dnaData: ">Mutant_B\nATGTTCATCAACCGATGACTATTCTCAACAAACCACAAAGATATCGGAACCCTATATCTA",
             date: new Date(Date.now() - 10000).toISOString()
-          },
-          {
-            id: generateBaseId() + "_Gamma_Alien",
-            name: "Alien_Gamma_01 (突然変異体)",
-            envCategory: "A湖畔",
-            envNote: "水温: 25.1℃\npH: 7.4\n塩分濃度: 0.1%\n特記事項: 最近目撃されるようになった不明種。他の個体より大型。",
-            morphData: "6 6 5 6 6 7 7 6 7 7 7 6 7 6 6 5 5 4 3 2 3 2 1 0 1 0 7 6 7 6 5 4 5 4 3 2 3 2 1 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6",
-            dnaData: ">Alien_Gamma_01\nATGTTCATCAACCGATGACTATTCTCAACAAACCACAAAGATATCGGAACCCTATATCTA",
-            date: new Date().toISOString()
           }
         ];
         saveToStorage();
@@ -550,7 +542,7 @@
       return `${yyyy}${mm}${dd}_${hh}${min}${sec}`;
     }
 
-    // --- UIレンダリング ---
+    // --- STREAMING_CHUNK:UIレンダリング ---
     function renderSamples() {
       const grid = document.getElementById('sampleGrid');
       grid.innerHTML = '';
@@ -609,7 +601,7 @@
       updateBulkPanel();
     }
 
-    // --- フローティング・アクション・バー (一括送信) の制御 ---
+    // --- STREAMING_CHUNK:フローティングパネルと送信制御 ---
     function updateBulkPanel(event) {
       if(event) event.stopPropagation();
       
@@ -693,7 +685,8 @@
       }
     }
 
-    // --- TSVコピー処理 (引き算と構造化の適用) ---
+    // --- STREAMING_CHUNK:TSVエクスポートとCRUD処理 ---
+    // TSVコピー処理 (引き算と構造化の適用)
     function copyEnvDataTSV() {
       const checkboxes = document.querySelectorAll('.sample-checkbox:checked');
       if (checkboxes.length === 0) return;
@@ -719,7 +712,6 @@
       });
     }
 
-    // --- モーダル・CRUD操作 ---
     function openModal() {
       document.getElementById('modalTitle').innerText = "サンプルの登録";
       document.getElementById('originalSampleId').value = "";
@@ -795,7 +787,7 @@
       showToast("サンプルを記録しました", "success");
     }
 
-    // --- カスタム確認ダイアログ ---
+    // --- STREAMING_CHUNK:ユーティリティと教育的モジュール ---
     function showConfirm(message, onOk, okLabel = "削除する") {
       document.getElementById('confirmMessage').innerText = message;
       const btn = document.getElementById('confirmOkBtn');
@@ -820,7 +812,7 @@
       });
     }
 
-    // --- 教育的UIモジュール①: 根拠ポップオーバー ---
+    // 教育的UIモジュール①: 根拠ポップオーバー
     function toggleRationale(event, id) {
       event.stopPropagation();
       const el = document.getElementById(id);
@@ -867,7 +859,7 @@
       document.querySelectorAll('.rationale-text').forEach(el => el.classList.remove('show', 'arrow-top', 'arrow-bottom'));
     }, true);
 
-    // --- カスタムツールチップ初期化 ---
+    // カスタムツールチップ初期化
     function initTooltips() {
       if (document.getElementById('__bes_tooltip')) return;
       const tooltip = document.createElement('div');
@@ -906,7 +898,7 @@
       }, true);
     }
 
-    // --- トースト通知 ---
+    // トースト通知
     function showToast(msg, type = "") {
       const toast = document.getElementById('toast');
       if (!toast) return;
