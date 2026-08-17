@@ -204,52 +204,80 @@
     <!-- 左ペイン: 制御パラメータ -->
     <div class="card" style="align-self: start;">
         <div class="card-header">
-            <span>Ⅰ. データ設定</span>
+            <span>Ⅰ. データ結合と設定</span>
         </div>
         <div class="card-body">
             
             <div class="settings-group">
                 <h4>
-                    <span>1. 解析パラメータ</span>
+                    <span>1. データ結合とマッピング</span>
                     <button class="rationale-btn" onclick="toggleRationale(event, 'pop-data')">?</button>
                 </h4>
                 
                 <div class="input-group">
-                    <label>表現型データ (タブまたはカンマ区切り)</label>
-                    <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">※1列目は必ず「Sample ID (遺伝子型)」として自動認識されます。</div>
-                    
-                    <div id="drop-zone" class="drop-zone">
+                    <label>①からの環境データ (TSV)</label>
+                    <div id="drop-zone-env" class="drop-zone">
                         <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-                        <span>ここをクリック、またはデータをドラッグ＆ドロップ</span>
-                        <input type="file" id="file-input" accept=".csv, .tsv, .txt" style="display: none;">
+                        <span>ここをクリック、または環境データをドラッグ＆ドロップ</span>
+                        <input type="file" id="file-input-env" accept=".csv, .tsv, .txt" style="display: none;">
+                    </div>
+                    <textarea id="env-input" rows="4" class="paste-area" placeholder="Sample_ID | 系統・個体群 | 環境カテゴリ を含むTSVをペースト"></textarea>
+                </div>
+
+                <div class="input-group" style="margin-top: 15px;">
+                    <label>⑨等の画像解析からの形態データ (TSV)</label>
+                    <div id="drop-zone-morph" class="drop-zone">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                        <span>ここをクリック、または形態データをドラッグ＆ドロップ</span>
+                        <input type="file" id="file-input-morph" accept=".csv, .tsv, .txt" style="display: none;">
+                    </div>
+                    <textarea id="morph-input" rows="4" class="paste-area" placeholder="Sample_ID と 解析対象の測定数値 を含むTSVをペースト"></textarea>
+                </div>
+
+                <div style="margin-top: 15px;">
+                    <button class="btn btn-secondary" style="width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; font-weight: bold; padding: 10px;" onclick="joinData()" data-tooltip="Sample_IDを主キーとして2つの表を内部結合(Inner Join)します">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6H21"/><path d="M8 12H21"/><path d="M8 18H21"/><path d="M3 6H3.01"/><path d="M3 12H3.01"/><path d="M3 18H3.01"/></svg>
+                        データを結合 (Inner Join)
+                    </button>
+                </div>
+
+                <!-- 結合成功後のマッピングUI (初期非表示) -->
+                <div id="mapping-ui" style="display: none; margin-top: 20px; padding-top: 15px; border-top: 1px dashed var(--border-color);">
+                    <div style="font-size: 13px; color: var(--success); font-weight: bold; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        結合完了：カラムのマッピングを指定してください
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>遺伝子型 (G) の要因となる列</label>
+                        <select id="geno-selector"></select>
+                    </div>
+                    <div class="input-group" style="margin-top: 10px;">
+                        <label>環境 (E) の要因となる列</label>
+                        <select id="env-selector"></select>
+                    </div>
+                    <div class="input-group" style="margin-top: 10px;">
+                        <label>解析する表現型（結果）の列</label>
+                        <select id="trait-selector"></select>
                     </div>
 
-                    <textarea id="data-input" rows="7" class="paste-area" placeholder="ダッシュボードからデータをペーストしてください"></textarea>
-                </div>
+                    <div class="input-group" style="margin-top: 15px;">
+                        <label>測定誤差 (環境ノイズ) のシミュレート</label>
+                        <div class="slider-container">
+                            <span style="font-weight: normal;">小</span>
+                            <input type="range" id="noise-slider" min="0" max="1" step="0.1" value="0.2">
+                            <span style="font-weight: normal;">大</span>
+                        </div>
+                    </div>
 
-                <!-- ヘッダー動的推測によるセレクトボックス追加 -->
-                <div class="input-group" style="margin-top: 15px;">
-                    <label>環境メタデータ指標</label>
-                    <select id="env-selector">
-                        <option value="">データを読み込むと自動生成されます</option>
-                    </select>
-                </div>
-
-                <div class="input-group" style="margin-top: 15px;">
-                    <label>表現型指標</label>
-                    <select id="trait-selector">
-                        <option value="">データを読み込むと自動生成されます</option>
-                    </select>
-                </div>
-                
-                <div class="input-group" style="margin-top: 15px;">
-                    <label>測定誤差 (環境ノイズ) のシミュレート</label>
-                    <div class="slider-container">
-                        <span style="font-weight: normal;">小</span>
-                        <input type="range" id="noise-slider" min="0" max="1" step="0.1" value="0.2">
-                        <span style="font-weight: normal;">大</span>
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button class="action-btn" onclick="runAnalysis()" data-tooltip="指定したマッピングに従い、AMMIモデルによるGxE解析を実行します">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                            解析を実行
+                        </button>
                     </div>
                 </div>
+
             </div>
 
             <div class="bench-tip">
@@ -258,13 +286,6 @@
                     現場のコツ
                 </strong><br>
                 環境データを測る際、『温度』や『日照』だけでなく、『土壌のpH』や『水質』など、目に見えにくい要因が生物の形に決定的な影響を与えていることが多いです。突然変異（塩基配列の変化）によって生じた変異と区別するためにも、育成メタデータをどれだけ正確に記録するかが統計遺伝学の命となります。
-            </div>
-
-            <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <button class="action-btn" onclick="runAnalysis()" data-tooltip="AMMIモデルによるGxE解析を実行します">
-                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                    解析を実行
-                </button>
             </div>
 
         </div>
@@ -284,12 +305,12 @@
                     <button class="rationale-btn" onclick="toggleRationale(event, 'pop-biplot')">?</button>
                 </h4>
                 <div id="biplot-legend" class="flex items-center gap-4 text-xs text-[var(--primary)] mb-2 justify-end" style="display: none;">
-                    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-[var(--danger)] border border-red-700" style="display:inline-block;"></span> 遺伝子型 (Sample ID)</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-[var(--danger)] border border-red-700" style="display:inline-block;"></span> 遺伝子型 (G)</span>
                     <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-[#3b82f6] border border-[#1d4ed8]" style="display:inline-block;"></span> 環境</span>
                 </div>
                 <!-- 枠と高さを固定してガタつきを防ぐ -->
                 <div id="d3-biplot" style="width: 100%; height: 400px; border: 1px solid var(--border-color); border-radius: 4px; background: #fafbfc; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center;">
-                    <span style="color: #7f8c8d; font-weight: bold;">左のパネルからデータを入力し、解析を実行してください...</span>
+                    <span style="color: #7f8c8d; font-weight: bold;">左のパネルからデータを結合・マッピングし、解析を実行してください...</span>
                 </div>
                 <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">※原点から遠い遺伝子型ほど、特定の環境に対する相互作用（適応性や可塑性の偏り）が強いことを示します。近接してプロットされるGとEは、正の強い相互作用を持ちます。</p>
                 
@@ -320,7 +341,7 @@
                             </tr>
                         </thead>
                         <tbody id="anova-tbody">
-                            <tr><td colspan="5" style="text-align: center; color: #7f8c8d; padding:15px; font-weight: bold;">左のパネルからデータを入力し、解析を実行してください...</td></tr>
+                            <tr><td colspan="5" style="text-align: center; color: #7f8c8d; padding:15px; font-weight: bold;">左のパネルからデータを結合・マッピングし、解析を実行してください...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -357,17 +378,13 @@
 
 <!-- Rationale Popover Elements (v31.0準拠 中黒箇条書き) -->
 <div id="pop-data" class="rationale-text">
-    <strong>【根拠：データセットの設定】</strong>
-    <p style="margin-bottom: 8px;">・同一のDNA（遺伝子型）を持つサンプル群を、異なる環境下で育成した際の表現型データを読み込みます。</p>
-    <strong>【仕組み：自動推測】</strong>
-    <p style="margin-bottom: 8px;">
-        ・1列目をSample IDとみなし、残りの列のデータ（文字列か数値か）を動的に推測してドロップダウンを生成します。
-    </p>
+    <strong>【根拠：データセットの構築とマッピング】</strong>
+    <p style="margin-bottom: 8px;">・ダッシュボードで記録した「環境データ」と、画像解析から得た「形態データ」の2つの異なる表を、共通の Sample_ID を使って結合（Join）します。</p>
+    <p style="margin-bottom: 8px;">・結合後、野外で採取した『系統・個体群』などのどの列を『遺伝子型（G）の要因』とし、どの列を『環境（E）』として扱うか、そして何を『結果（表現型）』として解析するのかを自分で指定（マッピング）します。</p>
+    <p style="margin-bottom: 8px;">・データの構造を正しく定義し、「原因」と「結果」をコンピュータに指示することは、すべての統計解析における最も重要な基礎プロセスです。</p>
     <strong>【根拠：GxEの重要性】</strong>
-    <p>
-        ・生物の形（表現型）は、『遺伝』＋『環境』＋『遺伝と環境の相互作用(GxE)』で決まります。<br>
-        ・見た目が違うからといってすぐに別種（塩基配列など遺伝情報が違う）と決めつけず、AMMIモデル等の数学的処理により環境要因を取り除くことが分類学・統計遺伝学において重要です。
-    </p>
+    <p style="margin-bottom: 8px;">・生物の形（表現型）は、『遺伝』＋『環境』＋『遺伝と環境の相互作用(GxE)』で決まります。</p>
+    <p>・見た目に変異があるからといってすぐに別種（塩基配列などの遺伝情報が異なる）と決めつけず、AMMIモデル等の数学的処理により環境要因を取り除くことが、分類学や統計遺伝学において重要です。</p>
 </div>
 
 <div id="pop-biplot" class="rationale-text">
@@ -398,6 +415,9 @@
         results: null
     };
 
+    let joinedData = null; 
+    let joinedHeaders = []; 
+
     // --- 日付フォーマット取得ヘルパー ---
     function getYYYYMMDD() {
         const d = new Date();
@@ -407,32 +427,33 @@
     }
 
     // --- ファイルドロップゾーン機能 ---
-    const dropZone = document.getElementById('drop-zone');
-    const fileInput = document.getElementById('file-input');
+    function setupDropZone(zoneId, inputId, textareaId) {
+        const dropZone = document.getElementById(zoneId);
+        const fileInput = document.getElementById(inputId);
 
-    dropZone.addEventListener('click', () => fileInput.click());
-    dropZone.addEventListener('dragover', (e) => { 
-        e.preventDefault(); 
-        dropZone.classList.add('dragover'); 
-    });
-    dropZone.addEventListener('dragleave', () => { 
-        dropZone.classList.remove('dragover'); 
-    });
-    dropZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('dragover');
-        if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
-    });
-    fileInput.addEventListener('change', (e) => {
-        if (e.target.files.length) handleFile(e.target.files[0]);
-        fileInput.value = ''; // 同じファイルを連続で選べるようにリセット
-    });
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => { 
+            e.preventDefault(); 
+            dropZone.classList.add('dragover'); 
+        });
+        dropZone.addEventListener('dragleave', () => { 
+            dropZone.classList.remove('dragover'); 
+        });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0], textareaId);
+        });
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) handleFile(e.target.files[0], textareaId);
+            fileInput.value = ''; // 同じファイルを連続で選べるようにリセット
+        });
+    }
 
-    function handleFile(file) {
+    function handleFile(file, textareaId) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            document.getElementById('data-input').value = e.target.result;
-            updateDropdownFromTextarea();
+            document.getElementById(textareaId).value = e.target.result;
             showToast(`ファイル "${file.name}" を読み込みました。`, "info");
         };
         reader.onerror = function() {
@@ -441,110 +462,135 @@
         reader.readAsText(file);
     }
 
-    // --- テキストエリアからのヘッダー解析とドロップダウン自動書き換え (動的推測ロジック) ---
-    function updateDropdownFromTextarea() {
-        const rawData = document.getElementById('data-input').value.trim();
-        if (!rawData) return;
-        const lines = rawData.split('\n');
-        if (lines.length < 2) return;
-        
-        const header = lines[0].split(/[\t,]+/).map(s => s.trim()).filter(s => s !== "");
-        if (header.length < 2) return;
-        
-        // データ行をサンプリングして型を判定
-        const types = new Array(header.length).fill('numeric');
-        let sampleCount = Math.min(lines.length - 1, 10);
-        for (let i = 1; i <= sampleCount; i++) {
+    setupDropZone('drop-zone-env', 'file-input-env', 'env-input');
+    setupDropZone('drop-zone-morph', 'file-input-morph', 'morph-input');
+
+    // --- TSV パーサーヘルパー ---
+    function parseTSV(text) {
+        const lines = text.trim().split('\n').filter(l => l.trim().length > 0);
+        if (lines.length < 2) return null;
+        const headers = lines[0].split(/[\t,]+/).map(s => s.trim()).filter(s => s !== "");
+        const data = [];
+        for (let i = 1; i < lines.length; i++) {
             const cols = lines[i].split(/[\t,]+/).map(s => s.trim());
-            for (let c = 1; c < cols.length; c++) { // 0列目はSample IDとしてスキップ
-                if (cols[c] !== "" && isNaN(Number(cols[c]))) {
-                    types[c] = 'categorical';
-                }
-            }
+            const row = {};
+            headers.forEach((h, idx) => {
+                row[h] = cols[idx] !== undefined ? cols[idx] : "";
+            });
+            data.push(row);
         }
-        
-        const envSelector = document.getElementById('env-selector');
-        const traitSelector = document.getElementById('trait-selector');
-        
-        const currEnv = envSelector.value;
-        const currTrait = traitSelector.value;
-        
-        envSelector.innerHTML = '';
-        traitSelector.innerHTML = '';
-        
-        let envCount = 0;
-        let traitCount = 0;
-        
-        for(let c = 1; c < header.length; c++) {
-            const opt = document.createElement('option');
-            opt.value = c;
-            opt.text = header[c];
-            
-            if (types[c] === 'categorical') {
-                envSelector.appendChild(opt.cloneNode(true));
-                envCount++;
-            } else {
-                // 数値データは表現型としても環境としても使える可能性があるため両方に配置
-                traitSelector.appendChild(opt.cloneNode(true));
-                traitCount++;
-                envSelector.appendChild(opt.cloneNode(true));
-                envCount++;
-            }
-        }
-        
-        if (envCount === 0) envSelector.innerHTML = '<option value="">該当なし</option>';
-        if (traitCount === 0) traitSelector.innerHTML = '<option value="">該当なし</option>';
-        
-        // 以前の選択を復元（存在すれば）
-        if (Array.from(envSelector.options).some(o => o.value === currEnv)) envSelector.value = currEnv;
-        if (Array.from(traitSelector.options).some(o => o.value === currTrait)) traitSelector.value = currTrait;
+        return { headers, data };
     }
 
-    document.getElementById('data-input').addEventListener('blur', updateDropdownFromTextarea);
+    // --- データ結合とマッピングUI構築ロジック ---
+    function joinData() {
+        const envText = document.getElementById('env-input').value;
+        const morphText = document.getElementById('morph-input').value;
 
-    // --- STREAMING_CHUNK:Processing data and calculating AMMI model... ---
-    // 入力データのパースと計算エンジン（GxE行列）への橋渡し
+        if (!envText || !morphText) {
+            showToast("環境データと形態データの両方をペーストしてください", "error");
+            return;
+        }
+
+        const envParsed = parseTSV(envText);
+        const morphParsed = parseTSV(morphText);
+
+        if (!envParsed || !morphParsed || envParsed.data.length === 0 || morphParsed.data.length === 0) {
+            showToast("データフォーマットが正しくありません", "error");
+            return;
+        }
+
+        // 主キーを「Sample_ID」とする、見つからなければ1列目を採用
+        const envKey = envParsed.headers.includes("Sample_ID") ? "Sample_ID" : envParsed.headers[0];
+        const morphKey = morphParsed.headers.includes("Sample_ID") ? "Sample_ID" : morphParsed.headers[0];
+
+        // Morph側をマップ化して検索を高速化
+        const morphMap = new Map();
+        morphParsed.data.forEach(row => {
+            const k = row[morphKey];
+            if (k) morphMap.set(k, row);
+        });
+
+        const joined = [];
+        envParsed.data.forEach(envRow => {
+            const keyVal = envRow[envKey];
+            if (keyVal && morphMap.has(keyVal)) {
+                const morphRow = morphMap.get(keyVal);
+                joined.push({ ...envRow, ...morphRow });
+            }
+        });
+
+        if (joined.length === 0) {
+            showToast("共通のSample_IDが見つからず、結合できませんでした", "error");
+            return;
+        }
+
+        joinedData = joined;
+        joinedHeaders = Array.from(new Set([...envParsed.headers, ...morphParsed.headers]));
+
+        const selectors = ['geno-selector', 'env-selector', 'trait-selector'];
+        selectors.forEach(id => {
+            const sel = document.getElementById(id);
+            sel.innerHTML = '<option value="">選択してください</option>';
+            joinedHeaders.forEach(h => {
+                const opt = document.createElement('option');
+                opt.value = h;
+                opt.text = h;
+                sel.appendChild(opt);
+            });
+        });
+
+        // 推測で初期選択
+        if (joinedHeaders.includes("系統・個体群")) document.getElementById('geno-selector').value = "系統・個体群";
+        if (joinedHeaders.includes("環境カテゴリ")) document.getElementById('env-selector').value = "環境カテゴリ";
+        
+        // 数値データの列を推定してtraitにセット
+        const numericHeader = joinedHeaders.find(h => {
+            if (["Sample_ID", "系統・個体群", "環境カテゴリ", envKey, morphKey].includes(h)) return false;
+            // 先頭のデータの値が数値として解釈できるか
+            return !isNaN(parseFloat(joined[0][h]));
+        });
+        if (numericHeader) document.getElementById('trait-selector').value = numericHeader;
+
+        document.getElementById('mapping-ui').style.display = 'block';
+        showToast(`${joined.length}件のデータを結合しました`, "success");
+    }
+
+    // --- STREAMING_CHUNK:Processing mapped data and calculating AMMI model... ---
+    // マッピングされたデータから解析エンジン（GxE行列）への橋渡し
     function processData() {
-        const rawData = document.getElementById('data-input').value.trim();
-        if (!rawData) throw new Error("正しいフォーマットのデータを入力してください");
-        
-        const lines = rawData.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-        if (lines.length < 2) throw new Error("正しいフォーマットのデータを入力してください");
-        
-        const header = lines[0].split(/[\t,]+/).map(s => s.trim()).filter(s => s !== "");
-        if (header.length < 3) throw new Error("正しいフォーマットのデータを入力してください（最低でもSample ID、環境、指標の3列が必要です）");
-        
-        const envIdx = parseInt(document.getElementById('env-selector').value);
-        const traitIdx = parseInt(document.getElementById('trait-selector').value);
-        
-        if (isNaN(envIdx) || isNaN(traitIdx)) {
-            throw new Error("環境メタデータまたは表現型指標が選択されていません");
+        if (!joinedData || joinedData.length === 0) {
+            throw new Error("先にデータを結合してください");
         }
-        if (envIdx === traitIdx) {
-            throw new Error("環境メタデータと表現型指標に同じ列を指定することはできません");
+
+        const genoCol = document.getElementById('geno-selector').value;
+        const envCol = document.getElementById('env-selector').value;
+        const traitCol = document.getElementById('trait-selector').value;
+
+        if (!genoCol || !envCol || !traitCol) {
+            throw new Error("マッピング（列の指定）をすべて選択してください");
         }
-        
+        if (genoCol === envCol || genoCol === traitCol || envCol === traitCol) {
+            throw new Error("マッピングに重複があります");
+        }
+
         const genotypesSet = new Set();
         const environmentsSet = new Set();
         const parsedData = [];
-        
-        for (let i = 1; i < lines.length; i++) {
-            const cols = lines[i].split(/[\t,]+/).map(s => s.trim());
-            // ヘッダー数と一致しない、または指定されたインデックスが範囲外の行はスキップ
-            if (cols.length <= Math.max(envIdx, traitIdx)) continue; 
-            
-            const g = cols[0]; // 1列目は必ずSample ID
-            const e = cols[envIdx];
-            const val = parseFloat(cols[traitIdx]);
-            
-            if (isNaN(val)) continue; // 数値以外はスキップ
-            
-            genotypesSet.add(g);
-            environmentsSet.add(e);
-            parsedData.push({g, e, val});
-        }
-        
-        if (parsedData.length === 0) throw new Error("有効なデータが見つかりません。列の指定が正しいか確認してください。");
+
+        joinedData.forEach(row => {
+            const g = row[genoCol];
+            const e = row[envCol];
+            const val = parseFloat(row[traitCol]);
+
+            if (g !== undefined && g !== "" && e !== undefined && e !== "" && !isNaN(val)) {
+                genotypesSet.add(g);
+                environmentsSet.add(e);
+                parsedData.push({ g, e, val });
+            }
+        });
+
+        if (parsedData.length === 0) throw new Error("有効なデータが見つかりません。数値列が正しく選択されているか確認してください。");
 
         state.genotypes = Array.from(genotypesSet);
         state.environments = Array.from(environmentsSet);
@@ -553,7 +599,7 @@
         const E = state.environments.length;
         state.baseData = Array.from({ length: G }, () => new Array(E).fill(null));
         
-        // 同じSample IDかつ同じ環境のデータが複数ある場合は平均化して投入する
+        // 同じ遺伝子型かつ同じ環境のデータが複数ある場合は平均化して投入する
         parsedData.forEach(row => {
             const gIdx = state.genotypes.indexOf(row.g);
             const eIdx = state.environments.indexOf(row.e);
@@ -569,7 +615,7 @@
             for (let e = 0; e < E; e++) {
                 const arr = state.baseData[g][e];
                 if (arr === null || arr.length === 0) {
-                    throw new Error(`Sample ID '${state.genotypes[g]}' と環境 '${state.environments[e]}' の組み合わせのデータが欠損しています。AMMIモデルは完全な行列を要求します。`);
+                    throw new Error(`遺伝子型 '${state.genotypes[g]}' と環境 '${state.environments[e]}' の組み合わせのデータが欠損しています。AMMIモデルは完全な行列を要求します。`);
                 }
                 // 平均値をセット
                 const sum = arr.reduce((a,b) => a+b, 0);
@@ -833,7 +879,6 @@
 
     function runAnalysis() {
         try {
-            updateDropdownFromTextarea();
             processData();
         } catch(e) {
             showToast(e.message, "error");
@@ -1053,7 +1098,6 @@
 
     window.onload = function() {
         initTooltips(); 
-        updateDropdownFromTextarea();
     }
 </script>
 </body>
