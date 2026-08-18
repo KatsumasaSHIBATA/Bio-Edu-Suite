@@ -183,7 +183,7 @@
 </head>
 <body>
 
-<!-- セクション1/4: ヘッダー＆宣言領域 (v32.1) -->
+<!-- セクション1/4: ヘッダー＆宣言領域 (v32.2) -->
 <div class="header-container">
     <div class="header">
         <div class="header-title-group">
@@ -195,7 +195,7 @@
             </h1>
             <p>Bio-Edu Suite: Phase 5 / GxE & Diallel Simulator</p>
         </div>
-        <div class="version-badge">v32.1</div>
+        <div class="version-badge">v32.2</div>
     </div>
 </div>
 
@@ -323,10 +323,29 @@
                 </div>
             </div>
 
+            <!-- セクション: 反応規範グラフ -->
+            <div class="settings-group" style="margin-bottom: 0; display: flex; flex-direction: column;">
+                <h4>
+                    <span>3. 反応規範 (Reaction Norm)</span>
+                    <button class="rationale-btn" onclick="toggleRationale(event, 'pop-reaction-norm')">?</button>
+                </h4>
+                <div id="d3-reaction-norm" style="width: 100%; height: 400px; border: 1px solid var(--border-color); border-radius: 4px; background: #fafbfc; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center;">
+                    <span style="color: #7f8c8d; font-weight: bold;">左のパネルからデータを結合・マッピングし、解析を実行してください...</span>
+                </div>
+                
+                <!-- 🖼️ グラフ保存 ボタン -->
+                <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                    <button id="btn-save-rn-png" class="btn btn-success" disabled onclick="downloadReactionNormPNG()" data-tooltip="描画されたグラフをPNG画像としてダウンロードします">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        グラフ保存
+                    </button>
+                </div>
+            </div>
+
             <!-- セクション: 分散分析表 -->
             <div class="settings-group" style="margin-bottom: 0;">
                 <h4>
-                    <span>3. 分散分析表 (ANOVA)</span>
+                    <span>4. 分散分析表 (ANOVA)</span>
                     <button class="rationale-btn" onclick="toggleRationale(event, 'pop-anova')">?</button>
                 </h4>
                 <div style="overflow-x: auto; border: 1px solid var(--border-color); border-radius: 4px;">
@@ -371,9 +390,9 @@
 
 </div>
 
-<!-- フッター (v32.1 準拠) -->
+<!-- フッター (v32.2 準拠) -->
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v32.1 | Developed for Bioinformatics &amp; Wet-Lab Education
+    &copy; 2026 Bio-Edu Suite v32.2 | Developed for Bioinformatics &amp; Wet-Lab Education
 </div>
 
 <!-- Rationale Popover Elements (v31.0準拠 中黒箇条書き) -->
@@ -393,6 +412,12 @@
         ・主成分分析を用いて、遺伝子型と環境の交互作用を2次元平面にプロットします。<br>
         ・これにより、特定の環境に適応した遺伝子型を視覚的に特定し、多様性（変異）を評価することができます。
     </p>
+</div>
+
+<div id="pop-reaction-norm" class="rationale-text">
+    <strong>【根拠：相互作用の視覚化】</strong>
+    <p style="margin-bottom: 8px;">・線が平行であれば環境の影響のみ（GxEなし）を意味します。</p>
+    <p>・線が交差したり傾きが大きく異なる場合は、遺伝と環境の相互作用（GxE）が存在することを直感的に示します。</p>
 </div>
 
 <div id="pop-anova" class="rationale-text">
@@ -465,21 +490,31 @@
     setupDropZone('drop-zone-env', 'file-input-env', 'env-input');
     setupDropZone('drop-zone-morph', 'file-input-morph', 'morph-input');
 
-    // --- TSV パーサーヘルパー ---
+    // --- TSV パーサーヘルパー (v32.2 バケツリレー対応メタデータ抽出機能付き) ---
     function parseTSV(text) {
         const lines = text.trim().split('\n').filter(l => l.trim().length > 0);
-        if (lines.length < 2) return null;
-        const headers = lines[0].split(/[\t,]+/).map(s => s.trim()).filter(s => s !== "");
+        let metadata = [];
+        let dataLines = [];
+        lines.forEach(l => {
+            if (l.startsWith('#')) {
+                metadata.push(l);
+            } else {
+                dataLines.push(l);
+            }
+        });
+
+        if (dataLines.length < 2) return null;
+        const headers = dataLines[0].split(/[\t,]+/).map(s => s.trim()).filter(s => s !== "");
         const data = [];
-        for (let i = 1; i < lines.length; i++) {
-            const cols = lines[i].split(/[\t,]+/).map(s => s.trim());
+        for (let i = 1; i < dataLines.length; i++) {
+            const cols = dataLines[i].split(/[\t,]+/).map(s => s.trim());
             const row = {};
             headers.forEach((h, idx) => {
                 row[h] = cols[idx] !== undefined ? cols[idx] : "";
             });
             data.push(row);
         }
-        return { headers, data };
+        return { headers, data, metadata };
     }
 
     // --- データ結合とマッピングUI構築ロジック ---
@@ -498,6 +533,18 @@
         if (!envParsed || !morphParsed || envParsed.data.length === 0 || morphParsed.data.length === 0) {
             showToast("データフォーマットが正しくありません", "error");
             return;
+        }
+
+        // v32.2 LIMS規格: メタデータ（出所）の視覚的フィードバック
+        let metaMessages = [];
+        if (envParsed.metadata.length > 0) metaMessages.push(...envParsed.metadata);
+        if (morphParsed.metadata.length > 0) metaMessages.push(...morphParsed.metadata);
+        
+        let metaStr = metaMessages.find(m => m.includes('source:'));
+        if (metaStr) {
+            setTimeout(() => {
+                showToast(`メタデータを検出: ${metaStr.replace('#', '').trim()}`, "info");
+            }, 300);
         }
 
         // 主キーを「Sample_ID」とする、見つからなければ1列目を採用
@@ -843,14 +890,174 @@
             .attr("stroke-width", "1.5px")
             .attr("data-tooltip", d => `${d.name}\nIPCA1: ${d.ipca1.toFixed(3)}\nIPCA2: ${d.ipca2.toFixed(3)}\n平均: ${d.mean.toFixed(3)}`);
 
+        // Y=0での重なりを回避するためのテキストオフセット処理
         nodes.append("text")
             .attr("dx", 8)
-            .attr("dy", 3)
+            .attr("dy", d => d.type === '遺伝子型' ? "-0.8em" : "1.5em")
             .style("font-size", "10px")
             .style("font-weight", "bold")
             .style("fill", "#2c3e50")
             .style("pointer-events", "none")
             .text(d => d.name);
+    }
+
+    // --- 新規追加: 反応規範 (Reaction Norm) の描画 ---
+    function renderReactionNorm() {
+        const container = document.getElementById('d3-reaction-norm');
+        if(!container) return;
+        
+        container.style.display = 'block';
+        container.innerHTML = ''; 
+        
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+        if(width === 0 || height === 0) return;
+
+        const margin = { top: 20, right: 100, bottom: 40, left: 50 }; // 右マージンを凡例用に広く
+        const innerWidth = width - margin.left - margin.right;
+        const innerHeight = height - margin.top - margin.bottom;
+
+        const svg = d3.select(container).append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .attr("xmlns", "http://www.w3.org/2000/svg")
+            .style("font-family", "sans-serif")
+            .style("background-color", "#fafbfc");
+
+        const g = svg.append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        const G = state.genotypes.length;
+        const E = state.environments.length;
+        
+        // データ整形 (系統ごとの折れ線データ)
+        let lineData = [];
+        let allValues = [];
+        for(let gIdx=0; gIdx<G; gIdx++){
+            let envVals = [];
+            for(let eIdx=0; eIdx<E; eIdx++){
+                let val = state.data[gIdx][eIdx];
+                envVals.push({ env: state.environments[eIdx], val: val });
+                allValues.push(val);
+            }
+            lineData.push({
+                genotype: state.genotypes[gIdx],
+                values: envVals
+            });
+        }
+
+        const xExtent = state.environments;
+        const yExtent = d3.extent(allValues);
+        // Y軸に少し余白を持たせる
+        const yPadding = (yExtent[1] - yExtent[0]) * 0.1;
+        if (yPadding === 0) { yExtent[0] -= 1; yExtent[1] += 1; }
+        else { yExtent[0] -= yPadding; yExtent[1] += yPadding; }
+
+        const xScale = d3.scalePoint()
+            .domain(xExtent)
+            .range([0, innerWidth])
+            .padding(0.1);
+
+        const yScale = d3.scaleLinear()
+            .domain(yExtent)
+            .range([innerHeight, 0]);
+            
+        // カラーパレット (D3の標準10色)
+        const colorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(state.genotypes);
+
+        const xAxis = d3.axisBottom(xScale);
+        const yAxis = d3.axisLeft(yScale).ticks(8);
+
+        g.append("g")
+            .attr("transform", `translate(0,${innerHeight})`)
+            .call(xAxis)
+            .attr("class", "axis-text")
+            .selectAll("text").style("fill", "#7f8c8d").style("font-size", "10px");
+
+        g.append("g")
+            .call(yAxis)
+            .attr("class", "axis-text")
+            .selectAll("text").style("fill", "#7f8c8d").style("font-size", "10px");
+
+        // 軸とグリッド線
+        g.selectAll(".domain").attr("stroke", "#bdc3c7");
+        g.selectAll(".tick line").attr("stroke", "#bdc3c7");
+        g.append("line").attr("class", "grid-line").attr("y1", yScale(0)).attr("y2", yScale(0)).attr("x1", 0).attr("x2", innerWidth).attr("stroke", "#bdc3c7").attr("stroke-dasharray", "4").attr("opacity", "0.5");
+
+        svg.append("text")
+            .attr("x", width / 2)
+            .attr("y", height - 5)
+            .attr("text-anchor", "middle")
+            .style("font-size", "12px")
+            .style("fill", "#7f8c8d")
+            .text("環境 (Environment)");
+
+        svg.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("x", -height / 2)
+            .attr("y", 15)
+            .attr("text-anchor", "middle")
+            .style("font-size", "12px")
+            .style("fill", "#7f8c8d")
+            .text("表現型 (Phenotype)");
+
+        const line = d3.line()
+            .x(d => xScale(d.env))
+            .y(d => yScale(d.val));
+
+        // 線描画
+        g.selectAll(".line")
+            .data(lineData)
+            .enter()
+            .append("path")
+            .attr("fill", "none")
+            .attr("stroke", d => colorScale(d.genotype))
+            .attr("stroke-width", 2)
+            .attr("d", d => line(d.values))
+            .attr("opacity", 0.8);
+
+        // 点描画
+        const points = g.selectAll(".points")
+            .data(lineData)
+            .enter()
+            .append("g")
+            .attr("fill", d => colorScale(d.genotype));
+            
+        points.selectAll("circle")
+            .data(d => d.values.map(v => ({...v, genotype: d.genotype})))
+            .enter()
+            .append("circle")
+            .attr("cx", d => xScale(d.env))
+            .attr("cy", d => yScale(d.val))
+            .attr("r", 4)
+            .attr("stroke", "#fff")
+            .attr("stroke-width", 1)
+            .attr("data-tooltip", d => `${d.genotype}\n環境: ${d.env}\n表現型: ${d.val.toFixed(3)}`)
+            .on("mouseover", function(event, d) {
+                d3.select(this).attr("r", 6);
+            })
+            .on("mouseout", function(event, d) {
+                d3.select(this).attr("r", 4);
+            });
+
+        // 凡例 (右側)
+        const legend = g.selectAll(".legend")
+            .data(state.genotypes)
+            .enter()
+            .append("g")
+            .attr("transform", (d, i) => `translate(${innerWidth + 10},${i * 15})`);
+            
+        legend.append("rect")
+            .attr("width", 10)
+            .attr("height", 10)
+            .attr("fill", d => colorScale(d));
+            
+        legend.append("text")
+            .attr("x", 15)
+            .attr("y", 9)
+            .style("font-size", "10px")
+            .style("fill", "#2c3e50")
+            .text(d => d);
     }
 
     function renderAnova() {
@@ -894,10 +1101,12 @@
             
             document.getElementById('biplot-legend').style.display = 'flex';
             renderBiplot();
+            renderReactionNorm();
             renderAnova();
 
             // 解析完了後に保存ボタンの無効化を解除
             document.getElementById('btn-save-png').disabled = false;
+            document.getElementById('btn-save-rn-png').disabled = false;
             document.getElementById('btn-save-csv').disabled = false;
 
             showToast("AMMIモデルによるGxE解析が完了しました。", "success");
@@ -910,7 +1119,19 @@
             showToast("解析を実行してから保存してください。", "warning");
             return;
         }
-        const svgElement = document.querySelector('#d3-biplot svg');
+        exportSvgToPng('#d3-biplot svg', `BioEdu_Biplot_${getYYYYMMDD()}.png`);
+    }
+
+    function downloadReactionNormPNG() {
+        if (!state.hasRun) {
+            showToast("解析を実行してから保存してください。", "warning");
+            return;
+        }
+        exportSvgToPng('#d3-reaction-norm svg', `BioEdu_ReactionNorm_${getYYYYMMDD()}.png`);
+    }
+
+    function exportSvgToPng(selector, filename) {
+        const svgElement = document.querySelector(selector);
         if (!svgElement) return;
 
         const serializer = new XMLSerializer();
@@ -924,7 +1145,6 @@
         const img = new Image();
         img.onload = function() {
             const canvas = document.createElement("canvas");
-            // 高解像度化
             canvas.width = svgElement.clientWidth * 2;
             canvas.height = svgElement.clientHeight * 2;
             const ctx = canvas.getContext("2d");
@@ -934,7 +1154,7 @@
             
             const pngUrl = canvas.toDataURL("image/png");
             const a = document.createElement("a");
-            a.download = `BioEdu_Export_${getYYYYMMDD()}.png`;
+            a.download = filename;
             a.href = pngUrl;
             a.click();
         };
@@ -1078,6 +1298,7 @@
     window.addEventListener('resize', () => {
         if (state.hasRun) {
             renderBiplot();
+            renderReactionNorm();
         }
     });
 
