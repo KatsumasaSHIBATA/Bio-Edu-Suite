@@ -789,7 +789,7 @@
         }
         
         switchRoute();
-        initGPACanvas(); // Route C用のCanvas初期化
+        initGPACanvas(); 
     };
 
     function copyToMorphoTSV() {
@@ -1210,49 +1210,78 @@
 
     function drawPCA(pcaResult, samples, containerId = 'pca-svg-container') {
         const container = document.getElementById(containerId);
-        if(!container) return;
+        if (!container) return;
+
+        // 基本チェック
+        if (!pcaResult || !Array.isArray(pcaResult.pc1) || !Array.isArray(pcaResult.pc2)) {
+            console.warn("drawPCA: invalid pcaResult", pcaResult);
+            logStatus("[ERROR] PCA結果が不正です。", "error");
+            return;
+        }
+
+        // 既存内容をクリア
         container.innerHTML = '';
         const margin = {top: 40, right: 20, bottom: 40, left: 40};
-        const cw = container.clientWidth - margin.left - margin.right;
-        const ch = container.clientHeight - margin.top - margin.bottom;
 
-        const svg = d3.select("#" + containerId).append("svg")
-            .attr("width", cw + margin.left + margin.right)
-            .attr("height", ch + margin.top + margin.bottom)
-            .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+        // getBoundingClientRect を使って確実に実サイズを得る。0 の場合はフォールバック（300px）を与える。
+        let bbox = container.getBoundingClientRect();
+        let cw = Math.max(bbox.width - margin.left - margin.right, 200);
+        let ch = Math.max(bbox.height - margin.top - margin.bottom, 200);
 
-        let minX = d3.min(pcaResult.pc1), maxX = d3.max(pcaResult.pc1);
-        let minY = d3.min(pcaResult.pc2), maxY = d3.max(pcaResult.pc2);
-        let padX = (maxX - minX)*0.1 || 1, padY = (maxY - minY)*0.1 || 1;
-        
-        const xScale = d3.scaleLinear().domain([minX - padX, maxX + padX]).range([0, cw]);
-        const yScale = d3.scaleLinear().domain([minY - padY, maxY + padY]).range([ch, 0]);
+        if (bbox.height <= 1) {
+            container.style.minHeight = '300px';
+            bbox = container.getBoundingClientRect();
+            cw = Math.max(bbox.width - margin.left - margin.right, 200);
+            ch = Math.max(bbox.height - margin.top - margin.bottom, 200);
+        }
 
-        svg.append("g").attr("transform", `translate(0,${ch})`).call(d3.axisBottom(xScale));
-        svg.append("g").call(d3.axisLeft(yScale));
+        // レイアウト確定のタイミングを待って描画（真っ白防止のキモ）
+        window.requestAnimationFrame(() => {
+            container.innerHTML = '';
+            let freshBbox = container.getBoundingClientRect();
+            let rCw = Math.max(freshBbox.width - margin.left - margin.right, 200);
+            let rCh = Math.max(freshBbox.height - margin.top - margin.bottom, 200);
 
-        const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+            const svg = d3.select("#" + containerId).append("svg")
+                .attr("width", rCw + margin.left + margin.right)
+                .attr("height", rCh + margin.top + margin.bottom)
+                .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
-        svg.selectAll(".dot")
-            .data(samples)
-            .enter().append("circle")
-            .attr("class", "dot")
-            .attr("cx", (d, i) => xScale(pcaResult.pc1[i]))
-            .attr("cy", (d, i) => yScale(pcaResult.pc2[i]))
-            .attr("r", 6)
-            .style("fill", (d, i) => colorScale(i)).style("stroke", "#fff").style("cursor", "pointer")
-            .attr("data-tooltip", (d, i) => `<strong>${d.name || d.id}</strong><br>PC1: ${(pcaResult.pc1[i]/pcaResult.sd1).toFixed(2)}σ<br>PC2: ${(pcaResult.pc2[i]/pcaResult.sd2).toFixed(2)}σ`)
-            .on("click", function(event, d) {
-                // PCAのクリック復元はRoute Aの時のみ有効とする
-                if(containerId === 'pca-svg-container') {
-                    let i = samples.indexOf(d);
-                    let s1 = pcaResult.pc1[i] / pcaResult.sd1, s2 = pcaResult.pc2[i] / pcaResult.sd2;
-                    document.getElementById('pc1-slider').value = s1;
-                    document.getElementById('pc2-slider').value = s2;
-                    updateShapeFromSliders();
-                    logStatus(`[SYSTEM] ${d.name || d.id} を選択し、形状を復元しました。`);
-                }
-            });
+            let minX = d3.min(pcaResult.pc1), maxX = d3.max(pcaResult.pc1);
+            let minY = d3.min(pcaResult.pc2), maxY = d3.max(pcaResult.pc2);
+            let padX = (maxX - minX) * 0.1 || 1, padY = (maxY - minY) * 0.1 || 1;
+
+            const xScale = d3.scaleLinear().domain([minX - padX, maxX + padX]).range([0, rCw]);
+            const yScale = d3.scaleLinear().domain([minY - padY, maxY + padY]).range([rCh, 0]);
+
+            svg.append("g").attr("transform", `translate(0,${rCh})`).call(d3.axisBottom(xScale));
+            svg.append("g").call(d3.axisLeft(yScale));
+
+            const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+
+            svg.selectAll(".dot")
+                .data(samples)
+                .enter().append("circle")
+                .attr("class", "dot")
+                .attr("cx", (d,i) => xScale(pcaResult.pc1[i]))
+                .attr("cy", (d,i) => yScale(pcaResult.pc2[i]))
+                .attr("r", 6)
+                .style("fill", (d,i) => colorScale(i))
+                .style("stroke", "#fff")
+                .style("cursor", "pointer")
+                .attr("data-tooltip", (d,i) => `<strong>${d.name || d.id}</strong><br>PC1: ${(pcaResult.pc1[i]/(pcaResult.sd1||1)).toFixed(2)}σ<br>PC2: ${(pcaResult.pc2[i]/(pcaResult.sd2||1)).toFixed(2)}σ`)
+                .on("click", function(event, d) {
+                    if (containerId === 'pca-svg-container') {
+                        let i = samples.indexOf(d);
+                        let s1 = (pcaResult.pc1[i] / (pcaResult.sd1||1));
+                        let s2 = (pcaResult.pc2[i] / (pcaResult.sd2||1));
+                        document.getElementById('pc1-slider').value = s1;
+                        document.getElementById('pc2-slider').value = s2;
+                        updateShapeFromSliders();
+                        logStatus(`[SYSTEM] ${d.name || d.id} を選択し、形状を復元しました。`);
+                    }
+                });
+        });
     }
 
     // =========================================================
