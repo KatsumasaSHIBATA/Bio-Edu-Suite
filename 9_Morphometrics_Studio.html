@@ -75,13 +75,13 @@
         .btn-icon { width: 14px; height: 14px; margin-right: 5px; flex-shrink: 0; vertical-align: middle; }
 
         /* 教育的ポップオーバー (ガイドライン第6項① 準拠) */
+        .rationale-wrapper { position: relative; display: inline-flex; }
         .rationale-btn { background: var(--phase-color); color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; flex-shrink: 0; }
         .rationale-btn:hover { transform: scale(1.1); filter: brightness(1.2); }
         .rationale-text { position: fixed; background: #fef9e7; border: 1px solid var(--warning); padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: max-content; max-width: min(320px, calc(100vw - 24px)); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; }
         .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
-        
+        /* ガイドライン v32.1 準拠: 強調テキストで改行しないよう inline-flex に */
         .rationale-text strong { color: #d35400; font-size: 12px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 4px; }
-        
         .rationale-text::after { content: ''; position: absolute; border-width: 6px; border-style: solid; left: var(--arrow-left, 50%); }
         .rationale-text.arrow-top::after { top: -12px; border-color: transparent transparent #fef9e7 transparent; }
         .rationale-text.arrow-bottom::after { bottom: -12px; border-color: #fef9e7 transparent transparent transparent; }
@@ -94,7 +94,7 @@
 
         /* 現場のコツ (Bench Tip) - ガイドライン第6項② 準拠 */
         .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px 15px; border-radius: 0 4px 4px 0; font-size: 12px; color: var(--text-main); line-height: 1.6; margin: 15px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-        
+        /* ガイドライン v32.1 準拠: 強調テキストで改行しないよう inline-flex に */
         .bench-tip strong { color: #2980b9; display: inline-flex; align-items: center; gap: 4px; font-size: 13px; margin-right: 8px; font-weight: bold; }
 
         /* より高度な解析ツールへ (ガイドライン第6項⑦ 準拠) */
@@ -107,6 +107,7 @@
 
         /* 入力フォーム群 (ガイドライン第11項③ 準拠) */
         .algo-selector { display: flex; gap: 5px; background: #ecf0f1; padding: 4px; border-radius: 4px; margin-bottom: 5px; align-items: center; flex-wrap: wrap; }
+        /* 見切れ対策: white-space を normal にし word-break: keep-all で単語途中での不自然な改行を防ぐ */
         .algo-selector label { flex: 1 1 auto; text-align: center; padding: 6px; font-size: 11px; font-weight: bold; color: #7f8c8d; cursor: pointer; border-radius: 3px; transition: 0.2s; white-space: normal; line-height: 1.2; word-break: keep-all; }
         .algo-selector input { display: none; }
         .algo-selector input:checked + label { background: var(--phase-color); color: white; }
@@ -214,7 +215,7 @@
                 <!-- JSで埋め込み -->
             </div>
 
-            <!-- Route選択UI: A -> C -> B の順序へ最適化 -->
+            <!-- Route選択UI: A -> C -> B の順序へ最適化し、文言を見切れ防止対応 -->
             <div class="algo-selector" data-tooltip="データに合わせて解析ルートを切り替えます">
                 <input type="radio" id="route_a" name="route" value="A" checked onchange="switchRoute()">
                 <label for="route_a">Route A (画像/EFA ▶︎ PCA)</label>
@@ -234,7 +235,7 @@
                     生のチェーンコードから積分計算でフーリエ係数(a, b, c, d)を算出し、主成分分析(PCA)で次元縮約を行います。第1調和楕円に基づく数学的に厳密な標準化により、純粋な「形の変異」だけを抽出します。
                 </div>
                 <div id="rat_efa" class="rationale-text">
-                    <strong>【根拠：対称・非対称の分離による厳密な評価】</strong><br>
+                    <strong>【根拠：対称・非対称の分離による厳密な評価】</strong>
                     ・ダイコンの根形のように表裏がない対象物の場合、撮影時の「置き方」による曲がりがノイズになります。フーリエ係数を「対称 (a, d)」と「非対称 (b, c)」に分けてPCAにかけることで、「太さ・とまり具合」と「曲がり」を独立して評価できます。
                 </div>
 
@@ -255,7 +256,7 @@
                         <span>1. 画像から輪郭を抽出 (オートトレース)</span>
                         <div class="rationale-wrapper"><button class="rationale-btn" onclick="toggleRationale(event, 'rat_imgproc')">?</button>
                             <div id="rat_imgproc" class="rationale-text">
-                                <strong>【根拠：画像処理による自動抽出】</strong><br>
+                                <strong>【根拠：画像処理による自動抽出】</strong>
                                 ・ブラウザ上で画像をグレースケール化し、指定した閾値で二値化（白黒化）します。Moore-Neighborアルゴリズムにより境界ピクセルを追跡し、Freeman Chain Codeを自動生成します。
                             </div>
                         </div>
@@ -326,13 +327,13 @@
                 </div>
                 
                 <div id="rat-gpa-all" class="rationale-text">
-                    <strong>【根拠：なぜ重心を合わせるのか】</strong><br>
+                    <strong>【根拠：なぜ重心を合わせるのか】</strong>
                     ・対象物の「位置（座標上のズレ）」を排除するためです。<br>
                     ・すべてのサンプルの重心を原点 (0, 0) に移動させることで、純粋な「形」だけを比較する準備が整います。<br>
-                    <strong style="margin-top: 8px;">【根拠：重心サイズ (Centroid Size)】</strong><br>
+                    <strong style="margin-top: 8px;">【根拠：重心サイズ (Centroid Size)】</strong>
                     ・各ランドマークから重心までの距離の二乗和の平方根です。<br>
                     ・カメラの距離による「見かけの大きさ」の違いを排除するため、すべての座標をこの値で割り、大きさを数学的に「1」に統一します。<br>
-                    <strong style="margin-top: 8px;">【根拠：SVD (特異値分解) による回転】</strong><br>
+                    <strong style="margin-top: 8px;">【根拠：SVD (特異値分解) による回転】</strong>
                     ・2つの形が最もピッタリ重なる（プロクラステス距離が最小になる）回転角度を計算します。<br>
                     ・適当に回すのではなく、線形代数の「カブシュ・アルゴリズム」を用いることで、数学的に唯一の「最適解」を一瞬で導き出しています。
                 </div>
@@ -342,7 +343,7 @@
                     <strong>
                         <svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>
                         現場のコツ：ランドマークの同調性
-                    </strong><br>
+                    </strong>
                     複数のサンプルを比較する場合、「打つ順番」と「打つ位置（解剖学的相同点）」をすべての画像で完全に一致させることがプロクラステス解析の命です。例えば、1番目を「葉の先端」、2番目を「右の付け根」と決めたら、すべてのサンプルでその順序を厳守してください。順番が狂うと計算が破綻します。
                 </div>
 
@@ -387,7 +388,7 @@
                     既存の計測データから距離行列を計算し、R言語の <code>hclust</code> と数学的に完全に等価な更新式エンジンを用いて、厳密な樹状図を描画します。
                 </div>
                 <div id="rat_clust" class="rationale-text">
-                    <strong>【根拠：Lance-Williams Update Formula】</strong><br>
+                    <strong>【根拠：Lance-Williams Update Formula】</strong>
                     ・Rにおけるクラスタ解析のアルゴリズムに準拠。特にウォード法(Ward's D2)においては、初期距離を平方し、結合時に重心間の偏差平方和の増加量を最小化するように更新をかけます。最後に平方根をとることで、枝の高さ(Height)が実際の「距離」を表すR互換の樹状図となります。
                 </div>
 
@@ -469,7 +470,7 @@
                         逆フーリエ変換 形状シミュレータ
                         <div class="rationale-wrapper"><button class="rationale-btn" onclick="toggleRationale(event, 'rat_prinprint')">?</button>
                             <div id="rat_prinprint" class="rationale-text">
-                                <strong>【根拠：形状の復元】</strong><br>
+                                <strong>【根拠：形状の復元】</strong>
                                 ・主成分スコアから逆にフーリエ係数を計算し、輪郭を描き直します。灰色の点線は全体の「平均形状」を表し、青い線が現在のスライダー（またはクリックした個体）の形状です。集団内に存在する微細な「変異」が直感的に分かります。
                             </div>
                         </div>
@@ -510,7 +511,7 @@
                 
                 <div class="canvas-container" style="flex:1; min-height:280px; position:relative;">
                     <span style="position:absolute; top:10px; left:10px; font-size:11px; font-weight:bold; color:#7f8c8d;">主成分分析 (PCA) 形態空間</span>
-                    <!-- 修正: Route C 専用のPCA描画コンテナ -->
+                    <!-- Route C 専用のPCA描画コンテナ -->
                     <div id="pca-svg-container-c" style="width:100%; height:100%;"></div>
                 </div>
             </div>
@@ -1242,6 +1243,7 @@
             .style("fill", (d, i) => colorScale(i)).style("stroke", "#fff").style("cursor", "pointer")
             .attr("data-tooltip", (d, i) => `<strong>${d.name || d.id}</strong><br>PC1: ${(pcaResult.pc1[i]/pcaResult.sd1).toFixed(2)}σ<br>PC2: ${(pcaResult.pc2[i]/pcaResult.sd2).toFixed(2)}σ`)
             .on("click", function(event, d) {
+                // PCAのクリック復元はRoute Aの時のみ有効とする
                 if(containerId === 'pca-svg-container') {
                     let i = samples.indexOf(d);
                     let s1 = pcaResult.pc1[i] / pcaResult.sd1, s2 = pcaResult.pc2[i] / pcaResult.sd2;
@@ -1525,42 +1527,45 @@
         let k = gpaDataList[0].landmarks.length;
         if(k < 3) { logStatus("[ERROR] 少なくとも3点以上のランドマークが必要です。", "error"); return; }
         for(let d of gpaDataList) {
-            if(d.landmarks.length !== k) { logStatus(`[ERROR] ランドマークの数が異なります。(${gpaDataList[0].id}: ${k}点, ${d.id}: ${d.landmarks.length}点)`, "error"); return; }
+            if(d.landmarks.length !== k) { logStatus(`[ERROR] ランドマークの数が異なります。`, "error"); return; }
         }
         
         logStatus("[SYSTEM] 一般化プロクラステス解析 (GPA) を実行中...");
         try {
+            // 1. GPAの実行
             globalGPAResult = BioMathEngine.gpa(gpaDataList);
             
-            // 1. GPAの整列済みデータを1次元配列（Flatten）にしてPCAにかける
+            // 2. PCA用へデータをFlatten（平坦化）
             let flatData = globalGPAResult.alignedSamples.map(s => {
                 return s.current.reduce((acc, pt) => acc.concat(pt), []);
             });
+            
+            // 3. 主成分分析 (PCA) の実行
             globalPCA = computePCA(flatData);
             
-            // エクスポート用にグローバルサンプル配列を更新
-            globalSamples = globalGPAResult.alignedSamples.map(s => ({
-                name: s.id, features: s.current.reduce((acc, val) => acc.concat(val), []), fullCoeffs: null
+            // 4. サンプル情報の構築
+            let pcaFormatSamples = globalGPAResult.alignedSamples.map(s => ({
+                id: s.id,
+                name: s.id,
+                features: s.current.reduce((acc, pt) => acc.concat(pt), [])
             }));
             
+            globalSamples = pcaFormatSamples;
+            
+            // 5. プレビューおよびPCA散布図の描画（コンテナCを指定）
             drawGPAPreview(globalGPAResult);
-            
-            // 2. 描画用のサンプルリストを作成
-            let pcaFormatSamples = globalGPAResult.alignedSamples.map(s => ({ 
-                id: s.id, 
-                name: s.id 
-            }));
-            
-            // 3. Route C専用のコンテナ（'pca-svg-container-c'）を指定してD3.jsで描画を実行
+            // Route C 専用のコンテナ 'pca-svg-container-c' に明示的に描画させる
             drawPCA(globalPCA, pcaFormatSamples, 'pca-svg-container-c');
             
+            // 6. エクスポートボタンの有効化
             document.getElementById('copy-json-btn').disabled = false;
             document.getElementById('copy-tsv-btn').disabled = false;
             
             logStatus(`[SUCCESS] GPA および PCA 完了 (${gpaDataList.length} samples, ${k} landmarks)`);
             addLogEntry("Route C (GPA/PCA)", `ランドマーク数:${k}`, `完了 (${gpaDataList.length} samples)`);
         } catch(e) {
-            console.error(e); logStatus("[ERROR] 計算エンジンの実行中にエラーが発生しました。", "error");
+            console.error(e);
+            logStatus("[ERROR] 計算エンジンの実行中にエラーが発生しました。", "error");
         }
     }
 
