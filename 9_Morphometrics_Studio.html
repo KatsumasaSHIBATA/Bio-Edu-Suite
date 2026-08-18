@@ -235,7 +235,7 @@
                     生のチェーンコードから積分計算でフーリエ係数(a, b, c, d)を算出し、主成分分析(PCA)で次元縮約を行います。第1調和楕円に基づく数学的に厳密な標準化により、純粋な「形の変異」だけを抽出します。
                 </div>
                 <div id="rat_efa" class="rationale-text">
-                    <strong>【根拠：対称・非対称の分離による厳密な評価】</strong>
+                    <strong>【根拠：対称・非対称の分離による厳密な評価】</strong><br>
                     ・ダイコンの根形のように表裏がない対象物の場合、撮影時の「置き方」による曲がりがノイズになります。フーリエ係数を「対称 (a, d)」と「非対称 (b, c)」に分けてPCAにかけることで、「太さ・とまり具合」と「曲がり」を独立して評価できます。
                 </div>
 
@@ -256,7 +256,7 @@
                         <span>1. 画像から輪郭を抽出 (オートトレース)</span>
                         <div class="rationale-wrapper"><button class="rationale-btn" onclick="toggleRationale(event, 'rat_imgproc')">?</button>
                             <div id="rat_imgproc" class="rationale-text">
-                                <strong>【根拠：画像処理による自動抽出】</strong>
+                                <strong>【根拠：画像処理による自動抽出】</strong><br>
                                 ・ブラウザ上で画像をグレースケール化し、指定した閾値で二値化（白黒化）します。Moore-Neighborアルゴリズムにより境界ピクセルを追跡し、Freeman Chain Codeを自動生成します。
                             </div>
                         </div>
@@ -327,13 +327,13 @@
                 </div>
                 
                 <div id="rat-gpa-all" class="rationale-text">
-                    <strong>【根拠：なぜ重心を合わせるのか】</strong>
+                    <strong>【根拠：なぜ重心を合わせるのか】</strong><br>
                     ・対象物の「位置（座標上のズレ）」を排除するためです。<br>
                     ・すべてのサンプルの重心を原点 (0, 0) に移動させることで、純粋な「形」だけを比較する準備が整います。<br>
-                    <strong style="margin-top: 8px;">【根拠：重心サイズ (Centroid Size)】</strong>
+                    <strong style="margin-top: 8px;">【根拠：重心サイズ (Centroid Size)】</strong><br>
                     ・各ランドマークから重心までの距離の二乗和の平方根です。<br>
                     ・カメラの距離による「見かけの大きさ」の違いを排除するため、すべての座標をこの値で割り、大きさを数学的に「1」に統一します。<br>
-                    <strong style="margin-top: 8px;">【根拠：SVD (特異値分解) による回転】</strong>
+                    <strong style="margin-top: 8px;">【根拠：SVD (特異値分解) による回転】</strong><br>
                     ・2つの形が最もピッタリ重なる（プロクラステス距離が最小になる）回転角度を計算します。<br>
                     ・適当に回すのではなく、線形代数の「カブシュ・アルゴリズム」を用いることで、数学的に唯一の「最適解」を一瞬で導き出しています。
                 </div>
@@ -364,10 +364,10 @@
                     <div style="position: relative; border: 1px solid #bdc3c7; height: 350px; background: #e0e0e0; border-radius: 4px; overflow: hidden; cursor: crosshair; margin-top: 10px;" id="gpaCanvasWrapper">
                         <canvas id="gpaCanvas" style="position: absolute; top:0; left:0; width:100%; height:100%;"></canvas>
                         
-                        <div style="position: absolute; bottom: 10px; right: 10px; display: flex; flex-direction: column; gap: 5px; background: rgba(255,255,255,0.9); padding: 4px; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-                            <button class="btn btn-secondary" onclick="gpaZoom(1.2)" data-tooltip="拡大" style="min-width: 32px; padding: 4px;">+</button>
-                            <button class="btn btn-secondary" onclick="gpaZoom(1/1.2)" data-tooltip="縮小" style="min-width: 32px; padding: 4px;">-</button>
-                            <button class="btn btn-secondary" onclick="gpaResetView()" data-tooltip="初期表示に戻す" style="min-width: 32px; padding: 4px; font-size: 10px;">Reset</button>
+                        <div style="position: absolute; bottom: 10px; right: 10px; display: flex; flex-direction: column; align-items: stretch; gap: 5px; background: rgba(255,255,255,0.9); padding: 6px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                            <button class="btn btn-secondary" onclick="gpaZoom(1.2)" data-tooltip="拡大" style="padding: 4px; width: 100%; box-sizing: border-box;">+</button>
+                            <button class="btn btn-secondary" onclick="gpaZoom(1/1.2)" data-tooltip="縮小" style="padding: 4px; width: 100%; box-sizing: border-box;">-</button>
+                            <button class="btn btn-secondary" onclick="gpaResetView()" data-tooltip="初期表示に戻す" style="padding: 4px; font-size: 10px; width: 100%; box-sizing: border-box;">Reset</button>
                         </div>
                     </div>
                 </div>
@@ -388,7 +388,7 @@
                     既存の計測データから距離行列を計算し、R言語の <code>hclust</code> と数学的に完全に等価な更新式エンジンを用いて、厳密な樹状図を描画します。
                 </div>
                 <div id="rat_clust" class="rationale-text">
-                    <strong>【根拠：Lance-Williams Update Formula】</strong>
+                    <strong>【根拠：Lance-Williams Update Formula】</strong><br>
                     ・Rにおけるクラスタ解析のアルゴリズムに準拠。特にウォード法(Ward's D2)においては、初期距離を平方し、結合時に重心間の偏差平方和の増加量を最小化するように更新をかけます。最後に平方根をとることで、枝の高さ(Height)が実際の「距離」を表すR互換の樹状図となります。
                 </div>
 
@@ -470,7 +470,7 @@
                         逆フーリエ変換 形状シミュレータ
                         <div class="rationale-wrapper"><button class="rationale-btn" onclick="toggleRationale(event, 'rat_prinprint')">?</button>
                             <div id="rat_prinprint" class="rationale-text">
-                                <strong>【根拠：形状の復元】</strong>
+                                <strong>【根拠：形状の復元】</strong><br>
                                 ・主成分スコアから逆にフーリエ係数を計算し、輪郭を描き直します。灰色の点線は全体の「平均形状」を表し、青い線が現在のスライダー（またはクリックした個体）の形状です。集団内に存在する微細な「変異」が直感的に分かります。
                             </div>
                         </div>
@@ -504,9 +504,9 @@
             
             <!-- Route C (GPA) ビュー -->
             <div id="viz-route-c" style="display:none; flex-direction:column; flex:1; gap:10px;">
-                <div class="canvas-container" style="flex-direction:column; align-items: stretch; padding: 10px 15px; flex: none; height: 300px;">
+                <div class="canvas-container" style="flex-direction:column; align-items: stretch; padding: 10px 15px; flex: none; min-height: 300px;">
                     <span style="font-size:12px; font-weight:bold; color:#7f8c8d; margin-bottom:5px;">GPA 重ね合わせプレビュー</span>
-                    <canvas id="gpa-preview-canvas" style="flex:1; border:1px dashed #bdc3c7; border-radius:4px;"></canvas>
+                    <canvas id="gpa-preview-canvas" style="flex:1; border:1px dashed #bdc3c7; border-radius:4px; min-height:240px;"></canvas>
                 </div>
                 
                 <div class="canvas-container" style="flex:1; min-height:280px; position:relative;">
@@ -881,6 +881,8 @@
         
         if(route === 'C') {
             resizeGPACanvas(); drawGPACanvas();
+            // 切替時、プレビューキャンバスがリサイズされるように再度呼び出す
+            if(globalGPAResult) drawGPAPreview(globalGPAResult);
         }
     }
 
@@ -1622,42 +1624,56 @@
     function drawGPAPreview(gpaRes) {
         const canvas = document.getElementById('gpa-preview-canvas');
         if(!canvas) return;
-        const ctx = canvas.getContext('2d');
-        const w = canvas.parentElement.clientWidth - 30, h = 250;
-        canvas.width = w; canvas.height = h;
-        ctx.clearRect(0, 0, w, h);
 
-        let allPts = gpaRes.alignedSamples.map(s => s.current).flat();
-        let minX = Math.min(...allPts.map(p=>p[0])), maxX = Math.max(...allPts.map(p=>p[0]));
-        let minY = Math.min(...allPts.map(p=>p[1])), maxY = Math.max(...allPts.map(p=>p[1]));
-        
-        let padX = (maxX - minX)*0.2 || 0.1, padY = (maxY - minY)*0.2 || 0.1;
-        let scale = Math.min(w / (maxX - minX + padX*2), h / (maxY - minY + padY*2));
-        let cx = w/2, cy = h/2;
-        
-        function tx(x) { return cx + x * scale; }
-        function ty(y) { return cy + y * scale; }
-
-        ctx.fillStyle = 'rgba(52, 152, 219, 0.4)';
-        for(let s of gpaRes.alignedSamples) {
-            for(let pt of s.current) {
-                ctx.beginPath(); ctx.arc(tx(pt[0]), ty(pt[1]), 3, 0, Math.PI*2); ctx.fill();
+        // ★レイアウト確定のタイミングを待って描画（真っ白・見切れ防止のキモ）
+        window.requestAnimationFrame(() => {
+            const rect = canvas.getBoundingClientRect();
+            let w = rect.width;
+            let h = rect.height;
+            
+            // サイズが0の場合（非表示時など）のフォールバック
+            if (h <= 1 || w <= 1) {
+                h = 240; // min-heightで設定した値
+                w = canvas.parentElement.clientWidth - 30; // パディング分引く
             }
-        }
-        
-        ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 2; ctx.beginPath();
-        for(let i=0; i<gpaRes.consensus.length; i++) {
-            let pt = gpaRes.consensus[i];
-            if(i===0) ctx.moveTo(tx(pt[0]), ty(pt[1])); else ctx.lineTo(tx(pt[0]), ty(pt[1]));
-        }
-        ctx.closePath(); ctx.stroke();
-        
-        ctx.fillStyle = '#c0392b';
-        for(let i=0; i<gpaRes.consensus.length; i++) {
-            let pt = gpaRes.consensus[i];
-            ctx.beginPath(); ctx.arc(tx(pt[0]), ty(pt[1]), 4, 0, Math.PI*2); ctx.fill();
-            ctx.font = '10px sans-serif'; ctx.fillText((i+1).toString(), tx(pt[0])+6, ty(pt[1])-6);
-        }
+
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, w, h);
+
+            let allPts = gpaRes.alignedSamples.map(s => s.current).flat();
+            let minX = Math.min(...allPts.map(p=>p[0])), maxX = Math.max(...allPts.map(p=>p[0]));
+            let minY = Math.min(...allPts.map(p=>p[1])), maxY = Math.max(...allPts.map(p=>p[1]));
+            
+            let padX = (maxX - minX)*0.2 || 0.1, padY = (maxY - minY)*0.2 || 0.1;
+            let scale = Math.min(w / (maxX - minX + padX*2), h / (maxY - minY + padY*2));
+            let cx = w/2, cy = h/2;
+            
+            function tx(x) { return cx + x * scale; }
+            function ty(y) { return cy + y * scale; }
+
+            ctx.fillStyle = 'rgba(52, 152, 219, 0.4)';
+            for(let s of gpaRes.alignedSamples) {
+                for(let pt of s.current) {
+                    ctx.beginPath(); ctx.arc(tx(pt[0]), ty(pt[1]), 3, 0, Math.PI*2); ctx.fill();
+                }
+            }
+            
+            ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 2; ctx.beginPath();
+            for(let i=0; i<gpaRes.consensus.length; i++) {
+                let pt = gpaRes.consensus[i];
+                if(i===0) ctx.moveTo(tx(pt[0]), ty(pt[1])); else ctx.lineTo(tx(pt[0]), ty(pt[1]));
+            }
+            ctx.closePath(); ctx.stroke();
+            
+            ctx.fillStyle = '#c0392b';
+            for(let i=0; i<gpaRes.consensus.length; i++) {
+                let pt = gpaRes.consensus[i];
+                ctx.beginPath(); ctx.arc(tx(pt[0]), ty(pt[1]), 4, 0, Math.PI*2); ctx.fill();
+                ctx.font = '10px sans-serif'; ctx.fillText((i+1).toString(), tx(pt[0])+6, ty(pt[1])-6);
+            }
+        });
     }
 
     function runRouteB() {
