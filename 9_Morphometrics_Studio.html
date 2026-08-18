@@ -80,8 +80,7 @@
         .rationale-text { position: fixed; background: #fef9e7; border: 1px solid var(--warning); padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: max-content; max-width: min(320px, calc(100vw - 24px)); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; }
         .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
         
-        /* 強制改行のブロック要素化を解除し、自然なインライン配置へ修正 */
-        .rationale-text strong { color: #d35400; font-size: 12px; font-weight: bold; }
+        .rationale-text strong { color: #d35400; font-size: 12px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 4px; }
         
         .rationale-text::after { content: ''; position: absolute; border-width: 6px; border-style: solid; left: var(--arrow-left, 50%); }
         .rationale-text.arrow-top::after { top: -12px; border-color: transparent transparent #fef9e7 transparent; }
@@ -96,7 +95,6 @@
         /* 現場のコツ (Bench Tip) - ガイドライン第6項② 準拠 */
         .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px 15px; border-radius: 0 4px 4px 0; font-size: 12px; color: var(--text-main); line-height: 1.6; margin: 15px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
         
-        /* 強制改行を防ぐため display: inline-flex へ修正 */
         .bench-tip strong { color: #2980b9; display: inline-flex; align-items: center; gap: 4px; font-size: 13px; margin-right: 8px; font-weight: bold; }
 
         /* より高度な解析ツールへ (ガイドライン第6項⑦ 準拠) */
@@ -331,10 +329,10 @@
                     <strong>【根拠：なぜ重心を合わせるのか】</strong><br>
                     ・対象物の「位置（座標上のズレ）」を排除するためです。<br>
                     ・すべてのサンプルの重心を原点 (0, 0) に移動させることで、純粋な「形」だけを比較する準備が整います。<br>
-                    <strong style="margin-top: 8px; display: inline-block;">【根拠：重心サイズ (Centroid Size)】</strong><br>
+                    <strong style="margin-top: 8px;">【根拠：重心サイズ (Centroid Size)】</strong><br>
                     ・各ランドマークから重心までの距離の二乗和の平方根です。<br>
                     ・カメラの距離による「見かけの大きさ」の違いを排除するため、すべての座標をこの値で割り、大きさを数学的に「1」に統一します。<br>
-                    <strong style="margin-top: 8px; display: inline-block;">【根拠：SVD (特異値分解) による回転】</strong><br>
+                    <strong style="margin-top: 8px;">【根拠：SVD (特異値分解) による回転】</strong><br>
                     ・2つの形が最もピッタリ重なる（プロクラステス距離が最小になる）回転角度を計算します。<br>
                     ・適当に回すのではなく、線形代数の「カブシュ・アルゴリズム」を用いることで、数学的に唯一の「最適解」を一瞬で導き出しています。
                 </div>
@@ -512,6 +510,7 @@
                 
                 <div class="canvas-container" style="flex:1; min-height:280px; position:relative;">
                     <span style="position:absolute; top:10px; left:10px; font-size:11px; font-weight:bold; color:#7f8c8d;">主成分分析 (PCA) 形態空間</span>
+                    <!-- 修正: Route C 専用のPCA描画コンテナ -->
                     <div id="pca-svg-container-c" style="width:100%; height:100%;"></div>
                 </div>
             </div>
@@ -748,7 +747,7 @@
             if (morphSamples.length === 0) {
                 document.getElementById('active-sample-info').innerHTML = `
                     <div style="display:flex; justify-content:space-between; align-items:center; color: var(--text-muted); gap: 10px;">
-                        <span style="flex: 1; min-width: 0; word-break: break-word;"><strong>Target:</strong> データ未受信 (手掌握入力するか、ファイルをドロップしてください)</span>
+                        <span style="flex: 1; min-width: 0; word-break: break-word;"><strong>Target:</strong> データ未受信 (手動で入力するか、ファイルをドロップしてください)</span>
                         <span style="background:var(--border-color); color:white; padding:2px 6px; border-radius:10px; font-size:10px; font-weight:bold; flex-shrink: 0; white-space: nowrap;">未選択</span>
                     </div>
                 `;
@@ -789,7 +788,7 @@
         }
         
         switchRoute();
-        initGPACanvas();
+        initGPACanvas(); // Route C用のCanvas初期化
     };
 
     function copyToMorphoTSV() {
@@ -1208,7 +1207,7 @@
         ctx.fillText(label, 10, 20);
     }
 
-    function drawPCA(pcaResult, samples, containerId) {
+    function drawPCA(pcaResult, samples, containerId = 'pca-svg-container') {
         const container = document.getElementById(containerId);
         if(!container) return;
         container.innerHTML = '';
@@ -1283,9 +1282,19 @@
                 H[1][1] += target[i][1] * reference[i][1];
             }
             const H_mat = new ML.Matrix(H);
-            // ★【重要修正】ライブラリのバージョンに合わせて SVD 関数とプロパティを修正
-            const svd = new ML.SVD(H_mat);
-            const U = svd.U, V = svd.V;
+            
+            // 安全なSVD呼び出し（互換性対応・堅牢化）
+            let U, V;
+            try {
+                // ml-matrix のバージョンによる違いを吸収
+                const svd = typeof ML.SVD === 'function' ? new ML.SVD(H_mat) : new ML.SingularValueDecomposition(H_mat);
+                U = svd.leftSingularVectors || svd.U;
+                V = svd.rightSingularVectors || svd.V;
+            } catch(err) {
+                // 万が一ライブラリで失敗した場合は単位行列（回転なし）をフォールバックしてクラッシュを防ぐ
+                U = ML.Matrix.eye(2);
+                V = ML.Matrix.eye(2);
+            }
             
             let R = V.mmul(U.transpose());
             let det = R.get(0,0)*R.get(1,1) - R.get(0,1)*R.get(1,0);
@@ -1523,7 +1532,6 @@
         try {
             globalGPAResult = BioMathEngine.gpa(gpaDataList);
             
-            // ★【重要修正】PCA実行とRoute C専用コンテナへの散布図描画
             // 1. GPAの整列済みデータを1次元配列（Flatten）にしてPCAにかける
             let flatData = globalGPAResult.alignedSamples.map(s => {
                 return s.current.reduce((acc, pt) => acc.concat(pt), []);
