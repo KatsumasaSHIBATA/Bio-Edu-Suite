@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>⑨ Morphometrics Studio | Bio-Edu Suite</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://www.lactame.com/lib/ml/6.0.0/ml.min.js"></script>
     <style>
         :root {
             /* 共通ベースカラー */
@@ -78,7 +79,10 @@
         .rationale-btn:hover { transform: scale(1.1); filter: brightness(1.2); }
         .rationale-text { position: fixed; background: #fef9e7; border: 1px solid var(--warning); padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: max-content; max-width: min(320px, calc(100vw - 24px)); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; }
         .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
-        .rationale-text strong { color: #d35400; display: block; margin-bottom: 4px; font-size: 12px; }
+        
+        /* 強制改行のブロック要素化を解除し、自然なインライン配置へ修正 */
+        .rationale-text strong { color: #d35400; font-size: 12px; font-weight: bold; }
+        
         .rationale-text::after { content: ''; position: absolute; border-width: 6px; border-style: solid; left: var(--arrow-left, 50%); }
         .rationale-text.arrow-top::after { top: -12px; border-color: transparent transparent #fef9e7 transparent; }
         .rationale-text.arrow-bottom::after { bottom: -12px; border-color: #fef9e7 transparent transparent transparent; }
@@ -87,12 +91,13 @@
         .rationale-text.arrow-bottom::before { bottom: -14px; border-color: var(--warning) transparent transparent transparent; }
 
         .edu-panel { padding: 12px 15px; border-radius: 6px; font-size: 12px; line-height: 1.5; margin-bottom: 5px; }
-        /* ガイドライン第6項② 準拠: border-leftを消去 */
         .rationale-panel { background-color: var(--phase-color-bg); color: var(--primary); }
 
         /* 現場のコツ (Bench Tip) - ガイドライン第6項② 準拠 */
         .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px 15px; border-radius: 0 4px 4px 0; font-size: 12px; color: var(--text-main); line-height: 1.6; margin: 15px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-        .bench-tip strong { color: #2980b9; display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 13px; }
+        
+        /* 強制改行を防ぐため display: inline-flex へ修正 */
+        .bench-tip strong { color: #2980b9; display: inline-flex; align-items: center; gap: 4px; font-size: 13px; margin-right: 8px; font-weight: bold; }
 
         /* より高度な解析ツールへ (ガイドライン第6項⑦ 準拠) */
         .step-up-card { background: #f8f9fa; border: 1px solid #d1d5db; padding: 20px; border-radius: 8px; margin-top: 25px; color: #2c3e50; box-shadow: 0 2px 4px rgba(0,0,0,0.02); width: 100%; box-sizing: border-box; }
@@ -103,8 +108,8 @@
         .step-up-card p span:first-of-type { margin-top: 6px; }
 
         /* 入力フォーム群 (ガイドライン第11項③ 準拠) */
-        .algo-selector { display: flex; gap: 5px; background: #ecf0f1; padding: 4px; border-radius: 4px; margin-bottom: 5px; align-items: center; }
-        .algo-selector label { flex: 1; text-align: center; padding: 6px; font-size: 11px; font-weight: bold; color: #7f8c8d; cursor: pointer; border-radius: 3px; transition: 0.2s; white-space: nowrap; }
+        .algo-selector { display: flex; gap: 5px; background: #ecf0f1; padding: 4px; border-radius: 4px; margin-bottom: 5px; align-items: center; flex-wrap: wrap; }
+        .algo-selector label { flex: 1 1 auto; text-align: center; padding: 6px; font-size: 11px; font-weight: bold; color: #7f8c8d; cursor: pointer; border-radius: 3px; transition: 0.2s; white-space: normal; line-height: 1.2; word-break: keep-all; }
         .algo-selector input { display: none; }
         .algo-selector input:checked + label { background: var(--phase-color); color: white; }
 
@@ -125,8 +130,8 @@
         .btn:active:not(:disabled) { transform: scale(0.98); }
         .btn-primary { background: var(--phase-color); color: white; border-color: var(--phase-color-hover); }
         .btn-success { background: var(--success); color: white; border-color: #1e8449; }
+        .btn-secondary { background: #fdfefe; color: var(--primary); border-color: #bdc3c7; }
         
-        /* ガイドライン違反のグレー化を修正: 白背景＋グレー文字に統一 */
         .btn:disabled { background: #fdfefe !important; border-color: #bdc3c7 !important; color: #95a5a6 !important; opacity: 1; cursor: not-allowed; box-shadow: none !important; filter: none !important; transform: none !important; }
 
         /* スライダーUI */
@@ -174,7 +179,7 @@
         @media screen and (max-width: 768px) {
             .algo-selector, #route-a-controls .drop-zone + div > div:first-child, .slider-group { flex-direction: column !important; align-items: stretch !important; gap: 10px; }
             .btn, select { width: 100% !important; box-sizing: border-box; }
-            .canvas-container, .log-table, .tree-card .card-body, #pca-svg-container, #tree-svg-container, #viz-route-a {
+            .canvas-container, .log-table, .tree-card .card-body, #pca-svg-container, #tree-svg-container, #viz-route-a, #viz-route-c {
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
             }
@@ -192,7 +197,7 @@
                 </svg>
                 Morphometrics Studio
             </h1>
-            <p>Bio-Edu Suite: Phase 3 / Strict EFA & Lance-Williams Clustering</p>
+            <p>Bio-Edu Suite: Phase 3 / EFA, Clustering & Procrustes Analysis</p>
         </div>
         <div class="version-badge">v32.1</div>
     </div>
@@ -211,9 +216,14 @@
                 <!-- JSで埋め込み -->
             </div>
 
+            <!-- Route選択UI: A -> C -> B の順序へ最適化 -->
             <div class="algo-selector" data-tooltip="データに合わせて解析ルートを切り替えます">
                 <input type="radio" id="route_a" name="route" value="A" checked onchange="switchRoute()">
                 <label for="route_a">Route A (画像/EFA ▶︎ PCA)</label>
+                
+                <input type="radio" id="route_c" name="route" value="C" onchange="switchRoute()">
+                <label for="route_c">Route C (ランドマーク/GPA ▶︎ PCA)</label>
+                
                 <input type="radio" id="route_b" name="route" value="B" onchange="switchRoute()">
                 <label for="route_b">Route B (計測値 ▶︎ 樹状図)</label>
             </div>
@@ -226,7 +236,7 @@
                     生のチェーンコードから積分計算でフーリエ係数(a, b, c, d)を算出し、主成分分析(PCA)で次元縮約を行います。第1調和楕円に基づく数学的に厳密な標準化により、純粋な「形の変異」だけを抽出します。
                 </div>
                 <div id="rat_efa" class="rationale-text">
-                    <strong>【根拠：対称・非対称の分離による厳密な評価】</strong>
+                    <strong>【根拠：対称・非対称の分離による厳密な評価】</strong><br>
                     ・ダイコンの根形のように表裏がない対象物の場合、撮影時の「置き方」による曲がりがノイズになります。フーリエ係数を「対称 (a, d)」と「非対称 (b, c)」に分けてPCAにかけることで、「太さ・とまり具合」と「曲がり」を独立して評価できます。
                 </div>
 
@@ -247,7 +257,7 @@
                         <span>1. 画像から輪郭を抽出 (オートトレース)</span>
                         <div class="rationale-wrapper"><button class="rationale-btn" onclick="toggleRationale(event, 'rat_imgproc')">?</button>
                             <div id="rat_imgproc" class="rationale-text">
-                                <strong>【根拠：画像処理による自動抽出】</strong>
+                                <strong>【根拠：画像処理による自動抽出】</strong><br>
                                 ・ブラウザ上で画像をグレースケール化し、指定した閾値で二値化（白黒化）します。Moore-Neighborアルゴリズムにより境界ピクセルを追跡し、Freeman Chain Codeを自動生成します。
                             </div>
                         </div>
@@ -263,7 +273,7 @@
                             </div>
                             <div style="display: flex; gap: 5px; flex-wrap: wrap;">
                                 <input type="text" id="imgSampleName" placeholder="Sample ID を入力" style="flex: 1; min-width: 120px;">
-                                <button class="btn btn-primary" onclick="extractAndAppend()" data-tooltip="画像から輪郭を抽出しチェーンコードを生成します">
+                                <button class="btn btn-secondary" onclick="extractAndAppend()" data-tooltip="画像から輪郭を抽出しチェーンコードを生成します">
                                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                                     抽出
                                 </button>
@@ -300,7 +310,74 @@
                 </div>
 
                 <div style="display: flex; gap: 10px; justify-content: space-between;">
-                    <button class="btn btn-primary" style="flex: 1;" onclick="runStrictMathEFA()" data-tooltip="楕円フーリエ解析と主成分分析を実行します">EFA & PCA 実行</button>
+                    <button class="btn btn-primary" style="flex: 1;" onclick="runStrictMathEFA()" data-tooltip="楕円フーリエ解析と主成分分析を実行します">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        EFA & PCA 実行
+                    </button>
+                </div>
+            </div>
+
+            <!-- ================= Route C コントロール ================= -->
+            <div id="route-c-controls" style="display: none;">
+                
+                <!-- GPAの根拠を1つに美しく集約 -->
+                <div class="edu-panel rationale-panel">
+                    <strong>一般化プロクラステス解析 (GPA)</strong>
+                    <button class="rationale-btn" onclick="toggleRationale(event, 'rat-gpa-all')">?</button><br>
+                    画像のランドマーク座標から位置・回転・スケールの違いを数学的に除去し、純粋な「形」の変異を抽出します。
+                </div>
+                
+                <div id="rat-gpa-all" class="rationale-text">
+                    <strong>【根拠：なぜ重心を合わせるのか】</strong><br>
+                    ・対象物の「位置（座標上のズレ）」を排除するためです。<br>
+                    ・すべてのサンプルの重心を原点 (0, 0) に移動させることで、純粋な「形」だけを比較する準備が整います。<br>
+                    <strong style="margin-top: 8px; display: inline-block;">【根拠：重心サイズ (Centroid Size)】</strong><br>
+                    ・各ランドマークから重心までの距離の二乗和の平方根です。<br>
+                    ・カメラの距離による「見かけの大きさ」の違いを排除するため、すべての座標をこの値で割り、大きさを数学的に「1」に統一します。<br>
+                    <strong style="margin-top: 8px; display: inline-block;">【根拠：SVD (特異値分解) による回転】</strong><br>
+                    ・2つの形が最もピッタリ重なる（プロクラステス距離が最小になる）回転角度を計算します。<br>
+                    ・適当に回すのではなく、線形代数の「カブシュ・アルゴリズム」を用いることで、数学的に唯一の「最適解」を一瞬で導き出しています。
+                </div>
+                
+                <!-- 現場のコツ (ランドマークの同調性) -->
+                <div class="bench-tip">
+                    <strong>
+                        <svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>
+                        現場のコツ：ランドマークの同調性
+                    </strong><br>
+                    複数のサンプルを比較する場合、「打つ順番」と「打つ位置（解剖学的相同点）」をすべての画像で完全に一致させることがプロクラステス解析の命です。例えば、1番目を「葉の先端」、2番目を「右の付け根」と決めたら、すべてのサンプルでその順序を厳守してください。順番が狂うと計算が破綻します。
+                </div>
+
+                <div style="background: #fafbfc; border: 1px solid #bdc3c7; border-radius: 4px; padding: 10px; margin-bottom: 5px;">
+                    <span style="font-size: 13px; font-weight: bold; color: #34495e; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                        <span>1. ランドマークの取得</span>
+                    </span>
+                    <input type="file" id="gpaImgUpload" accept="image/*" multiple style="display: none;" onchange="loadGPAImages(event)">
+                    <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                        <button class="btn btn-secondary" onclick="document.getElementById('gpaImgUpload').click()" data-tooltip="複数画像を選択できます">画像を選択</button>
+                        <select id="gpaSampleSelector" style="flex: 1;" onchange="switchGPASample()">
+                            <option value="">-- サンプルを選択 --</option>
+                        </select>
+                        <button class="btn btn-secondary" onclick="clearCurrentLandmarks()">クリア</button>
+                    </div>
+                    
+                    <!-- 美しく統合されたズームオーバーレイUI -->
+                    <div style="position: relative; border: 1px solid #bdc3c7; height: 350px; background: #e0e0e0; border-radius: 4px; overflow: hidden; cursor: crosshair; margin-top: 10px;" id="gpaCanvasWrapper">
+                        <canvas id="gpaCanvas" style="position: absolute; top:0; left:0; width:100%; height:100%;"></canvas>
+                        
+                        <div style="position: absolute; bottom: 10px; right: 10px; display: flex; flex-direction: column; gap: 5px; background: rgba(255,255,255,0.9); padding: 4px; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                            <button class="btn btn-secondary" onclick="gpaZoom(1.2)" data-tooltip="拡大" style="min-width: 32px; padding: 4px;">+</button>
+                            <button class="btn btn-secondary" onclick="gpaZoom(1/1.2)" data-tooltip="縮小" style="min-width: 32px; padding: 4px;">-</button>
+                            <button class="btn btn-secondary" onclick="gpaResetView()" data-tooltip="初期表示に戻す" style="min-width: 32px; padding: 4px; font-size: 10px;">Reset</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 10px; justify-content: space-between; margin-top: 10px;">
+                    <button class="btn btn-primary" style="flex: 1;" onclick="runGPAAndPCA()">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        GPA & PCA 実行
+                    </button>
                 </div>
             </div>
 
@@ -312,7 +389,7 @@
                     既存の計測データから距離行列を計算し、R言語の <code>hclust</code> と数学的に完全に等価な更新式エンジンを用いて、厳密な樹状図を描画します。
                 </div>
                 <div id="rat_clust" class="rationale-text">
-                    <strong>【根拠：Lance-Williams Update Formula】</strong>
+                    <strong>【根拠：Lance-Williams Update Formula】</strong><br>
                     ・Rにおけるクラスタ解析のアルゴリズムに準拠。特にウォード法(Ward's D2)においては、初期距離を平方し、結合時に重心間の偏差平方和の増加量を最小化するように更新をかけます。最後に平方根をとることで、枝の高さ(Height)が実際の「距離」を表すR互換の樹状図となります。
                 </div>
 
@@ -346,13 +423,24 @@
                     </select>
                 </div>
                 <div style="display: flex; gap: 10px; justify-content: space-between;">
-                    <button class="btn btn-primary" style="flex: 1;" onclick="runRouteB()">階層的クラスタ解析を実行</button>
+                    <button class="btn btn-primary" style="flex: 1;" onclick="runRouteB()">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        階層的クラスタ解析を実行
+                    </button>
                 </div>
             </div>
             
-            <!-- ガイドライン v32.0 準拠: Route B 時の安全装置として非表示制御を行うコンテナ -->
+            <!-- エクスポートボタンコンテナ: 重複・不要ボタンを排除し美しく整理 -->
             <div id="export-buttons-container" style="margin-top: 10px; display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap;">
-                <button class="btn" id="copy-tsv-btn" onclick="copyToMorphoTSV()" disabled data-tooltip="統計解析(Phase 5)向けのTSV形式でコピーします">
+                
+                <!-- Route B 用連携ボタン (⑩統合分類へ流し込むためのNewick形式出力) -->
+                <button class="btn btn-secondary" id="btn-copy-newick" onclick="copyNewick()" disabled style="display:none;" data-tooltip="統合分類(Phase 4)向けのNewick形式でコピーします">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                    ⑩向けNewick形式をコピー
+                </button>
+
+                <!-- Route A, C 共通のPCA連携出力ボタン -->
+                <button class="btn btn-secondary" id="copy-tsv-btn" onclick="copyToMorphoTSV()" disabled data-tooltip="統計解析(Phase 5)向けのTSV形式でコピーします">
                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
                     ⑪向け形態TSVをコピー
                 </button>
@@ -383,7 +471,7 @@
                         逆フーリエ変換 形状シミュレータ
                         <div class="rationale-wrapper"><button class="rationale-btn" onclick="toggleRationale(event, 'rat_prinprint')">?</button>
                             <div id="rat_prinprint" class="rationale-text">
-                                <strong>【根拠：形状の復元】</strong>
+                                <strong>【根拠：形状の復元】</strong><br>
                                 ・主成分スコアから逆にフーリエ係数を計算し、輪郭を描き直します。灰色の点線は全体の「平均形状」を表し、青い線が現在のスライダー（またはクリックした個体）の形状です。集団内に存在する微細な「変異」が直感的に分かります。
                             </div>
                         </div>
@@ -402,7 +490,7 @@
                                 <input type="range" id="pc2-slider" min="-3" max="3" step="0.1" value="0" oninput="updateShapeFromSliders()">
                                 <span class="slider-val" id="pc2-val">0.0&sigma;</span>
                             </div>
-                            <button class="btn" style="width:100%; margin-top:5px; font-size:11px;" onclick="resetSliders()" data-tooltip="スライダーを初期位置(平均形状)に戻します">リセット</button>
+                            <button class="btn btn-secondary" style="width:100%; margin-top:5px; font-size:11px;" onclick="resetSliders()" data-tooltip="スライダーを初期位置(平均形状)に戻します">リセット</button>
                         </div>
                     </div>
                 </div>
@@ -412,6 +500,19 @@
                     <span style="position:absolute; top:10px; left:10px; font-size:11px; font-weight:bold; color:#7f8c8d;">主成分分析 (PCA) 形態空間</span>
                     <span style="position:absolute; top:25px; left:10px; font-size:10px; color:#95a5a6;">※ドットをクリックすると、スライダーが連動しそのサンプルの形を復元します</span>
                     <div id="pca-svg-container" style="width:100%; height:100%;"></div>
+                </div>
+            </div>
+            
+            <!-- Route C (GPA) ビュー -->
+            <div id="viz-route-c" style="display:none; flex-direction:column; flex:1; gap:10px;">
+                <div class="canvas-container" style="flex-direction:column; align-items: stretch; padding: 10px 15px; flex: none; height: 300px;">
+                    <span style="font-size:12px; font-weight:bold; color:#7f8c8d; margin-bottom:5px;">GPA 重ね合わせプレビュー</span>
+                    <canvas id="gpa-preview-canvas" style="flex:1; border:1px dashed #bdc3c7; border-radius:4px;"></canvas>
+                </div>
+                
+                <div class="canvas-container" style="flex:1; min-height:280px; position:relative;">
+                    <span style="position:absolute; top:10px; left:10px; font-size:11px; font-weight:bold; color:#7f8c8d;">主成分分析 (PCA) 形態空間</span>
+                    <div id="pca-svg-container-c" style="width:100%; height:100%;"></div>
                 </div>
             </div>
 
@@ -446,16 +547,16 @@
         </div>
     </div>
     
-    <!-- ガイドライン第6項⑦ 準拠: より高度な解析ツールへ -->
+    <!-- ガイドライン第6項⑦ 準拠: より高度な解析ツールへ (シームレス統合版) -->
     <div class="step-up-card">
         <h3>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line>
-            </svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg> 
             より高度な解析ツールへ
         </h3>
         <p>
-            より高度なノイズ除去やバッチ処理（100枚の画像を一気に処理するなど）を行いたい場合は、プロの研究者が愛用する『ImageJ / Fiji』や、岩田先生が開発した『SHAPE』パッケージを使ってみよう。
+            より高度なノイズ除去やバッチ処理（100枚の画像を一気に処理するなど）を行いたい場合は、プロの研究者が愛用する『ImageJ / Fiji』や、岩田先生が開発した『SHAPE』パッケージを使ってみよう。さらに、幾何学的形態測定学の本格的な解析には以下のツールが活用されています。<br>
+            <span>・<strong>tpsシリーズ (F. J. Rohlf)</strong>: 幾何学的形態測定学のデファクトスタンダード。tpsDig2（座標取得）や tpsRelw（主成分分析）などを組み合わせて解析します。</span>
+            <span>・<strong>R言語 (geomorph パッケージ)</strong>: 環境データや遺伝データと統合したより複雑な多変量解析や、3Dランドマークデータの処理が可能です。</span>
         </p>
     </div>
 </div>
@@ -465,7 +566,9 @@
 <div class="footer">&copy; 2026 Bio-Edu Suite v32.1 | Developed for Bioinformatics & Wet-Lab Education</div>
 
 <script>
-    // --- ツールチップ & ポップオーバー (UI/UX 統合 v31.0 準拠) ---
+    // ==========================================
+    // 共通UI / UX コントロール
+    // ==========================================
     const tooltip = document.getElementById('d3-tooltip');
 
     document.body.addEventListener('mouseover', (e) => {
@@ -504,14 +607,12 @@
     
     document.addEventListener('scroll', () => { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; }, true);
 
-    // ★ ガイドライン v31.0 準拠: 動的幅算出・フリップ計算付き表示ロジック
     function toggleRationale(event, id) {
         event.stopPropagation();
         const el = document.getElementById(id);
         const btn = event.currentTarget;
         const isShown = el.classList.contains('show');
         
-        // 他のポップオーバーを閉じる
         document.querySelectorAll('.rationale-text').forEach(e => {
             e.classList.remove('show', 'arrow-top', 'arrow-bottom');
         });
@@ -521,7 +622,6 @@
             el.style.top = '0px'; el.style.left = '0px'; 
             el.classList.add('show');
             
-            // フリップ計算による絶対配置 (offsetWidthを用いた親要素追従)
             const elHeight = el.offsetHeight;
             const elWidth  = el.offsetWidth;
             const rect = btn.getBoundingClientRect();
@@ -529,7 +629,6 @@
             let topPos = rect.bottom + 12;
             let arrowClass = 'arrow-top';
             
-            // 画面下端に見切れる場合は上側に配置
             if (rect.bottom + elHeight + 20 > window.innerHeight) {
                 topPos = rect.top - elHeight - 12;
                 arrowClass = 'arrow-bottom';
@@ -537,13 +636,11 @@
             el.classList.add(arrowClass);
             el.style.top = topPos + 'px';
 
-            // 左右位置の調整 (offsetWidth を使用してはみ出し防止)
             let leftPos = rect.left - (elWidth / 2) + (rect.width / 2);
             if (leftPos + elWidth > window.innerWidth) leftPos = window.innerWidth - elWidth - 10;
             if (leftPos < 10) leftPos = 10;
             el.style.left = leftPos + 'px';
 
-            // 尻尾の水平位置をボタン中央に合わせるカスタムプロパティ
             const arrowOffset = rect.left - leftPos + (rect.width / 2) - 6;
             el.style.setProperty('--arrow-left', arrowOffset + 'px');
         }
@@ -563,7 +660,6 @@
         });
     }, true);
 
-    // --- トースト通知（ガイドライン第5項⑤ 準拠 / alert() は使用禁止） ---
     function showToast(msg, type = "") {
         const toast = document.getElementById('toast');
         if (!toast) return;
@@ -573,7 +669,7 @@
         else if (type === "warning") className += " warning";
         else if (type === "info") className += " info";
         toast.className = "";
-        void toast.offsetWidth; // リフロー
+        void toast.offsetWidth; 
         toast.className = className;
         setTimeout(() => { toast.classList.remove("show"); }, 3000);
     }
@@ -589,7 +685,6 @@
         }
     }
 
-    // --- 解析ログ機能 ---
     let analysisLogs = [];
     function addLogEntry(route, param, resultText) {
         let runId = analysisLogs.length + 1;
@@ -608,9 +703,9 @@
         tbody.parentElement.parentElement.scrollTop = tbody.parentElement.parentElement.scrollHeight;
     }
 
-    // --- ドラッグ＆ドロップ機能 ---
     const setupDropZone = (zoneId, inputId, fileInputId) => {
         const zone = document.getElementById(zoneId);
+        if(!zone) return;
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(n => zone.addEventListener(n, e => {e.preventDefault(); e.stopPropagation();}));
         zone.addEventListener('dragover', () => zone.classList.add('dragover'));
         zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
@@ -630,16 +725,12 @@
     setupDropZone('dropZoneA', 'chain-code-input', 'fileInputA');
     setupDropZone('dropZoneB', 'csv-input', 'fileInputB');
 
-
-    // ==========================================
-    // 統合データ管理 (バッチ対応 / sessionStorage手動バケツリレー準拠)
-    // ==========================================
     let analysisResult = null;
+    let globalPCA = null;
+    let globalSamples = [];
     
     window.onload = () => {
         try {
-            // ダッシュボード等からの自動連携(localStorage)を廃止し、明示的なsessionStorage受取へ移行
-            // Dashboard側は 'bio_edu_bulk_data' キーで送信してくるため両方に対応
             const bulkData = sessionStorage.getItem('bio_edu_bulk_data');
             const transferData = sessionStorage.getItem('bio_edu_transfer_data');
             let morphSamples = [];
@@ -657,153 +748,124 @@
             if (morphSamples.length === 0) {
                 document.getElementById('active-sample-info').innerHTML = `
                     <div style="display:flex; justify-content:space-between; align-items:center; color: var(--text-muted); gap: 10px;">
-                        <span style="flex: 1; min-width: 0; word-break: break-word;"><strong>Target:</strong> データ未受信 (手動で入力するか、ファイルをドロップしてください)</span>
+                        <span style="flex: 1; min-width: 0; word-break: break-word;"><strong>Target:</strong> データ未受信 (手掌握入力するか、ファイルをドロップしてください)</span>
                         <span style="background:var(--border-color); color:white; padding:2px 6px; border-radius:10px; font-size:10px; font-weight:bold; flex-shrink: 0; white-space: nowrap;">未選択</span>
                     </div>
                 `;
-                setTimeout(() => { showToast("データが手動入力モードで起動しました", "info"); }, 500);
-                return;
+            } else {
+                window.transferredSamples = morphSamples;
+                let combinedData = morphSamples.map(s => {
+                    let raw = s.morphData.trim();
+                    let codes = raw.split(/\s+/);
+                    if(codes.length > 0 && !isNaN(codes[0])) {
+                        return `${s.id} ${codes.length} 0 0 1.0 1.0 ${raw} -1`;
+                    }
+                    return raw;
+                }).join("\n");
+                
+                document.getElementById('chain-code-input').value = combinedData;
+                document.getElementById('route_a').checked = true;
+                
+                let sampleListHTML = morphSamples.map(s => `
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px solid #ecf0f1; padding:6px 0;">
+                        <span style="font-family:monospace; font-weight:bold; font-size:11px; color:var(--primary);">${escapeHTML(s.id)}</span>
+                        <span style="color:var(--text-muted); font-size:10px;">${escapeHTML(s.name)}</span>
+                    </div>
+                `).join('');
+
+                document.getElementById('active-sample-info').innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap: 10px; margin-bottom: 8px;">
+                        <span style="flex: 1; min-width: 0; word-break: break-word; font-weight:bold; font-size:12px; color:var(--primary);">受信済みサンプル <span style="color:var(--text-muted); font-size:10px;">(${morphSamples.length} samples)</span></span>
+                        <span style="background:var(--success); color:white; padding:2px 6px; border-radius:10px; font-size:10px; font-weight:bold; flex-shrink: 0; white-space: nowrap;">連携済</span>
+                    </div>
+                    <div style="max-height: 120px; overflow-y: auto; background: white; border: 1px solid var(--border-color); border-radius: 4px; padding: 4px 8px;">
+                        ${sampleListHTML}
+                    </div>
+                `;
+                setTimeout(() => { showToast(`前工程から ${morphSamples.length} 件のサンプルを受信しました`, "success"); }, 500);
             }
-
-            // エクスポート時のID紐付けのためにグローバルに保持
-            window.transferredSamples = morphSamples;
-
-            // 生の数字列からなるチェーンコードに Sample ID 等のSHAPE互換ヘッダを付与
-            let combinedData = morphSamples.map(s => {
-                let raw = s.morphData.trim();
-                let codes = raw.split(/\s+/);
-                if(codes.length > 0 && !isNaN(codes[0])) {
-                    return `${s.id} ${codes.length} 0 0 1.0 1.0 ${raw} -1`;
-                }
-                return raw;
-            }).join("\n");
-            
-            document.getElementById('chain-code-input').value = combinedData;
-            document.getElementById('route_a').checked = true;
-            
-            // 左側リストに Sample ID と Name を正確に表示
-            let sampleListHTML = morphSamples.map(s => `
-                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #ecf0f1; padding:6px 0;">
-                    <span style="font-family:monospace; font-weight:bold; font-size:11px; color:var(--primary);">${escapeHTML(s.id)}</span>
-                    <span style="color:var(--text-muted); font-size:10px;">${escapeHTML(s.name)}</span>
-                </div>
-            `).join('');
-
-            document.getElementById('active-sample-info').innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center; gap: 10px; margin-bottom: 8px;">
-                    <span style="flex: 1; min-width: 0; word-break: break-word; font-weight:bold; font-size:12px; color:var(--primary);">受信済みサンプル <span style="color:var(--text-muted); font-size:10px;">(${morphSamples.length} samples)</span></span>
-                    <span style="background:var(--success); color:white; padding:2px 6px; border-radius:10px; font-size:10px; font-weight:bold; flex-shrink: 0; white-space: nowrap;">連携済</span>
-                </div>
-                <div style="max-height: 120px; overflow-y: auto; background: white; border: 1px solid var(--border-color); border-radius: 4px; padding: 4px 8px;">
-                    ${sampleListHTML}
-                </div>
-            `;
-            
-            switchRoute();
-            setTimeout(() => { showToast(`前工程から ${morphSamples.length} 件のサンプルを受信しました`, "success"); }, 500);
-
         } catch (e) {
             console.error("Data Load Error:", e);
-            showToast("データの受取に失敗しました", "error");
         }
+        
+        switchRoute();
+        initGPACanvas();
     };
 
-    // ⑪向け形態TSVコピー関数 (PC1/PC2スコア表)
     function copyToMorphoTSV() {
         if (!globalPCA || globalSamples.length === 0) return;
-        
         let tsvLines = ["Sample_ID\tSample_Name\tPC1_Score\tPC2_Score"];
         globalSamples.forEach((sample, i) => {
             let originalSample = window.transferredSamples ? window.transferredSamples.find(s => s.id === sample.name || s.name === sample.name) : null;
             let sampleId = originalSample ? originalSample.id : `SAMP_${new Date().getTime()}_${i}`;
             let sampleName = originalSample ? originalSample.name : sample.name;
-
             tsvLines.push(`${sampleId}\t${sampleName}\t${globalPCA.pc1[i].toFixed(6)}\t${globalPCA.pc2[i].toFixed(6)}`);
         });
-
         fallbackCopyTextToClipboard(tsvLines.join("\n"), "⑪向け形態TSVをクリップボードにコピーしました！");
     }
 
-    // ⑩向け統合JSONコピー関数 (サンプルID紐付け)
     function copyToIntegrativeJSON() {
         if (!globalPCA || globalSamples.length === 0) return;
-        
         let exportData = {
             metadata: {
                 source: "Morphometrics_Studio",
                 timestamp: new Date().toISOString(),
-                method: "EFA_PCA",
-                featureMode: currentFeatureMode
+                method: document.getElementById('route_a').checked ? "EFA_PCA" : "GPA_PCA",
+                featureMode: document.getElementById('route_a').checked ? currentFeatureMode : "all_coordinates"
             },
             samples: []
         };
-
         globalSamples.forEach((sample, i) => {
-            // 受信したサンプルデータがあればIDを引き継ぐ
             let originalSample = window.transferredSamples ? window.transferredSamples.find(s => s.id === sample.name || s.name === sample.name) : null;
             let sampleId = originalSample ? originalSample.id : `SAMP_${new Date().getTime()}_${i}`;
             let sampleName = originalSample ? originalSample.name : sample.name;
-
             exportData.samples.push({
-                id: sampleId,
-                name: sampleName,
-                pc1: globalPCA.pc1[i],
-                pc2: globalPCA.pc2[i],
-                efaFeatures: sample.features,
-                fullCoeffs: sample.fullCoeffs
+                id: sampleId, name: sampleName,
+                pc1: globalPCA.pc1[i], pc2: globalPCA.pc2[i],
+                efaFeatures: sample.features, fullCoeffs: sample.fullCoeffs
             });
         });
-
         fallbackCopyTextToClipboard(JSON.stringify(exportData, null, 2), "⑩向け統合JSONをクリップボードにコピーしました！");
     }
 
-    // iframe等のセキュリティ制約を回避するための確実なコピー関数
     function fallbackCopyTextToClipboard(text, successMsg) {
         const textArea = document.createElement("textarea");
         textArea.value = text;
-        textArea.style.top = "0";
-        textArea.style.left = "0";
-        textArea.style.position = "fixed";
+        textArea.style.top = "0"; textArea.style.left = "0"; textArea.style.position = "fixed";
         document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-
+        textArea.focus(); textArea.select();
         try {
-            const successful = document.execCommand('copy');
-            if (successful) {
-                showToast(successMsg, "success");
-            } else {
-                showToast("コピーに失敗しました", "error");
-            }
-        } catch (err) {
-            showToast("コピーに失敗しました", "error");
-        }
+            if (document.execCommand('copy')) showToast(successMsg, "success");
+            else showToast("コピーに失敗しました", "error");
+        } catch (err) { showToast("コピーに失敗しました", "error"); }
         document.body.removeChild(textArea);
     }
 
     function switchRoute() {
         const route = document.querySelector('input[name="route"]:checked').value;
         document.getElementById('route-a-controls').style.display = (route === 'A') ? 'block' : 'none';
+        document.getElementById('route-c-controls').style.display = (route === 'C') ? 'block' : 'none';
         document.getElementById('route-b-controls').style.display = (route === 'B') ? 'block' : 'none';
+        
         document.getElementById('viz-route-a').style.display = (route === 'A') ? 'flex' : 'none';
+        document.getElementById('viz-route-c').style.display = (route === 'C') ? 'flex' : 'none';
         document.getElementById('viz-route-b').style.display = (route === 'B') ? 'flex' : 'none';
         
-        // コピーボタンの初期化
-        document.getElementById('copy-json-btn').disabled = true;
-        document.getElementById('copy-tsv-btn').disabled = true;
-
-        // ★ ガイドライン v32.0 準拠: Route B 選択時はエクスポートボタンエリアごと非表示にし、余白を適切に詰める
         const exportContainer = document.getElementById('export-buttons-container');
         if (exportContainer) {
-            exportContainer.style.display = (route === 'A') ? 'flex' : 'none';
+            document.getElementById('btn-copy-newick').style.display = (route === 'B') ? 'inline-flex' : 'none';
+            document.getElementById('copy-tsv-btn').style.display = (route === 'A' || route === 'C') ? 'inline-flex' : 'none';
+            document.getElementById('copy-json-btn').style.display = (route === 'A' || route === 'C') ? 'inline-flex' : 'none';
+            exportContainer.style.display = 'flex';
         }
         
         logStatus(`[SYSTEM] 解析ルート ${route} に切り替えました。`);
+        
+        if(route === 'C') {
+            resizeGPACanvas(); drawGPACanvas();
+        }
     }
 
-    // ==========================================
-    // リアルタイム画像処理＆チェーンコード抽出エンジン
-    // ==========================================
     function loadImageForTrace(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -833,12 +895,10 @@
         if (!window.currentImageData) return;
         const thresh = parseInt(document.getElementById('threshSlider').value);
         document.getElementById('threshVal').innerText = thresh;
-        
         const canvas = document.getElementById('imgCanvas');
         const ctx = canvas.getContext('2d');
         const idata = new ImageData(new Uint8ClampedArray(window.currentImageData.data), canvas.width, canvas.height);
         const d = idata.data;
-        
         for (let i = 0; i < d.length; i += 4) {
             const gray = 0.299 * d[i] + 0.587 * d[i+1] + 0.114 * d[i+2];
             const val = gray < thresh ? 0 : 255; 
@@ -848,9 +908,7 @@
     }
 
     function extractAndAppend() {
-        if (!window.currentImageData) {
-            showToast("画像を読み込んでください。", "error"); return;
-        }
+        if (!window.currentImageData) { showToast("画像を読み込んでください。", "error"); return; }
         const canvas = document.getElementById('imgCanvas');
         const w = canvas.width, h = canvas.height;
         const ctx = canvas.getContext('2d');
@@ -861,11 +919,7 @@
             return d[(y*w+x)*4] < 128; 
         }
 
-        // Freeman Chain Code (8方向) Canvas座標系(下向き正)
-        const dx = [1, 1, 0, -1, -1, -1, 0, 1];
-        const dy = [0, -1, -1, -1, 0, 1, 1, 1]; 
-        
-        // 開始点を探す
+        const dx = [1, 1, 0, -1, -1, -1, 0, 1], dy = [0, -1, -1, -1, 0, 1, 1, 1]; 
         let startX = -1, startY = -1;
         outer: for(let y=0; y<h; y++){
             for(let x=0; x<w; x++){
@@ -874,48 +928,28 @@
         }
         
         if(startX === -1) { showToast("対象物が見つかりません。閾値を調整してください。", "error"); return; }
-
-        let codes = [];
-        let cx = startX, cy = startY;
-        let dir = 0; 
-        
-        let cnt = 0;
+        let codes = [], cx = startX, cy = startY, dir = 0, cnt = 0;
         do {
             let found = false;
             let startDir = (dir + 6) % 8;
             for(let i=0; i<8; i++){
                 let ndir = (startDir + i) % 8;
-                let nx = cx + dx[ndir];
-                let ny = cy + dy[ndir];
+                let nx = cx + dx[ndir], ny = cy + dy[ndir];
                 if(isObj(nx, ny)){
-                    codes.push(ndir);
-                    cx = nx; cy = ny;
-                    dir = ndir;
-                    found = true;
-                    break;
+                    codes.push(ndir); cx = nx; cy = ny; dir = ndir; found = true; break;
                 }
             }
-            if(!found) break;
-            cnt++;
-            if(cnt > w*h*2) break; // 無限ループ防止
+            if(!found || ++cnt > w*h*2) break;
         } while(cx !== startX || cy !== startY);
 
         if(codes.length < 10) { showToast("輪郭が短すぎます。閾値を調整してください。", "error"); return; }
-
         const name = document.getElementById('imgSampleName').value || "AutoSample";
         const outStr = `${name} ${codes.length} 0 0 1.0 1.0 ${codes.join(' ')} -1`;
-        
         const ta = document.getElementById('chain-code-input');
         ta.value = ta.value ? ta.value + "\n" + outStr : outStr;
-        
         showToast(`抽出完了: ${name} のコードを追記しました`, "success");
     }
 
-    /** =========================================================
-     * Route A: Strict EFA & PCA Engine (Kuhl & Giardina 1982 / Iwata 1998)
-     * ========================================================= */
-    let globalSamples = []; 
-    let globalPCA = null;   
     let globalMeanCoeffs = [];
     let currentFeatureMode = 'all';
 
@@ -937,8 +971,6 @@
             const sample = parsedData[i];
             const coords = chainCodeToCoordinates(sample.codes);
             const rawCoeffs = computeEFA(coords, harmonics);
-            
-            // ★ 第1調和楕円に基づく厳密な標準化 (サイズ、回転、開始点) [Iwata 1998]
             const stdCoeffs = standardizeEFA(rawCoeffs);
             
             for(let n=0; n<harmonics; n++) {
@@ -948,7 +980,6 @@
                 globalMeanCoeffs[n].d += stdCoeffs[n].d / parsedData.length;
             }
 
-            // モードに応じた特徴量抽出 (第1調和楕円の定数は除外)
             let features = [];
             for (let j = 0; j < harmonics; j++) {
                 let c = stdCoeffs[j];
@@ -968,16 +999,12 @@
         if(globalSamples.length > 1) {
             logStatus(`[SUCCESS] ${globalSamples.length} 個の標準化EFA係数算出完了。PCAを描画しました。`);
             globalPCA = computePCA(globalSamples.map(s => s.features));
-            drawPCA(globalPCA, globalSamples);
+            drawPCA(globalPCA, globalSamples, 'pca-svg-container');
             document.getElementById('pc-sliders').style.display = 'block';
             resetSliders();
             
             analysisResult = { type: 'efa_pca', mode: currentFeatureMode, sampleCount: globalSamples.length, timestamp: new Date().toISOString() };
-            
-            // エクスポートボタンを有効化
-            document.getElementById('copy-json-btn').disabled = false;
-            document.getElementById('copy-tsv-btn').disabled = false;
-            
+            document.getElementById('copy-json-btn').disabled = false; document.getElementById('copy-tsv-btn').disabled = false;
             addLogEntry("Route A (EFA/PCA)", `調和数:${harmonics}, モード:${currentFeatureMode}`, `標準化およびPCA完了 (${globalSamples.length} samples)`);
         } else {
             logStatus(`[ERROR] PCAには2つ以上のサンプルが必要です。`, "error");
@@ -991,20 +1018,11 @@
             line = line.trim();
             if(line === '') continue;
             const parts = line.split(/\s+/);
-            
-            // 末尾の -1 がなくても最後までパースできるように緩和
             let endIndex = parts.indexOf('-1');
             if (endIndex === -1) endIndex = parts.length;
-            
             let codes = [];
-            let startIndex = 1;
-            
-            // SHAPE形式ヘッダーの自動判定 (長さ、X/Y座標、W/Hなどが前置されている場合)
-            if (parts.length > 6 && (parts[4].includes('.') || parts[5].includes('.') || parts[2] === '0')) {
-                startIndex = 6;
-            }
-
-            for(let i=startIndex; i<endIndex; i++) { // SHAPE形式のヘッダー対応
+            let startIndex = (parts.length > 6 && (parts[4].includes('.') || parts[5].includes('.') || parts[2] === '0')) ? 6 : 1;
+            for(let i=startIndex; i<endIndex; i++) {
                 let val = parseInt(parts[i], 10);
                 if(val >= 0 && val <= 7) codes.push(val);
             }
@@ -1021,8 +1039,6 @@
     }
 
     function computeEFA(coords, numHarmonics) {
-        // [Reference] Kuhl, F.P. and Giardina, C.R. (1982) "Elliptic Fourier features of a closed contour"
-        // [Reference] 岩田洋佳 (1998) 「植物形態の楕円フーリエ記述子に基づく評価ならびに統計遺伝学的解析」式(2)〜(5)
         const K = coords.length - 1;
         let dt = new Array(K), t = new Array(K + 1);
         t[0] = 0;
@@ -1051,38 +1067,26 @@
     }
 
     function standardizeEFA(coeffs) {
-        // [Reference] 岩田洋佳 (1998) p.14-18 "2.4 楕円フーリエ記述子の標準化"
         if(coeffs.length === 0) return coeffs;
         let a1 = coeffs[0].a, b1 = coeffs[0].b, c1 = coeffs[0].c, d1 = coeffs[0].d;
         let theta1 = 0.5 * Math.atan2(2 * (a1*b1 + c1*d1), a1*a1 + c1*c1 - b1*b1 - d1*d1);
         if (theta1 < 0) theta1 += Math.PI; 
-
         let a1_star = a1 * Math.cos(theta1) + b1 * Math.sin(theta1);
         let c1_star = c1 * Math.cos(theta1) + d1 * Math.sin(theta1);
-        
         let psi1 = Math.atan2(c1_star, a1_star);
         if (psi1 < 0) psi1 += 2 * Math.PI;
-
         let E_star = Math.sqrt(a1_star*a1_star + c1_star*c1_star) || 1;
-
         let std = [];
         for (let n = 1; n <= coeffs.length; n++) {
             let a = coeffs[n-1].a, b = coeffs[n-1].b, c = coeffs[n-1].c, d = coeffs[n-1].d;
-            let n_theta1 = n * theta1;
-            let cos_nt = Math.cos(n_theta1), sin_nt = Math.sin(n_theta1);
+            let n_theta1 = n * theta1, cos_nt = Math.cos(n_theta1), sin_nt = Math.sin(n_theta1);
             let cos_psi = Math.cos(psi1), sin_psi = Math.sin(psi1);
-
-            let m1_a = a * cos_nt + b * sin_nt;
-            let m1_b = -a * sin_nt + b * cos_nt;
-            let m1_c = c * cos_nt + d * sin_nt;
-            let m1_d = -c * sin_nt + d * cos_nt;
-
-            let a_new = (cos_psi * m1_a + sin_psi * m1_c) / E_star;
-            let b_new = (cos_psi * m1_b + sin_psi * m1_d) / E_star;
-            let c_new = (-sin_psi * m1_a + cos_psi * m1_c) / E_star;
-            let d_new = (-sin_psi * m1_b + cos_psi * m1_d) / E_star;
-
-            std.push({a: a_new, b: b_new, c: c_new, d: d_new});
+            let m1_a = a * cos_nt + b * sin_nt, m1_b = -a * sin_nt + b * cos_nt;
+            let m1_c = c * cos_nt + d * sin_nt, m1_d = -c * sin_nt + d * cos_nt;
+            std.push({
+                a: (cos_psi * m1_a + sin_psi * m1_c) / E_star, b: (cos_psi * m1_b + sin_psi * m1_d) / E_star,
+                c: (-sin_psi * m1_a + cos_psi * m1_c) / E_star, d: (-sin_psi * m1_b + cos_psi * m1_d) / E_star
+            });
         }
         return std;
     }
@@ -1127,24 +1131,16 @@
         if(!globalPCA) return;
         const s1_sd = parseFloat(document.getElementById('pc1-slider').value);
         const s2_sd = parseFloat(document.getElementById('pc2-slider').value);
-        
         document.getElementById('pc1-val').innerText = (s1_sd > 0 ? "+" : "") + s1_sd.toFixed(1) + "σ";
         document.getElementById('pc2-val').innerText = (s2_sd > 0 ? "+" : "") + s2_sd.toFixed(1) + "σ";
 
-        const s1 = s1_sd * globalPCA.sd1;
-        const s2 = s2_sd * globalPCA.sd2;
-
+        const s1 = s1_sd * globalPCA.sd1, s2 = s2_sd * globalPCA.sd2;
         let newFeatures = new Array(globalPCA.means.length);
-        for(let j=0; j<newFeatures.length; j++) {
-            newFeatures[j] = globalPCA.means[j] + s1 * globalPCA.loadings1[j] + s2 * globalPCA.loadings2[j];
-        }
+        for(let j=0; j<newFeatures.length; j++) newFeatures[j] = globalPCA.means[j] + s1 * globalPCA.loadings1[j] + s2 * globalPCA.loadings2[j];
 
-        // Featureベクトルからフル係数に復元（除外された定数項を補完）
-        let newCoeffs = [];
-        let fIdx = 0;
+        let newCoeffs = [], fIdx = 0;
         for (let i = 0; i < globalMeanCoeffs.length; i++) {
-            let m = globalMeanCoeffs[i];
-            let c = {a: m.a, b: m.b, c: m.c, d: m.d}; 
+            let m = globalMeanCoeffs[i], c = {a: m.a, b: m.b, c: m.c, d: m.d}; 
             if (currentFeatureMode === 'all') {
                 if (i > 0) { c.a = newFeatures[fIdx++]; c.b = newFeatures[fIdx++]; c.c = newFeatures[fIdx++]; }
                 c.d = newFeatures[fIdx++];
@@ -1187,25 +1183,20 @@
         }
 
         let scale = Math.min(w, h) * 0.35; 
-        
-        // 1. Mean Shape (Gray Dashed)
         let meanPts = getPts(globalMeanCoeffs);
         ctx.beginPath();
         for(let i=0; i<meanPts.length; i++) {
-            let canvasX = w/2 + meanPts[i].x * scale;
-            let canvasY = h/2 - meanPts[i].y * scale; 
+            let canvasX = w/2 + meanPts[i].x * scale, canvasY = h/2 - meanPts[i].y * scale; 
             if(i===0) ctx.moveTo(canvasX, canvasY); else ctx.lineTo(canvasX, canvasY);
         }
         ctx.closePath();
         ctx.strokeStyle = '#bdc3c7'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]); ctx.stroke();
         ctx.setLineDash([]);
 
-        // 2. Current Shape (Blue Solid)
         let curPts = getPts(coeffs);
         ctx.beginPath();
         for(let i=0; i<curPts.length; i++) {
-            let canvasX = w/2 + curPts[i].x * scale;
-            let canvasY = h/2 - curPts[i].y * scale; 
+            let canvasX = w/2 + curPts[i].x * scale, canvasY = h/2 - curPts[i].y * scale; 
             if(i===0) ctx.moveTo(canvasX, canvasY); else ctx.lineTo(canvasX, canvasY);
         }
         ctx.closePath();
@@ -1217,14 +1208,15 @@
         ctx.fillText(label, 10, 20);
     }
 
-    function drawPCA(pcaResult, samples) {
-        const container = document.getElementById('pca-svg-container');
+    function drawPCA(pcaResult, samples, containerId) {
+        const container = document.getElementById(containerId);
+        if(!container) return;
         container.innerHTML = '';
         const margin = {top: 40, right: 20, bottom: 40, left: 40};
         const cw = container.clientWidth - margin.left - margin.right;
         const ch = container.clientHeight - margin.top - margin.bottom;
 
-        const svg = d3.select("#pca-svg-container").append("svg")
+        const svg = d3.select("#" + containerId).append("svg")
             .attr("width", cw + margin.left + margin.right)
             .attr("height", ch + margin.top + margin.bottom)
             .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
@@ -1249,21 +1241,362 @@
             .attr("cy", (d, i) => yScale(pcaResult.pc2[i]))
             .attr("r", 6)
             .style("fill", (d, i) => colorScale(i)).style("stroke", "#fff").style("cursor", "pointer")
-            .attr("data-tooltip", (d, i) => `<strong>${d.name}</strong><br>PC1: ${(pcaResult.pc1[i]/pcaResult.sd1).toFixed(2)}σ<br>PC2: ${(pcaResult.pc2[i]/pcaResult.sd2).toFixed(2)}σ`)
+            .attr("data-tooltip", (d, i) => `<strong>${d.name || d.id}</strong><br>PC1: ${(pcaResult.pc1[i]/pcaResult.sd1).toFixed(2)}σ<br>PC2: ${(pcaResult.pc2[i]/pcaResult.sd2).toFixed(2)}σ`)
             .on("click", function(event, d) {
-                let i = samples.indexOf(d);
-                let s1 = pcaResult.pc1[i] / pcaResult.sd1;
-                let s2 = pcaResult.pc2[i] / pcaResult.sd2;
-                document.getElementById('pc1-slider').value = s1;
-                document.getElementById('pc2-slider').value = s2;
-                updateShapeFromSliders();
-                logStatus(`[SYSTEM] ${d.name} を選択し、形状を復元しました。`);
+                if(containerId === 'pca-svg-container') {
+                    let i = samples.indexOf(d);
+                    let s1 = pcaResult.pc1[i] / pcaResult.sd1, s2 = pcaResult.pc2[i] / pcaResult.sd2;
+                    document.getElementById('pc1-slider').value = s1;
+                    document.getElementById('pc2-slider').value = s2;
+                    updateShapeFromSliders();
+                    logStatus(`[SYSTEM] ${d.name || d.id} を選択し、形状を復元しました。`);
+                }
             });
     }
 
-    /** =========================================================
-     * Route B: 厳密な階層的クラスタリングエンジン (Lance-Williams)
-     * ========================================================= */
+    // =========================================================
+    // Route C: ランドマーク・プロクラステス解析 (GPA) & PCA
+    // lib/bio_math_engine.js の代用としてMVC集約
+    // =========================================================
+    const BioMathEngine = {
+        translateToOrigin: function(landmarks) {
+            let n = landmarks.length, sumX = 0, sumY = 0;
+            for(let pt of landmarks) { sumX += pt[0]; sumY += pt[1]; }
+            let centroid = [sumX/n, sumY/n];
+            return landmarks.map(pt => [pt[0] - centroid[0], pt[1] - centroid[1]]);
+        },
+        scaleToUnitCentroidSize: function(centeredLandmarks) {
+            let sumSq = 0;
+            for(let pt of centeredLandmarks) { sumSq += pt[0]*pt[0] + pt[1]*pt[1]; }
+            let cs = Math.sqrt(sumSq) || 1;
+            return {
+                scaled: centeredLandmarks.map(pt => [pt[0]/cs, pt[1]/cs]),
+                centroidSize: cs
+            };
+        },
+        getOptimalRotation: function(reference, target) {
+            let H = [[0, 0], [0, 0]];
+            for(let i=0; i<reference.length; i++) {
+                H[0][0] += target[i][0] * reference[i][0];
+                H[0][1] += target[i][0] * reference[i][1];
+                H[1][0] += target[i][1] * reference[i][0];
+                H[1][1] += target[i][1] * reference[i][1];
+            }
+            const H_mat = new ML.Matrix(H);
+            // ★【重要修正】ライブラリのバージョンに合わせて SVD 関数とプロパティを修正
+            const svd = new ML.SVD(H_mat);
+            const U = svd.U, V = svd.V;
+            
+            let R = V.mmul(U.transpose());
+            let det = R.get(0,0)*R.get(1,1) - R.get(0,1)*R.get(1,0);
+            if (det < 0) {
+                let V_mod = V.clone();
+                V_mod.set(0, 1, -V_mod.get(0, 1)); V_mod.set(1, 1, -V_mod.get(1, 1));
+                R = V_mod.mmul(U.transpose());
+            }
+            return R; 
+        },
+        applyRotation: function(points, R) {
+            let P = new ML.Matrix(points);
+            return P.mmul(R).to2DArray();
+        },
+        gpa: function(samplesData) { 
+            let processed = samplesData.map(s => {
+                let centered = this.translateToOrigin(s.landmarks);
+                let scaledRes = this.scaleToUnitCentroidSize(centered);
+                return {
+                    id: s.id, original: s.landmarks, centeredScaled: scaledRes.scaled,
+                    centroidSize: scaledRes.centroidSize, current: scaledRes.scaled.map(pt => [...pt])
+                };
+            });
+
+            const K = processed[0].original.length;
+            let consensus = processed[0].current.map(pt => [...pt]);
+            let maxIter = 50, iter = 0, diff = 1;
+            
+            while(iter < maxIter && diff > 1e-5) {
+                for(let i=0; i<processed.length; i++) {
+                    let R = this.getOptimalRotation(consensus, processed[i].current);
+                    processed[i].current = this.applyRotation(processed[i].current, R);
+                }
+                let newConsensus = [];
+                for(let k=0; k<K; k++) {
+                    let sx=0, sy=0;
+                    for(let i=0; i<processed.length; i++) { sx += processed[i].current[k][0]; sy += processed[i].current[k][1]; }
+                    newConsensus.push([sx/processed.length, sy/processed.length]);
+                }
+                
+                let cCentered = this.translateToOrigin(newConsensus);
+                let cScaled = this.scaleToUnitCentroidSize(cCentered).scaled;
+                
+                diff = 0;
+                for(let k=0; k<K; k++) diff += Math.pow(consensus[k][0] - cScaled[k][0], 2) + Math.pow(consensus[k][1] - cScaled[k][1], 2);
+                
+                consensus = cScaled;
+                iter++;
+            }
+            return { consensus: consensus, alignedSamples: processed };
+        }
+    };
+
+    let gpaDataList = [], gpaCurrentIdx = -1, gpaScale = 1, gpaOffsetX = 0, gpaOffsetY = 0;
+    let isDraggingGPA = false, draggedPtIdx = -1, isPanningGPA = false, gpaStartPan = {x:0, y:0};
+    let gpaCanvas, gpaCtx, globalGPAResult = null;
+
+    function initGPACanvas() {
+        gpaCanvas = document.getElementById('gpaCanvas');
+        if(!gpaCanvas) return;
+        gpaCtx = gpaCanvas.getContext('2d');
+        resizeGPACanvas();
+        window.addEventListener('resize', resizeGPACanvas);
+
+        gpaCanvas.addEventListener('mousedown', gpaOnMouseDown);
+        gpaCanvas.addEventListener('mousemove', gpaOnMouseMove);
+        gpaCanvas.addEventListener('mouseup', gpaOnMouseUp);
+        gpaCanvas.addEventListener('mouseleave', gpaOnMouseUp);
+        gpaCanvas.addEventListener('wheel', gpaOnWheel, {passive: false});
+    }
+
+    function resizeGPACanvas() {
+        if(!gpaCanvas) return;
+        let wrapper = document.getElementById('gpaCanvasWrapper');
+        gpaCanvas.width = wrapper.clientWidth; gpaCanvas.height = wrapper.clientHeight;
+        drawGPACanvas();
+    }
+
+    function loadGPAImages(event) {
+        const files = event.target.files;
+        if (!files || files.length === 0) return;
+        let loadedCount = 0;
+        for (let i = 0; i < files.length; i++) {
+            let file = files[i], reader = new FileReader();
+            reader.onload = (e) => {
+                let img = new Image();
+                img.onload = () => {
+                    gpaDataList.push({ id: file.name.split('.')[0], img: img, landmarks: [] });
+                    loadedCount++;
+                    if(loadedCount === files.length) {
+                        updateGPASelector();
+                        gpaCurrentIdx = gpaDataList.length - files.length;
+                        document.getElementById('gpaSampleSelector').selectedIndex = gpaCurrentIdx + 1;
+                        gpaResetView();
+                        showToast(`${files.length}枚の画像を読み込みました`, "success");
+                    }
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function updateGPASelector() {
+        const sel = document.getElementById('gpaSampleSelector');
+        sel.innerHTML = '<option value="-1">-- サンプルを選択 --</option>';
+        gpaDataList.forEach((d, i) => {
+            let opt = document.createElement('option');
+            opt.value = i; opt.text = `${d.id} (${d.landmarks.length} pts)`;
+            sel.appendChild(opt);
+        });
+    }
+
+    function switchGPASample() {
+        gpaCurrentIdx = parseInt(document.getElementById('gpaSampleSelector').value);
+        gpaResetView();
+    }
+
+    function clearCurrentLandmarks() {
+        if(gpaCurrentIdx >= 0 && gpaDataList[gpaCurrentIdx]) {
+            gpaDataList[gpaCurrentIdx].landmarks = [];
+            updateGPASelector();
+            document.getElementById('gpaSampleSelector').selectedIndex = gpaCurrentIdx + 1;
+            drawGPACanvas();
+        }
+    }
+
+    function drawGPACanvas() {
+        if(!gpaCtx) return;
+        gpaCtx.clearRect(0, 0, gpaCanvas.width, gpaCanvas.height);
+        if (gpaCurrentIdx < 0 || !gpaDataList[gpaCurrentIdx]) return;
+
+        let d = gpaDataList[gpaCurrentIdx];
+        gpaCtx.save();
+        gpaCtx.translate(gpaOffsetX, gpaOffsetY); gpaCtx.scale(gpaScale, gpaScale);
+
+        if(d.img) gpaCtx.drawImage(d.img, 0, 0);
+
+        gpaCtx.fillStyle = '#e74c3c'; gpaCtx.strokeStyle = '#fff';
+        gpaCtx.lineWidth = 1.5 / gpaScale; gpaCtx.font = `bold ${14/gpaScale}px sans-serif`;
+
+        for(let i=0; i<d.landmarks.length; i++) {
+            let pt = d.landmarks[i];
+            gpaCtx.beginPath(); gpaCtx.arc(pt[0], pt[1], 5 / gpaScale, 0, Math.PI*2);
+            gpaCtx.fill(); gpaCtx.stroke();
+            gpaCtx.fillStyle = '#2c3e50'; gpaCtx.fillText((i+1).toString(), pt[0] + 8/gpaScale, pt[1] - 8/gpaScale);
+            gpaCtx.fillStyle = '#e74c3c';
+        }
+        gpaCtx.restore();
+    }
+
+    function getCanvasPos(e) {
+        const rect = gpaCanvas.getBoundingClientRect();
+        return { x: (e.clientX - rect.left - gpaOffsetX) / gpaScale, y: (e.clientY - rect.top - gpaOffsetY) / gpaScale };
+    }
+
+    function gpaOnMouseDown(e) {
+        if(gpaCurrentIdx < 0) return;
+        let pos = getCanvasPos(e);
+        if (e.button === 2 || e.shiftKey) { 
+            isPanningGPA = true; gpaStartPan = { x: e.clientX - gpaOffsetX, y: e.clientY - gpaOffsetY };
+            return;
+        }
+
+        let d = gpaDataList[gpaCurrentIdx], hitRadius = 8 / gpaScale;
+        draggedPtIdx = -1;
+        for(let i=0; i<d.landmarks.length; i++) {
+            let pt = d.landmarks[i];
+            if(Math.hypot(pt[0]-pos.x, pt[1]-pos.y) < hitRadius) { draggedPtIdx = i; isDraggingGPA = true; break; }
+        }
+
+        if(draggedPtIdx === -1) {
+            d.landmarks.push([pos.x, pos.y]);
+            updateGPASelector();
+            document.getElementById('gpaSampleSelector').selectedIndex = gpaCurrentIdx + 1;
+            drawGPACanvas();
+        }
+    }
+
+    function gpaOnMouseMove(e) {
+        if(isPanningGPA) {
+            gpaOffsetX = e.clientX - gpaStartPan.x; gpaOffsetY = e.clientY - gpaStartPan.y;
+            drawGPACanvas(); return;
+        }
+        if(isDraggingGPA && draggedPtIdx >= 0) {
+            let pos = getCanvasPos(e);
+            gpaDataList[gpaCurrentIdx].landmarks[draggedPtIdx] = [pos.x, pos.y];
+            drawGPACanvas();
+        }
+    }
+
+    function gpaOnMouseUp(e) { isDraggingGPA = false; isPanningGPA = false; draggedPtIdx = -1; }
+
+    function gpaOnWheel(e) {
+        e.preventDefault();
+        const rect = gpaCanvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left, mouseY = e.clientY - rect.top;
+        let zoom = Math.exp(e.deltaY * -0.001), newScale = gpaScale * zoom;
+        gpaOffsetX = mouseX - (mouseX - gpaOffsetX) * (newScale / gpaScale);
+        gpaOffsetY = mouseY - (mouseY - gpaOffsetY) * (newScale / gpaScale);
+        gpaScale = newScale; drawGPACanvas();
+    }
+
+    function gpaZoom(factor) {
+        let cw = gpaCanvas.width / 2, ch = gpaCanvas.height / 2, newScale = gpaScale * factor;
+        gpaOffsetX = cw - (cw - gpaOffsetX) * (newScale / gpaScale);
+        gpaOffsetY = ch - (ch - gpaOffsetY) * (newScale / gpaScale);
+        gpaScale = newScale; drawGPACanvas();
+    }
+
+    function gpaResetView() {
+        if(gpaCurrentIdx < 0 || !gpaDataList[gpaCurrentIdx] || !gpaDataList[gpaCurrentIdx].img) {
+            gpaScale = 1; gpaOffsetX = 0; gpaOffsetY = 0;
+        } else {
+            let img = gpaDataList[gpaCurrentIdx].img;
+            let sx = gpaCanvas.width / img.width, sy = gpaCanvas.height / img.height;
+            gpaScale = Math.min(sx, sy) * 0.9;
+            gpaOffsetX = (gpaCanvas.width - img.width * gpaScale) / 2;
+            gpaOffsetY = (gpaCanvas.height - img.height * gpaScale) / 2;
+        }
+        drawGPACanvas();
+    }
+    
+    document.getElementById('gpaCanvasWrapper')?.addEventListener('contextmenu', e => e.preventDefault());
+
+    function runGPAAndPCA() {
+        if(gpaDataList.length < 2) { logStatus("[ERROR] GPAを実行するには少なくとも2つ以上のサンプルが必要です。", "error"); return; }
+        let k = gpaDataList[0].landmarks.length;
+        if(k < 3) { logStatus("[ERROR] 少なくとも3点以上のランドマークが必要です。", "error"); return; }
+        for(let d of gpaDataList) {
+            if(d.landmarks.length !== k) { logStatus(`[ERROR] ランドマークの数が異なります。(${gpaDataList[0].id}: ${k}点, ${d.id}: ${d.landmarks.length}点)`, "error"); return; }
+        }
+        
+        logStatus("[SYSTEM] 一般化プロクラステス解析 (GPA) を実行中...");
+        try {
+            globalGPAResult = BioMathEngine.gpa(gpaDataList);
+            
+            // ★【重要修正】PCA実行とRoute C専用コンテナへの散布図描画
+            // 1. GPAの整列済みデータを1次元配列（Flatten）にしてPCAにかける
+            let flatData = globalGPAResult.alignedSamples.map(s => {
+                return s.current.reduce((acc, pt) => acc.concat(pt), []);
+            });
+            globalPCA = computePCA(flatData);
+            
+            // エクスポート用にグローバルサンプル配列を更新
+            globalSamples = globalGPAResult.alignedSamples.map(s => ({
+                name: s.id, features: s.current.reduce((acc, val) => acc.concat(val), []), fullCoeffs: null
+            }));
+            
+            drawGPAPreview(globalGPAResult);
+            
+            // 2. 描画用のサンプルリストを作成
+            let pcaFormatSamples = globalGPAResult.alignedSamples.map(s => ({ 
+                id: s.id, 
+                name: s.id 
+            }));
+            
+            // 3. Route C専用のコンテナ（'pca-svg-container-c'）を指定してD3.jsで描画を実行
+            drawPCA(globalPCA, pcaFormatSamples, 'pca-svg-container-c');
+            
+            document.getElementById('copy-json-btn').disabled = false;
+            document.getElementById('copy-tsv-btn').disabled = false;
+            
+            logStatus(`[SUCCESS] GPA および PCA 完了 (${gpaDataList.length} samples, ${k} landmarks)`);
+            addLogEntry("Route C (GPA/PCA)", `ランドマーク数:${k}`, `完了 (${gpaDataList.length} samples)`);
+        } catch(e) {
+            console.error(e); logStatus("[ERROR] 計算エンジンの実行中にエラーが発生しました。", "error");
+        }
+    }
+
+    function drawGPAPreview(gpaRes) {
+        const canvas = document.getElementById('gpa-preview-canvas');
+        if(!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const w = canvas.parentElement.clientWidth - 30, h = 250;
+        canvas.width = w; canvas.height = h;
+        ctx.clearRect(0, 0, w, h);
+
+        let allPts = gpaRes.alignedSamples.map(s => s.current).flat();
+        let minX = Math.min(...allPts.map(p=>p[0])), maxX = Math.max(...allPts.map(p=>p[0]));
+        let minY = Math.min(...allPts.map(p=>p[1])), maxY = Math.max(...allPts.map(p=>p[1]));
+        
+        let padX = (maxX - minX)*0.2 || 0.1, padY = (maxY - minY)*0.2 || 0.1;
+        let scale = Math.min(w / (maxX - minX + padX*2), h / (maxY - minY + padY*2));
+        let cx = w/2, cy = h/2;
+        
+        function tx(x) { return cx + x * scale; }
+        function ty(y) { return cy + y * scale; }
+
+        ctx.fillStyle = 'rgba(52, 152, 219, 0.4)';
+        for(let s of gpaRes.alignedSamples) {
+            for(let pt of s.current) {
+                ctx.beginPath(); ctx.arc(tx(pt[0]), ty(pt[1]), 3, 0, Math.PI*2); ctx.fill();
+            }
+        }
+        
+        ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 2; ctx.beginPath();
+        for(let i=0; i<gpaRes.consensus.length; i++) {
+            let pt = gpaRes.consensus[i];
+            if(i===0) ctx.moveTo(tx(pt[0]), ty(pt[1])); else ctx.lineTo(tx(pt[0]), ty(pt[1]));
+        }
+        ctx.closePath(); ctx.stroke();
+        
+        ctx.fillStyle = '#c0392b';
+        for(let i=0; i<gpaRes.consensus.length; i++) {
+            let pt = gpaRes.consensus[i];
+            ctx.beginPath(); ctx.arc(tx(pt[0]), ty(pt[1]), 4, 0, Math.PI*2); ctx.fill();
+            ctx.font = '10px sans-serif'; ctx.fillText((i+1).toString(), tx(pt[0])+6, ty(pt[1])-6);
+        }
+    }
+
     function runRouteB() {
         const rawText = document.getElementById('csv-input').value.trim();
         if(!rawText) { logStatus("[ERROR] CSVデータが入力されていません", "error"); return; }
@@ -1277,34 +1610,26 @@
             const parsedData = parseCSV(rawText, orientation === 'col' ? 'col-sample' : 'row-sample');
             const rootNode = performClustering(parsedData.data, parsedData.sampleNames, distMethod, linkMethod);
             
+            globalTreeRoot = rootNode;
             drawDendrogram(rootNode, distMethod, linkMethod);
             
-            analysisResult = {
-                type: 'clustering', method: linkMethod, distance: distMethod,
-                sampleCount: parsedData.sampleNames.length, timestamp: new Date().toISOString()
-            };
-            
-            // 【改修】Route B では後続アプリ向けのデータ算出が行われないため、エクスポートボタンの有効化は行わない。
+            analysisResult = { type: 'clustering', method: linkMethod, distance: distMethod, sampleCount: parsedData.sampleNames.length, timestamp: new Date().toISOString() };
+            document.getElementById('btn-copy-newick').disabled = false;
             
             logStatus(`[SUCCESS] クラスタリング完了。樹状図を描画しました。`);
             addLogEntry("Route B (Cluster)", `${distMethod} / ${linkMethod}`, `完了 (${parsedData.sampleNames.length} samples)`);
         } catch (err) {
-            console.error(err);
-            logStatus("[ERROR] データのパースまたは計算に失敗しました。CSVの形式を確認してください。", "error");
+            console.error(err); logStatus("[ERROR] データのパースまたは計算に失敗しました。CSVの形式を確認してください。", "error");
         }
     }
 
     function parseCSV(csvText, orientation) {
-        // カンマだけでなく、タブや連続する空白でも正しく区切れるように正規表現を使用
         const lines = csvText.trim().split('\n').map(l => l.split(/[,\t\s]+/).filter(s => s !== ""));
-        let sampleNames = [];
-        let dataMatrix = []; 
-
+        let sampleNames = [], dataMatrix = []; 
         if (orientation === 'col-sample') {
             sampleNames = lines[0].slice(1).filter(n => n !== "");
             const numSamples = sampleNames.length;
             for (let i = 0; i < numSamples; i++) dataMatrix.push([]);
-            
             for (let r = 1; r < lines.length; r++) {
                 if(lines[r].length < 2) continue;
                 for (let c = 1; c <= numSamples; c++) {
@@ -1344,8 +1669,6 @@
     }
 
     function performClustering(data, sampleNames, distType, linkType) {
-        // [Reference] 新納浩幸 (2007) 『Rで学ぶクラスタ解析』
-        // 階層的クラスタリング: Lance-Williams Update Formula に基づくR言語(hclust)互換の距離更新エンジン
         const n = data.length;
         let distMatrix = [];
         for (let i = 0; i < n; i++) {
@@ -1354,7 +1677,7 @@
                 if (i === j) distMatrix[i][j] = 0;
                 else if (i > j) {
                     let d = calcDistance(data[i], data[j], distType);
-                    if (linkType === 'ward') d = d * d; // Ward法では距離の平方を初期値とする
+                    if (linkType === 'ward') d = d * d; 
                     distMatrix[i][j] = d;
                 }
             }
@@ -1381,11 +1704,9 @@
             let cI = clusters[mergeI], cJ = clusters[mergeJ];
             cI.active = false; cJ.active = false;
 
-            // ★ Lance-Williams更新式（UPGMA）の高さ算出の厳格化
             let newCluster = {
                 id: clusters.length, name: `Node${clusters.length}`, size: cI.size + cJ.size,
-                active: true, left: cI, right: cJ,
-                height: linkType === 'ward' ? Math.sqrt(minDist) : minDist
+                active: true, left: cI, right: cJ, height: linkType === 'ward' ? Math.sqrt(minDist) : minDist
             };
             if(linkType !== 'ward' && linkType !== 'upgma') newCluster.height = minDist;
 
@@ -1394,8 +1715,6 @@
                 if (!clusters[k].active && k !== mergeI && k !== mergeJ) continue;
                 let d_ik = distMatrix[cI.id][clusters[k].id], d_jk = distMatrix[cJ.id][clusters[k].id], d_ij = minDist;
                 let ni = cI.size, nj = cJ.size, nk = clusters[k].size, newDist = 0;
-
-                // Lance-Williams 更新式
                 if (linkType === 'upgma') newDist = (ni * d_ik + nj * d_jk) / (ni + nj);
                 else if (linkType === 'complete') newDist = Math.max(d_ik, d_jk);
                 else if (linkType === 'single') newDist = Math.min(d_ik, d_jk);
@@ -1405,8 +1724,7 @@
                 if(!distMatrix[clusters[k].id]) distMatrix[clusters[k].id] = [];
                 distMatrix[clusters[k].id][newCluster.id] = newDist;
             }
-            clusters.push(newCluster);
-            clusterCount--;
+            clusters.push(newCluster); clusterCount--;
         }
         return clusters[clusters.length - 1]; 
     }
@@ -1414,8 +1732,7 @@
     function drawDendrogram(rootNode, distMethod, linkMethod) {
         const container = document.getElementById('tree-svg-container');
         container.innerHTML = '';
-        const width = container.clientWidth;
-        const height = Math.max(container.clientHeight, 400); 
+        const width = container.clientWidth, height = Math.max(container.clientHeight, 400); 
         const margin = {top: 40, right: 120, bottom: 60, left: 40};
 
         const svg = d3.select("#tree-svg-container").append("svg").attr("width", width).attr("height", height);
@@ -1423,16 +1740,14 @@
         
         const hierarchyData = d3.hierarchy(rootNode, d => {
             let children = [];
-            if(d.left) children.push(d.left);
-            if(d.right) children.push(d.right);
+            if(d.left) children.push(d.left); if(d.right) children.push(d.right);
             return children.length > 0 ? children : null;
         });
 
         const clusterLayout = d3.cluster().size([height - margin.top - margin.bottom, width - margin.left - margin.right]);
         clusterLayout(hierarchyData);
 
-        const maxDist = rootNode.height;
-        const plotWidth = width - margin.left - margin.right;
+        const maxDist = rootNode.height, plotWidth = width - margin.left - margin.right;
         
         hierarchyData.each(d => {
             d.y = plotWidth - (d.data.height / maxDist) * plotWidth;
@@ -1457,32 +1772,32 @@
             .attr("class", "node")
             .attr("transform", d => `translate(${d.y},${d.x})`);
 
-        node.append("circle")
-            .attr("r", 4)
-            .attr("fill", d => d.children ? "#7f8c8d" : "#e74c3c");
-
-        node.append("text")
-            .attr("dy", "0.31em")
-            .attr("x", 8)
-            .style("font-size", "11px")
-            .style("font-weight", "bold")
-            .style("fill", "#2c3e50")
-            .text(d => d.children ? "" : d.data.name);
+        node.append("circle").attr("r", 4).attr("fill", d => d.children ? "#7f8c8d" : "#e74c3c");
+        node.append("text").attr("dy", "0.31em").attr("x", 8).style("font-size", "11px").style("font-weight", "bold").style("fill", "#2c3e50").text(d => d.children ? "" : d.data.name);
 
         const xScale = d3.scaleLinear().domain([maxDist, 0]).range([0, plotWidth]);
         const xAxis = d3.axisBottom(xScale).ticks(5);
         
-        g.append("g")
-         .attr("transform", `translate(0, ${height - margin.top - margin.bottom + 20})`)
-         .call(xAxis)
-         .append("text")
-         .attr("x", plotWidth / 2)
-         .attr("y", 35)
-         .attr("fill", "#7f8c8d")
-         .style("font-weight", "bold")
-         .text(`Distance (Height)`);
+        g.append("g").attr("transform", `translate(0, ${height - margin.top - margin.bottom + 20})`)
+         .call(xAxis).append("text").attr("x", plotWidth / 2).attr("y", 35).attr("fill", "#7f8c8d").style("font-weight", "bold").text(`Distance (Height)`);
          
          document.getElementById('tree-title-label').innerText = `Dendrogram: ${linkMethod.toUpperCase()} / ${distMethod}`;
+    }
+
+    let globalTreeRoot = null;
+    function buildNewick(node) {
+        if (!node.left && !node.right) return escapeHTML(node.name);
+        let leftNewick = node.left ? buildNewick(node.left) : "";
+        let rightNewick = node.right ? buildNewick(node.right) : "";
+        let leftDist = node.left ? (node.height - node.left.height).toFixed(6) : 0;
+        let rightDist = node.right ? (node.height - node.right.height).toFixed(6) : 0;
+        return `(${leftNewick}:${leftDist},${rightNewick}:${rightDist})`;
+    }
+
+    function copyNewick() {
+        if(!globalTreeRoot) return;
+        let newick = buildNewick(globalTreeRoot) + ";";
+        fallbackCopyTextToClipboard(newick, "⑩向けNewick形式をクリップボードにコピーしました！");
     }
 
     function escapeHTML(str) {
