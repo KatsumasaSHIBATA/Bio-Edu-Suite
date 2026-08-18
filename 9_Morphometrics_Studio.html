@@ -805,26 +805,44 @@
     }
 
     function copyToIntegrativeJSON() {
-        if (!globalPCA || globalSamples.length === 0) return;
+        if (!globalPCA || globalSamples.length === 0 || !analysisResult) return;
+
+        // 実行された解析タイプを正確に取得
         let exportData = {
             metadata: {
                 source: "Morphometrics_Studio",
                 timestamp: new Date().toISOString(),
-                method: document.getElementById('route_a').checked ? "EFA_PCA" : "GPA_PCA",
-                featureMode: document.getElementById('route_a').checked ? currentFeatureMode : "all_coordinates"
+                method: analysisResult.type === 'gpa_pca' ? "GPA_PCA" : "EFA_PCA",
+                featureMode: analysisResult.mode || "all"
             },
             samples: []
         };
+
         globalSamples.forEach((sample, i) => {
             let originalSample = window.transferredSamples ? window.transferredSamples.find(s => s.id === sample.name || s.name === sample.name) : null;
             let sampleId = originalSample ? originalSample.id : `SAMP_${new Date().getTime()}_${i}`;
             let sampleName = originalSample ? originalSample.name : sample.name;
-            exportData.samples.push({
-                id: sampleId, name: sampleName,
-                pc1: globalPCA.pc1[i], pc2: globalPCA.pc2[i],
-                efaFeatures: sample.features, fullCoeffs: sample.fullCoeffs
-            });
+
+            // 共通データ（PCAスコア）
+            let sampleData = {
+                id: sampleId, 
+                name: sampleName,
+                pc1: globalPCA.pc1[i], 
+                pc2: globalPCA.pc2[i]
+            };
+
+            // 解析手法に応じた固有データの格納
+            if (analysisResult.type === 'efa_pca') {
+                sampleData.efaFeatures = sample.features;
+                sampleData.fullCoeffs = sample.fullCoeffs;
+            } else if (analysisResult.type === 'gpa_pca') {
+                // GPAの場合は、重ね合わせ済みの [x1, y1, x2, y2...] 座標配列を出力
+                sampleData.gpaCoordinates = sample.features; 
+            }
+
+            exportData.samples.push(sampleData);
         });
+
         fallbackCopyTextToClipboard(JSON.stringify(exportData, null, 2), "⑩向け統合JSONをクリップボードにコピーしました！");
     }
 
@@ -1585,6 +1603,9 @@
             drawGPAPreview(globalGPAResult);
             // Route C 専用のコンテナ 'pca-svg-container-c' に明示的に描画させる
             drawPCA(globalPCA, pcaFormatSamples, 'pca-svg-container-c');
+            
+            // ★追加：GPA実行結果をanalysisResultに正しく保存★
+            analysisResult = { type: 'gpa_pca', mode: 'aligned_coordinates', sampleCount: gpaDataList.length, timestamp: new Date().toISOString() };
             
             // 6. エクスポートボタンの有効化
             document.getElementById('copy-json-btn').disabled = false;
