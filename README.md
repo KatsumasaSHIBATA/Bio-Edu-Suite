@@ -1,72 +1,78 @@
-# 🧬 Bio-Edu Suite (バイオ教育スイート)
+# 🧬 Bio-Edu Suite
 
 ## 🎯 概要 (Overview)
-Bio-Edu Suiteは、大学や高校の生物学・バイオインフォマティクス実習のために開発された、 **ブラウザだけで完結する教育用ウェブアプリケーション群** です。 学生が「1Dの遺伝子配列」から「3Dのタンパク質立体構造」までの繋がりや、PCRの原理などを、手を動かしながらインタラクティブに「腹落ち」して学ぶことができます。
-サーバーやPython環境などの面倒な構築は一切不要。学生のPCやスマホで、HTMLファイルを開くだけで即座に実習をスタートできます。
+Bio-Edu Suiteは、大学や高校の生物学・バイオインフォマティクス実習のために開発された、**ブラウザだけで完結する教育用ウェブアプリケーション群**です。
+DNA配列の増幅（PCR）から、系統樹作成、形態測定（EFA）、統計遺伝学（GxE）、そしてタンパク質の立体構造解析まで、現代の生物学における一連の解析パイプラインをシームレスに体験できます。
+
+サーバー構築やPython環境の準備は一切不要。学生のPCやスマホでHTMLファイルを開くだけで、本格的なDry解析実習を即座にスタートできます。
 
 ## 💡 基本哲学 (Our Philosophy)
-本スイートは、単なる「便利な解析ツール」ではなく、教育現場の課題を解決するために以下の哲学に基づいて設計されています。
-
 1. **「なぜ？」を必ず示す (Rationale System)** 
-   操作がブラックボックス化するのを防ぐため、「なぜその温度にするのか？」「なぜその分子を見るのか？」という現場の根拠やコツを解説するパネル（Rationale）をUIの随所に配置しています。
+   操作がブラックボックス化するのを防ぐため、「現場のコツ」として熱力学的根拠やパラメータの意味をUIの随所に提示しています。
 2. **「繋がり」を体感する (Seamless Pipeline)** 
-   1つのアプリで完結するのではなく、配列から構造へ、遺伝子から病気へと繋がるワークフローを体感できるよう、アプリ間でのシームレスなデータ受け渡し（コピペ連携など）を前提としたハブ設計を行っています。
-3. **プロツールへの架け橋 (Bridge to Professional Tools)** 
-   本ツールはあくまで「基礎・本質を直感的に学ぶ」ためのものです。ブラウザの限界を超える高度な機能はあえて実装せず、発展課題として「PyMOL」や「MEGA」などの本格的なプロフェッショナルツールへ学生を誘導する仕組み（Mega Invite）を導入しています。
+   各アプリが独立するのではなく、ダッシュボードを中心とした「バケツリレー形式（TSV/JSON連携）」を採用。配列から構造へ、遺伝子から形態・環境への繋がりを体感できます。
+3. **プロツールへの架け橋 (Bridge to Professional)** 
+   ブラウザ内でMEGA、MAFFT、ImageJ相当のアルゴリズム（UPGMA/NJ/MP/ML、楕円フーリエ解析など）をエミュレートし基礎を学んだ後、プロ用ソフトウェアへステップアップできるよう誘導する仕組みを設けています。
 
-## ✨ 主な特徴 (Features)
-- **完全ブラウザ完結 (Zero Setup):** サーバー不要、インストール不要。ローカルのHTMLファイルを開くだけで動作します。
-- **1D-3D 究極の双方向連動:** アミノ酸配列(1D)の文字をクリックすると、立体構造(3D)の該当箇所がリアルタイムにズーム・強調されるなど、直感的な操作性を実現。
-- **スマートUI & No Alert原則:** データソースに応じて不要な操作パネルを自動で非活性化し、次に押すべきボタンをアニメーションで強調。エラーや通知もポップアップではなく、エレガントなトースト通知で知らせます。
-- **ドラッグ＆ドロップ対応:** FASTA形式の配列データや、PDB/CIFの構造データを画面に投げ込むだけでシームレスに解析が始まります。
-- **スマホ最適化 (Mobile First):** PCだけでなく、学生のスマートフォンでも快適に操作できるよう、レスポンシブな専用レイアウトを採用しています。
+## 📦 収録アプリケーション (v32.x)
 
-## 📦 収録アプリケーション
-現在、DNA配列の増幅からタンパク質の立体構造解析、さらに形態や集団遺伝学まで、バイオサイエンスの幅広いパイプラインをブラウザ上で直感的に学べる全13個の教育用アプリケーションが収録されています。
+ダッシュボードを中心とした全6フェーズ＋拡張パッケージで構成されています。
 
-### Phase 1: 遺伝子増幅と確認 (PCR & RFLP)
-- **① PCR Master Mix Studio** (`1_Master_Mix_Studio.html`)
-  PCRに必要な試薬の最適な混合比率（マスターミックス）を計算します。酵素の入れすぎなど現場でよく起きるミスを事前に防ぐ感覚を養います。
-- **② Thermal Cycler Simulator** (`2_Thermal_Cycler_Simulator.html`)
-  サーマルサイクラーの温度と時間を設定し、DNAの増幅過程をシミュレート。「なぜこの温度にするのか？」という熱力学的根拠を学びます。
-- **③ Virtual PCR & RFLP** (`3_Virtual_PCR_RFLP.html`)
-  仮想のPCR増幅と制限酵素による消化を行い、アガロースゲル電気泳動のバンドパターンを予測・確認します。SNPによるパターンの変化を視覚的に理解します。
+### PHASE 1: 収集・ハブ
+- **Investigation Dashboard** (`index.html`)
+  各アプリへのハブとなるダッシュボード。採集したサンプルと環境メタデータを登録し、各解析アプリへデータを送り出します。
 
-### Phase 2: シーケンス解析とアライメント (Sequence Analysis)
-- **④ Sanger Trace Editor** (`4_Sanger_Trace_Editor.html`)
-  サンガーシーケンシングの生データ（波形ファイル）を読み込み、ノイズを目視で確認して手動で修正・カット。「研究者の目」を養います。
-- **⑤ DNA Alignment Studio** (`5_DNA_Alignment_Studio.html`)
-  *【パイプライン・ハブ】* 生配列のノイズ領域を特定・カットし、複数配列のアライメント（位置合わせ）を行います。後続アプリへのデータ受け渡しの起点となります。
-- **⑥ Alignment Print Studio** (`6_Alignment_Print_Studio.html`)
-  アライメント結果を論文やレポートに添付できる美しいPDF形式で出力し、研究発表に不可欠なプレゼンテーション技術をサポートします。
+### PHASE 2: DNAラボ
+- **① PCR Master Mix Studio** (`1_Master_Mix_Studio.html`) - 反応液の最適化
+- **② Thermal Cycler Simulator** (`2_Thermal_Cycler_Simulator.html`) - 熱プロファイルの設計
+- **③ Virtual PCR & RFLP** (`3_Virtual_PCR_RFLP.html`) - PCR増幅と制限酵素による消化シミュレーション
+- **④ Sanger Trace Editor** (`4_Sanger_Trace_Editor.html`) - 波形データのノイズ手動修正
+- **⑤ DNA Alignment Studio** (`5_DNA_Alignment_Studio.html`) - 配列のアライメントとプライマー設計（パイプライン・ハブ）
+- **⑥ Alignment Print Studio** (`6_Alignment_Print_Studio.html`) - 論文・レポート用出力
+- **⑦ Virtual BLAST Explorer** (`7_Virtual_BLAST_Explorer.html`) - スコアリングとE-valueの学習・相同性検索
+- **⑧ Phylogenetic Tree Builder** (`8_Phylogenetic_Tree_Builder.html`) - 距離行列の計算と系統樹構築。MP法やML法の全探索、ブートストラップ解析をWeb Workerを用いてブラウザ上で完全エミュレートします。
 
-### Phase 3: データベース検索と系統分類 (Bioinformatics & Phylogenetics)
-- **⑦ Virtual BLAST Explorer** (`7_Virtual_BLAST_Explorer.html`)
-  未知のDNA配列から類似配列を検索する「BLAST」をシミュレートし、スコアやE-valueの意味、バイオインフォマティクスの基本を学びます。
-- **⑧ Phylogenetic Tree Builder** (`8_Phylogenetic_Tree_Builder.html`)
-  アライメント結果から距離行列を作成し、生物間の進化的な近さを示す「系統樹」を計算アルゴリズムの視覚化を通じて直感的に構築・理解します。
-
-### Phase 4: 形態・分類と統計遺伝学 (Morphometrics, Taxonomy & Statistical Genetics)
+### PHASE 3: 形態ラボ
 - **⑨ Morphometrics Studio** (`9_Morphometrics_Studio.html`)
-  生物の形態データを定量的に測定・解析し、種間の形態的な差異を統計的に評価する手法を学びます。
-- **⑩ Integrative Taxonomy Studio** (`10_integrative_taxonomy_studio.html`)
-  遺伝子データと形態データを統合し、総合的な視点から生物の分類と種同定を行うプロセスを体験します。
-- **⑪ Statistical Genetics Lab** (`11_Statistical_Genetics_Lab.html`)
-  集団内における遺伝的変異の分布や頻度を統計的に解析し、集団遺伝学の基礎概念をシミュレーションを通じて学習します。
+  画像から輪郭を抽出し、Kuhl & Giardina (1982) の楕円フーリエ解析(EFA)と主成分分析(PCA)による幾何学的形態測定を行います。
 
-### Phase 5: セントラルドグマと構造生物学 (Central Dogma & Structure)
-- **⑫ Central Dogma Simulator** (`12_Central_Dogma_Simulator.html`)
-  DNAからmRNA、そしてタンパク質へのプロセスをシミュレートし、DNA変異がアミノ酸の性質変化を引き起こす生命の基本原理を追体験します。
-- **⑬ Protein Structure Explorer** (`13_Protein_Structure_Explorer.html`)
-  1D-3D連動型のタンパク質立体構造ビューア。アミノ酸の性質変化が最終的に立体構造の異常に繋がる因果関係を3D空間で視覚化・推論します。
+### PHASE 4: 統合検証ルーム
+- **⑩ Integrative Taxonomy Studio (Taxonomy Explorer)** (`10_integrative_taxonomy_studio.html`)
+  分子系統樹と形態データを統合（タングルグラム）し、進化の軌跡をたどる形態空間モーフィングを体験します。
+
+### PHASE 5: 統計遺伝学
+- **⑪ Statistical Genetics Lab** (`11_Statistical_Genetics_Lab.html`)
+  環境データと形態データを結合し、AMMIバイプロットや反応規範、分散分析(ANOVA)を通じて、遺伝×環境相互作用(GxE)を解析します。
+
+### PHASE 6: 構造生物学
+- **⑫ Central Dogma Simulator** (`12_Central_Dogma_Simulator.html`) - 転写・翻訳シミュレータ
+- **⑬ Protein Structure Explorer** (`13_Protein_Structure_Explorer.html`) - 1D-3D連動型タンパク質構造ビューア
+
+---
+
+## 🎒 EXTRA: Bio-Edu Lab Packs (教材パック)
+実際のWet実験（DNA抽出・PCR）と、本スイートのDry解析を統合した「実践的DNA解析パッケージ」を標準収録しています（`lab_packs.html`）。
+
+* **肉種鑑別パック**（標的: cytb）- 食品表示の真偽を特定
+* **シーフード偽装 鑑定パック**（標的: COI）- 白身魚フライやネギトロの正体を暴く
+* **自分のルーツ探求パック**（標的: cytb）- 現生人類と古代人・類人猿の比較
+* **環境DNA (eDNA) 調査パック**（標的: 12S MiFish-U）- コップ一杯の水から外来生物を検出
+* **身近な衛生昆虫バーコーディングパック**（標的: COI）- 蚊やマダニの特定
+* **アニサキス科線虫の同胞種鑑別パック**（標的: 核DNA ITS領域）- 形態で区別不可能な同胞種のPCR-RFLP鑑別
+
+※「Creator's Lounge」として、Python (Google Colab) を用いてNCBIから必要な遺伝子だけを抽出・アノテーションし、独自のカスタムデータベース（JSONカセット）を自作するガイドも用意しています。
+
+## 🛠️ テクノロジー (Tech Stack)
+* **Core:** HTML5, CSS3, Vanilla JavaScript (ES6+)
+* **Zero Dependencies:** ローカル環境で完全に動作し、学生のプライバシー（配列データ等）が外部サーバーに送信されることはありません。
+* **Bio Math Engine (`bio_math_engine.js`):** EFA演算、NIPALS法によるPCA、Lance-Williams更新式に基づく階層的クラスタリング等をブラウザ上で高速処理します。
+* **Phylo Worker (`phylo_worker.js`):** 最大節約法（MP法）におけるFitchのアルゴリズムや、最尤法（ML法）におけるJC69モデル・Felsensteinの尤度計算など、天文学的な計算量になる系統樹探索を **Web Worker** を用いてマルチスレッド処理。UIをフリーズさせることなく本格的なブートストラップ解析（最大1000回）をバックグラウンドで実行します。
 
 ## 🚀 使い方 (How to Use)
-1. 本リポジトリの右上にある緑色の `<> Code` ボタンから `Download ZIP` を選び、ファイル一式をダウンロードして解凍します。
-2. 使いたいアプリの `.html` ファイルをダブルクリックし、Google Chrome や Safari などのモダンブラウザで開きます。
-3. 画面の指示に従い、テキスト入力やファイルのドラッグ＆ドロップを行って実習を進めてください。
+1. 本リポジトリの `<> Code` ボタンから `Download ZIP` でファイル一式をダウンロードして解凍します。
+2. `index.html`（Investigation Dashboard）をブラウザ（Chrome, Safari等）で開きます。
+3. 画面の指示に従い、各ラボツールへアクセスして実習を進めてください。
 
 ## 👨‍🏫 著者 / 開発者 (Author)
 - **SHIBATA Katsumasa**
 - [GitHub: KatsumasaSHIBATA/Bio-Edu-Suite](https://github.com/KatsumasaSHIBATA/Bio-Edu-Suite)
-
-本ツールは、教育現場での実用性を第一に考え、学生の「わからない」をなくすために開発されました。教育機関での実習に、ぜひご活用ください。
