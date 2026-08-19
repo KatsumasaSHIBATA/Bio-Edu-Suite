@@ -235,29 +235,29 @@
                     </label>
                     <textarea id="hybrid-morph-input" class="paste-area" placeholder="系統樹(Newick) または 計測値(CSV)を自動判定します"></textarea>
                     
-                    <!-- CSV判定時のみ活性化する設定群 (左からデータ方向、距離計算、手法の順・fit-content適用) -->
-                    <div style="display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; align-items: flex-start;">
-                        <div style="width: fit-content;">
+                    <!-- 修正1: flex-wrap: nowrap を指定し、各セレクトボックスが確実に1行に収まるよう調整 -->
+                    <div style="display: flex; gap: 10px; margin-top: 8px; flex-wrap: nowrap; align-items: flex-start; overflow-x: auto;">
+                        <div style="flex: 1; min-width: 80px;">
                             <label class="input-label" style="font-size: 11px; margin-bottom: 4px;">データ方向</label>
-                            <select id="data-direction" class="form-select" style="width: fit-content; padding: 4px 8px; font-size: 12px;" disabled>
+                            <select id="data-direction" class="form-select" style="width: 100%; padding: 4px 8px; font-size: 12px;" disabled>
                                 <option value="col">列がサンプル</option>
                                 <option value="row">行がサンプル</option>
                             </select>
                         </div>
-                        <div style="width: fit-content;">
+                        <div style="flex: 1; min-width: 80px;">
                             <label class="input-label" style="font-size: 11px; margin-bottom: 4px;">距離計算</label>
-                            <select id="dist-type" class="form-select" style="width: fit-content; padding: 4px 8px; font-size: 12px;" disabled>
+                            <select id="dist-type" class="form-select" style="width: 100%; padding: 4px 8px; font-size: 12px;" disabled>
                                 <option value="euclidean">ユークリッド距離</option>
                                 <option value="manhattan">マンハッタン距離</option>
                                 <option value="canberra">キャンベラ距離</option>
                             </select>
                         </div>
-                        <div style="width: fit-content; position: relative;">
+                        <div style="flex: 1; min-width: 100px; position: relative;">
                             <label class="input-label" style="font-size: 11px; margin-bottom: 4px; display:flex; align-items:center;">
                                 クラスタリング手法
                                 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_ward')" style="width:14px; height:14px; font-size:10px;">?</button>
                             </label>
-                            <select id="link-type" class="form-select" style="width: fit-content; padding: 4px 8px; font-size: 12px;" disabled>
+                            <select id="link-type" class="form-select" style="width: 100%; padding: 4px 8px; font-size: 12px;" disabled>
                                 <option value="ward">ウォード法 (Ward method)</option>
                                 <option value="upgma">群平均法 (UPGMA)</option>
                                 <option value="single">単連結法 (Single linkage)</option>
@@ -273,7 +273,8 @@
                 </div>
             </div>
             
-            <div style="display: flex; gap: 16px; margin-top: 16px;">
+            <!-- 修正2: flex-end で右寄せし、margin-top を 8px に縮小して余白を詰める -->
+            <div style="display: flex; gap: 16px; margin-top: 8px; justify-content: flex-end;">
                 <button class="btn-primary" onclick="runIntegration()">
                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                     統合解析を実行
