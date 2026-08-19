@@ -80,7 +80,6 @@
         .rationale-btn:hover { transform: scale(1.1); filter: brightness(1.2); }
         .rationale-text { position: fixed; background: #fef9e7; border: 1px solid var(--warning); padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: max-content; max-width: min(320px, calc(100vw - 24px)); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; }
         .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
-        /* ガイドライン v32.1 準拠: 強調テキストで改行しないよう inline-flex に */
         .rationale-text strong { color: #d35400; font-size: 12px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 4px; }
         .rationale-text::after { content: ''; position: absolute; border-width: 6px; border-style: solid; left: var(--arrow-left, 50%); }
         .rationale-text.arrow-top::after { top: -12px; border-color: transparent transparent #fef9e7 transparent; }
@@ -94,7 +93,6 @@
 
         /* 現場のコツ (Bench Tip) - ガイドライン第6項② 準拠 */
         .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px 15px; border-radius: 0 4px 4px 0; font-size: 12px; color: var(--text-main); line-height: 1.6; margin: 15px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-        /* ガイドライン v32.1 準拠: 強調テキストで改行しないよう inline-flex に */
         .bench-tip strong { color: #2980b9; display: inline-flex; align-items: center; gap: 4px; font-size: 13px; margin-right: 8px; font-weight: bold; }
 
         /* より高度な解析ツールへ (ガイドライン第6項⑦ 準拠) */
@@ -105,10 +103,9 @@
         .step-up-card p span { display: block; margin-top: 4px; }
         .step-up-card p span:first-of-type { margin-top: 6px; }
 
-        /* 入力フォーム群 (ガイドライン第11項③ 準拠) */
-        .algo-selector { display: flex; gap: 5px; background: #ecf0f1; padding: 4px; border-radius: 4px; margin-bottom: 5px; align-items: center; flex-wrap: wrap; }
-        /* 見切れ対策: white-space を normal にし word-break: keep-all で単語途中での不自然な改行を防ぐ */
-        .algo-selector label { flex: 1 1 auto; text-align: center; padding: 6px; font-size: 11px; font-weight: bold; color: #7f8c8d; cursor: pointer; border-radius: 3px; transition: 0.2s; white-space: normal; line-height: 1.2; word-break: keep-all; }
+        /* 入力フォーム群 (スマートアライメント適用: textを洗練化し均等割り付け) */
+        .algo-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; background: #ecf0f1; padding: 4px; border-radius: 4px; margin-bottom: 5px; align-items: stretch; }
+        .algo-selector label { display: flex; align-items: center; justify-content: center; height: 100%; text-align: center; padding: 8px 6px; font-size: 11px; font-weight: bold; color: #7f8c8d; cursor: pointer; border-radius: 3px; transition: 0.2s; white-space: normal; line-height: 1.2; word-break: keep-all; box-sizing: border-box; margin: 0; }
         .algo-selector input { display: none; }
         .algo-selector input:checked + label { background: var(--phase-color); color: white; }
 
@@ -133,14 +130,15 @@
         
         .btn:disabled { background: #fdfefe !important; border-color: #bdc3c7 !important; color: #95a5a6 !important; opacity: 1; cursor: not-allowed; box-shadow: none !important; filter: none !important; transform: none !important; }
 
-        /* スライダーUI */
+        /* スライダーUI (見切れ・崩れ防止) */
         .slider-group { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-        .slider-label { font-weight: bold; width: 40px; color: #34495e; font-size: 11px;}
-        .slider-val { width: 45px; text-align: right; color: #e74c3c; font-weight: bold; font-family: monospace; font-size: 11px;}
-        input[type=range] { flex: 1; accent-color: var(--phase-color); }
+        .slider-label { font-weight: bold; width: 40px; color: #34495e; font-size: 11px; flex-shrink: 0; }
+        .slider-val { width: 50px; text-align: right; color: #e74c3c; font-weight: bold; font-family: monospace; font-size: 11px; flex-shrink: 0; }
+        input[type=range] { flex: 1; min-width: 50px; accent-color: var(--phase-color); }
 
         /* ビジュアライゼーションエリア */
         .tree-card { flex: 1.8; border-top-color: var(--phase-color); min-width: 450px; }
+        /* レイアウトシフトを防ぐための固定高やFlex調整 */
         .canvas-container { background: #fff; border: 1px solid #bdc3c7; border-radius: 4px; padding: 10px; display: flex; justify-content: center; align-items: center; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); overflow: hidden; position: relative;}
         canvas { background: white; max-width: 100%; } 
         
@@ -173,12 +171,13 @@
         @media screen and (max-width: 900px) {
             .main-content { flex-direction: column !important; }
             .card { min-width: 100% !important; margin-bottom: 10px; }
+            .algo-selector { grid-template-columns: 1fr; }
         }
 
         @media screen and (max-width: 768px) {
-            .algo-selector, #route-a-controls .drop-zone + div > div:first-child, .slider-group { flex-direction: column !important; align-items: stretch !important; gap: 10px; }
+            #route-a-controls .drop-zone + div > div:first-child, .slider-group { flex-direction: column !important; align-items: stretch !important; gap: 10px; }
             .btn, select { width: 100% !important; box-sizing: border-box; }
-            .canvas-container, .log-table, .tree-card .card-body, #pca-svg-container, #tree-svg-container, #viz-route-a, #viz-route-c {
+            .canvas-container, .log-table, .tree-card .card-body, #pca-svg-container, #viz-route-a, #viz-route-c {
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
             }
@@ -196,9 +195,9 @@
                 </svg>
                 Morphometrics Studio
             </h1>
-            <p>Bio-Edu Suite: Phase 3 / EFA, Clustering & Procrustes Analysis</p>
+            <p>Bio-Edu Suite: Phase 3 / EFA & Procrustes Analysis</p>
         </div>
-        <div class="version-badge">v32.1</div>
+        <div class="version-badge">v32.2</div>
     </div>
 </div>
 
@@ -215,16 +214,13 @@
                 <!-- JSで埋め込み -->
             </div>
 
-            <!-- Route選択UI: A -> C -> B の順序へ最適化し、文言を見切れ防止対応 -->
+            <!-- Route選択UI: スマートアライメント適用・テキスト洗練 -->
             <div class="algo-selector" data-tooltip="データに合わせて解析ルートを切り替えます">
                 <input type="radio" id="route_a" name="route" value="A" checked onchange="switchRoute()">
-                <label for="route_a">Route A (画像/EFA ▶︎ PCA)</label>
+                <label for="route_a">画像/EFA ▶︎ PCA</label>
                 
                 <input type="radio" id="route_c" name="route" value="C" onchange="switchRoute()">
-                <label for="route_c">Route C (ランドマーク/GPA ▶︎ PCA)</label>
-                
-                <input type="radio" id="route_b" name="route" value="B" onchange="switchRoute()">
-                <label for="route_b">Route B (計測値 ▶︎ 樹状図)</label>
+                <label for="route_c">ランドマーク/GPA ▶︎ PCA</label>
             </div>
 
             <!-- ================= Route A コントロール ================= -->
@@ -284,7 +280,6 @@
                     </div>
                 </div>
                 
-                <!-- 教育的意義: 現場のコツ -->
                 <div class="bench-tip">
                     <strong>
                         <svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>
@@ -319,7 +314,6 @@
             <!-- ================= Route C コントロール ================= -->
             <div id="route-c-controls" style="display: none;">
                 
-                <!-- GPAの根拠を1つに美しく集約 -->
                 <div class="edu-panel rationale-panel">
                     <strong>一般化プロクラステス解析 (GPA)</strong>
                     <button class="rationale-btn" onclick="toggleRationale(event, 'rat-gpa-all')">?</button><br>
@@ -338,7 +332,6 @@
                     ・適当に回すのではなく、線形代数の「カブシュ・アルゴリズム」を用いることで、数学的に唯一の「最適解」を一瞬で導き出しています。
                 </div>
                 
-                <!-- 現場のコツ (ランドマークの同調性) -->
                 <div class="bench-tip">
                     <strong>
                         <svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>
@@ -360,7 +353,6 @@
                         <button class="btn btn-secondary" onclick="clearCurrentLandmarks()">クリア</button>
                     </div>
                     
-                    <!-- 美しく統合されたズームオーバーレイUI -->
                     <div style="position: relative; border: 1px solid #bdc3c7; height: 350px; background: #e0e0e0; border-radius: 4px; overflow: hidden; cursor: crosshair; margin-top: 10px;" id="gpaCanvasWrapper">
                         <canvas id="gpaCanvas" style="position: absolute; top:0; left:0; width:100%; height:100%;"></canvas>
                         
@@ -379,66 +371,8 @@
                     </button>
                 </div>
             </div>
-
-            <!-- ================= Route B コントロール ================= -->
-            <div id="route-b-controls" style="display: none;">
-                <div class="edu-panel rationale-panel">
-                    <strong>階層的クラスタリング (Lance-Williams公式)</strong>
-                    <button class="rationale-btn" onclick="toggleRationale(event, 'rat_clust')">?</button><br>
-                    既存の計測データから距離行列を計算し、R言語の <code>hclust</code> と数学的に完全に等価な更新式エンジンを用いて、厳密な樹状図を描画します。
-                </div>
-                <div id="rat_clust" class="rationale-text">
-                    <strong>【根拠：Lance-Williams Update Formula】</strong><br>
-                    ・Rにおけるクラスタ解析のアルゴリズムに準拠。特にウォード法(Ward's D2)においては、初期距離を平方し、結合時に重心間の偏差平方和の増加量を最小化するように更新をかけます。最後に平方根をとることで、枝の高さ(Height)が実際の「距離」を表すR互換の樹状図となります。
-                </div>
-
-                <div class="drop-zone" id="dropZoneB" data-tooltip="CSVファイルをドラッグ＆ドロップ">
-                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                        <polyline points="14 2 14 8 20 8"/>
-                        <line x1="12" y1="18" x2="12" y2="12"/>
-                        <line x1="9" y1="15" x2="15" y2="15"/>
-                    </svg>
-                    <p>ここをクリック、またはCSVファイルをドラッグ＆ドロップ</p>
-                    <input type="file" id="fileInputB" accept=".csv">
-                </div>
-
-                <textarea id="csv-input" class="paste-area" placeholder="計測データをCSV形式で入力してください"></textarea>
-                
-                <div style="display:flex; gap: 5px; margin-bottom: 5px; flex-wrap: wrap;">
-                    <select id="data-direction"><option value="col">列がサンプル</option><option value="row">行がサンプル</option></select>
-                    <select id="dist-method" style="flex: 1;">
-                        <option value="euclidean" selected>ユークリッド距離</option>
-                        <option value="manhattan">マンハッタン距離</option>
-                        <option value="canberra">キャンベラ距離</option>
-                    </select>
-                </div>
-                <div style="display:flex; gap: 5px; margin-bottom: 15px;">
-                    <select id="clustering-method" style="flex: 1;">
-                        <option value="ward" selected>ウォード法 (Ward's D2)</option>
-                        <option value="upgma">群平均法 (UPGMA)</option>
-                        <option value="complete">完全連結法 (Complete)</option>
-                        <option value="single">単連結法 (Single)</option>
-                    </select>
-                </div>
-                <div style="display: flex; gap: 10px; justify-content: space-between;">
-                    <button class="btn btn-primary" style="flex: 1;" onclick="runRouteB()">
-                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                        階層的クラスタ解析を実行
-                    </button>
-                </div>
-            </div>
             
-            <!-- エクスポートボタンコンテナ: 重複・不要ボタンを排除し美しく整理 -->
             <div id="export-buttons-container" style="margin-top: 10px; display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap;">
-                
-                <!-- Route B 用連携ボタン (⑩統合分類へ流し込むためのNewick形式出力) -->
-                <button class="btn btn-secondary" id="btn-copy-newick" onclick="copyNewick()" disabled style="display:none;" data-tooltip="統合分類(Phase 4)向けのNewick形式でコピーします">
-                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-                    ⑩向けNewick形式をコピー
-                </button>
-
-                <!-- Route A, C 共通のPCA連携出力ボタン -->
                 <button class="btn btn-secondary" id="copy-tsv-btn" onclick="copyToMorphoTSV()" disabled data-tooltip="統計解析(Phase 5)向けのTSV形式でコピーします">
                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
                     ⑪向け形態TSVをコピー
@@ -464,7 +398,6 @@
 
             <!-- Route A (EFA) ビュー -->
             <div id="viz-route-a" style="display:flex; flex-direction:column; flex:1; gap:10px;">
-                <!-- 形状シミュレータ -->
                 <div class="canvas-container" style="flex-direction:column; align-items: stretch; justify-content: flex-start; padding: 10px 15px; flex: none;">
                     <span style="font-size:12px; font-weight:bold; color:#7f8c8d; margin-bottom:5px; display:flex; align-items:center;">
                         逆フーリエ変換 形状シミュレータ
@@ -478,6 +411,7 @@
                     <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
                         <canvas id="shape-canvas" style="flex:1; height: 180px; border:1px dashed #bdc3c7; border-radius:4px; min-width: 200px;"></canvas>
                         
+                        <!-- 生物学的適正化: ±3σ に復元 -->
                         <div id="pc-sliders" style="flex:1; display: none; background: #fafbfc; padding: 10px; border-radius: 4px; border: 1px solid #ecf0f1; min-width: 200px;">
                             <div class="slider-group">
                                 <span class="slider-label">PC 1</span>
@@ -494,7 +428,6 @@
                     </div>
                 </div>
                 
-                <!-- PCA散布図 -->
                 <div class="canvas-container" style="flex:1; min-height:280px; position:relative;">
                     <span style="position:absolute; top:10px; left:10px; font-size:11px; font-weight:bold; color:#7f8c8d;">主成分分析 (PCA) 形態空間</span>
                     <span style="position:absolute; top:25px; left:10px; font-size:10px; color:#95a5a6;">※ドットをクリックすると、スライダーが連動しそのサンプルの形を復元します</span>
@@ -504,22 +437,58 @@
             
             <!-- Route C (GPA) ビュー -->
             <div id="viz-route-c" style="display:none; flex-direction:column; flex:1; gap:10px;">
-                <div class="canvas-container" style="flex-direction:column; align-items: stretch; padding: 10px 15px; flex: none; min-height: 300px;">
-                    <span style="font-size:12px; font-weight:bold; color:#7f8c8d; margin-bottom:5px;">GPA 重ね合わせプレビュー</span>
-                    <canvas id="gpa-preview-canvas" style="flex:1; border:1px dashed #bdc3c7; border-radius:4px; min-height:240px;"></canvas>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    
+                    <!-- ガタつき防止の固定高 (360px) を維持した堅牢なレイアウト -->
+                    <div class="canvas-container" style="flex:1; flex-direction:column; align-items: stretch; justify-content: flex-start; padding: 10px 15px; min-width: 250px; height: 360px;">
+                        <span style="font-size:12px; font-weight:bold; color:#7f8c8d; margin-bottom:5px; flex-shrink: 0;">GPA 重ね合わせプレビュー</span>
+                        <div style="display: flex; flex: 1; min-height: 0;">
+                            <canvas id="gpa-preview-canvas" style="flex:1; border:1px dashed #bdc3c7; border-radius:4px; height: 100%;"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- TPS 変位グリッド・シミュレータ (ズームボタン完全撤廃版) -->
+                    <div class="canvas-container" style="flex:1; flex-direction:column; align-items: stretch; justify-content: flex-start; padding: 10px 15px; min-width: 250px; height: 360px;">
+                        <span style="font-size:12px; font-weight:bold; color:#7f8c8d; margin-bottom:5px; display:flex; align-items:center; flex-shrink: 0;">
+                            TPS 変位グリッド・シミュレータ
+                            <div class="rationale-wrapper"><button class="rationale-btn" onclick="toggleRationale(event, 'rat_tps')">?</button>
+                                <div id="rat_tps" class="rationale-text">
+                                    <strong>【根拠：変位グリッド (Deformation Grid)】</strong><br>
+                                    ・ダーシー・トムソンの『生物の形態と進化』の理論を数学的に視覚化したものです。<br>
+                                    ・方眼の歪みを見ることで、全体的な「伸び縮み」や、局所的な「曲がり」といった形の変異の方向性が、数字の羅列よりも直感的に理解できます。
+                                </div>
+                            </div>
+                        </span>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 10px; flex: 1; min-height: 0;">
+                            <div style="position: relative; flex: 1; display: flex; min-height: 10px; overflow: hidden;">
+                                <canvas id="tps-canvas" style="flex:1; border:1px dashed #bdc3c7; border-radius:4px;"></canvas>
+                            </div>
+                            
+                            <!-- Route C 専用のぬるっと動くPCスライダー (生物学的適正化 ±3σ) -->
+                            <div id="pc-sliders-c" style="display: none; background: #fafbfc; padding: 10px; border-radius: 4px; border: 1px solid #ecf0f1; flex-shrink: 0; flex-direction: column; justify-content: flex-end;">
+                                <div class="slider-group">
+                                    <span class="slider-label">PC 1</span>
+                                    <input type="range" id="pc1-slider-c" min="-3" max="3" step="0.1" value="0" oninput="targetPc1C = parseFloat(this.value); startTPSAnimation();">
+                                    <span class="slider-val" id="pc1-val-c">0.0&sigma;</span>
+                                </div>
+                                <div class="slider-group">
+                                    <span class="slider-label">PC 2</span>
+                                    <input type="range" id="pc2-slider-c" min="-3" max="3" step="0.1" value="0" oninput="targetPc2C = parseFloat(this.value); startTPSAnimation();">
+                                    <span class="slider-val" id="pc2-val-c">0.0&sigma;</span>
+                                </div>
+                                <button class="btn btn-secondary" style="width:100%; margin-top:5px; font-size:11px;" onclick="resetSlidersC()" data-tooltip="スライダーを初期位置(平均形状)に戻します">リセット</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="canvas-container" style="flex:1; min-height:280px; position:relative;">
                     <span style="position:absolute; top:10px; left:10px; font-size:11px; font-weight:bold; color:#7f8c8d;">主成分分析 (PCA) 形態空間</span>
+                    <span style="position:absolute; top:25px; left:10px; font-size:10px; color:#95a5a6;">※ドットをクリックすると、スライダーが連動しリアルタイムに空間を歪ませます</span>
                     <!-- Route C 専用のPCA描画コンテナ -->
                     <div id="pca-svg-container-c" style="width:100%; height:100%;"></div>
                 </div>
-            </div>
-
-            <!-- Route B (クラスタリング) ビュー -->
-            <div id="viz-route-b" style="display:none; flex:1; flex-direction:column; position:relative; min-height: 400px;" class="canvas-container">
-                <span style="position:absolute; top:10px; left:10px; font-size:11px; font-weight:bold; color:#7f8c8d; z-index:10; background:rgba(255,255,255,0.9); padding:2px 6px; border-radius:4px;" id="tree-title-label">階層的クラスタリング 樹状図 (Dendrogram)</span>
-                <div id="tree-svg-container" style="width:100%; height:100%; overflow:auto;"></div>
             </div>
 
             <!-- 解析ログパネル -->
@@ -563,7 +532,7 @@
 
 <div id="d3-tooltip" class="custom-tooltip"></div>
 <div id="toast"></div>
-<div class="footer">&copy; 2026 Bio-Edu Suite v32.1 | Developed for Bioinformatics & Wet-Lab Education</div>
+<div class="footer">&copy; 2026 Bio-Edu Suite v32.2 | Developed for Bioinformatics & Wet-Lab Education</div>
 
 <script>
     // ==========================================
@@ -723,7 +692,6 @@
         zone.addEventListener('click', () => document.getElementById(fileInputId).click());
     };
     setupDropZone('dropZoneA', 'chain-code-input', 'fileInputA');
-    setupDropZone('dropZoneB', 'csv-input', 'fileInputB');
 
     let analysisResult = null;
     let globalPCA = null;
@@ -789,7 +757,8 @@
         }
         
         switchRoute();
-        initGPACanvas(); 
+        initGPACanvas();
+        initTPSCanvas(); 
     };
 
     function copyToMorphoTSV() {
@@ -807,7 +776,6 @@
     function copyToIntegrativeJSON() {
         if (!globalPCA || globalSamples.length === 0 || !analysisResult) return;
 
-        // 実行された解析タイプを正確に取得
         let exportData = {
             metadata: {
                 source: "Morphometrics_Studio",
@@ -823,7 +791,6 @@
             let sampleId = originalSample ? originalSample.id : `SAMP_${new Date().getTime()}_${i}`;
             let sampleName = originalSample ? originalSample.name : sample.name;
 
-            // 共通データ（PCAスコア）
             let sampleData = {
                 id: sampleId, 
                 name: sampleName,
@@ -831,12 +798,10 @@
                 pc2: globalPCA.pc2[i]
             };
 
-            // 解析手法に応じた固有データの格納
             if (analysisResult.type === 'efa_pca') {
                 sampleData.efaFeatures = sample.features;
                 sampleData.fullCoeffs = sample.fullCoeffs;
             } else if (analysisResult.type === 'gpa_pca') {
-                // GPAの場合は、重ね合わせ済みの [x1, y1, x2, y2...] 座標配列を出力
                 sampleData.gpaCoordinates = sample.features; 
             }
 
@@ -863,15 +828,12 @@
         const route = document.querySelector('input[name="route"]:checked').value;
         document.getElementById('route-a-controls').style.display = (route === 'A') ? 'block' : 'none';
         document.getElementById('route-c-controls').style.display = (route === 'C') ? 'block' : 'none';
-        document.getElementById('route-b-controls').style.display = (route === 'B') ? 'block' : 'none';
         
         document.getElementById('viz-route-a').style.display = (route === 'A') ? 'flex' : 'none';
         document.getElementById('viz-route-c').style.display = (route === 'C') ? 'flex' : 'none';
-        document.getElementById('viz-route-b').style.display = (route === 'B') ? 'flex' : 'none';
         
         const exportContainer = document.getElementById('export-buttons-container');
         if (exportContainer) {
-            document.getElementById('btn-copy-newick').style.display = (route === 'B') ? 'inline-flex' : 'none';
             document.getElementById('copy-tsv-btn').style.display = (route === 'A' || route === 'C') ? 'inline-flex' : 'none';
             document.getElementById('copy-json-btn').style.display = (route === 'A' || route === 'C') ? 'inline-flex' : 'none';
             exportContainer.style.display = 'flex';
@@ -881,8 +843,10 @@
         
         if(route === 'C') {
             resizeGPACanvas(); drawGPACanvas();
-            // 切替時、プレビューキャンバスがリサイズされるように再度呼び出す
-            if(globalGPAResult) drawGPAPreview(globalGPAResult);
+            if(globalGPAResult) {
+                drawGPAPreview(globalGPAResult);
+                resetSlidersC();
+            }
         }
     }
 
@@ -1202,8 +1166,15 @@
             return p;
         }
 
-        let scale = Math.min(w, h) * 0.35; 
         let meanPts = getPts(globalMeanCoeffs);
+        let curPts = getPts(coeffs);
+
+        let allPts = [...meanPts, ...curPts];
+        let maxX = Math.max(...allPts.map(p => Math.abs(p.x)));
+        let maxY = Math.max(...allPts.map(p => Math.abs(p.y)));
+        let maxAbs = Math.max(maxX, maxY) || 1;
+        let scale = Math.min(w/2, h/2) * 0.85 / maxAbs; 
+
         ctx.beginPath();
         for(let i=0; i<meanPts.length; i++) {
             let canvasX = w/2 + meanPts[i].x * scale, canvasY = h/2 - meanPts[i].y * scale; 
@@ -1213,7 +1184,6 @@
         ctx.strokeStyle = '#bdc3c7'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]); ctx.stroke();
         ctx.setLineDash([]);
 
-        let curPts = getPts(coeffs);
         ctx.beginPath();
         for(let i=0; i<curPts.length; i++) {
             let canvasX = w/2 + curPts[i].x * scale, canvasY = h/2 - curPts[i].y * scale; 
@@ -1232,18 +1202,15 @@
         const container = document.getElementById(containerId);
         if (!container) return;
 
-        // 基本チェック
         if (!pcaResult || !Array.isArray(pcaResult.pc1) || !Array.isArray(pcaResult.pc2)) {
             console.warn("drawPCA: invalid pcaResult", pcaResult);
             logStatus("[ERROR] PCA結果が不正です。", "error");
             return;
         }
 
-        // 既存内容をクリア
         container.innerHTML = '';
         const margin = {top: 40, right: 20, bottom: 40, left: 40};
 
-        // getBoundingClientRect を使って確実に実サイズを得る。0 の場合はフォールバック（300px）を与える。
         let bbox = container.getBoundingClientRect();
         let cw = Math.max(bbox.width - margin.left - margin.right, 200);
         let ch = Math.max(bbox.height - margin.top - margin.bottom, 200);
@@ -1255,7 +1222,6 @@
             ch = Math.max(bbox.height - margin.top - margin.bottom, 200);
         }
 
-        // レイアウト確定のタイミングを待って描画（真っ白防止のキモ）
         window.requestAnimationFrame(() => {
             container.innerHTML = '';
             let freshBbox = container.getBoundingClientRect();
@@ -1269,7 +1235,8 @@
 
             let minX = d3.min(pcaResult.pc1), maxX = d3.max(pcaResult.pc1);
             let minY = d3.min(pcaResult.pc2), maxY = d3.max(pcaResult.pc2);
-            let padX = (maxX - minX) * 0.1 || 1, padY = (maxY - minY) * 0.1 || 1;
+            
+            let padX = (maxX - minX) * 0.2 || 1, padY = (maxY - minY) * 0.2 || 1;
 
             const xScale = d3.scaleLinear().domain([minX - padX, maxX + padX]).range([0, rCw]);
             const yScale = d3.scaleLinear().domain([minY - padY, maxY + padY]).range([rCh, 0]);
@@ -1299,15 +1266,17 @@
                         document.getElementById('pc2-slider').value = s2;
                         updateShapeFromSliders();
                         logStatus(`[SYSTEM] ${d.name || d.id} を選択し、形状を復元しました。`);
+                    } else if (containerId === 'pca-svg-container-c') {
+                        let i = samples.indexOf(d);
+                        targetPc1C = (pcaResult.pc1[i] / (pcaResult.sd1||1));
+                        targetPc2C = (pcaResult.pc2[i] / (pcaResult.sd2||1));
+                        startTPSAnimation();
+                        logStatus(`[SYSTEM] ${d.name || d.id} を選択し、TPSシミュレータに反映しました。`);
                     }
                 });
         });
     }
 
-    // =========================================================
-    // Route C: ランドマーク・プロクラステス解析 (GPA) & PCA
-    // lib/bio_math_engine.js の代用としてMVC集約
-    // =========================================================
     const BioMathEngine = {
         translateToOrigin: function(landmarks) {
             let n = landmarks.length, sumX = 0, sumY = 0;
@@ -1334,17 +1303,13 @@
             }
             const H_mat = new ML.Matrix(H);
             
-            // 安全なSVD呼び出し（互換性対応・堅牢化）
             let U, V;
             try {
-                // ml-matrix のバージョンによる違いを吸収
                 const svd = typeof ML.SVD === 'function' ? new ML.SVD(H_mat) : new ML.SingularValueDecomposition(H_mat);
                 U = svd.leftSingularVectors || svd.U;
                 V = svd.rightSingularVectors || svd.V;
             } catch(err) {
-                // 万が一ライブラリで失敗した場合は単位行列（回転なし）をフォールバックしてクラッシュを防ぐ
-                U = ML.Matrix.eye(2);
-                V = ML.Matrix.eye(2);
+                U = ML.Matrix.eye(2); V = ML.Matrix.eye(2);
             }
             
             let R = V.mmul(U.transpose());
@@ -1396,6 +1361,84 @@
                 iter++;
             }
             return { consensus: consensus, alignedSamples: processed };
+        },
+        
+        tpsBasis: function(r) {
+            return r === 0 ? 0 : r * r * Math.log(r * r);
+        },
+        
+        // TPS連立方程式ソルバー（境界アンカーポイントにも完全対応）
+        computeTPS: function(sourcePts, targetPts) {
+            const n = sourcePts.length;
+            let L = Array.from({length: n + 3}, () => new Array(n + 3).fill(0));
+            let Y = Array.from({length: n + 3}, () => new Array(2).fill(0));
+            
+            const lambda = 1e-5; // 正則化
+            
+            for(let i = 0; i < n; i++) {
+                for(let j = 0; j < n; j++) {
+                    const dx = sourcePts[i][0] - sourcePts[j][0];
+                    const dy = sourcePts[i][1] - sourcePts[j][1];
+                    const r = Math.sqrt(dx*dx + dy*dy);
+                    L[i][j] = this.tpsBasis(r);
+                    if (i === j) L[i][j] += lambda; 
+                }
+                L[i][n] = 1; L[i][n+1] = sourcePts[i][0]; L[i][n+2] = sourcePts[i][1];
+                L[n][i] = 1; L[n+1][i] = sourcePts[i][0]; L[n+2][i] = sourcePts[i][1];
+                
+                Y[i][0] = targetPts[i][0];
+                Y[i][1] = targetPts[i][1];
+            }
+            
+            const L_mat = new ML.Matrix(L);
+            const Y_mat = new ML.Matrix(Y);
+            let Wa;
+            
+            try {
+                if (typeof ML.pseudoInverse === 'function') {
+                    const L_pinv = ML.pseudoInverse(L_mat);
+                    Wa = L_pinv.mmul(Y_mat).to2DArray();
+                } else {
+                    const svd = typeof ML.SVD === 'function' ? new ML.SVD(L_mat) : new ML.SingularValueDecomposition(L_mat);
+                    const U = svd.U || svd.leftSingularVectors;
+                    const V = svd.V || svd.rightSingularVectors;
+                    const S = svd.S || svd.diagonalMatrix;
+                    
+                    let S_inv = ML.Matrix.zeros(S.rows, S.columns);
+                    let tol = 1e-9;
+                    for(let i=0; i<Math.min(S.rows, S.columns); i++) {
+                        if(Math.abs(S.get(i,i)) > tol) S_inv.set(i, i, 1.0/S.get(i,i));
+                    }
+                    const L_pinv = V.mmul(S_inv).mmul(U.transpose());
+                    Wa = L_pinv.mmul(Y_mat).to2DArray();
+                }
+            } catch(e) {
+                console.error("TPS Matrix computation failed", e);
+                Wa = Array.from({length: n + 3}, () => new Array(2).fill(0)); 
+            }
+            
+            return {
+                W: Wa.slice(0, n),
+                a1: Wa[n][0], ax: Wa[n+1][0], ay: Wa[n+2][0],
+                b1: Wa[n][1], bx: Wa[n+1][1], by: Wa[n+2][1],
+                sourcePts: sourcePts // アンカーを含むすべての入力座標を保持
+            };
+        },
+        
+        applyTPS: function(pt, tpsCoeffs) {
+            const {W, a1, ax, ay, b1, bx, by, sourcePts} = tpsCoeffs;
+            let u = a1 + ax * pt[0] + ay * pt[1];
+            let v = b1 + bx * pt[0] + by * pt[1];
+            
+            for(let i=0; i<sourcePts.length; i++) {
+                const dx = pt[0] - sourcePts[i][0];
+                const dy = pt[1] - sourcePts[i][1];
+                const r = Math.sqrt(dx*dx + dy*dy);
+                const U_r = this.tpsBasis(r);
+                u += W[i][0] * U_r;
+                v += W[i][1] * U_r;
+            }
+            return [u, v];
         }
     };
 
@@ -1581,18 +1624,14 @@
         
         logStatus("[SYSTEM] 一般化プロクラステス解析 (GPA) を実行中...");
         try {
-            // 1. GPAの実行
             globalGPAResult = BioMathEngine.gpa(gpaDataList);
             
-            // 2. PCA用へデータをFlatten（平坦化）
             let flatData = globalGPAResult.alignedSamples.map(s => {
                 return s.current.reduce((acc, pt) => acc.concat(pt), []);
             });
             
-            // 3. 主成分分析 (PCA) の実行
             globalPCA = computePCA(flatData);
             
-            // 4. サンプル情報の構築
             let pcaFormatSamples = globalGPAResult.alignedSamples.map(s => ({
                 id: s.id,
                 name: s.id,
@@ -1601,15 +1640,16 @@
             
             globalSamples = pcaFormatSamples;
             
-            // 5. プレビューおよびPCA散布図の描画（コンテナCを指定）
             drawGPAPreview(globalGPAResult);
-            // Route C 専用のコンテナ 'pca-svg-container-c' に明示的に描画させる
             drawPCA(globalPCA, pcaFormatSamples, 'pca-svg-container-c');
             
-            // ★追加：GPA実行結果をanalysisResultに正しく保存★
+            document.getElementById('pc-sliders-c').style.display = 'flex';
+            resetSlidersC();
+            tpsForceRecomputeBaseScale = true; 
+            renderTPSForPC(currentPc1C, currentPc2C);
+            
             analysisResult = { type: 'gpa_pca', mode: 'aligned_coordinates', sampleCount: gpaDataList.length, timestamp: new Date().toISOString() };
             
-            // 6. エクスポートボタンの有効化
             document.getElementById('copy-json-btn').disabled = false;
             document.getElementById('copy-tsv-btn').disabled = false;
             
@@ -1625,16 +1665,14 @@
         const canvas = document.getElementById('gpa-preview-canvas');
         if(!canvas) return;
 
-        // ★レイアウト確定のタイミングを待って描画（真っ白・見切れ防止のキモ）
         window.requestAnimationFrame(() => {
             const rect = canvas.getBoundingClientRect();
             let w = rect.width;
             let h = rect.height;
             
-            // サイズが0の場合（非表示時など）のフォールバック
             if (h <= 1 || w <= 1) {
-                h = 240; // min-heightで設定した値
-                w = canvas.parentElement.clientWidth - 30; // パディング分引く
+                h = 240; 
+                w = canvas.parentElement.clientWidth - 30;
             }
 
             canvas.width = w;
@@ -1676,207 +1714,226 @@
         });
     }
 
-    function runRouteB() {
-        const rawText = document.getElementById('csv-input').value.trim();
-        if(!rawText) { logStatus("[ERROR] CSVデータが入力されていません", "error"); return; }
-        
-        const orientation = document.getElementById('data-direction').value;
-        const distMethod = document.getElementById('dist-method').value;
-        const linkMethod = document.getElementById('clustering-method').value;
+    let currentPc1C = 0, currentPc2C = 0;
+    let targetPc1C = 0, targetPc2C = 0;
+    let tpsAnimationId = null;
 
-        logStatus(`[SYSTEM] 階層的クラスタリング (${distMethod} / ${linkMethod}) を計算中...`);
-        try {
-            const parsedData = parseCSV(rawText, orientation === 'col' ? 'col-sample' : 'row-sample');
-            const rootNode = performClustering(parsedData.data, parsedData.sampleNames, distMethod, linkMethod);
-            
-            globalTreeRoot = rootNode;
-            drawDendrogram(rootNode, distMethod, linkMethod);
-            
-            analysisResult = { type: 'clustering', method: linkMethod, distance: distMethod, sampleCount: parsedData.sampleNames.length, timestamp: new Date().toISOString() };
-            document.getElementById('btn-copy-newick').disabled = false;
-            
-            logStatus(`[SUCCESS] クラスタリング完了。樹状図を描画しました。`);
-            addLogEntry("Route B (Cluster)", `${distMethod} / ${linkMethod}`, `完了 (${parsedData.sampleNames.length} samples)`);
-        } catch (err) {
-            console.error(err); logStatus("[ERROR] データのパースまたは計算に失敗しました。CSVの形式を確認してください。", "error");
+    let tpsBaseScale = 1;
+    let tpsBaseCx = 0, tpsBaseCy = 0;
+    let tpsBaseViewCx = 0, tpsBaseViewCy = 0;
+    let tpsForceRecomputeBaseScale = true;
+
+    function initTPSCanvas() {
+        // ズーム・パンイベント削除済み
+    }
+
+    function resetSlidersC() {
+        targetPc1C = 0;
+        targetPc2C = 0;
+        startTPSAnimation();
+    }
+
+    function startTPSAnimation() {
+        if (!tpsAnimationId) {
+            tpsAnimationLoop();
         }
     }
 
-    function parseCSV(csvText, orientation) {
-        const lines = csvText.trim().split('\n').map(l => l.split(/[,\t\s]+/).filter(s => s !== ""));
-        let sampleNames = [], dataMatrix = []; 
-        if (orientation === 'col-sample') {
-            sampleNames = lines[0].slice(1).filter(n => n !== "");
-            const numSamples = sampleNames.length;
-            for (let i = 0; i < numSamples; i++) dataMatrix.push([]);
-            for (let r = 1; r < lines.length; r++) {
-                if(lines[r].length < 2) continue;
-                for (let c = 1; c <= numSamples; c++) {
-                    let val = parseFloat(lines[r][c]);
-                    if (isNaN(val)) val = 0; 
-                    dataMatrix[c-1].push(val);
-                }
-            }
+    function tpsAnimationLoop() {
+        const easing = 0.15;
+        currentPc1C += (targetPc1C - currentPc1C) * easing;
+        currentPc2C += (targetPc2C - currentPc2C) * easing;
+
+        document.getElementById('pc1-val-c').innerText = (targetPc1C > 0 ? "+" : "") + targetPc1C.toFixed(1) + "σ";
+        document.getElementById('pc2-val-c').innerText = (targetPc2C > 0 ? "+" : "") + targetPc2C.toFixed(1) + "σ";
+        document.getElementById('pc1-slider-c').value = targetPc1C;
+        document.getElementById('pc2-slider-c').value = targetPc2C;
+
+        renderTPSForPC(currentPc1C, currentPc2C);
+
+        if (Math.abs(targetPc1C - currentPc1C) < 0.001 && Math.abs(targetPc2C - currentPc2C) < 0.001) {
+            currentPc1C = targetPc1C;
+            currentPc2C = targetPc2C;
+            renderTPSForPC(currentPc1C, currentPc2C); 
+            tpsAnimationId = null;
         } else {
-            for (let r = 1; r < lines.length; r++) {
-                if(lines[r].length < 2) continue;
-                sampleNames.push(lines[r][0]);
-                let rowData = [];
-                for (let c = 1; c < lines[r].length; c++) {
-                    let val = parseFloat(lines[r][c]);
-                    if (isNaN(val)) val = 0;
-                    rowData.push(val);
-                }
-                dataMatrix.push(rowData);
-            }
+            tpsAnimationId = requestAnimationFrame(tpsAnimationLoop);
         }
-        return { sampleNames, data: dataMatrix };
     }
 
-    function calcDistance(vecA, vecB, type) {
-        let sum = 0;
-        for (let i = 0; i < vecA.length; i++) {
-            let a = vecA[i], b = vecB[i];
-            if (type === 'euclidean') sum += Math.pow(a - b, 2);
-            else if (type === 'manhattan') sum += Math.abs(a - b);
-            else if (type === 'canberra') {
-                let num = Math.abs(a - b), den = Math.abs(a) + Math.abs(b);
-                if (den !== 0) sum += num / den;
-            }
+    function renderTPSForPC(sd1_val, sd2_val) {
+        if (!globalPCA || !globalGPAResult) return;
+
+        const s1 = sd1_val * globalPCA.sd1;
+        const s2 = sd2_val * globalPCA.sd2;
+        let newFeatures = new Array(globalPCA.means.length);
+        for(let j=0; j<newFeatures.length; j++) {
+            newFeatures[j] = globalPCA.means[j] + s1 * globalPCA.loadings1[j] + s2 * globalPCA.loadings2[j];
         }
-        return type === 'euclidean' ? Math.sqrt(sum) : sum;
+
+        let targetPts = [];
+        for (let k = 0; k < newFeatures.length; k += 2) {
+            targetPts.push([newFeatures[k], newFeatures[k+1]]);
+        }
+        
+        let label = `PC1: ${sd1_val.toFixed(1)}σ, PC2: ${sd2_val.toFixed(1)}σ`;
+        drawTPSGrid(globalGPAResult.consensus, targetPts, label);
     }
 
-    function performClustering(data, sampleNames, distType, linkType) {
-        const n = data.length;
-        let distMatrix = [];
-        for (let i = 0; i < n; i++) {
-            distMatrix[i] = [];
-            for (let j = 0; j < n; j++) {
-                if (i === j) distMatrix[i][j] = 0;
-                else if (i > j) {
-                    let d = calcDistance(data[i], data[j], distType);
-                    if (linkType === 'ward') d = d * d; 
-                    distMatrix[i][j] = d;
-                }
-            }
-        }
-        for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) distMatrix[i][j] = distMatrix[j][i];
-
-        let clusters = [];
-        for (let i = 0; i < n; i++) {
-            clusters.push({ id: i, name: sampleNames[i], size: 1, active: true, left: null, right: null, height: 0 });
+    function drawTPSGrid(sourcePts, targetPts, label) {
+        const canvas = document.getElementById('tps-canvas');
+        if(!canvas) return;
+        
+        const rect = canvas.getBoundingClientRect();
+        let w = rect.width;
+        let h = rect.height;
+        
+        if (h <= 1 || w <= 1) {
+            h = 180;
+            w = canvas.parentElement.clientWidth - 30;
         }
 
-        let clusterCount = n;
-        while (clusterCount > 1) {
-            let minDist = Infinity, mergeI = -1, mergeJ = -1;
-            for (let i = 0; i < clusters.length; i++) {
-                if (!clusters[i].active) continue;
-                for (let j = i + 1; j < clusters.length; j++) {
-                    if (!clusters[j].active) continue;
-                    let d = distMatrix[clusters[i].id][clusters[j].id];
-                    if (d < minDist) { minDist = d; mergeI = i; mergeJ = j; }
-                }
-            }
+        canvas.width = w; 
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, w, h);
+        
+        if (!sourcePts || !targetPts || sourcePts.length === 0) return;
 
-            let cI = clusters[mergeI], cJ = clusters[mergeJ];
-            cI.active = false; cJ.active = false;
+        // 1. 変形前の基準枠（Consensusのバウンディングボックス）の計算
+        let srcMinX = Math.min(...sourcePts.map(p=>p[0])), srcMaxX = Math.max(...sourcePts.map(p=>p[0]));
+        let srcMinY = Math.min(...sourcePts.map(p=>p[1])), srcMaxY = Math.max(...sourcePts.map(p=>p[1]));
+        let srcPadX = (srcMaxX - srcMinX) * 0.3 || 0.1, srcPadY = (srcMaxY - srcMinY) * 0.3 || 0.1;
+        
+        let gridMinX = srcMinX - srcPadX, gridMaxX = srcMaxX + srcPadX;
+        let gridMinY = srcMinY - srcPadY, gridMaxY = srcMaxY + srcPadY;
+        
+        // ★アスペクト比をCanvasに完全に一致させ、余白が生じないように補正する★
+        let viewW_initial = gridMaxX - gridMinX;
+        let viewH_initial = gridMaxY - gridMinY;
+        let canvasAspect = w / h;
+        let viewAspect = viewW_initial / viewH_initial;
 
-            let newCluster = {
-                id: clusters.length, name: `Node${clusters.length}`, size: cI.size + cJ.size,
-                active: true, left: cI, right: cJ, height: linkType === 'ward' ? Math.sqrt(minDist) : minDist
+        if (viewAspect > canvasAspect) {
+            // viewの方が横長 -> Y方向(height)を広げる
+            let newViewH = viewW_initial / canvasAspect;
+            let diffH = newViewH - viewH_initial;
+            gridMinY -= diffH / 2;
+            gridMaxY += diffH / 2;
+        } else {
+            // viewの方が縦長 -> X方向(width)を広げる
+            let newViewW = viewH_initial * canvasAspect;
+            let diffW = newViewW - viewW_initial;
+            gridMinX -= diffW / 2;
+            gridMaxX += diffW / 2;
+        }
+
+        // --- ★ ここから：ゴールネット（境界アンカーポイント）の生成ロジック ★ ---
+        let anchors = [];
+        const numAnchors = 10; // 1辺あたりのアンカー数（計40点）
+        for (let i = 0; i <= numAnchors; i++) {
+            let t = i / numAnchors;
+            // 上辺
+            anchors.push([gridMinX + t * (gridMaxX - gridMinX), gridMinY]);
+            // 下辺
+            anchors.push([gridMinX + t * (gridMaxX - gridMinX), gridMaxY]);
+            // 左辺
+            anchors.push([gridMinX, gridMinY + t * (gridMaxY - gridMinY)]);
+            // 右辺
+            anchors.push([gridMaxX, gridMinY + t * (gridMaxY - gridMinY)]);
+        }
+        
+        let extSourcePts = [...sourcePts, ...anchors];
+        let extTargetPts = [...targetPts, ...anchors];
+        
+        const tpsCoeffs = BioMathEngine.computeTPS(extSourcePts, extTargetPts);
+        
+        // 2. スケールの100%吸着設定
+        if (tpsForceRecomputeBaseScale) {
+            let viewW = gridMaxX - gridMinX;
+            // アスペクト比を合わせているため、マージンなし(w / viewW)でCSSの枠線に100%完全フィットする
+            tpsBaseScale = w / viewW; 
+            tpsBaseViewCx = (gridMaxX + gridMinX) / 2;
+            tpsBaseViewCy = (gridMaxY + gridMinY) / 2;
+            tpsBaseCx = w / 2;
+            tpsBaseCy = h / 2;
+            tpsForceRecomputeBaseScale = false;
+        }
+        
+        // 座標変換関数 (TPS関数を用いてワープした座標をCanvasピクセルに変換)
+        function transformAndScale(pt) {
+            let warped = BioMathEngine.applyTPS(pt, tpsCoeffs);
+            return {
+                x: tpsBaseCx + (warped[0] - tpsBaseViewCx) * tpsBaseScale,
+                y: tpsBaseCy + (warped[1] - tpsBaseViewCy) * tpsBaseScale
             };
-            if(linkType !== 'ward' && linkType !== 'upgma') newCluster.height = minDist;
-
-            distMatrix[newCluster.id] = [];
-            for (let k = 0; k < clusters.length; k++) {
-                if (!clusters[k].active && k !== mergeI && k !== mergeJ) continue;
-                let d_ik = distMatrix[cI.id][clusters[k].id], d_jk = distMatrix[cJ.id][clusters[k].id], d_ij = minDist;
-                let ni = cI.size, nj = cJ.size, nk = clusters[k].size, newDist = 0;
-                if (linkType === 'upgma') newDist = (ni * d_ik + nj * d_jk) / (ni + nj);
-                else if (linkType === 'complete') newDist = Math.max(d_ik, d_jk);
-                else if (linkType === 'single') newDist = Math.min(d_ik, d_jk);
-                else if (linkType === 'ward') newDist = ((ni + nk) * d_ik + (nj + nk) * d_jk - nk * d_ij) / (ni + nj + nk);
-
-                distMatrix[newCluster.id][clusters[k].id] = newDist;
-                if(!distMatrix[clusters[k].id]) distMatrix[clusters[k].id] = [];
-                distMatrix[clusters[k].id][newCluster.id] = newDist;
-            }
-            clusters.push(newCluster); clusterCount--;
         }
-        return clusters[clusters.length - 1]; 
-    }
 
-    function drawDendrogram(rootNode, distMethod, linkMethod) {
-        const container = document.getElementById('tree-svg-container');
-        container.innerHTML = '';
-        const width = container.clientWidth, height = Math.max(container.clientHeight, 400); 
-        const margin = {top: 40, right: 120, bottom: 60, left: 40};
+        // 3. 背景の「不動の点線枠」の描画スキップ（透明化）
+        // キャンバス自体のCSSボーダー(border: 1px dashed #bdc3c7)と完全に一致するため、内側での描画を省き視覚的ノイズを排除。
 
-        const svg = d3.select("#tree-svg-container").append("svg").attr("width", width).attr("height", height);
-        const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+        // 4. TPS変位グリッド（青い網目）の描画
+        // 最外周（アンカー）はCanvas境界にピン留めされる。内側の線のみを描画してスッキリさせる。
+        const gridSize = 10;
+        const segments = 15; 
+        const stepX = (gridMaxX - gridMinX) / gridSize;
+        const stepY = (gridMaxY - gridMinY) / gridSize;
+
+        ctx.strokeStyle = 'rgba(52, 152, 219, 0.6)';
+        ctx.lineWidth = 1;
         
-        const hierarchyData = d3.hierarchy(rootNode, d => {
-            let children = [];
-            if(d.left) children.push(d.left); if(d.right) children.push(d.right);
-            return children.length > 0 ? children : null;
-        });
-
-        const clusterLayout = d3.cluster().size([height - margin.top - margin.bottom, width - margin.left - margin.right]);
-        clusterLayout(hierarchyData);
-
-        const maxDist = rootNode.height, plotWidth = width - margin.left - margin.right;
+        // 垂直方向の線の変形描画 (1 から gridSize-1 までにすることで外枠を透明化)
+        for (let i = 1; i < gridSize; i++) {
+            ctx.beginPath();
+            for (let j = 0; j <= gridSize * segments; j++) {
+                let pt = [gridMinX + i * stepX, gridMinY + j * (stepY / segments)];
+                let mapped = transformAndScale(pt);
+                if (j === 0) ctx.moveTo(mapped.x, mapped.y);
+                else ctx.lineTo(mapped.x, mapped.y);
+            }
+            ctx.stroke();
+        }
         
-        hierarchyData.each(d => {
-            d.y = plotWidth - (d.data.height / maxDist) * plotWidth;
-            if(isNaN(d.y)) d.y = plotWidth;
-        });
-
-        g.selectAll(".link")
-            .data(hierarchyData.links())
-            .enter().append("path")
-            .attr("class", "link")
-            .attr("fill", "none")
-            .attr("stroke", "#bdc3c7")
-            .attr("stroke-width", 2)
-            .attr("d", d => `M${d.target.y},${d.target.x} L${d.source.y},${d.target.x} L${d.source.y},${d.source.x}`)
-            .attr("data-tooltip", d => `Height: ${(d.source.data.height).toFixed(3)}`)
-            .on("mouseover", (event, d) => d3.select(event.currentTarget).attr("stroke", "#8e44ad").attr("stroke-width", 3))
-            .on("mouseout", (event) => d3.select(event.currentTarget).attr("stroke", "#bdc3c7").attr("stroke-width", 2));
-
-        const node = g.selectAll(".node")
-            .data(hierarchyData.descendants())
-            .enter().append("g")
-            .attr("class", "node")
-            .attr("transform", d => `translate(${d.y},${d.x})`);
-
-        node.append("circle").attr("r", 4).attr("fill", d => d.children ? "#7f8c8d" : "#e74c3c");
-        node.append("text").attr("dy", "0.31em").attr("x", 8).style("font-size", "11px").style("font-weight", "bold").style("fill", "#2c3e50").text(d => d.children ? "" : d.data.name);
-
-        const xScale = d3.scaleLinear().domain([maxDist, 0]).range([0, plotWidth]);
-        const xAxis = d3.axisBottom(xScale).ticks(5);
+        // 水平方向の線の変形描画 (同様に最外枠を透明化)
+        for (let j = 1; j < gridSize; j++) {
+            ctx.beginPath();
+            for (let i = 0; i <= gridSize * segments; i++) {
+                let pt = [gridMinX + i * (stepX / segments), gridMinY + j * stepY];
+                let mapped = transformAndScale(pt);
+                if (i === 0) ctx.moveTo(mapped.x, mapped.y);
+                else ctx.lineTo(mapped.x, mapped.y);
+            }
+            ctx.stroke();
+        }
         
-        g.append("g").attr("transform", `translate(0, ${height - margin.top - margin.bottom + 20})`)
-         .call(xAxis).append("text").attr("x", plotWidth / 2).attr("y", 35).attr("fill", "#7f8c8d").style("font-weight", "bold").text(`Distance (Height)`);
-         
-         document.getElementById('tree-title-label').innerText = `Dendrogram: ${linkMethod.toUpperCase()} / ${distMethod}`;
-    }
-
-    let globalTreeRoot = null;
-    function buildNewick(node) {
-        if (!node.left && !node.right) return escapeHTML(node.name);
-        let leftNewick = node.left ? buildNewick(node.left) : "";
-        let rightNewick = node.right ? buildNewick(node.right) : "";
-        let leftDist = node.left ? (node.height - node.left.height).toFixed(6) : 0;
-        let rightDist = node.right ? (node.height - node.right.height).toFixed(6) : 0;
-        return `(${leftNewick}:${leftDist},${rightNewick}:${rightDist})`;
-    }
-
-    function copyNewick() {
-        if(!globalTreeRoot) return;
-        let newick = buildNewick(globalTreeRoot) + ";";
-        fallbackCopyTextToClipboard(newick, "⑩向けNewick形式をクリップボードにコピーしました！");
+        // 5. ターゲット形状（変形したランドマーク）の描画
+        ctx.fillStyle = '#2980b9'; 
+        ctx.strokeStyle = '#2980b9';
+        ctx.lineWidth = 1.5;
+        
+        ctx.beginPath();
+        for (let i = 0; i < sourcePts.length; i++) {
+            let mapped = transformAndScale(sourcePts[i]);
+            if (i === 0) ctx.moveTo(mapped.x, mapped.y);
+            else ctx.lineTo(mapped.x, mapped.y);
+        }
+        ctx.closePath();
+        ctx.stroke();
+        
+        for (let i = 0; i < sourcePts.length; i++) {
+            let mapped = transformAndScale(sourcePts[i]);
+            ctx.beginPath(); ctx.arc(mapped.x, mapped.y, 4, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = `bold 11px sans-serif`; 
+            ctx.fillText((i+1).toString(), mapped.x + 6, mapped.y - 6);
+            ctx.fillStyle = '#2980b9';
+        }
+        
+        if (label) {
+            ctx.fillStyle = '#e74c3c';
+            ctx.font = 'bold 11px sans-serif';
+            ctx.fillText(label, 10, 20);
+        }
     }
 
     function escapeHTML(str) {
