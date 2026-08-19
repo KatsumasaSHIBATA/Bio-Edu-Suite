@@ -107,8 +107,8 @@
         #toast.warning { background: var(--warning); color: #7e5109; }
         #toast.info { background: var(--phase-color); }
 
-        /* UIコンポーネント */
-        .paste-area { border: 1px solid var(--border-color); border-radius: 4px; padding: 12px; background: #fdfefe; width: 100%; min-height: 100px; font-family: 'Courier New', Consolas, monospace; font-size: 12px; resize: vertical; box-sizing: border-box; outline: none; transition: 0.2s; }
+        /* UIコンポーネント (ガイドラインv32.2) */
+        .paste-area { border: 1px solid var(--border-color); border-radius: 4px; padding: 12px; background: #fdfefe; width: 100%; max-width: 450px; min-height: 100px; font-family: 'Courier New', Consolas, monospace; font-size: 12px; resize: vertical; box-sizing: border-box; outline: none; transition: 0.2s; }
         .paste-area:focus { border-color: var(--phase-color); box-shadow: 0 0 0 2px rgba(142, 68, 173, 0.2); }
         
         .input-label { font-weight: bold; font-size: 13px; display: block; margin-bottom: 8px; color: var(--text-main); }
@@ -116,7 +116,7 @@
         .btn-primary { background: #3498db; color: white; border: none; border-radius: 4px; padding: 8px 16px; font-size: 13px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; box-shadow: none; transition: 0.2s; width: fit-content; }
         .btn-primary:hover:not(:disabled) { filter: brightness(1.05); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .btn-primary:active:not(:disabled) { transform: scale(0.98); }
-        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(50%); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(50%); background: #fdfefe; color: var(--text-muted); border: 1px solid var(--border-color); }
 
         .btn-secondary { background: #fdfefe; color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; padding: 8px 16px; font-size: 13px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; box-shadow: none; transition: 0.2s; width: fit-content; }
         .btn-secondary:hover:not(:disabled) { background: #f4f6f6; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
@@ -124,6 +124,10 @@
 
         .btn-danger { background: var(--danger); color: white; border: none; border-radius: 4px; padding: 8px 16px; font-size: 13px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; box-shadow: none; transition: 0.2s; width: fit-content; }
         .btn-danger:hover:not(:disabled) { filter: brightness(1.05); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
+        .form-select { border: 1px solid var(--border-color); border-radius: 4px; padding: 8px 12px; font-size: 13px; color: var(--text-main); outline: none; background: #fff; cursor: pointer; transition: 0.2s; }
+        .form-select:focus { border-color: var(--phase-color); box-shadow: 0 0 0 2px rgba(142, 68, 173, 0.2); }
+        .form-select:disabled { background: #f8f9fa; cursor: not-allowed; opacity: 0.7; }
 
         /* Viewer Layout */
         .viewer-container { display: flex; gap: 24px; min-height: 500px; }
@@ -164,7 +168,6 @@
     </style>
 </head>
 <body>
-
 <div id="toast"></div>
 
 <!-- スマートアラートモーダル -->
@@ -219,26 +222,69 @@
                 他の解析ツール（⑧ Phylogenetic Tree Builder や ⑨ Morphometrics Studio）からデータをコピーして貼り付けてください。両方のデータに共通の Sample ID が存在している必要があります。
             </div>
 
+            <!-- スマート・ハイブリッド入力UI -->
             <div style="display: flex; flex-wrap: wrap; gap: 24px;">
                 <div style="flex: 1; min-width: 250px;">
                     <label class="input-label">1. 分子系統樹 (Newick形式)</label>
                     <textarea id="newick-mol-input" class="paste-area" placeholder="ここに分子系統樹データ（Newick形式）を貼り付けてください"></textarea>
                 </div>
+                
                 <div style="flex: 1; min-width: 250px;">
-                    <label class="input-label">2. 形態系統樹 (Newick形式)</label>
-                    <textarea id="newick-morph-input" class="paste-area" placeholder="ここに形態系統樹データ（Newick形式）を貼り付けてください"></textarea>
+                    <label class="input-label">
+                        2. 形態系統樹 / 計測データ (Newick または CSV形式)
+                    </label>
+                    <textarea id="hybrid-morph-input" class="paste-area" placeholder="系統樹(Newick) または 計測値(CSV)を自動判定します"></textarea>
+                    
+                    <!-- CSV判定時のみ活性化する設定群 (左からデータ方向、距離計算、手法の順・fit-content適用) -->
+                    <div style="display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; align-items: flex-start;">
+                        <div style="width: fit-content;">
+                            <label class="input-label" style="font-size: 11px; margin-bottom: 4px;">データ方向</label>
+                            <select id="data-direction" class="form-select" style="width: fit-content; padding: 4px 8px; font-size: 12px;" disabled>
+                                <option value="col">列がサンプル</option>
+                                <option value="row">行がサンプル</option>
+                            </select>
+                        </div>
+                        <div style="width: fit-content;">
+                            <label class="input-label" style="font-size: 11px; margin-bottom: 4px;">距離計算</label>
+                            <select id="dist-type" class="form-select" style="width: fit-content; padding: 4px 8px; font-size: 12px;" disabled>
+                                <option value="euclidean">ユークリッド距離</option>
+                                <option value="manhattan">マンハッタン距離</option>
+                                <option value="canberra">キャンベラ距離</option>
+                            </select>
+                        </div>
+                        <div style="width: fit-content; position: relative;">
+                            <label class="input-label" style="font-size: 11px; margin-bottom: 4px; display:flex; align-items:center;">
+                                クラスタリング手法
+                                <button class="rationale-btn" onclick="toggleRationale(event, 'rat_ward')" style="width:14px; height:14px; font-size:10px;">?</button>
+                            </label>
+                            <select id="link-type" class="form-select" style="width: fit-content; padding: 4px 8px; font-size: 12px;" disabled>
+                                <option value="ward">ウォード法 (Ward method)</option>
+                                <option value="upgma">群平均法 (UPGMA)</option>
+                                <option value="single">単連結法 (Single linkage)</option>
+                                <option value="complete">完全連結法 (Complete linkage)</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
+                
                 <div style="flex: 1; min-width: 250px;">
                     <label class="input-label">3. 形態データ (JSON形式)</label>
                     <textarea id="json-input" class="paste-area" placeholder="ここに形態データ（JSON形式）を貼り付けてください"></textarea>
                 </div>
             </div>
             
-            <div style="display: flex; gap: 16px; margin-top: 8px;">
+            <div style="display: flex; gap: 16px; margin-top: 16px;">
                 <button class="btn-primary" onclick="runIntegration()">
                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                     統合解析を実行
                 </button>
+            </div>
+            
+            <!-- ウォード法の解説ポップオーバー -->
+            <div id="rat_ward" class="rationale-text">
+                <strong>【根拠：ウォード法 (Ward method)】</strong>
+                ・クラスタを併合したときに、クラスタ内の平方和の増加分が最小になるように併合します。<br>
+                ・データの重心や分散を考慮するため、生態学や形態測定学の分類において最も精度が良い（自然な分類になる）傾向があります。
             </div>
         </div>
     </div>
@@ -419,16 +465,26 @@
         return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag]));
     }
 
-    // ラベルの自動省略機能 (タイムスタンプ等のプレフィックスを除去)
     function getShortLabel(name) {
         if (!name) return "";
         return name.replace(/^\d{8}_\d{6}_/, '');
     }
 
     // ==========================================
-    // Parser & Data Normalization Functions
+    // Cluster & Parse Logic
     // ==========================================
     
+    function clusterToNewick(node, parentHeight = null) {
+        if (!node.left && !node.right) {
+            let dist = parentHeight !== null ? parentHeight : 0;
+            return String(node.name) + ":" + Math.max(0, dist).toFixed(4);
+        }
+        let dist = parentHeight !== null ? parentHeight - node.height : 0;
+        let leftStr = clusterToNewick(node.left, node.height);
+        let rightStr = clusterToNewick(node.right, node.height);
+        return "(" + leftStr + "," + rightStr + "):" + Math.max(0, dist).toFixed(4);
+    }
+
     function normalizeId(id) {
         if (id == null) return "";
         return String(id).toLowerCase().replace(/[\s_]/g, '');
@@ -480,20 +536,110 @@
     let globalTreeRoot = null; 
 
     // ==========================================
-    // Main Integration Logic
+    // Main Integration Logic (Hybrid Auto-Detect)
     // ==========================================
     function runIntegration() {
         let molInput = document.getElementById('newick-mol-input');
-        let morphInput = document.getElementById('newick-morph-input');
+        let morphInput = document.getElementById('hybrid-morph-input');
         let jsonInput = document.getElementById('json-input');
 
         let newickMolStr = molInput ? molInput.value.trim() : '';
-        let newickMorphStr = morphInput ? morphInput.value.trim() : '';
+        let hybridMorphVal = morphInput ? morphInput.value.trim() : '';
         let jsonStr = jsonInput ? jsonInput.value.trim() : '';
         
         if (!newickMolStr) {
             showToast('1. 分子系統樹 (Newick形式) を入力してください。', 'error');
             return;
+        }
+        
+        let newickMorphStr = '';
+
+        // ハイブリッド自動判定と動的パースロジック
+        if (hybridMorphVal) {
+            if (hybridMorphVal.startsWith('(') || hybridMorphVal.endsWith(';')) {
+                // Newick形式と判定
+                newickMorphStr = hybridMorphVal;
+            } else if (hybridMorphVal.includes(',') && !hybridMorphVal.includes('(')) {
+                // CSV形式（計測データ）と判定し、方向に応じたパースを実行
+                let sampleNames = [];
+                let dataMatrix = [];
+                const lines = hybridMorphVal.split('\n').map(l => l.trim()).filter(l => l !== '');
+                const dataDirection = document.getElementById('data-direction').value;
+                
+                if (lines.length > 0) {
+                    if (dataDirection === 'row') {
+                        // 行がサンプル: 1列目がサンプルID、2列目以降がデータ
+                        for (let i = 0; i < lines.length; i++) {
+                            const parts = lines[i].split(',');
+                            if (parts.length < 2) continue;
+                            const id = parts[0].trim();
+                            let values = [];
+                            let isValid = true;
+                            for (let j = 1; j < parts.length; j++) {
+                                const val = parseFloat(parts[j].trim());
+                                if (isNaN(val)) {
+                                    isValid = false;
+                                    break;
+                                }
+                                values.push(val);
+                            }
+                            if (isValid) {
+                                sampleNames.push(id);
+                                dataMatrix.push(values);
+                            }
+                        }
+                    } else {
+                        // 列がサンプル: 1行目がサンプルID、2行目以降がデータ
+                        const headers = lines[0].split(',').map(s => s.trim());
+                        for (let j = 0; j < headers.length; j++) {
+                            sampleNames.push(headers[j]);
+                            dataMatrix.push([]);
+                        }
+                        for (let i = 1; i < lines.length; i++) {
+                            const parts = lines[i].split(',');
+                            for (let j = 0; j < headers.length; j++) {
+                                if (j < parts.length) {
+                                     dataMatrix[j].push(parseFloat(parts[j].trim()));
+                                }
+                            }
+                        }
+                        // データクリーニング (NaNを含むサンプルを除外)
+                        let validSampleNames = [];
+                        let validDataMatrix = [];
+                        for(let i=0; i<sampleNames.length; i++) {
+                            if(dataMatrix[i].length > 0 && dataMatrix[i].every(v => !isNaN(v))) {
+                                validSampleNames.push(sampleNames[i]);
+                                validDataMatrix.push(dataMatrix[i]);
+                            }
+                        }
+                        sampleNames = validSampleNames;
+                        dataMatrix = validDataMatrix;
+                    }
+                }
+
+                if (sampleNames.length < 2) {
+                    showToast('クラスタリングには少なくとも2つの有効なサンプルデータ(行/列)が必要です。', 'error');
+                    return;
+                }
+
+                const distType = document.getElementById('dist-type').value;
+                const linkType = document.getElementById('link-type').value;
+
+                try {
+                    const rootCluster = typeof window.performClustering === 'function' 
+                        ? window.performClustering(dataMatrix, sampleNames, distType, linkType) 
+                        : performClustering(dataMatrix, sampleNames, distType, linkType);
+                    newickMorphStr = clusterToNewick(rootCluster) + ";";
+                    showToast('計測値から形態系統樹を構築しました。', 'info');
+                } catch (e) {
+                    console.error(e);
+                    showToast('系統樹の構築中にエラーが発生しました。コンソールを確認してください。', 'error');
+                    return;
+                }
+            } else {
+                showToast('形態系統樹のフォーマットが判定できませんでした。', 'warning');
+                return;
+            }
         }
         
         try {
@@ -541,7 +687,7 @@
             
             globalTreeRoot = { molRoot, morphRoot }; 
             
-            // ★【修正1】不足がある場合、処理は止めずに確実にトーストを発火させる
+            // 不足がある場合、処理は止めずに確実にトーストを発火させる
             if (missingLeaves.length > 0) {
                 showToast('データの不一致：分子系統樹に含まれる一部ノードの形態データが不足しています', 'warning');
             }
@@ -703,7 +849,7 @@
                 .style('fill', '#2c3e50')
                 .style('pointer-events', 'none');
 
-            // ★【修正3】右側の形態系統樹側にも双方向インタラクションの付与
+            // 右側の形態系統樹側にも双方向インタラクションの付与
             nodeMorph.on('mouseenter', (event, d) => handleNodeHover(d))
                      .on('click', (event, d) => handleNodeHover(d));
                 
@@ -726,7 +872,7 @@
                 .enter().append('path')
                 .attr('class', 'tangle-line')
                 .attr('d', d => {
-                    // ★【修正3】結線の余白調整 (無駄な余白を詰める)
+                    // 結線の余白調整
                     const marginOff = 45;
                     const x1 = d.mol.yMol + marginOff;
                     const y1 = d.mol.xMol;
@@ -915,7 +1061,6 @@
         // モーフィング形状の背景描画
         if (currentCoeffs && currentHoveredNode) {
             drawEFAShape(ctx, currentCoeffs, w / 2, h / 2, Math.min(w, h) * 0.35);
-            // ★【修正2】下部の不要なラベル(DOM代用)を廃止しスッキリ化
         }
         
         // PCAプロットのスケール算出
@@ -958,7 +1103,7 @@
             ctx.lineWidth = 2;
             ctx.stroke();
             
-            // ★【修正2】ホバー時のみ完全なIDを表示するインタラクション拡張
+            // ホバー時のみ完全なIDを表示するインタラクション拡張
             if (isHovered) {
                 ctx.fillStyle = '#c0392b';
                 ctx.font = "bold 12px 'Segoe UI', sans-serif";
@@ -996,6 +1141,21 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         initTooltips();
+        
+        // ハイブリッド入力のスマートUX (CSV判定でselect活性化)
+        const hybridInput = document.getElementById('hybrid-morph-input');
+        if (hybridInput) {
+            hybridInput.addEventListener('input', (e) => {
+                const val = e.target.value.trim();
+                // 判定条件: 括弧で始まらず、カンマを含む
+                const isCSV = val.length > 0 && !val.startsWith('(') && val.includes(',');
+                
+                ['data-direction', 'dist-type', 'link-type'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.disabled = !isCSV;
+                });
+            });
+        }
         
         // メタデータ検知 (バケツリレー用 / ガイドラインv32.2)
         document.querySelectorAll('.paste-area').forEach(area => {
