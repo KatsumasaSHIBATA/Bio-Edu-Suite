@@ -973,9 +973,8 @@
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
-                <button class="btn btn-primary pulse-anim" style="width: 100%;" onclick="verifyPlacedMutations()" data-tooltip="配置した突然変異が最小回数か検証します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 3h14v18H5zM8 7h8M8 11h2M12 11h2M16 11h2M8 15h2M12 15h2M16 15h2"/></svg> 検証</button>
-                <button class="btn" style="width: 100%;" onclick="revealStep2Answers()" data-tooltip="最小となる突然変異の配置例を表示します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7 11V8a5 5 0 0 1 9.6-2"/><path d="M5 11h14v10H5z"/></svg> 解答表示</button>
+            <div style="display: flex; justify-content: center; margin-bottom: 16px;">
+                <button class="btn btn-primary pulse-anim" onclick="verifyPlacedMutations()" data-tooltip="配置した突然変異が最小回数か検証します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 3h14v18H5zM8 7h8M8 11h2M12 11h2M16 11h2M8 15h2M12 15h2M16 15h2"/></svg> 検証</button>
             </div>
             
             <div id="mpStep2Feedback" style="display:none; padding:15px; margin-bottom:16px; font-size: 13px;"></div>
