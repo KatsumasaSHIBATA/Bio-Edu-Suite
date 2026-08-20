@@ -133,11 +133,10 @@
             display: flex; 
             align-items: center; 
             justify-content: space-between; 
-            min-height: 56px; /* ヘッダー帯の高さ揃え対応 */
+            min-height: 56px; 
         }
         .card-body { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
 
-        /* 根拠 (Rationale ポップオーバー) (ガイドライン第6項①) */
         .rationale-btn { 
             background: var(--phase-color); 
             color: white; 
@@ -186,9 +185,10 @@
         }
         .rationale-text strong { 
             color: #d35400; 
-            display: block; 
+            display: inline-block; /* ガイドライン第6項①: 崩れ防止のためインラインブロック化 */
             margin-bottom: 4px; 
             font-size: 12px; 
+            line-height: 1.4;
         }
 
         .rationale-text::after { 
@@ -222,7 +222,6 @@
             border-color: var(--warning) transparent transparent transparent; 
         }
 
-        /* 現場のコツ (Bench Tip) (ガイドライン第6項②) */
         .bench-tip { 
             background: #f0f8ff; 
             border-left: 4px solid #3498db; 
@@ -237,13 +236,16 @@
         .bench-tip strong { 
             color: #2980b9; 
             display: flex; 
-            align-items: center; 
+            align-items: flex-start; /* 折り返し時のアイコンずれ防止 */
             gap: 6px; 
             margin-bottom: 4px; 
             font-size: 13px; 
         }
+        .bench-tip strong svg {
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
 
-        /* アシストパネル (ガイドライン第6項③) */
         .assist-panel { 
             background: #fadbd8; 
             border-left: 4px solid var(--danger); 
@@ -264,7 +266,6 @@
             border: 1px solid var(--danger); 
         }
 
-        /* カスタムツールチップ (ガイドライン第6項④) */
         .custom-tooltip { 
             position: fixed; 
             background: rgba(44, 62, 80, 0.95); 
@@ -303,7 +304,6 @@
             border-color: transparent transparent rgba(44, 62, 80, 0.95) transparent; 
         }
 
-        /* トースト通知 (ガイドライン第6項⑤) */
         #toast { 
             position: fixed; 
             bottom: 30px; 
@@ -330,7 +330,6 @@
         #toast.warning { background: var(--warning); color: #7e5109; }
         #toast.info { background: var(--phase-color); }
 
-        /* 動的ヒント (ガイドライン第6項⑥) */
         .dynamic-hint {
             background: #fdf2f2;
             border: 1px solid #f8d7da;
@@ -343,7 +342,6 @@
             margin-top: 10px;
         }
 
-        /* より高度な解析ツールへ枠 (ガイドライン第6項⑦) */
         .step-up-card { 
             background: #f8f9fa; 
             border: 1px solid #d1d5db; 
@@ -370,7 +368,6 @@
         .step-up-card p span { display: block; margin-top: 4px; }
         .step-up-card p span:first-of-type { margin-top: 6px; }
 
-        /* アプリ固有UIパーツ群 */
         .algo-selector { 
             display: flex; 
             gap: 8px; 
@@ -394,8 +391,8 @@
         }
         .algo-selector input { display: none; }
         .algo-selector input:checked + label { background: #3498db; color: white; }
+        .algo-selector input:disabled + label { opacity: 0.4; cursor: not-allowed; text-decoration: line-through; }
 
-        /* ドロップゾーン規定更新 (ガイドラインv32.0 準拠) */
         .drop-zone {
             border: 2px dashed var(--border-color); 
             border-radius: 8px;
@@ -432,7 +429,6 @@
         }
         input[type="file"] { display: none; }
 
-        /* ペーストエリア規定更新 (ガイドラインv32.0 準拠) */
         .paste-area {
             border: 1px solid var(--border-color);
             border-radius: 4px;
@@ -455,7 +451,6 @@
             box-shadow: 0 0 0 2px rgba(26, 188, 156, 0.2);
         }
 
-        /* ボタン形状・フィット (ガイドライン第11項②) */
         .btn { 
             background: #fdfefe; 
             border: 1px solid var(--border-color); 
@@ -504,7 +499,6 @@
         .btn-sm { font-size: 11px; padding: 6px 12px; }
         .btn-icon { width: 14px; height: 14px; flex-shrink: 0; }
 
-        /* Newickコピーツール用スタイル (無効時:白, 有効時:緑) */
         .btn-newick {
             background: #fff;
             color: var(--text-main);
@@ -524,7 +518,6 @@
             stroke: white; 
         }
 
-        /* 行列表⽰テーブル */
         .matrix-container { overflow-x: auto; width: 100%; border: 1px solid #ecf0f1; background: #fff;}
         table { border-collapse: collapse; font-size: 10px; text-align: center; margin: 0 auto; width: 100%; }
         th, td { border: 1px solid var(--border-color); padding: 6px 8px; position: relative; white-space: nowrap; }
@@ -595,7 +588,6 @@
         
         .scientific-name { font-style: italic; font-family: 'Times New Roman', Times, serif; font-weight: 600; color: var(--text-main); }
 
-        /* ログテーブル */
         .log-table th { 
             background-color: #eaeded; 
             color: var(--text-main); 
@@ -609,7 +601,6 @@
         .log-table td { border-bottom: 1px solid #ecf0f1; padding: 8px; vertical-align: top; }
         .log-table tr:hover td { background-color: #f8f9f9; }
         
-        /* Z-index モーダル (ガイドライン第12項) */
         .modal-overlay { 
             position: fixed; 
             top: 0; 
@@ -671,7 +662,6 @@
         }
         .pulse-anim { animation: pulse-anim 2s infinite; }
 
-        /* MLシミュレーター固有スタイル */
         .ml-btn-group { display: flex; gap: 8px; margin-top: 10px; }
         .ml-btn-group .btn { flex: 1; }
 
@@ -700,13 +690,13 @@
     
     <div class="card">
         <div class="card-header">
-            <span>Ⅰ. アルゴリズムと距離行列の計算</span>
+            <span>Ⅰ. データ入力と系統推定アルゴリズム</span>
         </div>
         <div class="card-body">
             
             <div class="bench-tip">
-                <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg> 現場のコツ</strong><br>
-                配列数が7個を超えると、最尤法の計算量が爆発してスーパーコンピュータでも時間がかかります。まずは5〜6種で試して、計算の重さ（組み合わせ爆発）を体感してみましょう！
+                <strong style="display: flex; align-items: flex-start; gap: 6px;"><svg class="svg-hint" style="flex-shrink: 0; margin-top: 2px;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg> 現場のコツ</strong>
+                配列数が7個を超えると、最大節約法(MP法)や最尤法(ML法)の計算量が爆発してスーパーコンピュータでも時間がかかります。まずは5〜6種で試して、計算の重さ（組み合わせ爆発）を体感してみましょう！
             </div>
 
             <div class="algo-selector" data-tooltip="各分岐の科学的な確からしさ（統計的評価）を算出します" style="margin-top:0;">
@@ -748,26 +738,23 @@
                 ・比較する分類群同士の系統的な距離（何億年前に枝分かれしたか）によって、適切な配列データは異なります。もし作成した系統樹が「現在の分類学（教科書の知識）」と大きく矛盾する場合、DNAの塩基置換速度が速すぎて「多重置換（ノイズ）」が起きている可能性があります。その場合は、より変化の遅い「アミノ酸配列」を使って再度計算してみましょう。
             </div>
 
-            <!-- アルゴリズム選択プルダウン -->
-            <div style="display:flex; align-items:center; gap:10px; margin-top:8px;">
-                <select id="algoSelect" class="btn" style="flex: 1; border-color: var(--border-color); color: var(--text-main);" onchange="switchAlgo()">
+            <!-- アルゴリズム選択と実行ボタン (1行化 & 幅フィット) -->
+            <div style="display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-top:8px;">
+                <select id="algoSelect" class="btn" style="flex: 1; min-width: 160px; border-color: var(--border-color); color: var(--text-main);" onchange="switchAlgo()">
                     <option value="UPGMA">平均距離法 (UPGMA法)</option>
                     <option value="NJ">近隣結合法 (NJ法)</option>
                     <option value="MP">最大節約法 (MP法)</option>
                     <option value="ML">最尤法 (ML法)</option>
                 </select>
                 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_algo_diff')" style="margin-left: 0;">?</button>
+                
+                <button class="btn btn-primary" id="btnExecute" onclick="handleExecute()" style="width: fit-content;" data-tooltip="選択したアルゴリズムで解析を実行します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> 実行</button>
+                <button class="rationale-btn" onclick="toggleRationale(event, 'rat_matrix')" style="margin-left: 0;">?</button>
             </div>
 
             <div id="rat_algo_diff" class="rationale-text">
                 <strong>【根拠：距離法と形質状態法の違い】</strong><br>
                 ・UPGMAやNJ法は、配列全体の違いを「1つの距離（数値）」にまとめてから計算するため高速です。一方、MP法やML法は、DNAの「1文字1文字の変化」を直接評価するため、計算は重いですがより詳細な進化のシナリオを描けます。
-            </div>
-
-            <!-- 実行ボタン -->
-            <div style="display:flex; align-items:center; gap:10px; margin-top:8px;">
-                <button class="btn btn-primary" id="btnExecute" onclick="handleExecute()" style="width: 100%;" data-tooltip="選択したアルゴリズムで解析を実行します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> 実行</button>
-                <button class="rationale-btn" onclick="toggleRationale(event, 'rat_matrix')" style="margin-left: 0;">?</button>
             </div>
 
             <div id="rat_matrix" class="rationale-text">
@@ -799,41 +786,30 @@
             <button class="btn btn-step" id="btnNextStep" onclick="executeCombine()" data-tooltip="選択した2つの分類群を結合し、距離行列を更新します" style="width: 100%; display: none;">結合</button>
 
             <div class="bench-tip">
-                <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg> 現場のコツ（MEGAのブラックボックスを開ける）</strong><br>
-                プロ用ソフトは一瞬で計算しますが、という手計算の裏側を知らないとソフトの奴隷になります。上の表から「一番小さな数字」を探してクリックしてみましょう！<br>
+                <strong style="display: flex; align-items: flex-start; gap: 6px;"><svg class="svg-hint" style="flex-shrink: 0; margin-top: 2px;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg> 現場のコツ（MEGAのブラックボックスを開ける）</strong>
+                プロ用ソフトは一瞬で計算しますが、UPGMA法やNJ法といった距離法の手計算の裏側を知らないとソフトの奴隷になります。上の表から「一番小さな数字」を探してクリックしてみましょう！<br>
                 <span style="color:#7f8c8d;">※最小値（同着）が複数ある場合はどれを選んでも正解です。</span>
             </div>
             
-            <!-- ====== MP法体験パネル ====== -->
+            <!-- ====== 形質状態法（MP/ML）体験パネル ====== -->
             <div class="step-up-card" style="margin-top: 16px; min-width: 100%;">
                 <h3 style="border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 12px; display: flex; align-items: center;">
-                    発展学習：最大節約法 (MP法) のシミュレーション
-                    <button class="rationale-btn" onclick="toggleRationale(event, 'rat_mp')" style="margin-left: 5px;">?</button>
+                    発展学習：形質状態法のシミュレーション
+                    <button class="rationale-btn" onclick="toggleRationale(event, 'rat_character_state')" style="margin-left: 5px;">?</button>
                 </h3>
-                <div id="rat_mp" class="rationale-text">
-                    <strong>【参考：最大節約法】</strong><br>
-                    ・考えられるすべての系統樹を想定し、塩基置換の回数が「最も少なくなる（最節約的な）」ものを選ぶ手法です。<br>
-                    ・ここでは入力された塩基配列のうち「最初の4つ」を用いて、教科書の図解にある「座位ごとの塩基置換回数の算出」から「全体の比較」までをステップごとに体験します。
+                <div id="rat_character_state" class="rationale-text">
+                    <strong>【根拠：形質状態法とは】</strong><br>
+                    ・距離法（UPGMA/NJ）のように配列全体の違いを1つの『距離』に丸めるのではなく、塩基配列の『1文字1文字（座位）』の進化の歴史を直接評価する手法群です。
                 </div>
-                <button class="btn btn-primary" onclick="startMPSimulation()" data-tooltip="最大節約法による系統推定のプロセスを体験します" style="width: 100%;">
-                    開始
-                </button>
-            </div>
-
-            <!-- ====== ML法体験パネル ====== -->
-            <div class="step-up-card" style="margin-top: 16px; min-width: 100%;">
-                <h3 style="border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 12px; display: flex; align-items: center;">
-                    発展学習：最尤法 (ML法) のシミュレーション
-                    <button class="rationale-btn" onclick="toggleRationale(event, 'rat_ml_entrance')" style="margin-left: 5px;">?</button>
-                </h3>
-                <div id="rat_ml_entrance" class="rationale-text">
-                    <strong>【参考：最尤法（ML法）】</strong><br>
-                    ・塩基置換の確率モデル（進化モデル）を仮定し、「現在の塩基配列が得られる確率（尤度）」が最大になる樹形と枝の長さを探索する手法です。<br>
-                    ・計算量は最も多いですが、進化のメカニズムを確率として扱えるため、学術研究で標準的に使われています。
+                <p style="margin-bottom: 12px;">距離行列を使わずに、実際の塩基配列データからどのように系統樹が選ばれるのか、その『裏側の仕組み』を体験してみましょう。</p>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="startMPSimulation()" data-tooltip="最大節約法による系統推定のプロセスを体験します" style="flex: 1;">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> MP法を開始
+                    </button>
+                    <button class="btn btn-primary" onclick="startMLSimulation()" data-tooltip="最尤法における進化モデルと尤度最大化の概念を体験します" style="flex: 1;">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> ML法を開始
+                    </button>
                 </div>
-                <button class="btn btn-primary" onclick="startMLSimulation()" data-tooltip="最尤法における進化モデルと尤度最大化の概念を体験します" style="width: 100%;">
-                    開始
-                </button>
             </div>
             
         </div>
@@ -868,7 +844,6 @@
                 <p id="explanationText"></p>
             </div>
 
-            <!-- 解析ログパネル -->
             <div style="margin-top: 16px; border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; background: #fff;">
                 <div style="background: #eaeded; padding: 12px 16px; font-weight: bold; font-size: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color);">
                     <span style="color: var(--text-main);">解析ログ (履歴)</span>
@@ -898,7 +873,7 @@
     
     <div class="step-up-card">
         <h3><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg> より高度な解析ツールへ</h3>
-        <p>より高度な解析（進化モデルを考慮したML法、論文レベルの信頼性を担保する1000回を超えるブートストラップ等）が必要になったら、世界標準の解析ソフト<b>「MEGA」</b>を使いましょう。このアプリで学んだ基礎が、膨大な確率計算を行うプロ用ソフトの結果を正しく解釈する力になります。</p>
+        <p>このアプリで学んだ距離法（UPGMA/NJ）や形質状態法（MP/ML）の基礎が、膨大な確率計算を行うプロ用ソフトの結果をブラックボックスにせず、正しく解釈する力になります。より高度な解析（進化モデルを考慮したML法、論文レベルの信頼性を担保する1000回を超えるブートストラップ等）が必要になったら、世界標準の解析ソフト<b>「MEGA」</b>を使いましょう。</p>
     </div>
 
 </div>
@@ -928,9 +903,9 @@
                 <div style="font-size:13px; font-weight:bold; color:var(--text-main);">
                     発見した『情報をもつ座位』: <span id="mpFoundCount" style="color:#e67e22; font-size:18px; font-weight:bold;">0</span> / <span id="mpTargetCount">0</span> 箇所
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                    <button class="btn btn-sm" id="btnMaskConserved" style="width: 100%;" onclick="toggleMaskConservedSites()" data-tooltip="全員が同じ塩基を持つ列をグレーアウトします"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 22h4M12 2a6 6 0 0 0-4 10.5V15h8v-2.5A6 6 0 0 0 12 2z"/></svg> マスク</button>
-                    <button class="btn btn-sm" style="width: 100%;" onclick="autoFindVariableSites()" data-tooltip="情報をもつ座位の正解をすべて表示します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7 11V8a5 5 0 0 1 9.6-2"/><path d="M5 11h14v10H5z"/></svg> 解答表示</button>
+                <!-- 撤去された解答表示ボタンとフレックス修正 -->
+                <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                    <button class="btn btn-sm" id="btnMaskConserved" onclick="toggleMaskConservedSites()" data-tooltip="全員が同じ塩基を持つ列をグレーアウトします"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 22h4M12 2a6 6 0 0 0-4 10.5V15h8v-2.5A6 6 0 0 0 12 2z"/></svg> マスク</button>
                 </div>
             </div>
 
@@ -1052,6 +1027,11 @@
                 ※PDFの重要用語規格に基づき、トランスバージョンは「置換（塩基置換）」と表記しています。
             </div>
 
+            <!-- 追加されたML法ステップ1のマスクボタン -->
+            <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
+                <button class="btn btn-sm" id="btnMLMaskConserved" onclick="toggleMLMaskConservedSites()" data-tooltip="全員が同じ塩基を持つ列をグレーアウトします"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 22h4M12 2a6 6 0 0 0-4 10.5V15h8v-2.5A6 6 0 0 0 12 2z"/></svg> マスク</button>
+            </div>
+
             <div class="matrix-container" id="mlAlignmentContainer" style="margin-bottom: 16px; border:1px solid var(--border-color); overflow-x: auto; max-width: 100%;">
                 <!-- ここにアライメントテーブルがレンダリングされる -->
             </div>
@@ -1127,7 +1107,8 @@
             <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px;">
                 <div style="flex: 1; min-width: 200px; text-align: center; border: 2px solid var(--success); border-radius: 6px; padding: 12px; background: #e8f8f5;">
                     <h4 style="margin:0 0 10px 0; font-size:13px; color:var(--success);">選択された最尤樹形</h4>
-                    <svg id="mlStep3Svg" width="220" height="130" style="background:#fff; border-radius:4px; max-width: 100%; border:1px solid var(--border-color);"></svg>
+                    <!-- ML SVGサイズ修正 -->
+                    <svg id="mlStep3Svg" width="250" height="150" style="background:#fff; border-radius:4px; max-width: 100%; border:1px solid var(--border-color);"></svg>
                 </div>
 
                 <div style="flex: 2; min-width: 300px; background: #fdfefe; border: 1px solid var(--border-color); border-radius: 6px; padding: 16px; display:flex; flex-direction:column; justify-content:center;">
@@ -1291,6 +1272,7 @@
 
     let analysisLogs = [];
     let isMasked = false; // トグルボタン用状態変数
+    let isMLMasked = false; // ML法マスク用
 
     // --- トースト通知 (ガイドライン第6項⑤ 準拠) ---
     function showToast(msg, type = "") {
@@ -1330,6 +1312,31 @@
         let outgroupSelect = document.getElementById('outgroupSelect');
         outgroupSelect.innerHTML = '<option value="">外群指定(自動)</option>';
         outgroupSelect.disabled = true;
+
+        // --- ブートストラップ上限の動的制御 ---
+        const algo = document.getElementById('algoSelect').value;
+        const bs100 = document.getElementById('bs_100');
+        const bs1000 = document.getElementById('bs_1000');
+        const bsNone = document.getElementById('bs_none');
+        
+        if (algo === 'UPGMA' || algo === 'NJ') {
+            bs100.disabled = false;
+            bs1000.disabled = false;
+        } else if (algo === 'MP') {
+            bs100.disabled = false;
+            bs1000.disabled = true;
+            if (bs1000.checked) {
+                bsNone.checked = true;
+            }
+            showToast("※最大節約法(MP法)は計算負荷が高いため、ブートストラップは最大100回までです", "info");
+        } else if (algo === 'ML') {
+            bs100.disabled = true;
+            bs1000.disabled = true;
+            if (bs100.checked || bs1000.checked) {
+                bsNone.checked = true;
+            }
+            showToast("※最尤法(ML法)は計算量が非常に重いため、ブートストラップは最大10回までです", "warning");
+        }
     }
 
     function updateExplanation() {
@@ -1374,9 +1381,7 @@
     function formatScientificName(name) {
         let originalName = name.trim();
         
-        // NCBIのアクセッションNo (例: NM_123456, AB123456)
         const ncbiPattern = /[A-Z]{1,2}_?\d{4,}/i;
-        // 明らかに学名の体裁 (例: Homo sapiens) - 大文字で始まる単語 + 小文字の単語
         const scientificNamePattern = /^[A-Z][a-z]+\s+[a-z]+/;
         
         if (ncbiPattern.test(originalName) || scientificNamePattern.test(originalName)) {
@@ -1400,7 +1405,6 @@
         const algo = document.getElementById('algoSelect').value;
         const fastaText = document.getElementById('fastaInput').value;
         
-        // エンジン呼び出し
         try {
             const result = PhyloEngine.parseAndCalculateMatrix(fastaText);
             if (!result.success) {
@@ -1421,7 +1425,6 @@
                 return;
             }
             
-            // グローバル変数へセットして既存ロジックと繋ぐ
             originalSeqs = result.seqs;
             originalNames = result.names;
             distanceMatrix = result.distanceMatrix;
@@ -1491,7 +1494,6 @@
         }
     }
 
-    // MP法の全自動解析（Web Worker連携）
     function executeMP(fastaText, result) {
         if (result.seqs.length > 7) {
             showToast("【計算リミッター】最大節約法(MP法)の全探索は、計算の爆発を防ぐため配列数7個までとしています。配列数を減らしてください。", "error");
@@ -1575,7 +1577,6 @@
         };
     }
 
-    // ML法の全自動解析（Web Worker連携）
     function executeML(fastaText, result) {
         if (result.seqs.length > 7) {
             showToast("【計算リミッター】最尤法(ML法)の全探索は、計算の爆発を防ぐため配列数7個までとしています。配列数を減らしてください。", "error");
@@ -1661,7 +1662,6 @@
         };
     }
 
-    // Web Workerから受け取ったツリーの親参照を復元する
     function restoreParentLinks(node, parent = null) {
         if (!node) return;
         node.parent = parent;
@@ -1817,7 +1817,7 @@
             showToast("コピーに失敗しました", "error");
         });
     }
-    
+
     // ====== 最節約法 (MP法) ステップ・シミュレーション用ロジック ======
     let allInformativeSites = []; 
     let allVariableSites = []; 
@@ -2068,32 +2068,6 @@
             });
             showToast(`残念！座位 ${k + 1} は全員が同じ塩基で、突然変異がありません。`, "error");
         }
-    }
-
-    function autoFindVariableSites() {
-        let needed = allInformativeSites.map(s => s.idx);
-        needed.forEach(k => {
-            if (!userFoundSites.includes(k)) {
-                userFoundSites.push(k);
-                for (let i = 0; i < 4; i++) {
-                    let cell = document.getElementById(`align_cell_${i}_${k}`);
-                    if(cell) cell.classList.add('align-cell-found');
-                }
-            }
-        });
-        
-        let countEl = document.getElementById('mpFoundCount');
-        if(countEl) countEl.innerText = userFoundSites.length;
-        
-        const btn2 = document.getElementById('btnProceedToStep2');
-        if(btn2) {
-            btn2.disabled = false;
-            btn2.style.background = '#3498db';
-            btn2.style.borderColor = '#2980b9';
-            btn2.style.cursor = 'pointer';
-            btn2.classList.add('pulse-anim');
-        }
-        showToast("すべての情報をもつ座位を表示しました。");
     }
 
     function proceedToMPStep2() {
@@ -2597,17 +2571,14 @@
 
     // ====== 真・ML法シミュレーション用ロジック (フェルゼンスタイン計算エンジン) ======
     
-    // 遷移判定ユーティリティ (A↔G, C↔T のみからなるか)
     function isTransitionOnly(b1, b2) {
         let set = new Set([b1, b2]);
         if (set.has('-') || set.has('N')) return false;
         return (set.has('A') && set.has('G') && set.size === 2) || (set.has('C') && set.has('T') && set.size === 2);
     }
     
-    // 進化モデル(JC69/K80)に基づく推移確率行列の計算
-    // t は枝の長さ (branch length: 期待される塩基置換数)
     function getTransitionProb(model, b1, b2, t) {
-        if (b1 === '-' || b2 === '-' || b1 === 'N' || b2 === 'N') return 1.0; // ギャップ等は無視
+        if (b1 === '-' || b2 === '-' || b1 === 'N' || b2 === 'N') return 1.0; 
 
         let isSame = (b1 === b2);
         let isTrans = isTransitionOnly(b1, b2);
@@ -2617,8 +2588,6 @@
             let pDiff = 0.25 - 0.25 * Math.exp(- (4/3) * t);
             return isSame ? pSame : pDiff;
         } else if (model === 'K80') {
-            // K80モデル: 遷移(Ts)と置換(Tv)の比率 kappa = alpha/beta を 2 (一般的な値) と仮定
-            // d = alpha + 2*beta であるため、beta = t/4, alpha = t/2 となる
             let e1 = Math.exp(-t);
             let e2 = Math.exp(-1.5 * t);
             let pSame = 0.25 + 0.25 * e1 + 0.5 * e2;
@@ -2632,16 +2601,13 @@
         return 0.25;
     }
 
-    // 1サイト分の尤度計算 (フェルゼンスタインの剪定アルゴリズム)
     function calculateSiteLikelihood(model, l1, l2, l3, l4, t) {
         const bases = ['A', 'T', 'G', 'C'];
         let likelihood = 0;
         
-        // 内部ノード N1, N2 の塩基状態の全組み合わせ (16通り) について周辺化
         for (let n1 of bases) {
             for (let n2 of bases) {
-                let p_n1 = 0.25; // 根の事前確率
-                // 各枝の推移確率 (ここでは簡易化のため全枝長さを t とする)
+                let p_n1 = 0.25; 
                 let p_l1 = getTransitionProb(model, n1, l1, t);
                 let p_l2 = getTransitionProb(model, n1, l2, t);
                 let p_n1_n2 = getTransitionProb(model, n1, n2, t);
@@ -2654,7 +2620,6 @@
         return likelihood;
     }
 
-    // 塩基配列全体の対数尤度を計算
     function calculateOverallLogLikelihood(model, treeType, t) {
         let lnL = 0;
         let len = mlSeqs[0].seq.length;
@@ -2671,6 +2636,28 @@
             }
         }
         return lnL;
+    }
+
+    function toggleMLMaskConservedSites() {
+        isMLMasked = !isMLMasked;
+        const btn = document.getElementById('btnMLMaskConserved');
+        const conservedCells = document.querySelectorAll('#mlAlignmentContainer .conserved-cell');
+        
+        if (isMLMasked) {
+            conservedCells.forEach(c => c.classList.add('align-cell-conserved'));
+            btn.innerHTML = '<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 22h4M12 2a6 6 0 0 0-4 10.5V15h8v-2.5A6 6 0 0 0 12 2z"/></svg> マスク解除';
+            btn.style.background = '#eaf2f8';
+            btn.style.color = '#2980b9';
+            btn.style.border = '1px solid #3498db';
+            showToast("ヒント：突然変異のない保存領域を薄くしました。");
+        } else {
+            conservedCells.forEach(c => c.classList.remove('align-cell-conserved'));
+            btn.innerHTML = '<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 22h4M12 2a6 6 0 0 0-4 10.5V15h8v-2.5A6 6 0 0 0 12 2z"/></svg> マスク';
+            btn.style.background = '#fdfefe';
+            btn.style.color = 'var(--text-main)';
+            btn.style.border = '1px solid var(--border-color)';
+            showToast("マスクを解除しました。");
+        }
     }
 
     function startMLSimulation() {
@@ -2729,7 +2716,8 @@
             for (let k = 0; k < len; k++) {
                 let char = targetSeqs[i].seq[k];
                 let isConserved = targetSeqs.every(s => s.seq[k] === char && char !== '-');
-                let cellClass = isConserved ? "align-cell conserved-cell align-cell-conserved" : "align-cell";
+                // 初期状態の表示
+                let cellClass = isConserved ? "align-cell conserved-cell" : "align-cell";
                 tableHtml += `<td id="ml_cell_${i}_${k}" class="${cellClass}" style="border-bottom:1px solid var(--border-color); border-right:1px solid var(--border-color); width: 36px; min-width: 36px; max-width: 36px;" onclick="mlClickAlignmentCol(${k})">${char}</td>`;
             }
             tableHtml += '</tr>';
@@ -2748,6 +2736,16 @@
             btn2.style.borderColor = '#bdc3c7';
             btn2.style.cursor = 'not-allowed';
             btn2.classList.remove('pulse-anim');
+        }
+
+        // ML法マスク状態のリセット
+        isMLMasked = false;
+        const btnMLMask = document.getElementById('btnMLMaskConserved');
+        if (btnMLMask) {
+            btnMLMask.innerHTML = '<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 22h4M12 2a6 6 0 0 0-4 10.5V15h8v-2.5A6 6 0 0 0 12 2z"/></svg> マスク';
+            btnMLMask.style.background = '#fdfefe';
+            btnMLMask.style.color = 'var(--text-main)';
+            btnMLMask.style.border = '1px solid var(--border-color)';
         }
 
         document.getElementById('mlStep1').style.display = 'block';
@@ -2829,7 +2827,7 @@
             html += `
                 <div id="mlCard${i}" style="flex:1; min-width:250px; border:2px solid var(--border-color); border-radius:6px; padding:12px; text-align:center; background:#fafbfc; cursor:pointer; transition:0.2s;" onclick="selectMLTree(${i})" data-tooltip="この樹形を選択します">
                     <h4 style="margin:0 0 10px 0; font-size:13px; color:var(--text-main);">系統樹 ${i === 1 ? 'I' : i === 2 ? 'II' : 'III'}</h4>
-                    <svg id="mlSimSvg${i}" width="200" height="120" style="background:#fff; border-radius:4px; max-width: 100%; border:1px solid #ecf0f1;"></svg>
+                    <svg id="mlSimSvg${i}" width="250" height="150" style="background:#fff; border-radius:4px; max-width: 100%; border:1px solid #ecf0f1;"></svg>
                     <div style="margin-top: 10px; text-align: left;">
                         <div style="font-size: 11px; color: #7f8c8d; margin-bottom: 2px;">尤度 (相対値): <span id="mlSimScoreVal${i}" style="font-weight:bold; color:var(--text-main); font-size: 14px;">0</span></div>
                         <div style="width: 100%; height: 8px; background: #ecf0f1; border-radius: 4px; overflow: hidden;">
@@ -2856,9 +2854,10 @@
         const svg = document.getElementById(`mlSimSvg${treeType}`);
         svg.innerHTML = '';
         
-        const root = {x: 100, y: 100};
-        const n1 = {x: 60, y: 60};
-        const n2 = {x: 140, y: 60};
+        // ガイドライン第5項: MP法と同じ直線的クラード構造への統一
+        const root = {x: 140, y: 120};
+        const n1 = {x: 170, y: 90};
+        const n2 = {x: 200, y: 60};
         
         let pIdx = [];
         if(treeType === 1) pIdx = [0, 1, 2, 3];
@@ -2866,51 +2865,64 @@
         else pIdx = [0, 3, 1, 2];
         
         const points = [
-            {x: 30, y: 20, label: mlNames[pIdx[0]], b: site.bases[pIdx[0]]}, 
-            {x: 90, y: 20, label: mlNames[pIdx[1]], b: site.bases[pIdx[1]]}, 
-            {x: 150, y: 20, label: mlNames[pIdx[2]], b: site.bases[pIdx[2]]}, 
-            {x: 210, y: 20, label: mlNames[pIdx[3]], b: site.bases[pIdx[3]]}
+            {x: 50, y: 30, label: mlNames[pIdx[0]], b: site.bases[pIdx[0]]}, 
+            {x: 110, y: 30, label: mlNames[pIdx[1]], b: site.bases[pIdx[1]]}, 
+            {x: 170, y: 30, label: mlNames[pIdx[2]], b: site.bases[pIdx[2]]}, 
+            {x: 230, y: 30, label: mlNames[pIdx[3]], b: site.bases[pIdx[3]]}
         ];
 
-        const drawLine = (x1, y1, x2, y2) => {
+        const drawLine = (x1, y1, x2, y2, color) => {
             let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
             line.setAttribute("x1", x1); line.setAttribute("y1", y1);
             line.setAttribute("x2", x2); line.setAttribute("y2", y2);
-            line.setAttribute("stroke", "#bdc3c7"); line.setAttribute("stroke-width", "3");
+            line.setAttribute("stroke", color || "#bdc3c7"); line.setAttribute("stroke-width", "3");
             svg.appendChild(line);
         };
         
-        drawLine(root.x, root.y, n1.x, n1.y);
-        drawLine(root.x, root.y, n2.x, n2.y);
-        drawLine(n1.x, n1.y, points[0].x, points[0].y);
-        drawLine(n1.x, n1.y, points[1].x, points[1].y);
-        drawLine(n2.x, n2.y, points[2].x, points[2].y);
-        drawLine(n2.x, n2.y, points[3].x, points[3].y);
+        // 根元の枝
+        drawLine(root.x, root.y, points[0].x, points[0].y);
+        
+        // 内部のクラード構造
+        drawLine(root.x, root.y, n1.x, n1.y, "#27ae60");
+        drawLine(n1.x, n1.y, points[1].x, points[1].y, "#27ae60");
+        drawLine(n1.x, n1.y, n2.x, n2.y, "#27ae60");
+        drawLine(n2.x, n2.y, points[2].x, points[2].y, "#27ae60");
+        drawLine(n2.x, n2.y, points[3].x, points[3].y, "#27ae60");
 
         points.forEach(p => {
             let circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
             circle.setAttribute("cx", p.x);
             circle.setAttribute("cy", p.y);
-            circle.setAttribute("r", "10");
+            circle.setAttribute("r", "12");
             circle.setAttribute("fill", "#3498db");
             svg.appendChild(circle);
 
             let text = document.createElementNS("http://www.w3.org/2000/svg", "text");
             text.setAttribute("x", p.x);
             text.setAttribute("y", p.y + 4);
-            text.setAttribute("font-size", "10");
+            text.setAttribute("font-size", "11");
             text.setAttribute("fill", "#fff");
             text.setAttribute("font-weight", "bold");
             text.setAttribute("text-anchor", "middle");
             text.textContent = p.b;
             svg.appendChild(text);
+
+            let label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            label.setAttribute("x", p.x);
+            label.setAttribute("y", p.y - 18);
+            label.setAttribute("font-size", "10");
+            label.setAttribute("fill", "#7f8c8d");
+            label.setAttribute("text-anchor", "middle");
+            label.setAttribute("class", "scientific-name");
+            label.textContent = p.label;
+            svg.appendChild(label);
         });
     }
 
     function updateMLModel() {
         const model = document.querySelector('input[name="ml_sim_model"]:checked').value;
         let bases = mlSelectedSiteInfo.bases;
-        let t = 0.1; // 比較用の一定の枝の長さ
+        let t = 0.1; 
         
         let likelihoods = [];
         for (let i = 1; i <= 3; i++) {
@@ -2919,7 +2931,6 @@
             else if (i === 2) { l1=bases[0]; l2=bases[2]; l3=bases[1]; l4=bases[3]; }
             else { l1=bases[0]; l2=bases[3]; l3=bases[1]; l4=bases[2]; }
             
-            // 本物のフェルゼンスタイン計算
             likelihoods.push(calculateSiteLikelihood(model, l1, l2, l3, l4, t));
         }
         
@@ -2932,7 +2943,6 @@
             let L = likelihoods[i-1];
             let score = 0;
             if (maxL > minL) {
-                // UI上での比較用に対数化してマッピング（最小を20%、最大を100%）
                 let maxLn = Math.log(maxL);
                 let minLn = Math.log(minL);
                 let currentLn = Math.log(L);
@@ -2942,7 +2952,6 @@
                 score = 100;
             }
             
-            // 視覚用スコア（実際の尤度は非常に小さいため 100000 倍して表示）
             let displayVal = L * 100000;
             
             document.getElementById(`mlSimScoreVal${i}`).innerText = displayVal.toFixed(2);
@@ -3035,7 +3044,6 @@
         const sourceSvg = document.getElementById(`mlSimSvg${mlSelectedTreeType}`);
         targetSvg.innerHTML = sourceSvg.innerHTML;
         
-        // 本物の尤度曲線を事前計算
         const model = document.querySelector('input[name="ml_sim_model"]:checked').value;
         mlLnLData = [];
         mlMaxLnL = -Infinity;
@@ -3061,11 +3069,9 @@
         const branchLen = parseFloat(document.getElementById('mlBranchSlider').value);
         document.getElementById('mlBranchSliderVal').innerText = branchLen.toFixed(2);
         
-        // 本物の対数尤度を取得
         const model = document.querySelector('input[name="ml_sim_model"]:checked').value;
         let currentLnL = calculateOverallLogLikelihood(model, mlSelectedTreeType, branchLen);
         
-        // UIメーター用に100点満点へ正規化 (最低2%)
         let score = 2; 
         if (mlMaxLnL > mlMinLnL) {
             score = 2 + 98 * ((currentLnL - mlMinLnL) / (mlMaxLnL - mlMinLnL));
@@ -3074,7 +3080,6 @@
         const bar = document.getElementById('mlOverallLikelihoodBar');
         bar.style.width = score + '%';
         
-        // 最適化（頂点）判定
         let isPeak = Math.abs(currentLnL - mlMaxLnL) < 0.001;
         
         if (isPeak) bar.style.background = '#27ae60';
@@ -3605,7 +3610,6 @@
         ctx.fillText('% Bootstrap', legendX + 135, legendY + legendH / 2);
     }
 
-    // --- 可変スピード型 エッジオートスクロール仕様 (ガイドライン第13項) ---
     const scrollContainer = document.getElementById('scrollContainer');
     let isDraggingScroll = false;
     let autoScrollFrame;
