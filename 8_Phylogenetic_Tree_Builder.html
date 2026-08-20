@@ -185,7 +185,7 @@
         }
         .rationale-text strong { 
             color: #d35400; 
-            display: inline-block; /* ガイドライン第6項①: 崩れ防止のためインラインブロック化 */
+            display: inline-block; 
             margin-bottom: 4px; 
             font-size: 12px; 
             line-height: 1.4;
@@ -236,7 +236,7 @@
         .bench-tip strong { 
             color: #2980b9; 
             display: flex; 
-            align-items: flex-start; /* 折り返し時のアイコンずれ防止 */
+            align-items: flex-start; 
             gap: 6px; 
             margin-bottom: 4px; 
             font-size: 13px; 
@@ -903,7 +903,6 @@
                 <div style="font-size:13px; font-weight:bold; color:var(--text-main);">
                     発見した『情報をもつ座位』: <span id="mpFoundCount" style="color:#e67e22; font-size:18px; font-weight:bold;">0</span> / <span id="mpTargetCount">0</span> 箇所
                 </div>
-                <!-- 撤去された解答表示ボタンとフレックス修正 -->
                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
                     <button class="btn btn-sm" id="btnMaskConserved" onclick="toggleMaskConservedSites()" data-tooltip="全員が同じ塩基を持つ列をグレーアウトします"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 22h4M12 2a6 6 0 0 0-4 10.5V15h8v-2.5A6 6 0 0 0 12 2z"/></svg> マスク</button>
                 </div>
@@ -1016,19 +1015,26 @@
                 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_ml_step1')">?</button>
                 <br>
                 DNAの塩基置換には、似た形同士の変化である<strong>「遷移」</strong>と、異なる形への変化である<strong>「置換（塩基置換）」</strong>の2種類があります。下のアライメントの列（座位）をクリックして、その列に起きている変異がどちらのタイプか判定してください。<br>
-                <span style="font-size:12px; color:#7f8c8d;">※「遷移」の列を正しく見つけると次のステップへ進めます。</span>
+                <span style="font-size:12px; color:#7f8c8d;">※「遷移」を1つ、「置換」を1つ、最低でも合計2つ見つけると次のステップへ進めます。</span>
             </div>
 
             <div id="rat_ml_step1" class="rationale-text">
                 <strong>【根拠：遷移と置換（塩基置換）】</strong><br>
                 ・<strong>遷移 (Transition)</strong>：プリン塩基同士 (A↔G) または ピリミジン塩基同士 (C↔T) の化学的性質が似た者同士の突然変異。DNAの構造が歪みにくいため、<strong>自然界で非常に起こりやすい</strong>です。<br>
                 ・<strong>置換 (Transversion)</strong>：プリン塩基とピリミジン塩基の間 (A↔C, A↔T, G↔C, G↔T) の突然変異。構造が大きく変わるため、<strong>起こりにくい</strong>です。<br>
-                ※PDFの重要用語規格に基づき、トランスバージョンは「置換（塩基置換）」と表記しています。
+                ※PDFの重要用語規格に基づき、トランスバージョンは「置換（塩基置換）」と表記しています。<br>
+                <strong>・なぜ遷移と置換を分けて考える必要があるのか？</strong><br>
+                自然界では遷移の方が起こりやすいため、それを計算に組み込むことで、より現実に即した進化の確率（尤度）を求めることができるためです。
             </div>
 
-            <!-- 追加されたML法ステップ1のマスクボタン -->
-            <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
-                <button class="btn btn-sm" id="btnMLMaskConserved" onclick="toggleMLMaskConservedSites()" data-tooltip="全員が同じ塩基を持つ列をグレーアウトします"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 22h4M12 2a6 6 0 0 0-4 10.5V15h8v-2.5A6 6 0 0 0 12 2z"/></svg> マスク</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div style="font-size:13px; font-weight:bold; color:var(--text-main);">
+                    発見した座位: <span style="color:#27ae60;">遷移</span> <span id="mlFoundTsCount" style="color:#27ae60; font-size:18px; font-weight:bold;">0</span> 箇所 / 
+                    <span style="color:#e67e22;">置換</span> <span id="mlFoundTvCount" style="color:#e67e22; font-size:18px; font-weight:bold;">0</span> 箇所
+                </div>
+                <div style="display:flex; justify-content:flex-end;">
+                    <button class="btn btn-sm" id="btnMLMaskConserved" onclick="toggleMLMaskConservedSites()" data-tooltip="全員が同じ塩基を持つ列をグレーアウトします"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6M10 22h4M12 2a6 6 0 0 0-4 10.5V15h8v-2.5A6 6 0 0 0 12 2z"/></svg> マスク</button>
+                </div>
             </div>
 
             <div class="matrix-container" id="mlAlignmentContainer" style="margin-bottom: 16px; border:1px solid var(--border-color); overflow-x: auto; max-width: 100%;">
@@ -1106,7 +1112,6 @@
             <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px;">
                 <div style="flex: 1; min-width: 200px; text-align: center; border: 2px solid var(--success); border-radius: 6px; padding: 12px; background: #e8f8f5;">
                     <h4 style="margin:0 0 10px 0; font-size:13px; color:var(--success);">選択された最尤樹形</h4>
-                    <!-- ML SVGサイズ修正 -->
                     <svg id="mlStep3Svg" width="250" height="150" style="background:#fff; border-radius:4px; max-width: 100%; border:1px solid var(--border-color);"></svg>
                 </div>
 
@@ -1124,7 +1129,10 @@
                 </div>
             </div>
 
-            <div id="mlStep3Feedback" style="display:none; padding:15px; font-size: 13px;"></div>
+            <!-- ガタつき防止のためのラッパーとスタイルの修正 -->
+            <div style="min-height: 150px; margin-top: 16px; width: 100%;">
+                <div id="mlStep3Feedback" style="display: block; padding:15px; font-size: 13px; border: 1px solid transparent; background: transparent;"></div>
+            </div>
 
         </div>
 
