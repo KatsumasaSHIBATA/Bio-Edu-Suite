@@ -473,10 +473,16 @@
         
         <div class="form-group">
           <label>画像データ（形態解析用）</label>
-          <div class="drop-zone" id="imageDropZone" onclick="document.getElementById('imageInput').click()">
-            <svg class="btn-icon" style="margin:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-            <p id="imageDropText">ここをクリック、または 画像データ をドラッグ＆ドロップ</p>
-            <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageFile(event)">
+          <div style="display: flex; gap: 10px; align-items: stretch;">
+            <div class="drop-zone" id="imageDropZone" onclick="document.getElementById('imageInput').click()" style="flex: 1;">
+              <svg class="btn-icon" style="margin:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+              <p id="imageDropText">ここをクリック、または 画像データ をドラッグ＆ドロップ</p>
+              <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageFile(event)">
+            </div>
+            <!-- プレビュー表示枠 (flexで横並び) -->
+            <div id="imagePreviewContainer" style="width: 80px; height: 80px; border: 1px solid var(--border-color); border-radius: 4px; display: none; flex-shrink: 0; overflow: hidden; background: #f8f9fa;">
+              <img id="modalImagePreview" style="object-fit: cover; width: 100%; height: 100%;" src="">
+            </div>
           </div>
           <input type="hidden" id="imageDataBase64">
           <div class="help-text">長辺1200pxの軽量なJPEG (品質80%) に自動最適化され保存されます。</div>
@@ -605,7 +611,7 @@
       return `${yyyy}${mm}${dd}_${hh}${min}${sec}`;
     }
 
-    // --- STREAMING_CHUNK:LIMS 画像最適化ロジック (長辺1200px・JPEG圧縮) ---
+    // --- STREAMING_CHUNK:LIMS 画像最適化とプレビューロジック ---
     function setupDropZone() {
       const dropZone = document.getElementById('imageDropZone');
       dropZone.addEventListener('dragover', (e) => {
@@ -671,6 +677,11 @@
           const base64 = canvas.toDataURL('image/jpeg', 0.8);
           document.getElementById('imageDataBase64').value = base64;
           document.getElementById('imageDropText').innerText = file.name + " (最適化済)";
+          
+          // プレビューの即時反映
+          document.getElementById('modalImagePreview').src = base64;
+          document.getElementById('imagePreviewContainer').style.display = 'block';
+
           showToast("画像を最適化して読み込みました", "success");
         };
         img.src = e.target.result;
@@ -678,7 +689,7 @@
       reader.readAsDataURL(file);
     }
 
-    // --- STREAMING_CHUNK:UIレンダリング ---
+    // --- STREAMING_CHUNK:UIレンダリング (サムネイル・フレキシブルレイアウト適用) ---
     function renderSamples() {
       const grid = document.getElementById('sampleGrid');
       grid.innerHTML = '';
@@ -713,6 +724,7 @@
         const card = document.createElement('div');
         card.className = 'sample-card';
         
+        // .card-body を flexbox にし、文字情報とサムネイル画像を左右に美しく配置する
         card.innerHTML = `
           <div class="card-header">
             <div style="display: flex; align-items: flex-start; gap: 12px;">
@@ -724,12 +736,15 @@
             </div>
             <button class="btn-delete" onclick="deleteSample('${sample.id}', event)" data-tooltip="削除する"><svg class="btn-icon" style="margin:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
           </div>
-          <div class="card-body" onclick="editSample('${sample.id}')">
-            <div class="status-badges">${envBadge}${imageBadge}${morphBadge}${dnaBadge}</div>
-            ${hasEnv ? `<div class="data-preview" data-tooltip="環境カテゴリ">${escapeHTML(envCat)}</div>` : ''}
-            ${envNote ? `<div class="data-preview" data-tooltip="特記事項">${escapeHTML(envNote.substring(0, 30))}...</div>` : ''}
-            ${hasMorph ? `<div class="data-preview" data-tooltip="形態データ">${escapeHTML(sample.morphData.substring(0, 30))}...</div>` : ''}
-            ${hasDna ? `<div class="data-preview" data-tooltip="塩基配列">${escapeHTML(sample.dnaData.substring(0, 30))}...</div>` : ''}
+          <div class="card-body" onclick="editSample('${sample.id}')" style="display: flex; justify-content: space-between; gap: 10px;">
+            <div style="flex: 1; overflow: hidden;">
+              <div class="status-badges">${envBadge}${imageBadge}${morphBadge}${dnaBadge}</div>
+              ${hasEnv ? `<div class="data-preview" data-tooltip="環境カテゴリ">${escapeHTML(envCat)}</div>` : ''}
+              ${envNote ? `<div class="data-preview" data-tooltip="特記事項">${escapeHTML(envNote.substring(0, 30))}...</div>` : ''}
+              ${hasMorph ? `<div class="data-preview" data-tooltip="形態データ">${escapeHTML(sample.morphData.substring(0, 30))}...</div>` : ''}
+              ${hasDna ? `<div class="data-preview" data-tooltip="塩基配列">${escapeHTML(sample.dnaData.substring(0, 30))}...</div>` : ''}
+            </div>
+            ${hasImage ? `<img src="${sample.image_data}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #bdc3c7; flex-shrink: 0;">` : ''}
           </div>
         `;
         grid.appendChild(card);
@@ -866,10 +881,12 @@
       document.getElementById('envCategory').value = "";
       document.getElementById('envNote').value = "";
       
-      // 画像エリアのリセット
+      // 画像エリア・プレビューの初期化
       document.getElementById('imageDataBase64').value = "";
       document.getElementById('imageDropText').innerText = "ここをクリック、または 画像データ をドラッグ＆ドロップ";
       document.getElementById('imageInput').value = "";
+      document.getElementById('modalImagePreview').src = "";
+      document.getElementById('imagePreviewContainer').style.display = 'none';
 
       document.getElementById('morphData').value = "";
       document.getElementById('dnaData').value = "";
@@ -894,6 +911,15 @@
       document.getElementById('imageDataBase64').value = sample.image_data || "";
       document.getElementById('imageDropText').innerText = sample.image_data ? "保存済みの画像データ (変更する場合は再ドロップ)" : "ここをクリック、または 画像データ をドラッグ＆ドロップ";
       document.getElementById('imageInput').value = "";
+
+      // プレビューの表示制御
+      if (sample.image_data) {
+        document.getElementById('modalImagePreview').src = sample.image_data;
+        document.getElementById('imagePreviewContainer').style.display = 'block';
+      } else {
+        document.getElementById('modalImagePreview').src = "";
+        document.getElementById('imagePreviewContainer').style.display = 'none';
+      }
 
       document.getElementById('morphData').value = sample.morphData || "";
       document.getElementById('dnaData').value = sample.dnaData || "";
