@@ -682,7 +682,7 @@
             <h1><svg class="header-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>Phylogenetic Tree Builder</h1>
             <p>Bio-Edu Suite: Phase 2 / Matrix Calculation & UPGMA/NJ/MP/ML Clustering Emulator</p>
         </div>
-        <div class="version-badge">v32.2</div>
+        <div class="version-badge">v33.1</div>
     </div>
 </div>
 
@@ -876,6 +876,26 @@
         <p>このアプリで学んだ距離法（UPGMA/NJ）や形質状態法（MP/ML）の基礎が、膨大な確率計算を行うプロ用ソフトの結果をブラックボックスにせず、正しく解釈する力になります。より高度な解析（進化モデルを考慮したML法、論文レベルの信頼性を担保する1000回を超えるブートストラップ等）が必要になったら、世界標準の解析ソフト<b>「MEGA」</b>を使いましょう。</p>
     </div>
 
+    <div style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px; margin-bottom: 20px;">
+        <details style="cursor: pointer;">
+            <summary style="font-weight: bold; color: var(--text-muted); font-size: 13px;">
+                References & Algorithms
+            </summary>
+            <div style="padding: 10px 0 0 15px; font-size: 11px; color: var(--text-muted); line-height: 1.6;">
+                <p style="margin-bottom: 8px;">本アプリケーションの計算エンジンは、以下のアルゴリズムおよび進化モデルに基づき実装されています。</p>
+                <ul style="padding-left: 20px; margin: 0; display: flex; flex-direction: column; gap: 6px;">
+                    <li><strong>UPGMA:</strong> Sokal, R. R., & Michener, C. D. (1958). A statistical method for evaluating systematic relationships. <em>University of Kansas Science Bulletin</em>, 38, 1409–1438.</li>
+                    <li><strong>Neighbor-Joining (NJ):</strong> Saitou, N., & Nei, M. (1987). The neighbor-joining method: a new method for reconstructing phylogenetic trees. <em>Molecular Biology and Evolution</em>, 4(4), 406–425.</li>
+                    <li><strong>Maximum Parsimony (Fitch's Algorithm):</strong> Fitch, W. M. (1971). Toward defining the course of evolution: minimum change for a specific tree topology. <em>Systematic Zoology</em>, 20(4), 406–416.</li>
+                    <li><strong>Maximum Likelihood (Felsenstein's Pruning Algorithm):</strong> Felsenstein, J. (1981). Evolutionary trees from DNA sequences: a maximum likelihood approach. <em>Journal of Molecular Evolution</em>, 17(6), 368–376.</li>
+                    <li><strong>JC69 Substitution Model:</strong> Jukes, T. H., & Cantor, C. R. (1969). Evolution of protein molecules. In H. N. Munro (Ed.), <em>Mammalian Protein Metabolism</em> (Vol. 3, pp. 21–132). Academic Press.</li>
+                    <li><strong>K80 (Kimura 2-Parameter) Substitution Model:</strong> Kimura, M. (1980). A simple method for estimating evolutionary rates of base substitutions through comparative studies of nucleotide sequences. <em>Journal of Molecular Evolution</em>, 16(2), 111–120.</li>
+                    <li><strong>Bootstrap Analysis:</strong> Felsenstein, J. (1985). Confidence limits on phylogenies: an approach using the bootstrap. <em>Evolution</em>, 39(4), 783–791.</li>
+                </ul>
+            </div>
+        </details>
+    </div>
+
 </div>
 
 <!-- ====== ステップ式になったMP法モーダル ====== -->
@@ -1014,7 +1034,7 @@
                 <strong>ステップ1：突然変異の種類を判別しよう！</strong>
                 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_ml_step1')">?</button>
                 <br>
-                DNAの塩基置換には、似た形同士の変化である<strong>「遷移」</strong>と、異なる形への変化である<strong>「置換（塩基置換）」</strong>の2種類があります。下のアライメントの列（座位）をクリックして、その列に起きている変異がどちらのタイプか判定してください。<br>
+                DNAの塩基置換には、似た形同士の変化である<strong>「遷移」</strong>と、異なる形への変化である<strong>「置換（塩基置換）」</strong>の2種類があります。下のアライメントの列（座位）をクリックして、その列に起きている突然変異がどちらのタイプか判定してください。<br>
                 <span style="font-size:12px; color:#7f8c8d;">※「遷移」を1つ、「置換」を1つ、最低でも合計2つ見つけると次のステップへ進めます。</span>
             </div>
 
@@ -1043,7 +1063,7 @@
 
             <div id="mlStep1QuestionPanel" style="display:none; background:#f8f9fa; border:1px solid var(--border-color); border-radius:6px; padding:16px; margin-bottom:16px; text-align:center;">
                 <div style="font-size:14px; font-weight:bold; color:var(--text-main); margin-bottom:10px;">
-                    座位 <span id="mlCurrentSiteNum" style="color:var(--phase-color); font-size:16px;">-</span> の変異タイプはどちらですか？
+                    座位 <span id="mlCurrentSiteNum" style="color:var(--phase-color); font-size:16px;">-</span> の突然変異のタイプはどちらですか？
                 </div>
                 <div style="font-size:12px; color:#7f8c8d; margin-bottom:12px;" id="mlCurrentSiteBases">-</div>
                 <div style="display:flex; gap:12px; justify-content:center;">
@@ -1162,7 +1182,7 @@
 
 <div id="toast"></div>
 
-<div class="footer">&copy; 2026 Bio-Edu Suite v32.2 | Developed for Bioinformatics & Wet-Lab Education</div>
+<div class="footer">&copy; 2026 Bio-Edu Suite v33.1 | Developed for Bioinformatics & Wet-Lab Education</div>
 
 <script src="lib/phylo_ui.js"></script>
 <script>
