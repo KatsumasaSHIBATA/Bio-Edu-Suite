@@ -81,7 +81,6 @@
         .rationale-text { position: fixed; background: #fef9e7; border: 1px solid var(--warning); padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: max-content; max-width: min(320px, calc(100vw - 24px)); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; }
         .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
         .rationale-text strong { color: #d35400; font-size: 12px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 4px; }
-        
         .rationale-text::after { content: ''; position: absolute; border-width: 6px; border-style: solid; left: var(--arrow-left, 50%); }
         .rationale-text.arrow-top::after { top: -12px; border-color: transparent transparent #fef9e7 transparent; }
         .rationale-text.arrow-bottom::after { bottom: -12px; border-color: #fef9e7 transparent transparent transparent; }
@@ -110,7 +109,7 @@
         .algo-selector input { display: none; }
         .algo-selector input:checked + label { background: var(--phase-color); color: white; }
 
-        /* ドロップゾーン (ガイドライン第9項① v33.0 準拠) */
+        /* ドロップゾーン (ガイドライン第9項① v32.0 準拠) */
         .drop-zone { border: 2px dashed var(--border-color); background: #f8f9fa; border-radius: 8px; padding: 16px; margin-bottom: 5px; display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 8px; width: 100%; max-width: 450px; min-height: 60px; box-sizing: border-box; cursor: pointer; transition: 0.2s; overflow: hidden; }
         .drop-zone:hover, .drop-zone.dragover { background: #ebf5fb; border-color: var(--phase-color); }
         .drop-zone p { margin: 0; font-size: 12px; font-weight: bold; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
@@ -198,7 +197,7 @@
             </h1>
             <p>Bio-Edu Suite: Phase 3 / EFA & Procrustes Analysis</p>
         </div>
-        <div class="version-badge">v33.0</div>
+        <div class="version-badge">v32.2</div>
     </div>
 </div>
 
@@ -243,7 +242,7 @@
                         <line x1="12" y1="18" x2="12" y2="12"/>
                         <line x1="9" y1="15" x2="15" y2="15"/>
                     </svg>
-                    <p>ここをクリック、または [チェーンコード] をドラッグ＆ドロップ</p>
+                    <p>ここをクリック、またはチェーンコードファイルをドラッグ＆ドロップ</p>
                     <input type="file" id="fileInputA" accept=".chc,.dat,.txt">
                 </div>
 
@@ -258,20 +257,10 @@
                             </div>
                         </div>
                     </span>
-                    
-                    <div class="drop-zone" id="dropZoneImgA" data-tooltip="JPG/PNG形式の画像をドラッグ＆ドロップ">
-                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                            <polyline points="14 2 14 8 20 8"/>
-                            <line x1="12" y1="18" x2="12" y2="12"/>
-                            <line x1="9" y1="15" x2="15" y2="15"/>
-                        </svg>
-                        <p>ここをクリック、または [対象画像] をドラッグ＆ドロップ</p>
-                        <input type="file" id="imgUpload" accept="image/*" style="display: none;">
-                    </div>
-
-                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <div style="display: flex; gap: 10px;">
                         <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+                            <input type="file" id="imgUpload" accept="image/*" multiple style="display: none;" onchange="loadImageForTrace(event)">
+                            <button class="btn" onclick="document.getElementById('imgUpload').click()" data-tooltip="JPG/PNG形式の画像ファイルを選択します（複数可）">画像選択</button>
                             <div style="display: flex; align-items: center; gap: 5px;">
                                 <label style="font-size: 10px; font-weight: bold; white-space: nowrap;">閾値:</label>
                                 <input type="range" id="threshSlider" min="0" max="255" value="128" style="flex: 1; margin:0;" oninput="updateImagePreview()">
@@ -279,11 +268,19 @@
                             </div>
                             <div style="display: flex; gap: 5px; flex-wrap: wrap;">
                                 <input type="text" id="imgSampleName" placeholder="Sample ID を入力" style="flex: 1; min-width: 120px;">
-                                <button class="btn btn-primary" onclick="extractAndAppend()" data-tooltip="画像から輪郭を抽出しチェーンコードを生成します">
+                                <button class="btn btn-secondary" onclick="extractAndAppend()" data-tooltip="画像から輪郭を抽出しチェーンコードを生成します">
                                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                                     抽出
                                 </button>
                             </div>
+                            
+                            <!-- EFA キューナビゲーションUI -->
+                            <div id="efa-queue-nav" style="display: none; align-items: center; justify-content: space-between; margin-top: 2px; font-size: 11px; background: #f8f9fa; padding: 4px 8px; border: 1px solid #bdc3c7; border-radius: 4px;">
+                                <button class="btn btn-secondary" style="padding: 2px 8px; min-width: 0;" onclick="efaPrevImage()">◀ 前の画像</button>
+                                <span id="efa-queue-status" style="font-weight: bold; color: var(--primary);">[ 1 / 1 ]</span>
+                                <button class="btn btn-secondary" style="padding: 2px 8px; min-width: 0;" onclick="efaNextImage()">次の画像 ▶</button>
+                            </div>
+                            
                         </div>
                         <div style="width: 80px; height: 80px; border: 1px dashed #bdc3c7; background: #fff; border-radius: 4px; overflow: hidden; position: relative; flex-shrink: 0;">
                             <canvas id="imgCanvas" style="width: 100%; height: 100%; object-fit: contain;"></canvas>
@@ -309,8 +306,8 @@
                     <label style="font-size:11px; font-weight:bold; color:#2c3e50;">PCA対象成分:</label>
                     <select id="pca-feature-mode" style="width: 150px;">
                         <option value="all">全係数 (a, b, c, d)</option>
-                        <option value="sym" selected>対称の変異のみ (a, d)</option>
-                        <option value="asym">非対称の変異のみ (b, c)</option>
+                        <option value="sym" selected>対称変異のみ (a, d)</option>
+                        <option value="asym">非対称変異のみ (b, c)</option>
                     </select>
                 </div>
 
@@ -355,18 +352,9 @@
                     <span style="font-size: 13px; font-weight: bold; color: #34495e; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
                         <span>1. ランドマークの取得</span>
                     </span>
-                    <div class="drop-zone" id="dropZoneImgC" data-tooltip="複数画像を選択・ドロップできます">
-                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                            <polyline points="14 2 14 8 20 8"/>
-                            <line x1="12" y1="18" x2="12" y2="12"/>
-                            <line x1="9" y1="15" x2="15" y2="15"/>
-                        </svg>
-                        <p>ここをクリック、または [複数画像] をドラッグ＆ドロップ</p>
-                        <input type="file" id="gpaImgUpload" accept="image/*" multiple style="display: none;">
-                    </div>
-                    
-                    <div style="display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px;">
+                    <input type="file" id="gpaImgUpload" accept="image/*" multiple style="display: none;" onchange="loadGPAImages(event)">
+                    <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                        <button class="btn btn-secondary" onclick="document.getElementById('gpaImgUpload').click()" data-tooltip="複数画像を選択できます">画像を選択</button>
                         <select id="gpaSampleSelector" style="flex: 1;" onchange="switchGPASample()">
                             <option value="">-- サンプルを選択 --</option>
                         </select>
@@ -552,7 +540,7 @@
 
 <div id="d3-tooltip" class="custom-tooltip"></div>
 <div id="toast"></div>
-<div class="footer">&copy; 2026 Bio-Edu Suite v33.0 | Developed for Bioinformatics & Wet-Lab Education</div>
+<div class="footer">&copy; 2026 Bio-Edu Suite v32.2 | Developed for Bioinformatics & Wet-Lab Education</div>
 
 <script>
     // ==========================================
@@ -692,10 +680,7 @@
         tbody.parentElement.parentElement.scrollTop = tbody.parentElement.parentElement.scrollHeight;
     }
 
-    // ==========================================
-    // データ入力 / ドロップゾーン 共通ロジック
-    // ==========================================
-    const setupDropZoneForText = (zoneId, inputId, fileInputId) => {
+    const setupDropZone = (zoneId, inputId, fileInputId) => {
         const zone = document.getElementById(zoneId);
         if(!zone) return;
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(n => zone.addEventListener(n, e => {e.preventDefault(); e.stopPropagation();}));
@@ -705,65 +690,51 @@
             zone.classList.remove('dragover');
             const reader = new FileReader();
             reader.onload = ev => document.getElementById(inputId).value = ev.target.result;
-            if (e.dataTransfer.files.length > 0) reader.readAsText(e.dataTransfer.files[0]);
+            reader.readAsText(e.dataTransfer.files[0]);
         });
         document.getElementById(fileInputId).addEventListener('change', e => {
-            if (!e.target.files.length) return;
             const reader = new FileReader();
             reader.onload = ev => document.getElementById(inputId).value = ev.target.result;
             reader.readAsText(e.target.files[0]);
         });
         zone.addEventListener('click', () => document.getElementById(fileInputId).click());
     };
+    setupDropZone('dropZoneA', 'chain-code-input', 'fileInputA');
 
-    const setupDropZoneForImage = (zoneId, inputId, onFileCallback) => {
-        const zone = document.getElementById(zoneId);
-        const input = document.getElementById(inputId);
-        if(!zone || !input) return;
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(n => zone.addEventListener(n, e => {e.preventDefault(); e.stopPropagation();}));
-        zone.addEventListener('dragover', () => zone.classList.add('dragover'));
-        zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
-        zone.addEventListener('drop', e => {
-            zone.classList.remove('dragover');
-            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-                if(input.multiple) onFileCallback(e.dataTransfer.files);
-                else onFileCallback(e.dataTransfer.files[0]);
-            }
-        });
-        input.addEventListener('change', e => {
-            if (e.target.files && e.target.files.length > 0) {
-                if(input.multiple) onFileCallback(e.target.files);
-                else onFileCallback(e.target.files[0]);
-            }
-        });
-        zone.addEventListener('click', () => input.click());
-    };
+    // --- EFA Image Queue System ---
+    let efaImageQueue = [];
+    let efaCurrentIndex = -1;
 
-    // ==========================================
-    // 画像最適化 (リサイズ & 圧縮) ロジック
-    // ==========================================
-    function optimizeImage(fileOrDataUrl, callback) {
-        const img = new Image();
-        img.onload = function() {
-            const maxDim = 1200;
-            let w = img.width, h = img.height;
-            if (w > maxDim || h > maxDim) {
-                if (w > h) { h = Math.round(h * (maxDim / w)); w = maxDim; }
-                else { w = Math.round(w * (maxDim / h)); h = maxDim; }
-            }
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = w; tempCanvas.height = h;
-            const tCtx = tempCanvas.getContext('2d');
-            tCtx.drawImage(img, 0, 0, w, h);
-            callback(tempCanvas.toDataURL('image/jpeg', 0.8), w, h, tempCanvas);
-        };
-        if (typeof fileOrDataUrl === 'string') {
-            img.src = fileOrDataUrl;
-        } else {
-            const reader = new FileReader();
-            reader.onload = e => { img.src = e.target.result; };
-            reader.readAsDataURL(fileOrDataUrl);
+    function efaPrevImage() {
+        if (efaCurrentIndex > 0) {
+            efaCurrentIndex--;
+            efaRenderCurrentQueue();
         }
+    }
+
+    function efaNextImage() {
+        if (efaCurrentIndex < efaImageQueue.length - 1) {
+            efaCurrentIndex++;
+            efaRenderCurrentQueue();
+        }
+    }
+
+    function efaRenderCurrentQueue() {
+        if (efaCurrentIndex < 0 || efaCurrentIndex >= efaImageQueue.length) return;
+        const item = efaImageQueue[efaCurrentIndex];
+        document.getElementById('imgSampleName').value = item.name;
+        
+        const canvas = document.getElementById('imgCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = item.width;
+        canvas.height = item.height;
+        ctx.putImageData(item.imageData, 0, 0);
+        window.currentImageData = item.imageData;
+        
+        updateImagePreview();
+        
+        document.getElementById('efa-queue-status').innerText = `[ ${efaCurrentIndex + 1} / ${efaImageQueue.length} ]`;
+        document.getElementById('efa-queue-nav').style.display = efaImageQueue.length > 1 ? 'flex' : 'none';
     }
 
     let analysisResult = null;
@@ -771,106 +742,115 @@
     let globalSamples = [];
     
     window.onload = () => {
-        // ドロップゾーンの初期化
-        setupDropZoneForText('dropZoneA', 'chain-code-input', 'fileInputA');
-        setupDropZoneForImage('dropZoneImgA', 'imgUpload', loadImageForTrace);
-        setupDropZoneForImage('dropZoneImgC', 'gpaImgUpload', loadGPAImages);
-
         try {
-            const bulkDataStr = sessionStorage.getItem('bio_edu_bulk_data');
-            const transferDataStr = sessionStorage.getItem('bio_edu_transfer_data');
+            const bulkData = sessionStorage.getItem('bio_edu_bulk_data');
+            const transferData = sessionStorage.getItem('bio_edu_transfer_data');
+            let morphSamples = [];
             
-            let sourceApp = "前工程";
-            let loadedFromSession = false;
-            
-            // 1. 画像データの自動連携 (ダッシュボードからの受け入れ)
-            if (bulkDataStr) {
-                const parsed = JSON.parse(bulkDataStr);
-                sourceApp = parsed.source || "App_1_Dashboard";
+            if (bulkData) {
+                const parsed = JSON.parse(bulkData);
+                const samples = parsed.samples || [];
                 
-                if (parsed.samples && parsed.samples.length > 0) {
-                    const firstSample = parsed.samples[0];
+                // --- スマート・ロード (複数画像の一括処理) ---
+                let imageSamples = samples.filter(s => s.image_data);
+                if (imageSamples.length > 0) {
+                    let efaLoaded = 0;
+                    let gpaLoaded = 0;
+                    const totalImgs = imageSamples.length;
                     
-                    // ここが修正対象: imageData ではなく image_data を参照する
-                    if (firstSample.image_data) {
-                        document.getElementById('route_a').checked = true;
-                        switchRoute();
-                        document.getElementById('imgSampleName').value = firstSample.id || firstSample.name || 'Sample_1';
-                        
-                        // ここの引数も修正: firstSample.image_data を渡す
-                        optimizeImage(firstSample.image_data, (dataUrl, w, h, tempCanvas) => {
-                            const canvas = document.getElementById('imgCanvas');
-                            const ctx = canvas.getContext('2d');
-                            canvas.width = w; canvas.height = h;
-                            ctx.drawImage(tempCanvas, 0, 0);
-                            window.currentImageData = ctx.getImageData(0, 0, w, h);
-                            updateImagePreview();
-                        });
-                        
-                        let displaySource = sourceApp.replace(/_/g, " ");
-                        showToast(`${displaySource} から画像データを自動で読み込みました`, "success");
-                        loadedFromSession = true;
-                    }
+                    imageSamples.forEach((sample, i) => {
+                        const sName = sample.id || sample.name || `Sample_${i+1}`;
+                        const img = new Image();
+                        img.onload = function() {
+                            // EFA Resize & Queue
+                            const maxDim = 300;
+                            let w = img.width, h = img.height;
+                            if (w > maxDim || h > maxDim) {
+                                if (w > h) { h = h * (maxDim / w); w = maxDim; }
+                                else { w = w * (maxDim / h); h = maxDim; }
+                            }
+                            const tCanvas = document.createElement('canvas');
+                            tCanvas.width = w; tCanvas.height = h;
+                            const tCtx = tCanvas.getContext('2d');
+                            tCtx.drawImage(img, 0, 0, w, h);
+                            
+                            efaImageQueue.push({
+                                name: sName,
+                                imageData: tCtx.getImageData(0, 0, w, h),
+                                width: w,
+                                height: h
+                            });
+                            efaLoaded++;
+                            
+                            // GPA load
+                            gpaDataList.push({ id: sName, img: img, landmarks: [] });
+                            gpaLoaded++;
+                            
+                            // 全画像のロード完了判定
+                            if (efaLoaded === totalImgs && gpaLoaded === totalImgs) {
+                                // EFAキュー反映
+                                efaCurrentIndex = 0;
+                                efaRenderCurrentQueue();
+                                
+                                // GPAリスト反映
+                                updateGPASelector();
+                                gpaCurrentIdx = 0;
+                                document.getElementById('gpaSampleSelector').selectedIndex = 1;
+                                gpaResetView();
+                                
+                                showToast(`ダッシュボードから ${totalImgs}件 の画像データを読み込みました`, "success");
+                                sessionStorage.removeItem('bio_edu_bulk_data');
+                            }
+                        };
+                        img.src = sample.image_data;
+                    });
                 }
-                sessionStorage.removeItem('bio_edu_bulk_data');
+                
+                morphSamples = samples.filter(s => s.morphData && s.morphData.trim() !== "");
+            } else if (transferData) {
+                const parsed = JSON.parse(transferData);
+                const samples = parsed.samples || parsed;
+                morphSamples = samples.filter(s => s.morphData && s.morphData.trim() !== "");
             }
 
-            // 2. 既存のチェーンコード(morphData)の連携処理
-            if (!loadedFromSession && (bulkDataStr || transferDataStr)) {
-                let parsedBulk = bulkDataStr ? JSON.parse(bulkDataStr) : null;
-                let parsedTrans = transferDataStr ? JSON.parse(transferDataStr) : null;
-                let samples = (parsedBulk && parsedBulk.samples) ? parsedBulk.samples : ((parsedTrans && parsedTrans.samples) ? parsedTrans.samples : (parsedTrans || []));
-                
-                let morphSamples = samples.filter(s => s.morphData && s.morphData.trim() !== "");
-                
-                if (morphSamples.length === 0) {
-                    document.getElementById('active-sample-info').innerHTML = `
-                        <div style="display:flex; justify-content:space-between; align-items:center; color: var(--text-muted); gap: 10px;">
-                            <span style="flex: 1; min-width: 0; word-break: break-word;"><strong>Target:</strong> データ未受信 (手動で入力するか、ファイルをドロップしてください)</span>
-                            <span style="background:var(--border-color); color:white; padding:2px 6px; border-radius:10px; font-size:10px; font-weight:bold; flex-shrink: 0; white-space: nowrap;">未選択</span>
-                        </div>
-                    `;
-                } else {
-                    window.transferredSamples = morphSamples;
-                    let combinedData = morphSamples.map(s => {
-                        let raw = s.morphData.trim();
-                        let codes = raw.split(/\s+/);
-                        if(codes.length > 0 && !isNaN(codes[0])) {
-                            return `${s.id} ${codes.length} 0 0 1.0 1.0 ${raw} -1`;
-                        }
-                        return raw;
-                    }).join("\n");
-                    
-                    document.getElementById('chain-code-input').value = combinedData;
-                    document.getElementById('route_a').checked = true;
-                    
-                    let sampleListHTML = morphSamples.map(s => `
-                        <div style="display:flex; justify-content:space-between; border-bottom:1px solid #ecf0f1; padding:6px 0;">
-                            <span style="font-family:monospace; font-weight:bold; font-size:11px; color:var(--primary);">${escapeHTML(s.id)}</span>
-                            <span style="color:var(--text-muted); font-size:10px;">${escapeHTML(s.name)}</span>
-                        </div>
-                    `).join('');
-
-                    document.getElementById('active-sample-info').innerHTML = `
-                        <div style="display:flex; justify-content:space-between; align-items:center; gap: 10px; margin-bottom: 8px;">
-                            <span style="flex: 1; min-width: 0; word-break: break-word; font-weight:bold; font-size:12px; color:var(--primary);">受信済みサンプル <span style="color:var(--text-muted); font-size:10px;">(${morphSamples.length} samples)</span></span>
-                            <span style="background:var(--success); color:white; padding:2px 6px; border-radius:10px; font-size:10px; font-weight:bold; flex-shrink: 0; white-space: nowrap;">連携済</span>
-                        </div>
-                        <div style="max-height: 120px; overflow-y: auto; background: white; border: 1px solid var(--border-color); border-radius: 4px; padding: 4px 8px;">
-                            ${sampleListHTML}
-                        </div>
-                    `;
-                    let displaySource = sourceApp.replace(/_/g, " ");
-                    setTimeout(() => { showToast(`${displaySource} から ${morphSamples.length} 件のサンプルを受信しました`, "success"); }, 500);
-                }
-                if(transferDataStr) sessionStorage.removeItem('bio_edu_transfer_data');
-            } else if (!loadedFromSession) {
+            if (morphSamples.length === 0) {
                 document.getElementById('active-sample-info').innerHTML = `
                     <div style="display:flex; justify-content:space-between; align-items:center; color: var(--text-muted); gap: 10px;">
                         <span style="flex: 1; min-width: 0; word-break: break-word;"><strong>Target:</strong> データ未受信 (手動で入力するか、ファイルをドロップしてください)</span>
                         <span style="background:var(--border-color); color:white; padding:2px 6px; border-radius:10px; font-size:10px; font-weight:bold; flex-shrink: 0; white-space: nowrap;">未選択</span>
                     </div>
                 `;
+            } else {
+                window.transferredSamples = morphSamples;
+                let combinedData = morphSamples.map(s => {
+                    let raw = s.morphData.trim();
+                    let codes = raw.split(/\s+/);
+                    if(codes.length > 0 && !isNaN(codes[0])) {
+                        return `${s.id} ${codes.length} 0 0 1.0 1.0 ${raw} -1`;
+                    }
+                    return raw;
+                }).join("\n");
+                
+                document.getElementById('chain-code-input').value = combinedData;
+                document.getElementById('route_a').checked = true;
+                
+                let sampleListHTML = morphSamples.map(s => `
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px solid #ecf0f1; padding:6px 0;">
+                        <span style="font-family:monospace; font-weight:bold; font-size:11px; color:var(--primary);">${escapeHTML(s.id)}</span>
+                        <span style="color:var(--text-muted); font-size:10px;">${escapeHTML(s.name)}</span>
+                    </div>
+                `).join('');
+
+                document.getElementById('active-sample-info').innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap: 10px; margin-bottom: 8px;">
+                        <span style="flex: 1; min-width: 0; word-break: break-word; font-weight:bold; font-size:12px; color:var(--primary);">受信済みサンプル <span style="color:var(--text-muted); font-size:10px;">(${morphSamples.length} samples)</span></span>
+                        <span style="background:var(--success); color:white; padding:2px 6px; border-radius:10px; font-size:10px; font-weight:bold; flex-shrink: 0; white-space: nowrap;">連携済</span>
+                    </div>
+                    <div style="max-height: 120px; overflow-y: auto; background: white; border: 1px solid var(--border-color); border-radius: 4px; padding: 4px 8px;">
+                        ${sampleListHTML}
+                    </div>
+                `;
+                setTimeout(() => { showToast(`前工程から ${morphSamples.length} 件のサンプルを受信しました`, "success"); }, 500);
             }
         } catch (e) {
             console.error("Data Load Error:", e);
@@ -883,11 +863,7 @@
 
     function copyToMorphoTSV() {
         if (!globalPCA || globalSamples.length === 0) return;
-        let tsvLines = [
-            "# Source: App_9_Morphometrics_Studio",
-            `# Timestamp: ${new Date().toISOString()}`,
-            "Sample_ID\tSample_Name\tPC1_Score\tPC2_Score"
-        ];
+        let tsvLines = ["Sample_ID\tSample_Name\tPC1_Score\tPC2_Score"];
         globalSamples.forEach((sample, i) => {
             let originalSample = window.transferredSamples ? window.transferredSamples.find(s => s.id === sample.name || s.name === sample.name) : null;
             let sampleId = originalSample ? originalSample.id : `SAMP_${new Date().getTime()}_${i}`;
@@ -902,7 +878,7 @@
 
         let exportData = {
             metadata: {
-                source: "App_9_Morphometrics_Studio",
+                source: "Morphometrics_Studio",
                 timestamp: new Date().toISOString(),
                 method: analysisResult.type === 'gpa_pca' ? "GPA_PCA" : "EFA_PCA",
                 featureMode: analysisResult.mode || "all"
@@ -974,16 +950,45 @@
         }
     }
 
-    function loadImageForTrace(file) {
-        if (!file) return;
-        optimizeImage(file, (dataUrl, w, h, tempCanvas) => {
-            const canvas = document.getElementById('imgCanvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = w; canvas.height = h;
-            ctx.drawImage(tempCanvas, 0, 0);
-            window.currentImageData = ctx.getImageData(0, 0, w, h);
-            updateImagePreview();
-        });
+    function loadImageForTrace(event) {
+        const files = event.target.files;
+        if (!files || files.length === 0) return;
+        
+        let loadedCount = 0;
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const maxDim = 300;
+                    let w = img.width, h = img.height;
+                    if (w > maxDim || h > maxDim) {
+                        if (w > h) { h = h * (maxDim / w); w = maxDim; }
+                        else { w = w * (maxDim / h); h = maxDim; }
+                    }
+                    const tCanvas = document.createElement('canvas');
+                    tCanvas.width = w; tCanvas.height = h;
+                    const ctx = tCanvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    
+                    efaImageQueue.push({
+                        name: file.name.split('.')[0],
+                        imageData: ctx.getImageData(0, 0, w, h),
+                        width: w,
+                        height: h
+                    });
+                    
+                    loadedCount++;
+                    if (loadedCount === files.length) {
+                        efaCurrentIndex = efaImageQueue.length - files.length; // 追加された最初の画像を表示
+                        efaRenderCurrentQueue();
+                    }
+                }
+                img.src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
     }
 
     function updateImagePreview() {
@@ -1578,15 +1583,16 @@
         drawGPACanvas();
     }
 
-    function loadGPAImages(files) {
+    function loadGPAImages(event) {
+        const files = event.target.files;
         if (!files || files.length === 0) return;
         let loadedCount = 0;
         for (let i = 0; i < files.length; i++) {
-            let file = files[i];
-            optimizeImage(file, (dataUrl) => {
+            let file = files[i], reader = new FileReader();
+            reader.onload = (e) => {
                 let img = new Image();
                 img.onload = () => {
-                    gpaDataList.push({ id: file.name.split('.')[0] || `Image_${gpaDataList.length+1}`, img: img, landmarks: [] });
+                    gpaDataList.push({ id: file.name.split('.')[0], img: img, landmarks: [] });
                     loadedCount++;
                     if(loadedCount === files.length) {
                         updateGPASelector();
@@ -1596,8 +1602,9 @@
                         showToast(`${files.length}枚の画像を読み込みました`, "success");
                     }
                 };
-                img.src = dataUrl;
-            });
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
         }
     }
 
