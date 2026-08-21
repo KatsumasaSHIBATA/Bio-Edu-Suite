@@ -876,7 +876,7 @@
         <p>このアプリで学んだ距離法（UPGMA/NJ）や形質状態法（MP/ML）の基礎が、膨大な確率計算を行うプロ用ソフトの結果をブラックボックスにせず、正しく解釈する力になります。より高度な解析（進化モデルを考慮したML法、論文レベルの信頼性を担保する1000回を超えるブートストラップ等）が必要になったら、世界標準の解析ソフト<b>「MEGA」</b>を使いましょう。</p>
     </div>
 
-    <div style="margin-top: 20px; margin-bottom: 20px;">
+    <div style="margin-top: 20px; 15px; margin-bottom: 20px;">
         <details style="cursor: pointer;">
             <summary style="font-weight: bold; color: var(--text-muted); font-size: 13px;">
                 References & Algorithms
@@ -1306,46 +1306,6 @@
     let isMasked = false; // トグルボタン用状態変数
     let isMLMasked = false; // ML法マスク用
 
-    // --- 計算実行中のUIロック機能 ---
-    function setUILocked(locked) {
-        document.getElementById('algoSelect').disabled = locked;
-        document.getElementById('fastaInput').disabled = locked;
-        
-        const btnExecute = document.getElementById('btnExecute');
-        btnExecute.disabled = locked;
-        if (locked) {
-            btnExecute.innerHTML = '<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> 実行中...';
-        } else {
-            btnExecute.innerHTML = '<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> 実行';
-        }
-
-        const algo = document.getElementById('algoSelect').value;
-        const bs100 = document.getElementById('bs_100');
-        const bs1000 = document.getElementById('bs_1000');
-        const bs10 = document.getElementById('bs_10');
-        const bsNone = document.getElementById('bs_none');
-
-        if (locked) {
-            bsNone.disabled = true;
-            bs10.disabled = true;
-            bs100.disabled = true;
-            bs1000.disabled = true;
-        } else {
-            bsNone.disabled = false;
-            bs10.disabled = false;
-            if (algo === 'UPGMA' || algo === 'NJ') {
-                bs100.disabled = false;
-                bs1000.disabled = false;
-            } else if (algo === 'MP') {
-                bs100.disabled = false;
-                bs1000.disabled = true;
-            } else if (algo === 'ML') {
-                bs100.disabled = true;
-                bs1000.disabled = true;
-            }
-        }
-    }
-
     // --- トースト通知 (ガイドライン第6項⑤ 準拠) ---
     function showToast(msg, type = "") {
         const toast = document.getElementById('toast');
@@ -1598,8 +1558,6 @@
         document.getElementById('btnNextStep').style.display = 'none';
         document.getElementById('btnExportCSV').disabled = true;
 
-        setUILocked(true);
-
         const worker = new Worker('lib/phylo_worker.js');
         worker.postMessage({ type: 'CALC_MP', seqs: result.seqs });
 
@@ -1658,11 +1616,9 @@
                             let outgroupName = document.getElementById('outgroupSelect').value;
                             if (outgroupName) finalRoot = getRoutedTree(finalRoot, outgroupName);
                             addLogEntry('MP', bsVal, finalRoot);
-                            setUILocked(false);
                         } else if (bsEvent.data.type === 'ERROR') {
                             showToast(bsEvent.data.message, "error");
                             document.getElementById('statusLog').innerHTML = `[エラー] ブートストラップ解析に失敗しました。`;
-                            setUILocked(false);
                         }
                     };
                 } else {
@@ -1678,14 +1634,12 @@
                     let outgroupName = document.getElementById('outgroupSelect').value;
                     if (outgroupName) finalRoot = getRoutedTree(finalRoot, outgroupName);
                     addLogEntry('MP', 0, finalRoot);
-                    setUILocked(false);
                 }
 
             } else if (e.data.type === 'ERROR') {
                 showToast(e.data.message, "error");
                 document.getElementById('statusLog').innerHTML = `[エラー] 解析に失敗しました。`;
                 document.getElementById('matrixContainer').innerHTML = `<div style="text-align:center; padding:15px; color:#e74c3c; font-size:12px; font-weight:bold;">${e.data.message}</div>`;
-                setUILocked(false);
             }
         };
     }
@@ -1721,8 +1675,6 @@
         
         document.getElementById('btnNextStep').style.display = 'none';
         document.getElementById('btnExportCSV').disabled = true;
-
-        setUILocked(true);
 
         const worker = new Worker('lib/phylo_worker.js');
         worker.postMessage({ type: 'CALC_ML', seqs: result.seqs });
@@ -1785,11 +1737,9 @@
                             let outgroupName = document.getElementById('outgroupSelect').value;
                             if (outgroupName) finalRoot = getRoutedTree(finalRoot, outgroupName);
                             addLogEntry('ML', bsVal, finalRoot);
-                            setUILocked(false);
                         } else if (bsEvent.data.type === 'ERROR') {
                             showToast(bsEvent.data.message, "error");
                             document.getElementById('statusLog').innerHTML = `[エラー] ブートストラップ解析に失敗しました。`;
-                            setUILocked(false);
                         }
                     };
                 } else {
@@ -1805,14 +1755,12 @@
                     let outgroupName = document.getElementById('outgroupSelect').value;
                     if (outgroupName) finalRoot = getRoutedTree(finalRoot, outgroupName);
                     addLogEntry('ML', 0, finalRoot);
-                    setUILocked(false);
                 }
 
             } else if (e.data.type === 'ERROR') {
                 showToast(e.data.message, "error");
                 document.getElementById('statusLog').innerHTML = `[エラー] 解析に失敗しました。`;
                 document.getElementById('matrixContainer').innerHTML = `<div style="text-align:center; padding:15px; color:#e74c3c; font-size:12px; font-weight:bold;">${e.data.message}</div>`;
-                setUILocked(false);
             }
         };
     }
@@ -3504,7 +3452,6 @@
 
             let bsVal = parseInt(document.querySelector('input[name="bootstrap"]:checked').value);
             if (bsVal > 0) {
-                setUILocked(true);
                 document.getElementById('statusLog').innerHTML = `ブートストラップ解析(${bsVal}回)をWeb Workerで実行中... (0/${bsVal} 回完了)`;
                 
                 const worker = new Worker('lib/phylo_worker.js');
@@ -3524,11 +3471,9 @@
                         if (outgroupName) finalRoot = getRoutedTree(finalRoot, outgroupName);
                         addLogEntry(algo, bsVal, finalRoot);
                         document.getElementById('btnCopyNewick').disabled = false;
-                        setUILocked(false);
                     } else if (e.data.type === 'ERROR') {
                         showToast(e.data.message, "error");
                         document.getElementById('statusLog').innerHTML = `[エラー] ブートストラップ解析に失敗しました。`;
-                        setUILocked(false);
                     }
                 };
             } else {
