@@ -707,7 +707,6 @@
       samples.sort((a, b) => new Date(b.date) - new Date(a.date));
 
       samples.forEach(sample => {
-        // 古いデータとの互換性を保ちつつ新しい構造化に対応
         const envCat = sample.envCategory || "";
         const envNote = sample.envNote || sample.envData || "";
         
@@ -719,38 +718,36 @@
         const envBadge = hasEnv ? `<span class="badge ok">環境カテゴリあり</span>` : `<span class="badge none">環境カテゴリ未登録</span>`;
         const morphBadge = hasMorph ? `<span class="badge ok">形態データあり</span>` : `<span class="badge none">形態未登録</span>`;
         const dnaBadge = hasDna ? `<span class="badge ok">塩基配列あり</span>` : `<span class="badge none">塩基配列未登録</span>`;
-        const imageBadge = hasImage ? `<span class="badge ok">画像あり</span>` : ``;
 
         const card = document.createElement('div');
         card.className = 'sample-card';
         
-        // .card-body を flexbox にし、文字情報とサムネイル画像を左右に美しく配置する
+        // ヘッダー内に「サンプル名・ID」＋「画像プレビュー」＋「削除ボタン」を配置
         card.innerHTML = `
-          <div class="card-header">
-            <div style="display: flex; align-items: flex-start; gap: 12px;">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 12px; overflow: hidden; flex: 1;">
               <input type="checkbox" class="custom-checkbox sample-checkbox" value="${sample.id}" onchange="updateBulkPanel(event)" onclick="event.stopPropagation()">
-              <div>
-                <div class="card-title">${escapeHTML(sample.name)}</div>
+              <div style="overflow: hidden;">
+                <div class="card-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHTML(sample.name)}</div>
                 <div class="card-id">${sample.id}</div>
               </div>
             </div>
-            <button class="btn-delete" onclick="deleteSample('${sample.id}', event)" data-tooltip="削除する"><svg class="btn-icon" style="margin:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
-          </div>
-          <div class="card-body" onclick="editSample('${sample.id}')" style="display: flex; justify-content: space-between; gap: 10px;">
-            <div style="flex: 1; overflow: hidden;">
-              <div class="status-badges">${envBadge}${imageBadge}${morphBadge}${dnaBadge}</div>
-              ${hasEnv ? `<div class="data-preview" data-tooltip="環境カテゴリ">${escapeHTML(envCat)}</div>` : ''}
-              ${envNote ? `<div class="data-preview" data-tooltip="特記事項">${escapeHTML(envNote.substring(0, 30))}...</div>` : ''}
-              ${hasMorph ? `<div class="data-preview" data-tooltip="形態データ">${escapeHTML(sample.morphData.substring(0, 30))}...</div>` : ''}
-              ${hasDna ? `<div class="data-preview" data-tooltip="塩基配列">${escapeHTML(sample.dnaData.substring(0, 30))}...</div>` : ''}
+            <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0; margin-left: 8px;">
+              ${hasImage ? `<img src="${sample.image_data}" style="width: 36px; height: 36px; object-fit: cover; border-radius: 4px; border: 1px solid #bdc3c7;" data-tooltip="登録画像">` : ''}
+              <button class="btn-delete" onclick="deleteSample('${sample.id}', event)" data-tooltip="削除する"><svg class="btn-icon" style="margin:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
             </div>
-            ${hasImage ? `<img src="${sample.image_data}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #bdc3c7; flex-shrink: 0;">` : ''}
+          </div>
+          <div class="card-body" onclick="editSample('${sample.id}')">
+            <div class="status-badges">${envBadge}${morphBadge}${dnaBadge}</div>
+            ${hasEnv ? `<div class="data-preview" data-tooltip="環境カテゴリ">${escapeHTML(envCat)}</div>` : ''}
+            ${envNote ? `<div class="data-preview" data-tooltip="特記事項">${escapeHTML(envNote.substring(0, 30))}...</div>` : ''}
+            ${hasMorph ? `<div class="data-preview" data-tooltip="形態データ">${escapeHTML(sample.morphData.substring(0, 30))}...</div>` : ''}
+            ${hasDna ? `<div class="data-preview" data-tooltip="塩基配列">${escapeHTML(sample.dnaData.substring(0, 30))}...</div>` : ''}
           </div>
         `;
         grid.appendChild(card);
       });
       
-      // レンダリング毎にパネル状態を更新
       updateBulkPanel();
     }
 
