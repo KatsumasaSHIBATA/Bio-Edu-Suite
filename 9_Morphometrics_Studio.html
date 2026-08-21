@@ -81,6 +81,7 @@
         .rationale-text { position: fixed; background: #fef9e7; border: 1px solid var(--warning); padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: max-content; max-width: min(320px, calc(100vw - 24px)); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; }
         .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
         .rationale-text strong { color: #d35400; font-size: 12px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 4px; }
+        
         .rationale-text::after { content: ''; position: absolute; border-width: 6px; border-style: solid; left: var(--arrow-left, 50%); }
         .rationale-text.arrow-top::after { top: -12px; border-color: transparent transparent #fef9e7 transparent; }
         .rationale-text.arrow-bottom::after { bottom: -12px; border-color: #fef9e7 transparent transparent transparent; }
@@ -790,12 +791,14 @@
                 if (parsed.samples && parsed.samples.length > 0) {
                     const firstSample = parsed.samples[0];
                     
-                    if (firstSample.imageData) {
+                    // ここが修正対象: imageData ではなく image_data を参照する
+                    if (firstSample.image_data) {
                         document.getElementById('route_a').checked = true;
                         switchRoute();
                         document.getElementById('imgSampleName').value = firstSample.id || firstSample.name || 'Sample_1';
                         
-                        optimizeImage(firstSample.imageData, (dataUrl, w, h, tempCanvas) => {
+                        // ここの引数も修正: firstSample.image_data を渡す
+                        optimizeImage(firstSample.image_data, (dataUrl, w, h, tempCanvas) => {
                             const canvas = document.getElementById('imgCanvas');
                             const ctx = canvas.getContext('2d');
                             canvas.width = w; canvas.height = h;
