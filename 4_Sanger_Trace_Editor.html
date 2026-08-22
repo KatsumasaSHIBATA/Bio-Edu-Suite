@@ -422,9 +422,11 @@
                 arrowClass = 'arrow-bottom';
             }
             
+            // 左右位置の調整 (clientWidth を使用してスクロールバー裏へのはみ出しを確実に防止)
             let leftPos = rect.left - (elWidth / 2) + (rect.width / 2);
-            if (leftPos + elWidth > window.innerWidth) leftPos = window.innerWidth - elWidth - 10;
-            if (leftPos < 10) leftPos = 10;
+            const maxViewWidth = document.documentElement.clientWidth;
+            if (leftPos + elWidth > maxViewWidth - 15) leftPos = maxViewWidth - elWidth - 15;
+            if (leftPos < 15) leftPos = 15;
             
             el.classList.add(arrowClass);
             el.style.top = topPos + 'px';
