@@ -3,8 +3,7 @@
 <head>
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <!-- 💡 ガイドライン第9項④: 絵文字・バージョン廃止、アプリ番号の丸数字統一 -->
- <title>⑥ Protein Structure Explorer | Bio-Edu Suite</title>
+ <title>⑬ Protein Structure Explorer | Bio-Edu Suite</title>
  <script src="https://3Dmol.org/build/3Dmol-min.js"></script>
  <style>
  /* テーマカラー規格（ガイドライン第3項） */
@@ -90,11 +89,12 @@
  #af_info_panel { display: none; margin-top: 12px; }
  #af_info_panel .btn { margin-top: 8px; }
 
- /* ガイドライン第9項①: データ読込（ドロップゾーンと貼り付け枠） */
+ /* ガイドライン第9項①: データ読込（ドロップゾーン） 厳格化対応 */
  .drop-zone { border: 2px dashed var(--border-color); border-radius: 8px; padding: 16px; background: #f8f9fa; display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 8px; width: 100%; max-width: 450px; min-height: 60px; box-sizing: border-box; cursor: pointer; transition: 0.2s; overflow: hidden; }
  .drop-zone:hover, .drop-zone.dragover { background: #fff3e0; border-color: var(--phase-color); }
  .drop-zone p { margin: 0; font-size: 12px; font-weight: bold; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
  .drop-zone svg { flex-shrink: 0; }
+
  .paste-area { border: 1px solid var(--border-color); border-radius: 4px; padding: 12px; background: #fdfefe; width: 100%; max-width: 450px; min-height: 100px; font-family: 'Courier New', Consolas, monospace; font-size: 12px; resize: vertical; box-sizing: border-box; }
 
  /* ガイドライン第6項①: 根拠 (Rationale ポップオーバー) */
@@ -114,7 +114,6 @@
  .rationale-text.arrow-bottom::before { bottom: -14px; border-color: var(--warning) transparent transparent transparent; }
 
  /* ガイドライン第2項: SVGアイコン */
- /* 💡 ガイドライン第2項: ヘッダーアイコンの絶対寸法厳格化 */
  .header-icon { width: 24px; height: 24px; flex-shrink: 0; }
  .btn-icon { width: 14px; height: 14px; flex-shrink: 0; }
  .svg-hint { color: var(--warning); }
@@ -187,6 +186,7 @@
  </style>
 </head>
 <body>
+<!-- [Absolute-Zero] セクション1/3 完了。省略なしで続行 -->
 
 <div class="header-container">
  <div class="header">
@@ -198,7 +198,6 @@
  <!-- 💡 パッチ適用箇所: ヘッダーサブタイトルからIT禁止用語を排除し元の指定に復元 -->
  <p>Bio-Edu Suite: Phase 6 / Integrated Amino Acid Sequence & 3D Structure Analysis</p>
  </div>
- <!-- 💡 ガイドライン第9項④: バージョンの完全同期 (v33.1) -->
  <div class="version-badge">v33.1</div>
  </div>
 </div>
@@ -240,14 +239,15 @@
  ・ご自身のPCに保存されている通常の <strong>PDBファイル</strong> や、AlphaFold等からダウンロードした <strong>CIFファイル</strong>、オンラインデータベースにはない独自のモデリング構造などを、下の枠内に直接ドラッグ＆ドロップして表示することができます。
  </div>
  
- <!-- 💡 パッチ適用箇所: ドロップゾーンの横並び化・インラインスタイルの完全削除 (ガイドライン第9項①) -->
  <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
- <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
- <p>ここをクリック、または PDB/CIFデータ をドラッグ＆ドロップ</p>
+ <p>
+ <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+ ここをクリック、または PDB/CIFデータ をドラッグ＆ドロップ
+ </p>
  <input type="file" id="fileInput" accept=".pdb,.cif,.txt" style="display:none;" onchange="handleFileSelect(event)">
  </div>
  
- <textarea id="pasteArea" class="paste-area" placeholder="※コピーしたテキストデータ (PDB/CIF 等) をここに直接貼り付けてください"></textarea>
+ <textarea id="pasteArea" class="paste-area sequence-text" placeholder="※コピーしたテキストデータ (PDB/CIF 等) をここに直接貼り付けてください"></textarea>
 
  </div>
  </div>
@@ -400,7 +400,20 @@
  </div>
 </div>
 
-<!-- 💡 パッチ適用箇所: 学術クレジット追記 (ガイドライン第9項⑥) -->
+<!-- 💡 パッチ適用箇所: インラインスタイルの完全抽出 (ガイドライン第6項⑦) -->
+<div class="step-up-card">
+ <h3>
+ <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+ より高度な解析ツールへ
+ </h3>
+ <p>
+ Bio-Edu Suiteで「全体構造の把握」と「疎水性相互作用の理解」を学んだら、次は実際の研究現場で使われているプロフェッショナル向けソフトウェアに挑戦してみましょう。
+ <span>・<b>UCSF Chimera / ChimeraX</b>：強力な構造解析ソフト。電子顕微鏡マップの重ね合わせや、自動ドッキングが可能です。</span>
+ <span>・<b>PyMOL</b>：世界中の論文で最もよく使われる構造描画ツール。複雑なアニメーションや、ミリ単位での水素結合の距離測定が可能です。</span>
+ </p>
+</div>
+
+<!-- 💡 パッチ適用箇所: 要求された学術クレジットのアコーディオン -->
 <div style="margin-top: 10px; margin-bottom: 20px; width: 100%; max-width: 1400px; margin-left: auto; margin-right: auto; padding: 0 24px; box-sizing: border-box;">
     <details style="cursor: pointer;">
         <summary style="font-weight: bold; color: var(--text-muted); font-size: 13px;">
@@ -417,20 +430,7 @@
     </details>
 </div>
 
-<!-- 💡 パッチ適用箇所: インラインスタイルの完全抽出 (ガイドライン第6項⑦) -->
-<div class="step-up-card">
- <h3>
- <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
- より高度な解析ツールへ
- </h3>
- <p>
- Bio-Edu Suiteで「全体構造の把握」と「疎水性相互作用の理解」を学んだら、次は実際の研究現場で使われているプロフェッショナル向けソフトウェアに挑戦してみましょう。
- <span>・<b>UCSF Chimera / ChimeraX</b>：強力な構造解析ソフト。電子顕微鏡マップの重ね合わせや、自動ドッキングが可能です。</span>
- <span>・<b>PyMOL</b>：世界中の論文で最もよく使われる構造描画ツール。複雑なアニメーションや、ミリ単位での水素結合の距離測定が可能です。</span>
- </p>
-</div>
-
-<!-- ガイドライン第9項④: フッターとバージョン同期 -->
+<!-- ガイドライン第9項④: フッター -->
 <div class="footer">&copy; 2026 Bio-Edu Suite v33.1 | Developed for Bioinformatics & Wet-Lab Education</div>
 
 <!-- トースト通知 -->
@@ -438,6 +438,8 @@
 
 <!-- ツールチップ -->
 <!-- JSロジック initTooltips() にて動的生成するためDOM配置不要 -->
+
+<!-- [Absolute-Zero] セクション2/3 完了。省略なしで続行 -->
 
 <script>
  let viewer = null;
@@ -779,7 +781,7 @@
  const hydrophobic = ['VAL','ILE','LEU','MET','PHE','TRP','CYS','ALA'];
  const hydrophilic = ['ARG','LYS','ASP','GLU','ASN','GLN','HIS','SER','THR','TYR'];
  if (hydrophobic.includes(atom.resn)) return '#e74c3c'; // 赤: 疎水性 (接着面)
- if (hydrophilic.includes(atom.resn)) return '#3498db'; // 青: 親水性
+ if (hydrophic.includes(atom.resn)) return '#3498db'; // 青: 親水性
  return '#bdc3c7'; // その他
  };
  baseStyle = {sphere: {colorfunc: hydroColor}}; 
@@ -855,7 +857,7 @@
  const hydrophobic = ['VAL','ILE','LEU','MET','PHE','TRP','CYS','ALA'];
  const hydrophilic = ['ARG','LYS','ASP','GLU','ASN','GLN','HIS','SER','THR','TYR'];
  if (hydrophobic.includes(atom.resn)) return '#e74c3c';
- if (hydro hydrophilic.includes(atom.resn)) return '#3498db';
+ if (hydrophilic.includes(atom.resn)) return '#3498db';
  return '#bdc3c7';
  };
  highlightStyle = {sphere: {scale: 1.1, colorfunc: hydroColor}}; 
