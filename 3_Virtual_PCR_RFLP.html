@@ -3,7 +3,7 @@
 <head>
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>Virtual PCR & RFLP Simulator v1.3 | Bio-Edu Suite</title>
+ <title>③ Virtual PCR & RFLP Simulator | Bio-Edu Suite</title>
  <style>
  /* テーマカラー規格（ガイドライン第3項）。既存のハードコード値と同一値を定義し、
  見た目を変えずに変数経由でのカラー管理を可能にする */
@@ -26,7 +26,7 @@
  }
 
  *, *::before, *::after { box-sizing: border-box; }
- body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
+ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Noto Sans JP'; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
  
  /* 共通ヘッダー */
  /* 改行崩れ・テキスト折り返しの補正（ガイドライン第4項） */
@@ -108,7 +108,7 @@
  .rationale-text:not(#enzymeModal).arrow-bottom::before { bottom: -14px; border-color: var(--warning) transparent transparent transparent; }
  
  /* ヘッダーアイコン（インラインSVG / stroke="currentColor" で見出し色に同期） */
- .header-icon { width: 20px; height: 20px; vertical-align: -3px; margin-right: 6px; flex-shrink: 0; }
+ .header-icon { width: 24px; height: 24px; vertical-align: -3px; margin-right: 6px; flex-shrink: 0; }
  .btn-icon { width: 14px; height: 14px; vertical-align: -2px; flex-shrink: 0; }
  .rationale-text:not(#enzymeModal) > strong:first-child { color: #d35400; display: block; margin-bottom: 4px; font-size: 12px; }
 
@@ -124,12 +124,15 @@
  .mono-input { font-family: 'Courier New', Courier, monospace; letter-spacing: 1px; }
  input::placeholder { color: #bdc3c7; font-weight: normal; font-size: 11px; }
 
- /* ドロップゾーンUI */
- .drop-zone { border: 2px dashed #bdc3c7; border-radius: 6px; padding: 10px; text-align: center; background: #fafbfc; color: #7f8c8d; cursor: pointer; transition: all 0.2s; font-size: 13px; margin-bottom: 10px; }
+ /* ドロップゾーンUI (v32.0 準拠) */
+ .drop-zone { border: 2px dashed var(--border-color); border-radius: 8px; padding: 16px; background: #f8f9fa; display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 8px; width: 100%; max-width: 450px; min-height: 60px; box-sizing: border-box; cursor: pointer; transition: 0.2s; overflow: hidden; margin-bottom: 10px; }
  .drop-zone.dragover { border-color: #3498db; background: #ebf5fb; color: #3498db; }
  .drop-zone:hover { border-color: #3498db; }
+ .drop-zone p { margin: 0; font-size: 12px; font-weight: bold; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
+ .drop-zone svg { flex-shrink: 0; }
 
- textarea { width: 100%; box-sizing: border-box; border: 1px solid #bdc3c7; border-radius: 4px; padding: 10px; font-family: monospace; font-size: 11px; height: 100px; background: #fafbfc; transition: 0.3s; margin-bottom: 5px; resize: vertical;}
+ /* テキストエリア (v32.0 準拠) */
+ textarea { width: 100%; max-width: 450px; min-height: 100px; box-sizing: border-box; border: 1px solid var(--border-color); border-radius: 4px; padding: 12px; font-family: 'Courier New', Consolas, monospace; font-size: 12px; background: #fdfefe; transition: 0.3s; margin-bottom: 5px; resize: vertical; }
  textarea.dragover { background-color: #e8f8f5; border-color: var(--phase-color); }
  
  /* ボタン類 */
@@ -228,7 +231,7 @@
  <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>Virtual PCR &amp; RFLP Simulator</h1>
  <p>Bio-Edu Suite: Phase 2 / In Silico Amplification & Digestion</p>
  </div>
- <div class="version-badge">v1.3</div>
+ <div class="version-badge">v33.1</div>
  </div>
 </div>
 
@@ -241,7 +244,7 @@
  <div class="settings-group">
  <h4>1. 鋳型DNA（FASTA）の入力 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_fasta')">?</button></h4>
  <div id="rat_fasta" class="rationale-text">
- <strong>【根拠】</strong> ここには、抽出液の中に含まれているはずの「元のDNAの塩基配列（ターゲット領域周辺）」を入力します。NCBI等のデータベースから取得したFASTA形式のテキストデータを貼り付けます。
+ <strong>【根拠：元のDNA配列入力】</strong> ここには、抽出液の中に含まれているはずの「元のDNAの塩基配列（ターゲット領域周辺）」を入力します。NCBI等のデータベースから取得したFASTA形式のテキストデータを貼り付けます。
  </div>
  
  <div class="form-group">
@@ -255,10 +258,11 @@
  <div class="form-group">
  <label>生データ (塩基配列)</label>
  <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
- <p style="margin: 0; font-size: 12px; color: #7f8c8d; font-weight: bold; pointer-events: none;">ここをクリック、または FASTAデータを ドラッグ＆ドロップ</p>
+ <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+ <p>ここをクリック、または FASTAデータを ドラッグ＆ドロップ</p>
  <input type="file" id="fileInput" accept=".fasta,.fas,.txt,.seq" multiple style="display: none;" onchange="loadFiles(event)">
- <div id="fileStatus" class="file-status" style="margin-top: 5px;"></div>
  </div>
+ <div id="fileStatus" class="file-status" style="margin-top: 5px; font-size: 11px; color: var(--text-muted);"></div>
  </div>
  
  <textarea id="fastaInput" placeholder="FASTA形式などのテキストデータを貼り付け"></textarea>
@@ -293,8 +297,9 @@
  <h4>3. RFLP (制限酵素) 設定 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_re')">?</button></h4>
  <div id="rat_re" class="rationale-text">
  <strong>【根拠：RFLP法の原理】</strong> PCRで増やしたDNAの長さが同じでも、生物種によって「中の塩基配列」は異なります。特定の塩基配列（例: GGATCC）だけを認識して切る「ハサミ（制限酵素）」を使うことで、塩基配列の違いを「切れた長さの違い」として可視化できます。<br><br>
- <strong>【平滑末端 (Blunt end) とは】</strong><br>
- DNAの二重鎖を真ん中でスパッと切断した状態です。断面に突出（オーバーハング）がないため、どの平滑末端同士でも結合させやすいという利点があります。一方、 EcoRI のような「粘着末端」は、相補的な塩基配列としか結合できない代わりに、特定の方向に正確に繋ぐことができます。
+ <strong>【注意：末端の形状】</strong><br>
+ ・<strong>平滑末端 (Blunt end)：</strong>DNAの二重鎖を真ん中でスパッと切断した状態です。断面に突出（オーバーハング）がないため、どの平滑末端同士でも結合させやすいという利点があります。<br>
+ ・<strong>粘着末端：</strong>EcoRI のような末端で、相補的な塩基配列としか結合できない代わりに、特定の方向に正確に繋ぐことができます。
  </div>
  
  <div style="display: flex; gap: 8px; margin-bottom: 10px; align-items: center;">
@@ -314,7 +319,7 @@
  <div class="settings-group">
  <h4>4. 電気泳動設定 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_gel')">?</button></h4>
  <div id="rat_gel" class="rationale-text">
- <strong>【根拠：ゲル濃度と泳動時間】</strong>
+ <strong>【根拠：ゲル濃度と泳動時間】</strong><br>
  ・<strong>アガロース濃度：</strong> 濃度が高いと網目が細かくなり、小さいDNA断片の分離が良くなります。低いと大きな断片を分けるのに適しています。<br>
  ・<strong>泳動時間：</strong> 長く流すほどバンドの間隔が広がり見やすくなりますが、短すぎると分離せず、長すぎるとゲルから抜け落ちてしまいます。
  </div>
@@ -407,10 +412,25 @@
  <span>・ <strong>SnapGene (Viewer)</strong> ： 実際のプラスミドマップの作成や、より詳細なIn Silicoクローニングのシミュレーションが可能です。</span>
  </p>
  </div>
+ 
+ <div style="margin-top: 20px;">
+  <details style="cursor: pointer;">
+   <summary style="font-weight: bold; color: var(--text-muted); font-size: 13px;">
+    References & Algorithms
+   </summary>
+   <div style="padding: 10px 0 0 15px; font-size: 11px; color: var(--text-muted); line-height: 1.6;">
+    <p style="margin-bottom: 8px;">本アプリケーションの計算エンジンは、以下のアルゴリズムおよび進化モデルに基づき実装されています。</p>
+    <ul style="padding-left: 20px; margin: 0; display: flex; flex-direction: column; gap: 6px;">
+     <li><strong>Polymerase Chain Reaction (PCR):</strong> Saiki, R. K., Scharf, S., Faloona, F., Mullis, K. B., Horn, G. T., Erlich, H. A., & Arnheim, N. (1985). Enzymatic amplification of beta-globin genomic sequences and restriction site analysis for diagnosis of sickle cell anemia. <i>Science</i>, 230(4732), 1350–1354.</li>
+     <li><strong>Restriction Fragment Length Polymorphism (RFLP):</strong> Botstein, D., White, R. L., Skolnick, M., & Davis, R. W. (1980). Construction of a genetic linkage map in man using restriction fragment length polymorphisms. <i>American Journal of Human Genetics</i>, 32(3), 314–331.</li>
+    </ul>
+   </div>
+  </details>
+ </div>
 </div>
 
 <div class="footer">
- &copy; 2026 Bio-Edu Suite v1.3 | Developed for Bioinformatics & Wet-Lab Education
+ &copy; 2026 Bio-Edu Suite v33.1 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
 <!-- トースト通知用要素 -->
@@ -438,11 +458,9 @@
 
 <!-- 隠し解説テキスト（RFLPマーカー探索の極意） -->
 <div id="rat_rflp_strategy" class="rationale-text">
- <strong>【根拠：RFLPマーカー探索の極意】</strong>
- <strong>① なぜ4〜5塩基を狙う？</strong><br>
- EcoR I などの6塩基認識（確率1/4096）は、1,000bpの短いDNAでは「切断部位がない」ことが殆どです。Hinf I や Taq I などの4〜5塩基認識（確率1/256〜1/1024）から試すのが鉄則です。<br>
- <strong>② 当たりパターンの見分け方</strong><br>
- 「全部切れない」「全部同じ長さで切れる」酵素では種を区別できません。種ごとにバンドの数や長さが明確に違うパターンが出る酵素を探しましょう。100bp以下が大量に出る細かすぎる酵素もNGです。
+ <strong>【根拠：RFLPマーカー探索の極意】</strong><br>
+ <strong>・なぜ4〜5塩基を狙う？：</strong> EcoR I などの6塩基認識（確率1/4096）は、1,000bpの短いDNAでは「切断部位がない」ことが殆どです。Hinf I や Taq I などの4〜5塩基認識（確率1/256〜1/1024）から試すのが鉄則です。<br>
+ <strong>・当たりパターンの見分け方：</strong> 「全部切れない」「全部同じ長さで切れる」酵素では種を区別できません。種ごとにバンドの数や長さが明確に違うパターンが出る酵素を探しましょう。100bp以下が大量に出る細かすぎる酵素もNGです。
 </div>
 
 <script>
