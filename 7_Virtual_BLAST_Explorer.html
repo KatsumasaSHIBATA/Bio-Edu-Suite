@@ -55,7 +55,7 @@
         .svg-hint { color: var(--warning); }
         .svg-info { color: inherit; }
         .svg-danger { color: var(--danger); }
-        .header-icon { width: 24px; height: 24px; flex-shrink: 0; vertical-align: -3px; margin-right: 6px; stroke: currentColor; }
+        .header-icon { width: 24px; height: 24px; vertical-align: -3px; margin-right: 6px; flex-shrink: 0; stroke: currentColor; }
         .btn-icon { width: 14px; height: 14px; vertical-align: -2px; flex-shrink: 0; stroke: currentColor; }
 
         .drop-zone { border: 2px dashed var(--border-color); border-radius: 8px; padding: 16px; background: #f8f9fa; display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 8px; width: 100%; max-width: 450px; min-height: 60px; box-sizing: border-box; cursor: pointer; transition: 0.2s; overflow: hidden; margin-bottom: 5px; }
@@ -65,7 +65,7 @@
 
         input[type="file"] { display: none; }
 
-        .paste-area { width: 100%; max-width: 450px; min-height: 100px; font-family: 'Courier New', Consolas, monospace; font-size: 12px; padding: 12px; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; resize: vertical; outline: none; transition: 0.2s; background: #fdfefe; letter-spacing: 1px; }
+        .paste-area { border: 1px solid var(--border-color); border-radius: 4px; padding: 12px; background: #fdfefe; width: 100%; max-width: 450px; min-height: 100px; font-family: 'Courier New', Consolas, monospace; font-size: 12px; resize: vertical; box-sizing: border-box; outline: none; transition: 0.2s; letter-spacing: 1px; }
         .paste-area:focus { border-color: var(--phase-color); box-shadow: 0 0 0 2px rgba(26, 188, 156, 0.2); }
 
         .btn { background: #fdfefe; border: 1px solid var(--border-color); padding: 8px 16px; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 4px; font-weight: bold; transition: all 0.2s; color: var(--text-main); text-decoration: none; width: fit-content; box-shadow: none; }
@@ -108,7 +108,7 @@
         .external-link-panel.secondary-match { background: #fdfefe; border-color: var(--border-color); }
 
         .step-up-card { background: #f8f9fa; border: 1px solid #d1d5db; padding: 20px; border-radius: 8px; margin-top: 25px; color: var(--text-main); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .step-up-card h3 { color: #2c3e50; margin-top: 0; font-size: 15px; display: flex; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 12px; }
+        .step-up-card h3 { color: var(--primary); margin-top: 0; font-size: 15px; display: flex; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 12px; }
         .step-up-card h3 svg { margin-right: 8px; width: 20px; height: 20px; flex-shrink: 0; stroke: currentColor; }
         .step-up-card p { margin: 0; font-size: 13px; line-height: 1.6; }
 
@@ -172,13 +172,9 @@
             </div>
             
             <div id="rat_blast" class="rationale-text">
-                <strong>【根拠：BLASTによる種の特定】</strong>
-                ・
-一覧を見る
-リセットBLASTは、未知の塩基配列（Query）とデータベースの塩基配列（Subject）を総当たりで比較します。<br>
-                <strong>【参考：スコアリングの仕組み】</strong>
-                ・一致なら加点、不一致や欠失なら減点という数学的なスコアリングを行います。<br>
-                ・最もスコアが高い（似ている）塩基配列を探し出します。
+                <strong>【根拠：BLASTはどうやって種を特定するのか？】</strong>
+                ・BLASTは、未知の塩基配列（Query）とデータベースの塩基配列（Subject）を総当たりで比較します。<br>
+                ・ただ一致を探すのではなく、<strong>【一致なら加点、不一致や欠失なら減点】</strong>という数学的なスコアリングを行い、最もスコアが高い（似ている）塩基配列を探し出します。
             </div>
             
             <div class="drop-zone" id="queryDropZone" onclick="document.getElementById('queryInputFile').click()" data-tooltip="ローカルの塩基配列ファイル(.fasta, .txt)を直接読み込めます">
@@ -203,20 +199,22 @@
             </div>
 
             <div id="rat_evalue" class="rationale-text">
-                <strong>【根拠：E-value（期待値）とは】</strong>
+                <strong>【根拠：E-value（期待値）の罠とは？】</strong>
                 ・E-valueとは、偶然その塩基配列がデータベース内で一致してしまう確率のことです。<br>
-                <strong>【注意：短い塩基配列の罠】</strong>
+                <strong>【統計的有意性】</strong>
                 ・「ATG」のような短い塩基配列は、どんな生物にも偶然存在します。<br>
-                ・検索する塩基配列が短すぎるとE-valueが跳ね上がり、「同率1位」ばかりになって種の特定が不可能になります。
+                ・検索する塩基配列が短すぎるとE-valueが跳ね上がり、「同率1位」ばかりになって種同定が不可能になります（DNAバーコーディングの限界）。
             </div>
 
             <div id="rat_scoring" class="rationale-text">
-                <strong>【根拠：ペナルティのバランス】</strong>
-                ・検索においては、「Match（一致）の加点」と「不一致・隙間の減点」の比率が重要です。<br>
-                <strong>【注意：極端な設定による影響】</strong>
-                ・Matchの加点を大きくしすぎると、遠縁の生物も誤判定（偽陽性）しやすくなります。<br>
-                ・Gapの減点を軽くすると、進化的におかしい不自然なアライメントが生成されます。<br>
-                ・Mismatchの減点を重くしすぎると、わずかな突然変異も許容できず、近縁種すら検索できなくなります。
+                <strong>【実験：ペナルティの重さを変えてみよう】</strong>
+                ・重要なのは「Matchと減点の比率」です。<br>
+                <strong>【Match（一致）の加点だけを大きくした場合】</strong>
+                ・少し似ているだけの塩基配列でもスコアが爆発的に高くなり、遠縁の生物も無理やり「似ている」と誤判定（偽陽性）してしまいます。<br>
+                <strong>【Gap（隙間）の減点を軽くした場合】</strong>
+                ・無理やりギャップを大量に入れて文字を合わせようとするため、進化的におかしい「不自然なアライメント」が生成されます。<br>
+                <strong>【Mismatchの減点を重くした場合】</strong>
+                ・少しの突然変異も許さなくなるため、近縁種すら検索に引っかからなくなってしまいます。
             </div>
 
             <div class="scoring-panel">
@@ -235,10 +233,9 @@
 
             <div id="rat_db" class="rationale-text">
                 <strong>【根拠：データベースのカスタマイズ】</strong>
-                ・自分だけのオリジナルデータベースを作成し、検索実験を行うことができます。<br>
-                <strong>【参考：データの読み込み方法】</strong>
-                ・初期状態では「モデル生物」の塩基配列データがセットされています。<br>
-                ・プリセットを切り替えるか、FASTAまたはJSONファイルを下の枠にドロップして読み込んでください。
+                ・このアプリは初期状態で「モデル生物」のデータが自動でセットされます。<br>
+                ・プリセットを切り替えるか、複数の塩基配列が入ったFASTAまたはJSONファイルを下の枠にドロップして読み込んでください。<br>
+                ・自分だけのオリジナルデータベースを作って検索実験ができます。
             </div>
 
             <div style="background: #f8f9fa; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 16px;">
@@ -256,8 +253,8 @@
                             <option value="bacteria">細菌・アーキア (16S)</option>
                             <option value="viruses">ウイルス・病原体 (Spike, HA 等)</option>
                         </select>
-                        <div class="drop-zone" id="dbBaseDropZone" onclick="document.getElementById('dbBaseInputFile').click()" data-tooltip="カスタムDB(FASTA/JSON)を読み込み、現在のDBと置き換えます" style="margin: 0; flex: 2; min-width: 250px;">
-                            <p style="font-size: 11px;"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg> ここをクリック、または カスタムDBをドラッグ＆ドロップ</p>
+                        <div class="drop-zone" id="dbBaseDropZone" onclick="document.getElementById('dbBaseInputFile').click()" data-tooltip="カスタムDB(FASTA/JSON)を読み込み、現在のDBと置き換えます" style="margin: 0; flex: 2; padding: 8px; min-width: 250px;">
+                            <p style="font-size: 11px;"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg> カスタムDBをドロップして置き換え</p>
                             <input type="file" id="dbBaseInputFile" accept=".fasta,.fas,.txt,.seq,.json" onchange="handleDBFile(event, true)" style="display:none;">
                         </div>
                     </div>
@@ -272,7 +269,7 @@
                         読み込み中: [空のデータベース] (0種)
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                        現在の登録生物種: 0 種</span>
+                        <span id="dbCountText" style="font-size: 13px; font-weight: bold; color: var(--success); display: flex; align-items: center; gap: 6px;"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--success);"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg> 現在の登録生物種: 0 種</span>
                         <div style="display: flex; gap: 8px;">
                             <button class="btn btn-sm" style="background: #fdfefe;" onclick="toggleDBList(event)" data-tooltip="現在のデータベースの中身を確認します">一覧を見る</button>
                             <button class="btn btn-sm btn-danger" onclick="resetLocalDB()" data-tooltip="データベースを空にします（NCBI単体検索用）">リセット</button>
@@ -291,10 +288,10 @@
                         <div class="toolbar-row" style="flex-wrap: nowrap; align-items: center; gap: 8px; flex: 1; min-width: 250px; background: white; padding: 6px 10px; border-radius: 4px; border: 1px solid var(--border-color); margin: 0;">
                             <span class="step-label" style="font-size: 12px; color: var(--primary); white-space: nowrap; padding-top: 0; min-width: auto; margin-right: 2px;">NCBI</span>
                             <input type="text" id="ncbiAccession" class="primer-input" style="flex:1; min-width: 100px; padding: 4px 8px; border: none; box-shadow: none; background: transparent; border-bottom: 1px solid var(--border-color); border-radius: 0; font-family: monospace;" placeholder="Accession No.を入力" onkeypress="if(event.keyCode===13) importFromNCBI()">
-                            <button class="btn btn-primary" style="padding: 8px 12px; font-size: 11px;" onclick="importFromNCBI()" data-tooltip="NCBIからFASTA形式で塩基配列データを取得し、ローカルデータベースに追加します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> 追加</button>
+                            <button class="btn btn-primary" style="padding: 8px 12px; font-size: 11px;" onclick="importFromNCBI()" data-tooltip="NCBIからFASTA形式で塩基配列データを取得し、ローカルデータベースに追加します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> 追加</button>
                         </div>
-                        <div class="drop-zone" id="dbAddDropZone" onclick="document.getElementById('dbAddInputFile').click()" data-tooltip="FASTAファイルを読み込み、現在のDBに追加します" style="margin: 0; flex: 1; min-width: 250px;">
-                            <p style="font-size: 11px;"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg> ここをクリック、または FASTAファイル をドラッグ＆ドロップ</p>
+                        <div class="drop-zone" id="dbAddDropZone" onclick="document.getElementById('dbAddInputFile').click()" data-tooltip="FASTAファイルを読み込み、現在のDBに追加します" style="margin: 0; flex: 1; padding: 8px; min-width: 250px;">
+                            <p style="font-size: 11px;"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg> FASTAファイルをドロップして追加</p>
                             <input type="file" id="dbAddInputFile" accept=".fasta,.fas,.txt,.seq" onchange="handleDBFile(event, false)" style="display:none;">
                         </div>
                     </div>
@@ -302,10 +299,8 @@
             </div>
             
             <div id="rat_ncbi" class="rationale-text">
-                <strong>【参考：NCBI Cloud Importとは】</strong>
-                ・NCBI (National Center for Biotechnology Information) のデータベースから、指定したAccession No.の塩基配列データを直接取得します。<br>
-                <strong>【注意：データの扱い】</strong>
-                ・取得した塩基配列データはインターネット経由でダウンロードされ、現在のローカルデータベースに追加されます。
+                <strong>【参考：NCBI Cloud Importとは？】</strong>
+                ・NCBI (National Center for Biotechnology Information) のデータベースから、指定したAccession No.の塩基配列データをインターネット経由で直接ダウンロードし、ローカルデータベースに追加します。
             </div>
 
             <div style="display:flex; gap:10px; margin-top:15px;">
@@ -317,7 +312,7 @@
 
     <div class="card result-card">
         <div class="card-header result-header">
-            <span style="color: white;">Ⅱ. 検索結果</span>
+            <span style="color: white;">Ⅱ. 検索結果 (Hits & Alignment)</span>
         </div>
         <div class="card-body" style="background:var(--bg-color); padding:15px;">
             
@@ -350,20 +345,20 @@
 
         </div>
     </div>
-
-    <div style="width: 100%;">
+    
+    <div style="width: 100%; box-sizing: border-box;">
         <div class="step-up-card">
             <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M15 3h6v6M21 3l-9 9M19 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"/></svg> より高度な解析ツールへ</h3>
             <p>このシミュレーターで「スコア計算」と「E-value」の仕組みを理解したら、いよいよ全世界のDNAデータが蓄積された本物の<strong>「NCBI BLAST」</strong>にアクセスしてみましょう。塩基配列が、地球上のどの生物なのか特定できるはずです。</p>
         </div>
-
+        
         <div style="margin-top: 20px;">
             <details style="cursor: pointer;">
                 <summary style="font-weight: bold; color: var(--text-muted); font-size: 13px;">
                     References & Algorithms
                 </summary>
                 <div style="padding: 10px 0 0 15px; font-size: 11px; color: var(--text-muted); line-height: 1.6;">
-                    <p style="margin-bottom: 8px;">本アプリケーションの計算エンジンは、以下のアルゴリズムおよび進化モデルに基づき実装されています。</p>
+                    <p style="margin-bottom: 8px;">本アプリケーションの計算エンジンは、以下のアルゴリズムおよび統計モデルに基づき実装されています。</p>
                     <ul style="padding-left: 20px; margin: 0; display: flex; flex-direction: column; gap: 6px;">
                         <li><strong>Smith-Waterman Algorithm (Local Alignment):</strong> Smith, T. F., & Waterman, M. S. (1981). Identification of common molecular subsequences. <em>Journal of Molecular Biology</em>, 147(1), 195–197.</li>
                         <li><strong>BLAST (Basic Local Alignment Search Tool):</strong> Altschul, S. F., Gish, W., Miller, W., Myers, E. W., & Lipman, D. J. (1990). Basic local alignment search tool. <em>Journal of Molecular Biology</em>, 215(3), 403–410.</li>
@@ -383,10 +378,10 @@
 <div id="toast"></div>
 <div id="globalTooltip" class="custom-tooltip"></div>
 
-<!-- データベース一覧用ポップオーバー (白背景・グレー枠線に修正) -->
+<!-- データベース一覧用ポップオーバー -->
 <div id="dbListPopover" style="position: fixed; z-index: 1010; background: #ffffff; border: 1px solid var(--border-color); border-radius: 6px; width: 900px; max-width: 95vw; display: none; flex-direction: column; padding: 0; box-shadow: 0 4px 20px rgba(0,0,0,0.3); overflow: hidden; max-height: 60vh;">
     <div style="background: var(--secondary); color: white; padding: 10px 15px; font-weight: bold; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
-        <span style="display: flex; align-items: center; gap: 6px;"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg> 登録データベース一覧</span>
+        <span style="display: flex; align-items: center; gap: 6px;"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg> 登録データベース一覧</span>
         <span style="font-size: 11px; font-weight: normal; background: rgba(0,0,0,0.3); padding: 4px 8px; border-radius: 4px;" id="dbListPopoverCount">0 種</span>
     </div>
     <div id="dbListContent" style="padding: 0; font-size: 12px; color: var(--primary); overflow-y: auto; flex: 1; display: flex; flex-direction: column; min-height: 0; -webkit-overflow-scrolling: touch;"></div>
@@ -629,7 +624,7 @@
     }
 
     function updateDBCount() {
-        document.getElementById('dbCountText').innerHTML = `現在の登録生物種: ${localDB.length} 種`;
+        document.getElementById('dbCountText').innerHTML = `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--success);"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg> 現在の登録生物種: ${localDB.length} 種`;
     }
 
     function resetLocalDB() {
@@ -983,7 +978,7 @@
 
             panel.innerHTML = `
                 <div class="assist-panel" style="margin-top: 0;">
-                    <div class="assist-title"><svg class="btn-icon svg-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> No Hit</div>
+                    <div class="assist-title"><svg class="btn-icon svg-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> No Hit</div>
                     <div class="assist-reason">${hintMsg}</div>
                 </div>`;
             linkPanel.style.display = 'none'; 
@@ -1029,12 +1024,12 @@
             linkPanel.innerHTML = `
             <div class="external-link-panel">
                 <p>
-                    <svg class="svg-info btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> 相同性が非常に高く、この塩基配列は <strong style="font-style:italic;">${res.name}</strong> であるとほぼ確定できます。<br>
+                    <svg class="svg-info btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> 相同性が非常に高く、この塩基配列は <strong style="font-style:italic;">${res.name}</strong> であるとほぼ確定できます。<br>
                     より高度な <strong>種の詳細情報 (Taxonomy)</strong> や <strong>遺伝子データ</strong> 等を確認したい場合は、本家の NCBI Database をご参照ください。
                 </p>
                 <a href="https://www.ncbi.nlm.nih.gov/search/all/?term=${encodeURIComponent(res.id)}" target="_blank" style="text-decoration:none;">
                     <button class="btn btn-primary" style="width: fit-content; display: inline-flex;">
-                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M15 3h6v6M21 3l-9 9M19 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"/></svg> NCBIを開く
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M21 3l-9 9M19 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"/></svg> NCBIを開く
                     </button>
                 </a>
             </div>
@@ -1044,7 +1039,7 @@
             linkPanel.innerHTML = `
             <div class="external-link-panel secondary-match">
                 <p style="color: var(--text-muted);">
-                    <svg class="svg-info btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> <strong style="font-style:italic;">${res.name}</strong> とも部分的な相同性（E-value: ${res.evalue}）が認められますが、スコアが最も高い種が他に存在します。<br>
+                    <svg class="svg-info btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> <strong style="font-style:italic;">${res.name}</strong> とも部分的な相同性（E-value: ${res.evalue}）が認められますが、スコアが最も高い種が他に存在します。<br>
                     種を同定（特定）する場合は、リストの一番上にある「Top Hit」の生物を確認してください。
                 </p>
             </div>
