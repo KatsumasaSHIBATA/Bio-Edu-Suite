@@ -198,7 +198,7 @@
             </h1>
             <p>Bio-Edu Suite: Phase 3 / EFA & Procrustes Analysis</p>
         </div>
-        <div class="version-badge">v33.0</div>
+        <div class="version-badge">v33.1</div>
     </div>
 </div>
 
@@ -555,11 +555,30 @@
             <span>・<strong>R言語 (geomorph パッケージ)</strong>: 環境データや遺伝データと統合したより複雑な多変量解析や、3Dランドマークデータの処理が可能です。</span>
         </p>
     </div>
+
+    <!-- ガイドライン第9項⑥ 準拠: 学術クレジットの明記 -->
+    <div style="margin-top: 20px; margin-bottom: 20px;">
+        <details style="cursor: pointer;">
+            <summary style="font-weight: bold; color: var(--text-muted); font-size: 13px;">
+                References & Algorithms
+            </summary>
+            <div style="padding: 10px 0 0 15px; font-size: 11px; color: var(--text-muted); line-height: 1.6;">
+                <p style="margin-bottom: 8px;">本アプリケーションの計算エンジンは、以下のアルゴリズムに基づき実装されています。</p>
+                <ul style="padding-left: 20px; margin: 0; display: flex; flex-direction: column; gap: 6px;">
+                    <li><strong>Elliptic Fourier Analysis (EFA):</strong> Kuhl, F. P., & Giardina, C. R. (1982). Elliptic Fourier features of a closed contour. <em>Computer Vision, Graphics, and Image Processing</em>, 18(3), 236–258.</li>
+                    <li><strong>EFA Standardization (SHAPE):</strong> Iwata, H., & Ukai, Y. (2002). SHAPE: A computer program package for quantitative evaluation of biological shapes based on elliptic Fourier descriptors. <em>Journal of Heredity</em>, 93(5), 384–385.</li>
+                    <li><strong>NIPALS Algorithm (Principal Component Analysis):</strong> Wold, H. (1966). Estimation of principal components and related models by iterative least squares. In P. R. Krishnaiah (Ed.), <em>Multivariate Analysis</em> (pp. 391–420). Academic Press.</li>
+                    <li><strong>Generalized Procrustes Analysis (GPA):</strong> Gower, J. C. (1975). Generalized procrustes analysis. <em>Psychometrika</em>, 40(1), 33–51.</li>
+                    <li><strong>Thin-Plate Spline (TPS) Deformation Grid:</strong> Bookstein, F. L. (1989). Principal warps: thin-plate splines and the decomposition of biological deformations. <em>IEEE Transactions on Pattern Analysis and Machine Intelligence</em>, 11(6), 567–585.</li>
+                </ul>
+            </div>
+        </details>
+    </div>
 </div>
 
 <div id="d3-tooltip" class="custom-tooltip"></div>
 <div id="toast"></div>
-<div class="footer">&copy; 2026 Bio-Edu Suite v33.0 | Developed for Bioinformatics & Wet-Lab Education</div>
+<div class="footer">&copy; 2026 Bio-Edu Suite v33.1 | Developed for Bioinformatics & Wet-Lab Education</div>
 
 <script>
     // ==========================================
