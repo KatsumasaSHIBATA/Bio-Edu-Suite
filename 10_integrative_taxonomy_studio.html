@@ -107,7 +107,7 @@
         #toast.warning { background: var(--warning); color: #7e5109; }
         #toast.info { background: var(--phase-color); }
 
-        /* UIコンポーネント (ガイドラインv32.2) */
+        /* UIコンポーネント (ガイドラインv33.1) */
         .paste-area { border: 1px solid var(--border-color); border-radius: 4px; padding: 12px; background: #fdfefe; width: 100%; max-width: 450px; min-height: 100px; font-family: 'Courier New', Consolas, monospace; font-size: 12px; resize: vertical; box-sizing: border-box; outline: none; transition: 0.2s; }
         .paste-area:focus { border-color: var(--phase-color); box-shadow: 0 0 0 2px rgba(142, 68, 173, 0.2); }
         
@@ -200,7 +200,7 @@
             </h1>
             <p>Bio-Edu Suite: Phase 4 / Unified Taxonomy Explorer & Evo-Morph Simulator</p>
         </div>
-        <div class="version-badge">v32.2</div>
+        <div class="version-badge">v33.1</div>
     </div>
 </div>
 
@@ -336,9 +336,27 @@
         </h3>
         <p>実際のDNAアラインメントや系統樹構築には、『MEGA』や『ClustalW』が使われる。また、形態データに基づく高度な幾何学的形態測定学の解析には、『MorphoJ』や『geomorph (Rパッケージ)』を活用して、進化の軌跡をさらに深く探究してみよう。</p>
     </div>
+    
+    <div style="margin-top: 20px; margin-bottom: 20px;">
+        <details style="cursor: pointer;">
+            <summary style="font-weight: bold; color: var(--text-muted); font-size: 13px;">
+                References & Algorithms
+            </summary>
+            <div style="padding: 10px 0 0 15px; font-size: 11px; color: var(--text-muted); line-height: 1.6;">
+                <p style="margin-bottom: 8px;">本アプリケーションの計算エンジンおよび可視化ロジックは、以下のアルゴリズムに基づき実装されています。</p>
+                <ul style="padding-left: 20px; margin: 0; display: flex; flex-direction: column; gap: 6px;">
+                    <li><strong>Hierarchical Clustering (Lance-Williams Algorithm):</strong> Lance, G. N., & Williams, W. T. (1967). A general theory of classificatory sorting strategies: 1. Hierarchical systems. <em>The Computer Journal</em>, 9(4), 373–380.</li>
+                    <li><strong>Ward's Minimum Variance Method:</strong> Ward Jr, J. H. (1963). Hierarchical grouping to optimize an objective function. <em>Journal of the American Statistical Association</em>, 58(301), 236–244.</li>
+                    <li><strong>Tanglegram (Co-phylogenetic comparison):</strong> Page, R. D. (1993). Genes, organisms, and areas: the problem of multiple lineages. <em>Systematic Biology</em>, 42(1), 77–84.</li>
+                    <li><strong>Ancestral State Reconstruction (Continuous Characters):</strong> Schluter, D., Price, T., Mooers, A. O., & Ludwig, D. (1997). Estimating ancestral states of continuous characters. <em>Evolution</em>, 51(6), 1699–1711.</li>
+                </ul>
+            </div>
+        </details>
+    </div>
+
 </div>
 
-<div class="footer">&copy; 2026 Bio-Edu Suite v32.2 | Advanced Bioinformatics & Wet-Lab Emulator</div>
+<div class="footer">&copy; 2026 Bio-Edu Suite v33.1 | Advanced Bioinformatics & Wet-Lab Emulator</div>
 
 <script>
     // ==========================================
@@ -1155,7 +1173,7 @@
             });
         }
         
-        // メタデータ検知 (バケツリレー用 / ガイドラインv32.2)
+        // メタデータ検知 (バケツリレー用 / ガイドラインv33.1)
         document.querySelectorAll('.paste-area').forEach(area => {
             area.addEventListener('paste', (e) => {
                 setTimeout(() => {
