@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PCR Master Mix Studio v1.0 | Bio-Edu Suite</title>
+    <title>① PCR Master Mix Studio | Bio-Edu Suite</title>
     <style>
         /* テーマカラー規格（ガイドライン第3項）。既存のハードコード値と同一値を定義し、
            見た目を変えずに変数経由でのカラー管理を可能にする */
@@ -29,7 +29,7 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
 
         /* 改行崩れ・テキスト折り返しの補正（ガイドライン第4項） */
-        body, .card, p, div, .bench-tip, .pro-invite, .rationale-text { word-break: normal; overflow-wrap: anywhere; line-height: 1.6; }
+        body, .card, p, div, .bench-tip, .step-up-card, .rationale-text { word-break: normal; overflow-wrap: anywhere; line-height: 1.6; }
         .label-title, .no-wrap { white-space: nowrap; }
 
         /* 共通ヘッダー */
@@ -64,7 +64,7 @@
         .rationale-text.arrow-bottom::after { bottom: -6px; border-right: 1px solid #f39c12; border-bottom: 1px solid #f39c12; }
         
         /* ヘッダーアイコン（インラインSVG / stroke="currentColor" で見出し色に同期） */
-        .header-icon { width: 20px; height: 20px; vertical-align: -3px; margin-right: 6px; flex-shrink: 0; }
+        .header-icon { width: 24px; height: 24px; flex-shrink: 0; margin-right: 6px; }
         .btn-icon { width: 14px; height: 14px; vertical-align: -2px; flex-shrink: 0; }
         .rationale-text > strong:first-child { color: #d35400; display: block; margin-bottom: 4px; font-size: 12px; }
 
@@ -103,6 +103,15 @@
         /* 現場のコツパネル */
         .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px; border-radius: 0; font-size: 11px; color: #2c3e50; margin-top: auto; line-height: 1.6; }
         .bench-tip strong { color: #2980b9; font-size: 12px;}
+
+        /* より高度な解析ツールへ枠 (.step-up-card) */
+        .step-up-card { background: #f8f9fa; border: 1px solid #d1d5db; padding: 20px; border-radius: 8px; margin-top: 25px; color: #2c3e50; box-shadow: 0 2px 4px rgba(0,0,0,0.02); width: 100%; box-sizing: border-box; }
+        .step-up-card h3 { color: #2c3e50; margin-top: 0; font-size: 15px; display: flex; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 12px; }
+        .step-up-card h3 svg { margin-right: 8px; width: 20px; height: 20px; flex-shrink: 0; }
+        .step-up-card h3 span { font-size: 0.8em; opacity: 0.7; margin-left: 8px; font-weight: normal; }
+        .step-up-card p { margin: 0; font-size: 13px; line-height: 1.6; }
+        .step-up-card p span { display: block; margin-top: 4px; }
+        .step-up-card p span:first-of-type { margin-top: 6px; }
 
         /* アプリ②共通: ツールチップ */
         [data-tooltip] { position: relative; cursor: pointer; }
@@ -161,7 +170,7 @@
             <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>PCR Master Mix Studio</h1>
             <p>Bio-Edu Suite: Phase 2 / Precision Planning & Preparation</p>
         </div>
-        <div class="version-badge">v1.0</div>
+        <div class="version-badge">v33.1</div>
     </div>
 </div>
 
@@ -176,10 +185,10 @@
             <div class="card-body">
                 <div id="rat_dil" class="rationale-text">
                     <strong>【根拠：なぜDNA抽出液を薄めるのか？】</strong>
-                    ① <strong>阻害物質の回避：</strong> 粗抽出液には、PCR酵素を阻害するタンパク質や脂質が含まれています。<br>
-                    ② <strong>ターゲットDNAの過剰：</strong> サンプル（筋肉細胞のミトコンドリア等）によってはターゲットDNAが過剰な場合があります。
+                    ・<strong>阻害物質の回避：</strong> 粗抽出液には、PCR酵素を阻害するタンパク質や脂質が含まれています。<br>
+                    ・<strong>ターゲットDNAの過剰：</strong> サンプル（筋肉細胞のミトコンドリア等）によってはターゲットDNAが過剰な場合があります。
                     そのままでは濃すぎて失敗するため、「DNAが薄まるリスク」より「阻害を回避するメリット」を優先し、適宜（10倍等に）希釈するのが鉄則です。<br>
-                    ③ <strong>希釈の基本ルール：</strong>希釈の前と後で、含まれる物質の総量は変わらないという原則があります。<br>
+                    ・<strong>希釈の基本ルール：</strong>希釈の前と後で、含まれる物質の総量は変わらないという原則があります。<br>
                     公式：C<sub>1</sub> &times; V<sub>1</sub> = C<sub>2</sub> &times; V<sub>2</sub>
                 </div>
                 <div class="toggle-container">
@@ -240,10 +249,10 @@
             <div class="card-body">
                 <div id="rat_vol" class="rationale-text">
                     <strong>【根拠：なぜ総液量を変えるのか？】</strong>
-                    PCRの液量は、その後の「ゴール」から逆算します。<br>
-                    ① <strong>泳動のみ(10-20µL):</strong> 増幅確認だけなので、酵素節約のため少量。<br>
-                    ② <strong>RFLP用(30µL等):</strong> コントロール(5µL)＋酵素A(10µL)＋酵素B(10µL)と、後で液を「分割」するために多めに作ります。<br>
-                    ③ <strong>シーケンス用(50µL):</strong> 精製（カラム等）でのDNA吸着ロスを見越し、大容量で回して量を稼ぎます。
+                    ・PCRの液量は、その後の「ゴール」から逆算します。<br>
+                    ・<strong>泳動のみ(10-20µL):</strong> 増幅確認だけなので、酵素節約のため少量。<br>
+                    ・<strong>RFLP用(30µL等):</strong> コントロール(5µL)＋酵素A(10µL)＋酵素B(10µL)と、後で液を「分割」するために多めに作ります。<br>
+                    ・<strong>シーケンス用(50µL):</strong> 精製（カラム等）でのDNA吸着ロスを見越し、大容量で回して量を稼ぎます。
                 </div>
                 <div class="calc-panel">
                     <div class="input-group" style="background:transparent; border:none; padding:0; margin-bottom:8px;">
@@ -289,13 +298,13 @@
         </div>
         <div class="card-body">
             <div id="rat_mm" class="rationale-text">
-                <strong>【計算の罠と根拠】</strong>
-                <strong>① 総液量（分母）の罠:</strong> 濃度計算の基準となる「総液量」とは、MMだけの量ではなく、「最後にDNAを加えた後の完全な全量」のことです。<br>
-                <strong>② Primerの独立計算とノイズ回避:</strong> FとRは別々の物質です。濃度が高すぎるとプライマー同士が結合して「プライマーダイマー」というノイズが発生し、本命のDNA増幅を阻害します。これを防ぐため「それぞれ別々に」総液量の1/20〜1/30を入れます。<br>
-                <strong>③ サンプル数の数え方:</strong> 「実サンプル」＋「ポジコン(成功確認)」＋「ネガコン(水・コンタミ確認)」の合計チューブ数を入れます。ネガコンは実験の証明に【必須】です。<br>
-                <strong>④ マージン（N+1）:</strong> チップ内側に残る物理的ロスを防ぐため、必ず余裕を持たせて作ります（標準は10%増し）。<br>
-                <strong>⑤ DNA抽出液の過剰添加:</strong> DNA液（特に粗抽出液）を総液量の20%以上入れると、混雑する不純物やPCR阻害物質により酵素が働きません。<br>
-                <strong>⑥ 酵素(Taq)の入れすぎ:</strong> 酵素の原液には凍結防止のグリセロールが含まれており、これが総液量の5%を超えるとPCR反応を強力に阻害します。
+                <strong>【注意：計算の罠と根拠】</strong>
+                ・<strong>総液量（分母）の罠:</strong> 濃度計算の基準となる「総液量」とは、MMだけの量ではなく、「最後にDNAを加えた後の完全な全量」のことです。<br>
+                ・<strong>Primerの独立計算とノイズ回避:</strong> FとRは別々の物質です。濃度が高すぎるとプライマー同士が結合して「プライマーダイマー」というノイズが発生し、本命のDNA増幅を阻害します。これを防ぐため「それぞれ別々に」総液量の1/20〜1/30を入れます。<br>
+                ・<strong>サンプル数の数え方:</strong> 「実サンプル」＋「ポジコン(成功確認)」＋「ネガコン(水・コンタミ確認)」の合計チューブ数を入れます。ネガコンは実験の証明に【必須】です。<br>
+                ・<strong>マージン（N+1）:</strong> チップ内側に残る物理的ロスを防ぐため、必ず余裕を持たせて作ります（標準は10%増し）。<br>
+                ・<strong>DNA抽出液の過剰添加:</strong> DNA液（特に粗抽出液）を総液量の20%以上入れると、混雑する不純物やPCR阻害物質により酵素が働きません。<br>
+                ・<strong>酵素(Taq)の入れすぎ:</strong> 酵素の原液には凍結防止のグリセロールが含まれており、これが総液量の5%を超えるとPCR反応を強力に阻害します。
             </div>
             <div class="input-group">
                 <label>使用する酵素</label>
@@ -349,10 +358,31 @@
             </div>
         </div>
     </div>
+    
+    <!-- より高度な解析ツールへ & 学術クレジット -->
+    <div class="step-up-card">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>より高度な解析ツールへ</h3>
+        <p>本シミュレーターで学んだPCRの試薬調整や最適化の概念は、実際の実験計画において不可欠です。より複雑なマルチプレックスPCRや、特定の塩基配列を増幅するためのプライマー設計には、「Primer3」や「NCBI Primer-BLAST」などのプロフェッショナル向けツールが活用されています。</p>
+    </div>
+
+    <div style="width: 100%; margin-top: 20px;">
+        <details style="cursor: pointer;">
+            <summary style="font-weight: bold; color: var(--text-muted); font-size: 13px;">
+                References &amp; Algorithms
+            </summary>
+            <div style="padding: 10px 0 0 15px; font-size: 11px; color: var(--text-muted); line-height: 1.6;">
+                <p style="margin-bottom: 8px;">本アプリケーションの計算エンジンは、以下のアルゴリズムおよび進化モデルに基づき実装されています。</p>
+                <ul style="padding-left: 20px; margin: 0; display: flex; flex-direction: column; gap: 6px;">
+                    <li><strong>Polymerase Chain Reaction (PCR) &amp; Optimization:</strong> Saiki, R. K., Gelfand, D. H., Stoffel, S., Scharf, S. J., Higuchi, R., Horn, G. T., Mullis, K. B., &amp; Erlich, H. A. (1988). Primer-directed enzymatic amplification of DNA with a thermostable DNA polymerase. <em>Science</em>, 239(4839), 487–491.</li>
+                    <li><strong>Master Mix Concentration &amp; Reagent Kinetics:</strong> Chien, A., Edgar, D. B., &amp; Trela, J. M. (1976). Deoxyribonucleic acid polymerase from the extreme thermophile Thermus aquaticus. <em>Journal of Bacteriology</em>, 127(3), 1550–1557.</li>
+                </ul>
+            </div>
+        </details>
+    </div>
 </div>
 
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v1.0 | Developed for Bioinformatics & Wet-Lab Education
+    &copy; 2026 Bio-Edu Suite v33.1 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
 <!-- トースト通知用のコンテナ -->
