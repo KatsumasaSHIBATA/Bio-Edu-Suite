@@ -3,7 +3,7 @@
 <head>
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>Thermal Cycler Simulator v2.0 | Bio-Edu Suite</title>
+ <title>② Thermal Cycler Simulator | Bio-Edu Suite</title>
  <style>
  :root {
  /* 【共通】ベースカラー・ステータスカラー */
@@ -67,7 +67,7 @@
 
  .header-icon { width: 20px; height: 20px; flex-shrink: 0; margin-right: 6px; }
  .btn-icon { width: 14px; height: 14px; vertical-align: -2px; flex-shrink: 0; }
- .rationale-text > strong:first-child { color: #d35400; display: block; margin-bottom: 4px; font-size: 12px; }
+ .rationale-text strong { color: #d35400; display: block; margin-bottom: 4px; font-size: 12px; }
  
  .input-group { position: relative; background: #fdfefe; padding: 12px; border-radius: 6px; border: 1px solid #d5dbdb; box-shadow: inset 0 1px 3px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 5px; }
  .input-group label { color: #34495e; font-weight: 800; font-size: 12px; margin-bottom: 2px; display: flex; align-items: center; }
@@ -212,6 +212,15 @@
  .manual-table th, .manual-table td { border: 1px solid #bdc3c7; padding: 6px 8px; text-align: left; }
  .manual-table th { background: #ecf0f1; color: #2c3e50; font-weight: bold; }
 
+ /* より高度な解析ツールへ枠 */
+ .step-up-card { background: #f8f9fa; border: 1px solid #d1d5db; padding: 20px; border-radius: 8px; margin-top: 25px; color: #2c3e50; box-shadow: 0 2px 4px rgba(0,0,0,0.02); width: 100%; text-align: left; }
+ .step-up-card h3 { color: #2c3e50; margin-top: 0; font-size: 15px; display: flex; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 12px; }
+ .step-up-card h3 svg { margin-right: 8px; width: 20px; height: 20px; flex-shrink: 0; }
+ .step-up-card h3 span { font-size: 0.8em; opacity: 0.7; margin-left: 8px; font-weight: normal; }
+ .step-up-card p { margin: 0; font-size: 13px; line-height: 1.6; }
+ .step-up-card p span { display: block; margin-top: 4px; }
+ .step-up-card p span:first-of-type { margin-top: 6px; }
+
  .footer { background: #1a252f; width: 100%; padding: 15px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; margin-top: auto; border-top: 1px solid #2c3e50; }
  
  @media screen and (max-width: 1000px) {
@@ -307,7 +316,7 @@
  <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>Thermal Cycler Simulator</h1>
  <p>Bio-Edu Suite: Phase 2 / PCR Protocol Optimization & Logical Troubleshooting</p>
  </div>
- <div class="version-badge">v2.0</div>
+ <div class="version-badge">v33.1</div>
  </div>
 </div>
 
@@ -324,7 +333,8 @@
  <div class="input-group" style="grid-column: span 4;">
  <label>1. 使用酵素 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_enz')">?</button></label>
  <div id="rat_enz" class="rationale-text">
- <strong>【根拠】</strong> 酵素によって「耐熱性(DENAT)」や「合成速度(EXTEND)」が異なります。KOD Oneは超高速、Taqは標準的など、それぞれの特性に合わせたプログラムを組む必要があります。
+ <strong>【根拠：使用酵素の特性】</strong>
+ ・酵素によって「耐熱性(DENAT)」や「合成速度(EXTEND)」が異なります。KOD Oneは超高速、Taqは標準的など、それぞれの特性に合わせたプログラムを組む必要があります。
  </div>
  <select id="enzymeSelect" onchange="updateRecipe()">
  <option value="KODOne">TOYOBO KOD One (2x Premix)</option>
@@ -337,7 +347,8 @@
  <div class="input-group" style="grid-column: span 3;">
  <label>2. 目的の増幅長 (bp) <button class="rationale-btn" onclick="toggleRationale(event, 'rat_len')">?</button></label>
  <div id="rat_len" class="rationale-text">
- <strong>【根拠】</strong> PCRにおける「伸長時間(EXTEND)」を決めるための最重要パラメーターです。酵素が1kb(1000塩基)を合成するのに何秒かかるかを計算し、長さに見合った時間を設定しないと、途中で切れた不完全なDNAになってしまいます。
+ <strong>【根拠：増幅長と伸長時間】</strong>
+ ・PCRにおける「伸長時間(EXTEND)」を決めるための最重要パラメーターです。酵素が1kb(1000塩基対)を合成するのに何秒かかるかを計算し、長さに見合った時間を設定しないと、途中で切れた不完全なDNAになってしまいます。
  </div>
  <div style="display:flex; align-items:center; gap:5px;">
  <input type="number" id="targetLength" value="1000" style="width: 70px;" oninput="updateAssistPanel()"> bp
@@ -348,7 +359,8 @@
  <div class="input-group" style="grid-column: span 5;">
  <label>3. プライマーの塩基配列 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_pri')">?</button></label>
  <div id="rat_pri" class="rationale-text">
- <strong>【根拠】</strong> プライマーがDNAにくっつく温度（Tm値）は、A/T（2重水素結合）とG/C（3重水素結合）の割合で決まります。「ANNEAL温度」はこのTm値を基準に設定し、高すぎるとくっつかず、低すぎると間違った場所にくっつく（非特異的増幅）原因になります。
+ <strong>【根拠：Tm値とアニーリング】</strong>
+ ・プライマーがDNAに結合する温度（Tm値）は、A/T（2重水素結合）とG/C（3重水素結合）の割合で決まります。「ANNEAL温度」はこのTm値を基準に設定し、高すぎると結合せず、低すぎると間違った場所に結合する（非特異的増幅）原因になります。
  </div>
  <div style="display:flex; gap:5px; margin-bottom:4px; align-items:center;">
  <span style="font-size:11px; width:115px; flex-shrink:0; font-weight:bold; color:#2c3e50;">Primer F (5' ➡ 3'):</span>
@@ -367,9 +379,10 @@
  <div class="input-group" style="grid-column: span 4;">
  <label>4. 抽出サンプル <button class="rationale-btn" onclick="toggleRationale(event, 'rat_sam')">?</button></label>
  <div id="rat_sam" class="rationale-text">
- <strong>【根拠】</strong> 元の細胞に含まれるDNAの「コピー数（存在量）」によって、必要なサイクル数(CYCLE N)が変わります。<br>
- ・<strong>ミトコンドリアDNA (食肉など)</strong>や<strong>プラスミド</strong>は元から量が多いため、回しすぎるとノイズが出ます。<br>
- ・<strong>ゲノムDNA (ヒト・動植物など)</strong>はターゲットの割合が低いため、しっかり回す必要があります。
+ <strong>【根拠：抽出サンプルとサイクル数】</strong>
+ ・元の細胞に含まれるDNAの「コピー数（存在量）」によって、必要なサイクル数(CYCLE N)が変わります。<br>
+ ・ミトコンドリアDNA (食肉など)やプラスミドは元から量が多いため、回しすぎるとノイズが出ます。<br>
+ ・ゲノムDNA (ヒト・動植物など)はターゲットの割合が低いため、しっかり回す必要があります。
  </div>
  <select id="sampleSelect" onchange="updateCycleHint()">
  <option value="meat_mt">ミトコンドリアDNA</option>
@@ -386,9 +399,9 @@
  <button style="margin-left:auto; background:#3498db; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;" data-tooltip="アプリ1(Master Mix Studio)の計算結果を読み込みます" onclick="importFromApp1()">アプリ同期</button>
  </label>
  <div id="rat_vol" class="rationale-text">
- <strong>【根拠：なぜVOLを正しく設定するのか？】</strong><br>
- PCR機器は、入力された「VOL」の液量に基づいて、ヒーターの加熱・冷却パワー（熱容量）を自動計算しています。ここが間違っていると、設定温度に達するスピードが狂い、実験が失敗します。<br><br>
- <strong>【表示が小数点第2位までの理由】</strong><br>
+ <strong>【根拠：反応液量(VOL)の重要性】</strong>
+ ・PCR機器は、入力された「VOL」の液量に基づいて、ヒーターの加熱・冷却パワー（熱容量）を自動計算しています。ここが間違っていると、設定温度に達するスピードが狂い、実験が失敗します。<br><br>
+<strong>【表示が小数点第2位までの理由】</strong>
  アプリ1から読み込んだ「総液量」に基づいて比率（スケール）計算が自動で行われるため、割り切れない細かい数値が出ることがあります。ここでは「計算上の正確な必要量」を可視化するためにあえて小数点第2位まで表示しています。（実際の実験では、これを四捨五入してピペットの目盛りに合わせて測ります）
  </div>
  <div class="vol-guide" id="volGuideText">標準反応液量: 20 µL</div>
@@ -585,6 +598,32 @@
  </div>
  </div>
 
+ <!-- より高度な解析ツールへ -->
+ <div class="step-up-card">
+ <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>より高度な解析ツールへ</h3>
+ <p>
+ 本シミュレーターでPCRプログラムの論理的な構築を学んだ後は、以下のプロフェッショナル向けツールでより高度な実験計画に挑戦してみましょう。<br>
+ <span><strong>Primer3Plus:</strong> 世界標準のプライマー設計ツール。Tm値の厳密な計算や二次構造の予測が可能です。</span>
+ <span><strong>SnapGene:</strong> プラスミドマップの作成やIn silico PCR（仮想PCR）のシミュレーションができる統合ソフトウェアです。</span>
+ </p>
+ </div>
+
+ <!-- 学術クレジット -->
+ <div style="margin-top: 20px; width: 100%;">
+ <details style="cursor: pointer;">
+ <summary style="font-weight: bold; color: var(--text-muted); font-size: 13px;">
+ References & Algorithms
+ </summary>
+ <div style="padding: 10px 0 0 15px; font-size: 11px; color: var(--text-muted); line-height: 1.6;">
+ <p style="margin-bottom: 8px;">本アプリケーションの計算エンジンは、以下のアルゴリズムに基づき実装されています。</p>
+ <ul style="padding-left: 20px; margin: 0; display: flex; flex-direction: column; gap: 6px;">
+ <li><strong>Polymerase Chain Reaction (PCR):</strong> Saiki, R. K., Scharf, S., Faloona, F., Mullis, K. B., Horn, G. T., Erlich, H. A., & Arnheim, N. (1985). Enzymatic amplification of beta-globin genomic sequences and restriction site analysis for diagnosis of sickle cell anemia. <em>Science</em>, 230(4732), 1350–1354.</li>
+ <li><strong>Wallace Rule (Tm Calculation):</strong> Wallace, R. B., Shaffer, J., Murphy, R. F., Bonner, J., Hirose, T., & Itakura, K. (1979). Hybridization of synthetic oligodeoxyribonucleotides to phi chi 174 DNA: the effect of single base pair mismatch. <em>Nucleic Acids Research</em>, 6(11), 3543–3557.</li>
+ </ul>
+ </div>
+ </details>
+ </div>
+
  <div id="runModal" class="modal">
  <div class="modal-content" style="text-align: center;">
  <div id="runMessage">判定中...</div>
@@ -594,7 +633,7 @@
 </div>
 
 <div class="footer">
- &copy; 2026 Bio-Edu Suite v2.0 | Developed for Bioinformatics & Wet-Lab Education
+ &copy; 2026 Bio-Edu Suite v33.1 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
 <div id="toast" class="toast"></div>
@@ -1880,7 +1919,7 @@
  if (setTime > req + 15) hints.push({ label: "4: EXTEND 時間", text: `設定時間が長すぎます。KOD Oneは超高速のため、無駄な時間（酵素へのダメージ）となります。` });
  } else {
  let req = Math.ceil(targetLen / 1000 * 60);
- if (timeToSeconds(m4) < req - 5) hints.push({ label: "4: EXTEND 時間", text: `1分/kbの酵素の場合、${targetLen}bpには約 ${req}秒 必要です。短すぎると未完成のDNAになります。` });
+ if (timeToSeconds(m4) < req - 5) hints.push({ label: "4: EXTEND 時間", text: `1分/kbの酵素の場合、${targetLen}bp(塩基対)には約 ${req}秒 必要です。短すぎると未完成のDNAになります。` });
  }
 
  if (sample === 'meat_mt') {
