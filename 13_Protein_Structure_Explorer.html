@@ -3,7 +3,8 @@
 <head>
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>Protein Structure Explorer v31.0 | Bio-Edu Suite</title>
+ <!-- 💡 ガイドライン第9項④: 絵文字・バージョン廃止、アプリ番号の丸数字統一 -->
+ <title>⑥ Protein Structure Explorer | Bio-Edu Suite</title>
  <script src="https://3Dmol.org/build/3Dmol-min.js"></script>
  <style>
  /* テーマカラー規格（ガイドライン第3項） */
@@ -89,11 +90,12 @@
  #af_info_panel { display: none; margin-top: 12px; }
  #af_info_panel .btn { margin-top: 8px; }
 
- /* ガイドライン第9項①: データ読込（ドロップゾーン） */
- .drop-zone { border: 2px dashed var(--border-color); border-radius: 8px; padding: 16px; text-align: center; background: #f8f9fa; transition: 0.2s; cursor: pointer; width: 100%; }
+ /* ガイドライン第9項①: データ読込（ドロップゾーンと貼り付け枠） */
+ .drop-zone { border: 2px dashed var(--border-color); border-radius: 8px; padding: 16px; background: #f8f9fa; display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 8px; width: 100%; max-width: 450px; min-height: 60px; box-sizing: border-box; cursor: pointer; transition: 0.2s; overflow: hidden; }
  .drop-zone:hover, .drop-zone.dragover { background: #fff3e0; border-color: var(--phase-color); }
- .drop-zone p { margin: 0; font-size: 12px; color: var(--primary); font-weight: bold; pointer-events: none; display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; text-align: center; line-height: 1.4; }
- .drop-zone p svg { flex-shrink: 0; }
+ .drop-zone p { margin: 0; font-size: 12px; font-weight: bold; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
+ .drop-zone svg { flex-shrink: 0; }
+ .paste-area { border: 1px solid var(--border-color); border-radius: 4px; padding: 12px; background: #fdfefe; width: 100%; max-width: 450px; min-height: 100px; font-family: 'Courier New', Consolas, monospace; font-size: 12px; resize: vertical; box-sizing: border-box; }
 
  /* ガイドライン第6項①: 根拠 (Rationale ポップオーバー) */
  .rationale-btn { background: var(--phase-color); color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; flex-shrink: 0; box-shadow: none;}
@@ -112,7 +114,8 @@
  .rationale-text.arrow-bottom::before { bottom: -14px; border-color: var(--warning) transparent transparent transparent; }
 
  /* ガイドライン第2項: SVGアイコン */
- .header-icon { width: 20px; height: 20px; flex-shrink: 0; }
+ /* 💡 ガイドライン第2項: ヘッダーアイコンの絶対寸法厳格化 */
+ .header-icon { width: 24px; height: 24px; flex-shrink: 0; }
  .btn-icon { width: 14px; height: 14px; flex-shrink: 0; }
  .svg-hint { color: var(--warning); }
  .svg-info { color: inherit; }
@@ -184,7 +187,6 @@
  </style>
 </head>
 <body>
-<!-- [Absolute-Zero] セクション1/3 完了。省略なしで続行 -->
 
 <div class="header-container">
  <div class="header">
@@ -196,7 +198,8 @@
  <!-- 💡 パッチ適用箇所: ヘッダーサブタイトルからIT禁止用語を排除し元の指定に復元 -->
  <p>Bio-Edu Suite: Phase 6 / Integrated Amino Acid Sequence & 3D Structure Analysis</p>
  </div>
- <div class="version-badge">v31.0</div>
+ <!-- 💡 ガイドライン第9項④: バージョンの完全同期 (v33.1) -->
+ <div class="version-badge">v33.1</div>
  </div>
 </div>
 
@@ -237,15 +240,14 @@
  ・ご自身のPCに保存されている通常の <strong>PDBファイル</strong> や、AlphaFold等からダウンロードした <strong>CIFファイル</strong>、オンラインデータベースにはない独自のモデリング構造などを、下の枠内に直接ドラッグ＆ドロップして表示することができます。
  </div>
  
+ <!-- 💡 パッチ適用箇所: ドロップゾーンの横並び化・インラインスタイルの完全削除 (ガイドライン第9項①) -->
  <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
- <p>
  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
- ここをクリック、または PDB/CIFデータ をドラッグ＆ドロップ
- </p>
+ <p>ここをクリック、または PDB/CIFデータ をドラッグ＆ドロップ</p>
  <input type="file" id="fileInput" accept=".pdb,.cif,.txt" style="display:none;" onchange="handleFileSelect(event)">
  </div>
  
- <textarea id="pasteArea" class="primer-input sequence-text" style="height: 80px; resize: vertical; background: #f8f9fa; border: 1px dashed var(--border-color); font-size:11px;" placeholder="※コピーしたテキストデータ (PDB/CIF 等) をここに直接貼り付けてください"></textarea>
+ <textarea id="pasteArea" class="paste-area" placeholder="※コピーしたテキストデータ (PDB/CIF 等) をここに直接貼り付けてください"></textarea>
 
  </div>
  </div>
@@ -398,6 +400,23 @@
  </div>
 </div>
 
+<!-- 💡 パッチ適用箇所: 学術クレジット追記 (ガイドライン第9項⑥) -->
+<div style="margin-top: 10px; margin-bottom: 20px; width: 100%; max-width: 1400px; margin-left: auto; margin-right: auto; padding: 0 24px; box-sizing: border-box;">
+    <details style="cursor: pointer;">
+        <summary style="font-weight: bold; color: var(--text-muted); font-size: 13px;">
+            References & Algorithms
+        </summary>
+        <div style="padding: 10px 0 0 15px; font-size: 11px; color: var(--text-muted); line-height: 1.6;">
+            <p style="margin-bottom: 8px;">本アプリケーションのシミュレーションは、以下のセントラルドグマおよび遺伝暗号に関する古典的文献に基づき実装されています。</p>
+            <ul style="padding-left: 20px; margin: 0; display: flex; flex-direction: column; gap: 6px;">
+                <li><strong>Central Dogma of Molecular Biology:</strong> Crick, F. (1970). Central dogma of molecular biology. <em>Nature</em>, 227(5258), 561–563.</li>
+                <li><strong>The Standard Genetic Code:</strong> Nirenberg, M., Leder, P., Bernfield, M., Brimacombe, R., Trupin, J., Rottman, F., & O'Neal, C. (1965). RNA codewords and protein synthesis, VII. On the general nature of the RNA code. <em>Proceedings of the National Academy of Sciences</em>, 53(6), 1161–1168.</li>
+                <li><strong>Amino Acid Properties & Classification:</strong> Taylor, W. R. (1986). The classification of amino acid conservation. <em>Journal of Theoretical Biology</em>, 119(2), 205–218.</li>
+            </ul>
+        </div>
+    </details>
+</div>
+
 <!-- 💡 パッチ適用箇所: インラインスタイルの完全抽出 (ガイドライン第6項⑦) -->
 <div class="step-up-card">
  <h3>
@@ -411,16 +430,14 @@
  </p>
 </div>
 
-<!-- ガイドライン第9項④: フッター -->
-<div class="footer">&copy; 2026 Bio-Edu Suite v31.0 | Developed for Bioinformatics & Wet-Lab Education</div>
+<!-- ガイドライン第9項④: フッターとバージョン同期 -->
+<div class="footer">&copy; 2026 Bio-Edu Suite v33.1 | Developed for Bioinformatics & Wet-Lab Education</div>
 
 <!-- トースト通知 -->
 <div id="toast"></div>
 
 <!-- ツールチップ -->
 <!-- JSロジック initTooltips() にて動的生成するためDOM配置不要 -->
-
-<!-- [Absolute-Zero] セクション2/3 完了。省略なしで続行 -->
 
 <script>
  let viewer = null;
@@ -838,7 +855,7 @@
  const hydrophobic = ['VAL','ILE','LEU','MET','PHE','TRP','CYS','ALA'];
  const hydrophilic = ['ARG','LYS','ASP','GLU','ASN','GLN','HIS','SER','THR','TYR'];
  if (hydrophobic.includes(atom.resn)) return '#e74c3c';
- if (hydrophilic.includes(atom.resn)) return '#3498db';
+ if (hydro hydrophilic.includes(atom.resn)) return '#3498db';
  return '#bdc3c7';
  };
  highlightStyle = {sphere: {scale: 1.1, colorfunc: hydroColor}}; 
