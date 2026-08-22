@@ -55,17 +55,16 @@
  .rationale-btn { background: var(--phase-color); color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; flex-shrink: 0;}
  .rationale-btn:hover { transform: scale(1.1); filter: brightness(1.2); }
 
- /* 【③専用・現状維持】#enzymeModal は .rationale-text を土台に流用した「制限酵素データベース」モーダルであり、
- 表示制御(display:flex/none)と座標計算をJS側(openEnzymeModal)で行っている。
- ガイドライン第0項（破壊なき進化）に基づき、旧 .rationale-text の宣言を一字一句そのまま維持する。 */
+ /* 【③専用】#enzymeModal は .rationale-text を土台に流用した「制限酵素データベース」モーダル。
+ データベースUIとして自然な見た目（白背景・グレー枠）に上書き定義する */
  #enzymeModal {
  display: none;
- background: #fef9e7;
- border: 1px solid var(--warning);
- padding: 12px;
+ background: #ffffff !important;
+ border: 1px solid var(--border-color) !important;
+ padding: 0 !important;
  border-radius: 6px;
  font-size: 11px;
- color: #7e5109;
+ color: var(--text-main) !important;
  line-height: 1.5;
  box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
  position: fixed !important;
@@ -110,7 +109,10 @@
  /* ヘッダーアイコン（インラインSVG / stroke="currentColor" で見出し色に同期） */
  .header-icon { width: 24px; height: 24px; vertical-align: -3px; margin-right: 6px; flex-shrink: 0; }
  .btn-icon { width: 14px; height: 14px; vertical-align: -2px; flex-shrink: 0; }
- .rationale-text:not(#enzymeModal) > strong:first-child { color: #d35400; display: block; margin-bottom: 4px; font-size: 12px; }
+ 
+ /* ポップオーバー内の見出し（小見出し含む）をすべてオレンジ色にする（ガイドライン第6項①） */
+ .rationale-text:not(#enzymeModal) strong { color: #d35400; display: block; margin-bottom: 4px; font-size: 12px; margin-top: 8px; }
+ .rationale-text:not(#enzymeModal) strong:first-child { margin-top: 0; }
 
  /* 設定グループ */
  .settings-group { background: #fdfefe; border: 1px solid #e5e8e8; padding: 15px; border-radius: 6px; margin-bottom: 15px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);}
@@ -244,7 +246,8 @@
  <div class="settings-group">
  <h4>1. 鋳型DNA（FASTA）の入力 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_fasta')">?</button></h4>
  <div id="rat_fasta" class="rationale-text">
- <strong>【根拠：元のDNA配列入力】</strong> ここには、抽出液の中に含まれているはずの「元のDNAの塩基配列（ターゲット領域周辺）」を入力します。NCBI等のデータベースから取得したFASTA形式のテキストデータを貼り付けます。
+ <strong>【根拠：元のDNA配列入力】</strong>
+ ・ここには、抽出液の中に含まれているはずの「元のDNAの塩基配列（ターゲット領域周辺）」を入力します。NCBI等のデータベースから取得したFASTA形式のテキストデータを貼り付けます。
  </div>
  
  <div class="form-group">
@@ -271,7 +274,8 @@
  <div class="settings-group">
  <h4>2. PCR設定 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_pcr')">?</button></h4>
  <div id="rat_pcr" class="rationale-text">
- <strong>【根拠：ミスマッチ許容率】</strong> プライマーはDNAに100%一致しなくても、突然変異等による多少の塩基配列の違いならくっついて増幅します（特に遠縁の生物種の場合）。これを再現するため、あえて0%〜30%の「遊び（Fuzzy）」を持たせて検索します。
+ <strong>【根拠：ミスマッチ許容率】</strong>
+ ・プライマーはDNAに100%一致しなくても、変異等による多少の塩基配列の違いならくっついて増幅します（特に遠縁の生物種の場合）。これを再現するため、あえて0%〜30%の「遊び（Fuzzy）」を持たせて検索します。
  </div>
  <div class="input-group">
  <label>Primer F (5' ➡ 3'):</label>
@@ -296,10 +300,11 @@
  <div class="settings-group">
  <h4>3. RFLP (制限酵素) 設定 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_re')">?</button></h4>
  <div id="rat_re" class="rationale-text">
- <strong>【根拠：RFLP法の原理】</strong> PCRで増やしたDNAの長さが同じでも、生物種によって「中の塩基配列」は異なります。特定の塩基配列（例: GGATCC）だけを認識して切る「ハサミ（制限酵素）」を使うことで、塩基配列の違いを「切れた長さの違い」として可視化できます。<br><br>
- <strong>【注意：末端の形状】</strong><br>
- ・<strong>平滑末端 (Blunt end)：</strong>DNAの二重鎖を真ん中でスパッと切断した状態です。断面に突出（オーバーハング）がないため、どの平滑末端同士でも結合させやすいという利点があります。<br>
- ・<strong>粘着末端：</strong>EcoRI のような末端で、相補的な塩基配列としか結合できない代わりに、特定の方向に正確に繋ぐことができます。
+ <strong>【根拠：RFLP法の原理】</strong>
+ ・PCRで増やしたDNAの長さが同じでも、生物種によって「中の塩基配列」は異なります。特定の塩基配列（例: GGATCC）だけを認識して切る「ハサミ（制限酵素）」を使うことで、塩基配列の違いを「切れた長さの違い」として可視化できます。<br>
+ <strong>【注意：末端の形状】</strong>
+ ・平滑末端 (Blunt end): DNAの二重鎖を真ん中でスパッと切断した状態です。断面に突出（オーバーハング）がないため、どの平滑末端同士でも結合させやすいという利点があります。<br>
+ ・粘着末端: EcoRI のような末端で、相補的な塩基配列としか結合できない代わりに、特定の方向に正確に繋ぐことができます。
  </div>
  
  <div style="display: flex; gap: 8px; margin-bottom: 10px; align-items: center;">
@@ -319,9 +324,9 @@
  <div class="settings-group">
  <h4>4. 電気泳動設定 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_gel')">?</button></h4>
  <div id="rat_gel" class="rationale-text">
- <strong>【根拠：ゲル濃度と泳動時間】</strong><br>
- ・<strong>アガロース濃度：</strong> 濃度が高いと網目が細かくなり、小さいDNA断片の分離が良くなります。低いと大きな断片を分けるのに適しています。<br>
- ・<strong>泳動時間：</strong> 長く流すほどバンドの間隔が広がり見やすくなりますが、短すぎると分離せず、長すぎるとゲルから抜け落ちてしまいます。
+ <strong>【根拠：ゲル濃度と泳動時間】</strong>
+ ・アガロース濃度： 濃度が高いと網目が細かくなり、小さいDNA断片の分離が良くなります。低いと大きな断片を分けるのに適しています。<br>
+ ・泳動時間： 長く流すほどバンドの間隔が広がり見やすくなりますが、短すぎると分離せず、長すぎるとゲルから抜け落ちてしまいます。
  </div>
  <div style="display: flex; gap: 10px; margin-bottom: 5px;">
  <div style="flex: 1;">
@@ -458,9 +463,9 @@
 
 <!-- 隠し解説テキスト（RFLPマーカー探索の極意） -->
 <div id="rat_rflp_strategy" class="rationale-text">
- <strong>【根拠：RFLPマーカー探索の極意】</strong><br>
- <strong>・なぜ4〜5塩基を狙う？：</strong> EcoR I などの6塩基認識（確率1/4096）は、1,000bpの短いDNAでは「切断部位がない」ことが殆どです。Hinf I や Taq I などの4〜5塩基認識（確率1/256〜1/1024）から試すのが鉄則です。<br>
- <strong>・当たりパターンの見分け方：</strong> 「全部切れない」「全部同じ長さで切れる」酵素では種を区別できません。種ごとにバンドの数や長さが明確に違うパターンが出る酵素を探しましょう。100bp以下が大量に出る細かすぎる酵素もNGです。
+ <strong>【根拠：RFLPマーカー探索の極意】</strong>
+ ・なぜ4〜5塩基を狙う？：EcoR I などの6塩基認識（確率1/4096）は、1,000bpの短いDNAでは「切断部位がない」ことが殆どです。Hinf I や Taq I などの4〜5塩基認識（確率1/256〜1/1024）から試すのが鉄則です。<br>
+ ・当たりパターンの見分け方：「全部切れない」「全部同じ長さで切れる」酵素では種を区別できません。種ごとにバンドの数や長さが明確に違うパターンが出る酵素を探しましょう。100bp以下が大量に出る細かすぎる酵素もNGです。
 </div>
 
 <script>
