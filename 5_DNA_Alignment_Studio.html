@@ -262,7 +262,7 @@
             <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>DNA Alignment Studio</h1>
             <p>Bio-Edu Suite: Phase 2 / DNA Curation & Pipeline Hub</p>
         </div>
-        <div class="version-badge">v32.1</div>
+        <div class="version-badge">v33.1</div>
     </div>
 </div>
 
@@ -472,6 +472,25 @@
         </h3>
         <p>本アプリで「MAFFT」の強力さを体験した後は、プロの研究者が使うデスクトップ用ソフトウェア（<strong>MEGA</strong>や<strong>Jalview</strong>）をパソコンにインストールし、さらに詳細な手動編集に挑戦してみましょう。 また、数万件に及ぶ巨大な塩基配列データを扱う実際の研究では、ブラウザではなく、<strong>Python</strong>や<strong>コマンドライン（Linux）</strong>からMAFFTを直接制御する本格的なバイオインフォマティクス技術が必要になります。</p>
     </div>
+
+    <!-- ここから追加: 学術クレジット -->
+    <div style="margin-top: 20px;">
+        <details style="cursor: pointer;">
+            <summary style="font-weight: bold; color: var(--text-muted); font-size: 13px;">
+                References & Algorithms
+            </summary>
+            <div style="padding: 10px 0 0 15px; font-size: 11px; color: var(--text-muted); line-height: 1.6;">
+                <p style="margin-bottom: 8px;">本アプリケーションの計算エンジンは、以下のアルゴリズムおよび進化モデルに基づき実装されています。</p>
+                <ul style="padding-left: 20px; margin: 0; display: flex; flex-direction: column; gap: 6px;">
+                    <li><strong>Needleman-Wunsch Algorithm (Global Alignment):</strong> Needleman, S. B., & Wunsch, C. D. (1970). A general method applicable to the search for similarities in the amino acid sequence of two proteins. <i>Journal of Molecular Biology</i>, 48(3), 443–453.</li>
+                    <li><strong>MAFFT (Multiple Alignment using Fast Fourier Transform):</strong> Katoh, K., Misawa, K., Kuma, K., & Miyata, T. (2002). MAFFT: a novel method for rapid multiple sequence alignment based on fast Fourier transform. <i>Nucleic Acids Research</i>, 30(14), 3059–3066.</li>
+                    <li><strong>Clustal Omega:</strong> Sievers, F., Wilm, A., Dineen, D., Gibson, T. J., Karplus, K., Li, W., ... & Higgins, D. G. (2011). Fast, scalable generation of high-quality protein multiple sequence alignments using Clustal Omega. <i>Molecular Systems Biology</i>, 7(1), 539.</li>
+                </ul>
+            </div>
+        </details>
+    </div>
+    <!-- 追加ここまで -->
+
 </div>
 
 <div class="status-bar">
@@ -480,7 +499,7 @@
 </div>
 
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v32.1 | Developed for Bioinformatics & Wet-Lab Education
+    &copy; 2026 Bio-Edu Suite v33.1 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
 <div id="toast"></div>
