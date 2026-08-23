@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📦 Bio-Edu Lab Packs | Bio-Edu Suite</title>
+    <title>Bio-Edu Lab Packs | Bio-Edu Suite</title>
     
     <style>
         :root {
@@ -27,6 +27,11 @@
             --phase-color-bg: #fef9e7;
         }
 
+        /* インラインSVGアイコン用 共通カラークラス (v26.1準拠) */
+        .svg-hint { color: var(--warning); } /* 💡 気づき・推奨用 */
+        .svg-info { color: inherit; } /* ℹ️ 情報・ルール用 */
+        .svg-danger { color: var(--danger); } /* 🚨 警告・エラー用 */
+
         *, *::before, *::after { box-sizing: border-box; }
         html { scroll-behavior: smooth; }
 
@@ -47,7 +52,7 @@
 
         .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid var(--phase-color); display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 30; flex-shrink: 0; position: sticky; top: 0;}
         .header { width: 100%; max-width: 1400px; padding: 12px 20px; color: white; display: flex; align-items: center; justify-content: space-between; position: relative; }
-        .header h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 1px; color: #fff; }
+        .header h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 1px; color: #fff; display: flex; align-items: center;}
         .header p { margin: 4px 0 0 0; font-size: 11px; color: var(--phase-color); font-weight: 600; letter-spacing: 0.5px; }
         .header-left { display: flex; flex-direction: column; }
         
@@ -92,7 +97,7 @@
         .reference-text { text-align: right; margin-top: 6px; font-size: 9px; color: var(--text-muted); font-family: 'Segoe UI', sans-serif;}
         
         .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px; border-radius: 0 4px 4px 0; font-size: 11px; color: #2c3e50; line-height: 1.5; margin-bottom: 10px; margin-top: auto; }
-        .bench-tip strong { color: #2980b9; font-size: 12px; display: block; margin-bottom: 4px;}
+        .bench-tip strong { color: #2980b9; font-size: 12px; display: flex; align-items: center; gap: 6px; margin-bottom: 4px;}
 
         .action-area { display: flex; gap: 10px; margin-top: 10px; padding-top: 5px;}
         .btn-download { flex: 1; background-color: var(--secondary); color: white; border: 1px solid var(--primary); text-decoration: none; padding: 10px; text-align: center; border-radius: 4px; font-size: 12px; font-weight: bold; transition: 0.2s; display: flex; align-items: center; justify-content: center;}
@@ -130,9 +135,10 @@
         .rationale-text.arrow-top::after    { top: -6px; border-left: 1px solid #f39c12; border-top: 1px solid #f39c12; }
         .rationale-text.arrow-bottom::after { bottom: -6px; border-right: 1px solid #f39c12; border-bottom: 1px solid #f39c12; }
         /* ヘッダーアイコン（インラインSVG / stroke="currentColor" で見出し色に同期） */
-        .header-icon { width: 20px; height: 20px; vertical-align: -3px; margin-right: 6px; flex-shrink: 0; }
+        .header-icon { width: 24px; height: 24px; flex-shrink: 0; vertical-align: -3px; margin-right: 6px; }
         .btn-icon { width: 14px; height: 14px; vertical-align: -2px; flex-shrink: 0; }
-        .rationale-text strong { color: #d35400; display: block; margin-bottom: 4px; font-size: 12px; }
+        .rationale-text strong { color: #d35400; display: block; margin-bottom: 6px; font-size: 12px; }
+        .rationale-text p { margin: 0; padding: 0; }
 
         #appendix-data { display: none; }
 
@@ -193,10 +199,10 @@
 <div class="header-container">
     <div class="header">
         <div class="header-left">
-            <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 7l9-4 9 4v10l-9 4-9-4V7z"/><path d="M3 7l9 4 9-4M12 11v10"/></svg>Bio-Edu Lab Packs</h1>
+            <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="4" rx="2" ry="2"/><path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg>Bio-Edu Lab Packs</h1>
             <p>Bio-Edu Suite:&nbsp;Extra / Wet & Dry Integrated Packages</p>
         </div>
-        <div class="version-badge">v1.1</div>
+        <div class="version-badge">v33.1</div>
     </div>
 </div>
 
@@ -242,7 +248,7 @@
                 </ul>
 
                 <div class="bench-tip">
-                    <strong>現場のコツ</strong>
+                    <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ</strong>
                     安価で確実なサンプルが手に入ります。脂質が強力なPCR阻害剤となるため、赤身の多い部分を選ぶか、抽出液上澄みの「油膜」を避けてピペッティングさせるのが確実にバンドを出すコツです。
                 </div>
 
@@ -284,7 +290,7 @@
                 </ul>
 
                 <div class="bench-tip">
-                    <strong>現場のコツ</strong>
+                    <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ</strong>
                     加工食品に含まれる着色料や添加物がPCRを阻害することがあります。DNAがうまく増幅しない班が出た場合は、抽出したDNA溶液を滅菌水で10〜100倍に希釈させて再挑戦すると劇的に改善します。
                 </div>
 
@@ -326,7 +332,7 @@
                 </ul>
 
                 <div class="bench-tip">
-                    <strong>現場のコツ</strong>
+                    <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ</strong>
                     古代骨からの抽出は教養レベルではコンタミのため100%不可能です。Dry解析で古代人と比較するハイブリッド型にします。※食後は食べ物のDNAが混じるため、採取前のうがいを徹底してください。
                 </div>
 
@@ -370,7 +376,7 @@
                 </ul>
 
                 <div class="bench-tip">
-                    <strong>現場のコツ</strong>
+                    <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ</strong>
                     野外の池の水をろ過するには高価なフィルターが必要で、泥によるPCR阻害で失敗しがちです。事前にターゲット魚種を飼育した「水槽の水」を遠心分離して使えば、確実かつ安価に成功します。
                 </div>
 
@@ -412,7 +418,7 @@
                 </ul>
 
                 <div class="bench-tip">
-                    <strong>現場のコツ</strong>
+                    <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ</strong>
                     マダニ等の危険なベクターを生徒に野外採集させるのは安全面で困難です。アリや餌用コオロギ等の安全な昆虫を使用します。丸ごと使うと色素や阻害物質が濃すぎるため、「脚を1本だけ」切って使うのが秘訣です。
                 </div>
 
@@ -455,7 +461,7 @@
                 </ul>
 
                 <div class="bench-tip">
-                    <strong>現場のコツ</strong>
+                    <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ</strong>
                     同胞種鑑別のゴールドスタンダードは「核DNA(ITS)のPCR-RFLP」です。データベースには最新論文(2023)に基づくマニアックな南極種やイルカ寄生種も収録。系統樹を描かせれば「アザラシ由来なのにイルカに浮気した種」を発見させる最高の探究学習が可能です。
                 </div>
 
@@ -617,7 +623,7 @@ db_data <span class="kd">=</span> []
                 </div>
                 
                 <div class="bench-tip">
-                    <strong>現場のコツ: なぜこのスクリプトが必要なのか？</strong>
+                    <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ: なぜこのスクリプトが必要なのか？</strong>
                     間違ったAccession IDを指定したり、巨大なゲノム全体（数万塩基）をそのままアプリに読み込ませると、解析に時間がかかったり、ノイズが多くなったりします。このスクリプトはNCBIに<b>「ミトコンドリアの公式な塩基配列（RefSeq）」のみを検索させ、さらに「地図情報（アノテーション）」を利用して必要な遺伝子だけをハサミで切り出す</b>ため、純度100%のクリーンなデータを作成できます。
                 </div>
             </div>
@@ -667,7 +673,7 @@ db_data <span class="kd">=</span> []
                 </div>
 
                 <div class="bench-tip">
-                    <strong>現場のコツ: 文字コードの罠と必須項目</strong>
+                    <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ: 文字コードの罠と必須項目</strong>
                     ・<b>文字コード：</b> Windowsのメモ帳で保存する際、文字コード（エンコード）が「ANSI」や「Shift-JIS」になっていると日本語が文字化けします。保存ダイアログ下部で、必ず「UTF-8」にして保存してください。<br>
                     ・<b>必須項目：</b> 確実に入力が必要なのは <code>name</code>（画面に表示される名前）と <code>sequence</code>（ATGCの塩基配列）の2つだけです。残りは空欄（<code>""</code>）でもアプリは作動します。
                 </div>
@@ -678,28 +684,65 @@ db_data <span class="kd">=</span> []
 
     <div id="appendix-data">
         <div id="data-method-chelex" class="rationale-text">
-            <strong>食肉（牛・豚など）・唾液・環境DNA向け【煮沸Chelex法】</strong>
-            <!-- PDF用語準拠: PCRポリメラーゼ -> DNAポリメラーゼ (p.12) -->
-            <p>獣肉には血液（ミオグロビンやヘモグロビン）が豊富に含まれています。この血液中の「ヘム鉄」は、DNAを増幅させる酵素（DNAポリメラーゼ）の働きを強力に邪魔してしまいます。そこで、鉄イオンなどをガッチリと吸着して無毒化する特殊なキレート樹脂（Chelex等）を使い、煮沸によって阻害物質を取り除くのが科学捜査のスタンダードです。</p>
+            <strong>【根拠：煮沸Chelex法】</strong>
+            <p>
+                ・食肉（牛・豚など）・唾液・環境DNA向けの手法です。<br>
+                ・獣肉には血液（ミオグロビンやヘモグロビン）が豊富に含まれており、その「ヘム鉄」はDNAポリメラーゼの働きを強力に阻害します。<br>
+                ・特殊なキレート樹脂（Chelex等）を使い、煮沸によって阻害物質を吸着・無毒化するのが科学捜査のスタンダードです。
+            </p>
         </div>
         <div id="data-method-hotshot" class="rationale-text">
-            <strong>シーフード（魚肉）向け【HotSHOT法（アルカリ熱抽出）】</strong>
-            <p>魚の筋肉組織は、植物の細胞壁のような硬いバリアを持たず、血液量も獣肉ほど多くありません。そのため、高価な試薬や樹脂を使わなくても、強アルカリ（水酸化ナトリウム等）の液に入れて95℃で煮るだけで、一瞬にして細胞がドロドロに溶け、PCRに必要なクリーンなDNAが溶け出してきます。</p>
+            <strong>【根拠：HotSHOT法（アルカリ熱抽出）】</strong>
+            <p>
+                ・シーフード（魚肉）向け。<br>
+                ・魚の筋肉組織は植物の細胞壁のような硬いバリアを持たず、血液量も獣肉ほど多くありません。<br>
+                ・強アルカリ（水酸化ナトリウム等）の液に入れて95℃で煮るだけで、一瞬にして細胞が溶け、PCRに必要なクリーンなDNAが抽出できます。
+            </p>
         </div>
         <div id="data-method-insect" class="rationale-text">
-            <strong>昆虫類向け【物理破砕 ＋ HotSHOT法】</strong>
-            <p>昆虫を覆う外骨格（キチン質）は非常に硬い多糖類です。タンパク質を溶かす酵素（プロテイナーゼK）を使っても、キチン質の壁には歯が立ちません。そのため、すりこぎ等で物理的にバキバキに砕いたあと、強アルカリと熱で一気に細胞を破壊するのが最も早くて確実な方法です。</p>
+            <strong>【根拠：物理破砕 ＋ HotSHOT法】</strong>
+            <p>
+                ・昆虫類向け。<br>
+                ・昆虫を覆う外骨格（キチン質）は非常に硬い多糖類であり、強力なプロテイナーゼKを使ってもキチン質の壁には歯が立ちません。<br>
+                ・すりこぎ等で物理的に砕いたあと、強アルカリと熱で一気に細胞を破壊するのが最も早くて確実な方法です。
+            </p>
         </div>
         <div id="data-method-parasite" class="rationale-text">
-            <strong>寄生虫（アニサキス等）向け【プロテイナーゼK ＋ Chelex法】</strong>
-            <p>寄生虫の表面を覆うクチクラ層は、特殊なコラーゲン（タンパク質）が極めて強固に結びついた構造をしています。この強靭なタンパク質の壁を壊すには、アルカリ煮沸だけでは足りません。強力なタンパク質分解酵素（プロテイナーゼK）を加え、時間をかけてじっくりと組織をバラバラに消化する必要があります。</p>
+            <strong>【根拠：プロテイナーゼK ＋ Chelex法】</strong>
+            <p>
+                ・寄生虫（アニサキス等）向け。<br>
+                ・寄生虫を覆うクチクラ層は、特殊なコラーゲン（タンパク質）が極めて強固に結びついた構造をしており、アルカリ煮沸だけでは破壊できません。<br>
+                ・強力なタンパク質分解酵素（プロテイナーゼK）を加え、時間をかけてじっくりと組織をバラバラに消化する必要があります。
+            </p>
         </div>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <details style="cursor: pointer; border: none; outline: none;">
+            <summary style="font-weight: bold; color: var(--text-muted); font-size: 13px; outline: none;">
+                References & Algorithms
+            </summary>
+            <div style="padding: 10px 0 0 15px; font-size: 11px; color: var(--text-muted); line-height: 1.6;">
+                <p style="margin-bottom: 8px;">本アプリケーションの実験プロトコル、プライマー設計、および自動化スクリプトは、以下の学術論文（原著）に基づき実装されています。</p>
+                <ul style="padding-left: 20px; margin: 0; display: flex; flex-direction: column; gap: 6px;">
+                    <li><strong>Universal Vertebrate Cytochrome b Primers:</strong> Kocher, T. D., Thomas, W. K., Meyer, A., Edwards, S. V., Pääbo, S., Villablanca, F. X., & Wilson, A. C. (1989). Dynamics of mitochondrial DNA evolution in animals: amplification and sequencing with conserved primers. <i>Proceedings of the National Academy of Sciences</i>, 86(16), 6196–6200.</li>
+                    <li><strong>Fish DNA Barcoding Primers:</strong> Ward, R. D., Zemlak, T. S., Innes, B. H., Last, P. R., & Hebert, P. D. (2005). DNA barcoding Australia's fish species. <i>Philosophical Transactions of the Royal Society B: Biological Sciences</i>, 360(1462), 1847–1857.</li>
+                    <li><strong>MiFish Universal Primers for Environmental DNA:</strong> Miya, M., Sato, Y., Fukunaga, T., Sado, T., Poulsen, J. Y., Sato, K., ... & Iwasaki, W. (2015). MiFish, a set of universal PCR primers for metabarcoding environmental DNA from fishes: detection of more than 230 subtropical marine species. <i>Royal Society Open Science</i>, 2(7), 150088.</li>
+                    <li><strong>Universal Invertebrate COI Primers:</strong> Folmer, O., Black, M., Hoeh, W., Lutz, R., & Vrijenhoek, R. (1994). DNA primers for amplification of mitochondrial cytochrome c oxidase subunit I from diverse metazoan invertebrates. <i>Molecular Marine Biology and Biotechnology</i>, 3(5), 294–299.</li>
+                    <li><strong>Anisakidae ITS rDNA & Sibling Species Identification:</strong> Zhu, X., Gasser, R. B., Podolska, M., & Chilton, N. B. (1998). Characterisation of anisakid nematodes with zoonotic potential by nuclear ribosomal DNA sequences. <i>International Journal for Parasitology</i>, 28(12), 1911–1921.</li>
+                    <li><strong>Chelex 100 DNA Extraction Method:</strong> Walsh, P. S., Metzger, D. A., & Higuchi, R. (1991). Chelex 100 as a medium for simple extraction of DNA for PCR-based typing from forensic material. <i>BioTechniques</i>, 10(4), 506–513.</li>
+                    <li><strong>HotSHOT DNA Extraction Method:</strong> Truett, G. E., Heeger, P., Mynatt, R. L., Truett, A. A., Walker, J. A., & Warman, M. L. (2000). Preparation of PCR-quality mouse genomic DNA with hot sodium hydroxide and tris (HotSHOT). <i>BioTechniques</i>, 29(1), 52–54.</li>
+                    <li><strong>Biopython Library:</strong> Cock, P. J., Antao, T., Chang, J. T., Chapman, B. A., Cox, C. J., Dalke, A., ... & de Hoon, M. J. (2009). Biopython: freely available Python tools for computational molecular biology and bioinformatics. <i>Bioinformatics</i>, 25(11), 1422–1423.</li>
+                    <li><strong>NCBI E-utilities API:</strong> Sayers, E. W., Agarwala, R., Bolton, E. E., Brister, J. R., Canese, K., Clark, K., ... & Ostell, J. (2019). Database resources of the national center for biotechnology information. <i>Nucleic Acids Research</i>, 47(D1), D23–D28.</li>
+                </ul>
+            </div>
+        </details>
     </div>
 
 </div>
 
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite | Advanced Bioinformatics & Wet-Lab Emulator
+    &copy; 2026 Bio-Edu Suite v33.1 | Advanced Bioinformatics & Wet-Lab Emulator
 </div>
 
 <!-- トースト通知 -->
