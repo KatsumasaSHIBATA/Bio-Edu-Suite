@@ -1,7 +1,9 @@
 const CACHE_NAME = 'bio-edu-suite-v3';
 const urlsToCache = [
   './index.html',
-  './manifest.json'
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 // インストール時にキャッシュを保存
