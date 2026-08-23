@@ -329,10 +329,8 @@
       .modal-footer .btn { width: 100%; }
       .bulk-action-panel { width: 100%; padding: 12px 16px; border-radius: 12px 12px 0 0;}
       .bulk-action-buttons { grid-template-columns: 1fr; }
-    }
-
-    /* ガイドライン スマホ専用制限クラス（タッチデバイスで判定） */
-    @media (max-device-width: 1024px) and (hover: none), (pointer: coarse) {
+      
+      /* ガイドライン スマホ閲覧時の非対応アプリ無効化 */
       .desktop-only {
         pointer-events: none !important;
         opacity: 0.4 !important;
@@ -340,7 +338,7 @@
         position: relative !important;
       }
       .desktop-only::after {
-        content: "PC/Tablet専用";
+        content: "PC / タブレットからアクセスしてください";
         position: absolute;
         top: 50%;
         left: 50%;
