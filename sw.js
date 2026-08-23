@@ -1,9 +1,10 @@
-const CACHE_NAME = 'bio-edu-suite-base64-v1';
+const CACHE_NAME = 'bio-edu-suite-v3';
 const urlsToCache = [
   './index.html',
   './manifest.json'
 ];
 
+// インストール時にキャッシュを保存
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -14,6 +15,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
+// 新しいバージョンが来たら古いキャッシュを消す
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -29,10 +31,12 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+// ネットワークリクエストのフック（オフライン対応）
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
+        // キャッシュがあれば返す、なければネットワークへ
         return response || fetch(event.request);
       })
   );
