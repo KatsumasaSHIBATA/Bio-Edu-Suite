@@ -2,7 +2,8 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- ガイドライン第1項①: スマホでも強制的にPCサイズ(1024px)でレンダリング -->
+  <meta name="viewport" content="width=1024">
   <title>Investigation Dashboard | Bio-Edu Suite</title>
   <style>
     :root {
@@ -310,7 +311,7 @@
     .custom-tooltip.show-top::after { top: 100%; border-color: rgba(44, 62, 80, 0.95) transparent transparent transparent; }
     .custom-tooltip.show-bottom::after { bottom: 100%; border-color: transparent transparent rgba(44, 62, 80, 0.95) transparent; }
 
-    /* レスポンシブ対応 */
+    /* レスポンシブ対応 (viewport固定のためメディアクエリは実質無効ですが、指示通り残します) */
     @media (max-width: 768px) {
       body { flex-direction: column; }
       .mobile-header { display: flex; justify-content: space-between; align-items: center; background-color: #1a252f; padding: 15px 20px; border-bottom: 4px solid var(--phase-color); z-index: 30; }
@@ -329,9 +330,55 @@
       .bulk-action-panel { width: 100%; padding: 12px 16px; border-radius: 12px 12px 0 0;}
       .bulk-action-buttons { grid-template-columns: 1fr; }
     }
+
+    /* ガイドライン スマホ専用制限クラス（タッチデバイスで判定） */
+    @media (max-device-width: 1024px) and (hover: none), (pointer: coarse) {
+      .desktop-only {
+        pointer-events: none !important;
+        opacity: 0.4 !important;
+        filter: grayscale(80%) !important;
+        position: relative !important;
+      }
+      .desktop-only::after {
+        content: "PC/Tablet専用";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0,0,0,0.8);
+        color: white;
+        padding: 4px 8px;
+        font-size: 11px;
+        border-radius: 4px;
+        white-space: nowrap;
+        pointer-events: none;
+        z-index: 10;
+        font-weight: bold;
+        letter-spacing: 0.5px;
+      }
+    }
   </style>
 </head>
 <body>
+
+  <!-- スマホアクセス警告ブロック画面 -->
+  <script>
+    if (/Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+      document.write(`
+        <div id="mobile-warning-overlay" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(44, 62, 80, 0.95); color: white; z-index: 999999; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; backdrop-filter: blur(5px);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#f39c12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 64px; height: 64px; margin-bottom: 20px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <h2 style="margin: 0 0 15px 0; font-size: 20px; color: #f39c12;">スマートフォンでのアクセス警告</h2>
+          <p style="font-size: 14px; line-height: 1.6; margin-bottom: 25px; max-width: 400px; color: #ecf0f1;">
+            Bio-Edu SuiteはPCおよびタブレットでの利用を前提に設計されています。<br><br>
+            現在、強制的にPC用レイアウトで表示していますが、一部の高度な解析アプリ（シミュレーター等）は誤操作防止のため機能制限されています。
+          </p>
+          <button onclick="document.getElementById('mobile-warning-overlay').style.display='none'" style="background: #1abc9c; color: white; border: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; font-size: 14px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+            理解して進む (ダッシュボードのみ利用)
+          </button>
+        </div>
+      `);
+    }
+  </script>
 
   <!-- スマホ専用ヘッダー (左ハンバーガー) -->
   <div class="mobile-header">
@@ -355,31 +402,31 @@
       <div class="nav-header p2">Phase 2: DNAラボ</div>
       <a href="1_Master_Mix_Studio.html" class="nav-item p2" target="_blank" rel="noopener noreferrer">① PCR Master Mix Studio</a>
       <a href="2_Thermal_Cycler_Simulator.html" class="nav-item p2" target="_blank" rel="noopener noreferrer">② Thermal Cycler Simulator</a>
-      <a href="3_Virtual_PCR_RFLP.html" class="nav-item p2" target="_blank" rel="noopener noreferrer">③ Virtual PCR & RFLP</a>
-      <a href="4_Sanger_Trace_Editor.html" class="nav-item p2" target="_blank" rel="noopener noreferrer">④ Sanger Trace Editor</a>
-      <a href="5_DNA_Alignment_Studio.html" class="nav-item p2" target="_blank" rel="noopener noreferrer">⑤ DNA Alignment Studio</a>
-      <a href="6_Alignment_Print_Studio.html" class="nav-item p2" target="_blank" rel="noopener noreferrer">⑥ Alignment Print Studio</a>
-      <a href="7_Virtual_BLAST_Explorer.html" class="nav-item p2" target="_blank" rel="noopener noreferrer">⑦ Virtual BLAST Explorer</a>
-      <a href="8_Phylogenetic_Tree_Builder.html" class="nav-item p2" target="_blank" rel="noopener noreferrer">⑧ Phylogenetic Tree Builder</a>
+      <a href="3_Virtual_PCR_RFLP.html" class="nav-item p2 desktop-only" target="_blank" rel="noopener noreferrer">③ Virtual PCR & RFLP</a>
+      <a href="4_Sanger_Trace_Editor.html" class="nav-item p2 desktop-only" target="_blank" rel="noopener noreferrer">④ Sanger Trace Editor</a>
+      <a href="5_DNA_Alignment_Studio.html" class="nav-item p2 desktop-only" target="_blank" rel="noopener noreferrer">⑤ DNA Alignment Studio</a>
+      <a href="6_Alignment_Print_Studio.html" class="nav-item p2 desktop-only" target="_blank" rel="noopener noreferrer">⑥ Alignment Print Studio</a>
+      <a href="7_Virtual_BLAST_Explorer.html" class="nav-item p2 desktop-only" target="_blank" rel="noopener noreferrer">⑦ Virtual BLAST Explorer</a>
+      <a href="8_Phylogenetic_Tree_Builder.html" class="nav-item p2 desktop-only" target="_blank" rel="noopener noreferrer">⑧ Phylogenetic Tree Builder</a>
       
       <div class="nav-header p3">Phase 3: 形態ラボ</div>
-      <a href="9_Morphometrics_Studio.html" class="nav-item p3" target="_blank" rel="noopener noreferrer">⑨ Morphometrics Studio</a>
+      <a href="9_Morphometrics_Studio.html" class="nav-item p3 desktop-only" target="_blank" rel="noopener noreferrer">⑨ Morphometrics Studio</a>
       
       <div class="nav-header p4">Phase 4: 統合検証ルーム</div>
-      <a href="10_integrative_taxonomy_studio.html" class="nav-item p4" target="_blank" rel="noopener noreferrer">⑩ Taxonomy Explorer (統合版)</a>
+      <a href="10_integrative_taxonomy_studio.html" class="nav-item p4 desktop-only" target="_blank" rel="noopener noreferrer">⑩ Taxonomy Explorer (統合版)</a>
       
       <div class="nav-header p5">Phase 5: 統計遺伝学</div>
-      <a href="11_Statistical_Genetics_Lab.html" class="nav-item p5" target="_blank" rel="noopener noreferrer">⑪ Statistical Genetics Lab</a>
+      <a href="11_Statistical_Genetics_Lab.html" class="nav-item p5 desktop-only" target="_blank" rel="noopener noreferrer">⑪ Statistical Genetics Lab</a>
       
       <div class="nav-header p6">Phase 6: 構造生物学</div>
-      <a href="12_Central_Dogma_Simulator.html" class="nav-item p6" target="_blank" rel="noopener noreferrer">⑫ Central Dogma Simulator</a>
-      <a href="13_Protein_Structure_Explorer.html" class="nav-item p6" target="_blank" rel="noopener noreferrer">⑬ Protein Structure Explorer</a>
+      <a href="12_Central_Dogma_Simulator.html" class="nav-item p6 desktop-only" target="_blank" rel="noopener noreferrer">⑫ Central Dogma Simulator</a>
+      <a href="13_Protein_Structure_Explorer.html" class="nav-item p6 desktop-only" target="_blank" rel="noopener noreferrer">⑬ Protein Structure Explorer</a>
 
       <div class="nav-header extra">Extra: 拡張パッケージ</div>
-      <a href="lab_packs.html" class="nav-item extra" target="_blank" rel="noopener noreferrer">Lab Packs (教材パック)</a>
+      <a href="lab_packs.html" class="nav-item extra desktop-only" target="_blank" rel="noopener noreferrer">Lab Packs (教材パック)</a>
     </div>
-    <!-- フッターのバージョンをv33.0へ完全同期 -->
-    <div class="system-status">&copy; 2026 Bio-Edu Suite v33.0 | Developed for Bioinformatics & Wet-Lab Education</div>
+    <!-- フッターのバージョンをv33.1へ完全同期 -->
+    <div class="system-status">&copy; 2026 Bio-Edu Suite v33.1 | Developed for Bioinformatics & Wet-Lab Education</div>
   </div>
 
   <!-- メインコンテンツ -->
@@ -418,11 +465,11 @@
         <span id="selectedCount">0</span>件のサンプルを選択中
       </div>
       <div class="bulk-action-buttons">
-        <button id="btnBulkDna" class="btn link-dna" onclick="dispatchBulk('dna')">
+        <button id="btnBulkDna" class="btn link-dna desktop-only" onclick="dispatchBulk('dna')">
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
           ⑤ DNA Alignment Studio へ
         </button>
-        <button id="btnBulkMorph" class="btn link-morph" onclick="dispatchBulk('morph')">
+        <button id="btnBulkMorph" class="btn link-morph desktop-only" onclick="dispatchBulk('morph')">
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
           ⑨ Morphometrics Studio へ
         </button>
