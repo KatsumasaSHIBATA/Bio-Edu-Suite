@@ -4,15 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <!-- 正規のPWA読み込み (外部ファイルを参照) -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#1abc9c">
-  
-  <!-- iOS向け設定 -->
+  <!-- iOS向け設定: Safariでのアプリアイコンを直接Base64で指定し、黒四角や余白を防止 -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="BioEdu">
-  <link rel="apple-touch-icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%232c3e50'/%3E%3Cpath d='M256 120C181 120 120 181 120 256s61 136 136 136 136-61 136-136-61-136-136-136zm0 240c-57.3 0-104-46.7-104-104S198.7 152 256 152s104 46.7 104 104-46.7 104-104 104z' fill='%231abc9c'/%3E%3Cpath d='M256 190c-36.4 0-66 29.6-66 66s29.6 66 66 66 66-29.6 66-66-29.6-66-66-66zm0 102c-19.8 0-36-16.2-36-36s16.2-36 36-36 36 16.2 36 36-16.2 36-36 36z' fill='%23ffffff'/%3E%3C/svg%3E">
+  <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAMAAABlApw1AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAzUExURQAAABq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nHp0kK0AAAAQdFJOUwAQIDBAUGBwgI+Qn6+wt8B/q20fAAAC40lEQVR42u3b2XKCMBhAYUghIVVA3P//sS/a+9pOp3O6M56Z5+Lzkkkml0UAAAAAAAAAAAAAAAAAAAAAAAAAAABwt2bV/3w1u9P+D8C02Z1+z09uN5vvO8D59s9Pfp022+87wPk2z08+nTbX7zvA+TbPT16nzed9B7jQ5vnJp9Nm8n0HuNDm+cnHtPl43wEutHl+8jFtrr7vABfaPD/5mDZv9x3gQpvnJx/T5u2+A1xo8/zkY9q83neAC22en3xMm9f7DnChzfOTj2lTfd8BLrR5fvIxbZ7uO8CFNs9PPqbN830HuNDm+cnHtDl/3wEutHl+8jFtzO87wIU2z08+po37fQe40Ob5yce08b/vABfaPD/5mDb+9x3gQpvnJx/Txv++A1xo8/zkY9r433eAC22en3xMG//7DnChzfOTj2njf98BLrR5fvIxbYx/H4P1Y3mZtsa/j8H6sbxMW+Pfx2D9WF6mrfHvY7B+LC/T1vj3MVg/lpdpa/z7GKwfy8u0Nf59DNaP5WXaGv8+BuvH8jJtjX8fg/VjeZm2xr+PwfqxvExb49/HYP1YXqat8e9jsH4sL9PW+PcxWD+Wl2lr/PsYrB/Ly7Q1/n0M1o/lZdoa/z4G68fyMm2Nfx+D9WN5mbbGv4/B+rG8TFvj38dg/Vhepi3/91H7sTz+/w9o2fP/h2lD/n+ZtiX//336sbw8/n9eXj7//yVtfuQ/Xp++LC+P//+Stj/yH61PX5aXx//3y8vn/7+k7Z/8h+rTfVleHv//krZf8h+pT/dleXn8/0vatsnfX5/uy/Ly+P+XtO2Tf7s+3Zfl5fH/L2nbKX9zfbovg/8fg/VjeZk2/vcd4EKb5ycf08b/vgNcaPP85GPa+N93gAttnp98TBv/+w5woc3zk49p43/fAS60eX7yMW387zvAhTbPTz6mjf99B7jQ5vnJx7Qxv+8AF9o8P/mYNs7fd4ALbZ6ffEyb5/sOcKHN85OPafN03wEutHl+8jFtbO87AAAAAAAAAAAAAAAAAAAAAAAAAAAA8G/+AIkOQ1n57aYQAAAAAElFTkSuQmCC">
 
   <title>Investigation Dashboard | Bio-Edu Suite</title>
   <style>
@@ -509,7 +505,6 @@
 
         <div class="form-group">
           <label>塩基配列データ</label>
-          <!-- 2025年版重要用語リスト準拠: 「塩基配列」を使用 -->
           <textarea id="dnaData" class="form-control paste-area" placeholder="FASTA形式で塩基配列を入力"></textarea>
           <div class="help-text">後で DNAラボ (⑤ DNA Alignment Studio) に送って同定・系統解析を行えます。</div>
         </div>
@@ -544,21 +539,49 @@
   </div>
 
   <script>
-    // --- Service Worker の登録処理 ---
-    // 正規の sw.js を登録し、インストールプロンプトの要件を満たす
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
-          .then(registration => {
-            console.log('ServiceWorker registration successful with scope: ', registration.scope);
-          })
-          .catch(err => {
-            console.log('ServiceWorker registration failed: ', err);
-          });
-      });
-    }
+    // 外部ファイルなしでPWA環境を構築しつつ、セキュリティエラー（blob:スキームブロック）を回避します。
+    (function initPWA() {
+      // 1. 動的 Manifest 生成 (Data URI方式に変更し、エラーを回避)
+      const icon192 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAMAAABlApw1AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAzUExURQAAABq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nHp0kK0AAAAQdFJOUwAQIDBAUGBwgI+Qn6+wt8B/q20fAAAC40lEQVR42u3b2XKCMBhAYUghIVVA3P//sS/a+9pOp3O6M56Z5+Lzkkkml0UAAAAAAAAAAAAAAAAAAAAAAAAAAABwt2bV/3w1u9P+D8C02Z1+z09uN5vvO8D59s9Pfp022+87wPk2z08+nTbX7zvA+TbPT16nzed9B7jQ5vnJp9Nm8n0HuNDm+cnHtPl43wEutHl+8jFtrr7vABfaPD/5mDZv9x3gQpvnJx/T5u2+A1xo8/zkY9q83neAC22en3xMm9f7DnChzfOTj2lTfd8BLrR5fvIxbZ7uO8CFNs9PPqbN830HuNDm+cnHtDl/3wEutHl+8jFtzO87wIU2z08+po37fQe40Ob5yce08b/vABfaPD/5mDb+9x3gQpvnJx/Txv++A1xo8/zkY9r433eAC22en3xMG//7DnChzfOTj2njf98BLrR5fvIxbYx/H4P1Y3mZtsa/j8H6sbxMW+Pfx2D9WF6mrfHvY7B+LC/T1vj3MVg/lpdpa/z7GKwfy8u0Nf59DNaP5WXaGv8+BuvH8jJtjX8fg/VjeZm2xr+PwfqxvExb49/HYP1YXqat8e9jsH4sL9PW+PcxWD+Wl2lr/PsYrB/Ly7Q1/n0M1o/lZdoa/z4G68fyMm2Nfx+D9WN5mbbGv4/B+rG8TFvj38dg/Vhepi3/91H7sTz+/w9o2fP/h2lD/n+ZtiX//336sbw8/n9eXj7//yVtfuQ/Xp++LC+P//+Stj/yH61PX5aXx//3y8vn/7+k7Z/8h+rTfVleHv//krZf8h+pT/dleXn8/0vatsnfX5/uy/Ly+P+XtO2Tf7s+3Zfl5fH/L2nbKX9zfbovg/8fg/VjeZk2/vcd4EKb5ycf08b/vgNcaPP85GPa+N93gAttnp98TBv/+w5woc3zk49p43/fAS60eX7yMW387zvAhTbPTz6mjf99B7jQ5vnJx7Qxv+8AF9o8P/mYNs7fd4ALbZ6ffEyb5/sOcKHN85OPafN03wEutHl+8jFtbO87AAAAAAAAAAAAAAAAAAAAAAAAAAAA8G/+AIkOQ1n57aYQAAAAAElFTkSuQmCC";
+      const icon512 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAMAAADDpiTIAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAABwUExURQAAABq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nBq8nHVw6tMAAAAjdFJOUwAQIDAwQFBQYHBwgICAkJCgoK+vr7CwwMDA0NDg4PDw8PDwB6w4VAAABsRJREFUeNrt20GSozAAAEEYyEiy8f7H5r6q03N2F7bU90FhBv9VAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAmTq0P6+d1qH9eQGAmTq0P88BAMwXwPM6tD/PAQDM9y+A4z2tQ/vzHADAfP8CON/fOrQ/zwEAzPcvgPf1aH+eAwCY718Ap3tah/bnOQCA+f4FcL6/dWh/ngMAmO9fAO/r0f48BwAw378ATve0Du3PcwAA8/0L4Hx/69D+PAcAMN+/AN7Xo/15DgBgvn8BnO5pHdqf5wAA5vsXwPn+1qH9eQ4AYL5/AbyvR/vzHADAfP8CON3TOrQ/zwEAzPcvgPP9rUP78xwAwHz/Anhf73VIf54DAJjvXwDH+1qH9uc5AID5/gVwvL91aH+eAwCY718Ax/tah/bnOQCA+f4FcLy/dWh/ngMAmO9fAMf7Wof25zkAgPn+BXC8v3Vof54DAJjvXwDH+1qH9uc5AID5/gVwvL91aH+eAwCY718Ax/tah/bnOQCA+f4FcLy/dWh/ngMAmO9fAMf7Wof25zkAgPn+BXC8v3Vof54DAJjvXwDH+1qH9uc5AID5/gVwvL91aH+eAwCY718Ax/tah/bnOQCA+f4FcLy/dWh/ngMAmO9fAMf7Wof25zkAgPn+BXC8v3Vof54DAJjvXwDH+1qH9uc5AID5/gVwvL91aH+eAwCY718Ax/tah/bnOQCA+f4FcLy/dWh/ngMAmO9fAMf7Wof25zkAgPn+BXC8v3Vof54DAJjvXwDH+1qH9uc5AID5/gVwvL91aH+eAwCY718Ax/tah/bnOQCA+f4FcLy/dWh/ngMAmO9fAMf7Wof25zkAgPn+BXC8v3Vof54DAJjvXwDH+1qH9uc5AID5/gVwvL91aH+eAwCY718Ax/tah/bnOQCA+f4FcLy/dWh/ngMAmO9fAMf7Wof25zkAgPn+BXC8v3Vof54DAJjvXwDH+1qH9uc5AID5/gVwvL91aH+eAwCY718Ax/tah/bnOQCA+f4FcLy/dWh/ngMAmO9fAMf7Wof25zkAgPn+BXC8v3Vof54DAJjvXwDH+1qH9uc5AID5/gVwvL91aH+eAwCY718Ax/tah/bnOQCA+f4FcLy/dWh/ngMAmO9fAMf7Wof25zkAgPn+BXC8v3Vof54DAJjvXwDH+1qH9uc5AID5/gVwvL91aH+eAwCY718Ax/tah/bnOQCA+f4FcLy/dWh/ngMAmO9fAMf7Wof25zkAgPn+BXC8v3Vof54DAJjvXwDH+1qH9uc5AID5/gVwvL91aH+eAwCY718Ax/tah/bnOQCA+f4FcLy/dWh/ngMAmO9fAMf7Wof25zkAgPn+BXC8v3Vof54DAJjvXwDH+1qH9uc5AID5/gVwvL91aH+eAwCY718Ax/tah/bnOQCA+f4FcLy/dWh/ngMAmO9fAMf7Wof25zkAgPn+BXC8v3Vof54DAJjvXwDH+1qH9uc5AID5/gVwvL91aH+eAwCY718Ax/tah/bnOQCA+f4FcLy/dWh/ngMAmO9fAMf7Wof25zkAgPn+BXC8v3Vof54DAJjvXwDH+1qH9uc5AID5/gVwvL91aH+eAwCY718Ax/tah/bnOQCA+f4FcLy/dWh/ngMAmO9fAMf7Wof25zkAgPn+BXC8v3Vof54DAJjvXwDH+1qH9uc5AID5/gVwvL91aH+eAwCY718Ax/tah/bnOQCA+f4FcLy/dWh/ngMAmO9fAMf7Wof25zkAgPn+BXC8v3Vof54DAJjvXwDH+1qH9uc5AID5/gVwvL91aH+eAwCY718Ax/tah/bnOQCA+f4FcLy/dWh/ngMAmO9fAMf7Wof25zkAgPn+BXC8v3Vof54DAJjvXwDH+1qH9uc5AID5/gVwvL91aH+eAwCY718Ax/tah/bnOQCA+f4FcLy/dWh/ngMAmO9fAMf7Wof25zkAgPn+BXC8v3Vof54DAJjvXwDH+1qH9uc5AID5/gVwvL91aH+eAwCY718Ax/tah/bnOQCA+f4FcLy/dWh/ngMAmO9fAMf7Wof25zkAgPn+BXC8v3Vof54DAJjvXwDH+1qH9uc5AID5/gVwvL91aH+eAwCY718Ax/tah/bnOQCA+f4FcLy/dWh/ngMAmO9fAMf7Wof25zkAgPn+BXC8v3Vof54DAJjvXwDH+1qH9uc5AID5/gVwvL91aH+eAwCY718Ax/tah/bnOQCA+f4FcLy/dWh/ngMAmO9fAMf7Wof25zkAgPn+BXC8v3Vof54DAJjvXwDH+1qH9uc5AID5/gVwvL91aH+eAwCY718Ax/tah/bnOQCA+f4FcLy/dWh/ngMAmO9fAMf7Wof25zkAgPn+BXC8v3Vof54DAJjvXwDH+1qH9uc5AID5/gVwvL91aH+eAwCYr0P78xwAwA7tTwsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJb7A+QdE3yD4rCPAAAAAElFTkSuQmCC";
 
-    // --- データの初期化とローカルストレージ連携 ---
+      const manifestJSON = {
+        name: "Bio-Edu Suite | Investigation Dashboard",
+        short_name: "BioEdu",
+        description: "統合分類学への第一歩。サンプルデータを登録し各ラボへ解析に出発するアプリ。",
+        start_url: location.pathname || "/",
+        display: "standalone",
+        background_color: "#ecf0f1",
+        theme_color: "#1abc9c",
+        icons: [
+          {
+            src: icon192,
+            sizes: "192x192",
+            type: "image/png",
+            purpose: "any maskable"
+          },
+          {
+            src: icon512,
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "any maskable"
+          }
+        ]
+      };
+      
+      // Blob(URL.createObjectURL)は使わず、Data URIで直接リンクを生成する
+      const manifestStr = JSON.stringify(manifestJSON);
+      const manifestUrl = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(manifestStr);
+      
+      const link = document.createElement('link');
+      link.rel = 'manifest';
+      link.href = manifestUrl;
+      document.head.appendChild(link);
+
+      // ★Service Workerの登録はsandbox環境のセキュリティエラーを回避するため削除しました★
+      console.log('[PWA] Manifest injected via safe Data URI mode.');
+    })();
+
     const STORAGE_KEY = 'bio_edu_samples';
     let samples = [];
 
@@ -583,7 +606,8 @@
         samples = JSON.parse(data);
       } else {
         // [UPDATE] AMMIモデルが正常に回る「直交したデータセット」に再構築（2系統 × 2環境）
-        // 2025年版PDF準拠: 系統(G)には「野生型」「突然変異体」を使用（注釈に基づく）
+        // 系統(G): 野生型, 突然変異体 (2025年版PDF準拠)
+        // 環境(E): A湖畔, B川上流
         samples = [
           {
             id: generateBaseId() + "_WT_A",
@@ -702,10 +726,12 @@
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
           
+          // LIMS要件: 品質80% (0.8) の Base64 (JPEG) に変換
           const base64 = canvas.toDataURL('image/jpeg', 0.8);
           document.getElementById('imageDataBase64').value = base64;
           document.getElementById('imageDropText').innerText = file.name + " (最適化済)";
           
+          // プレビューの即時反映
           document.getElementById('modalImagePreview').src = base64;
           document.getElementById('imagePreviewContainer').style.display = 'block';
 
@@ -748,6 +774,7 @@
         const card = document.createElement('div');
         card.className = 'sample-card';
         
+        // ヘッダー内に「サンプル名・ID」＋「画像プレビュー」＋「削除ボタン」を配置
         card.innerHTML = `
           <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
             <div style="display: flex; align-items: center; gap: 12px; overflow: hidden; flex: 1;">
@@ -787,6 +814,7 @@
       if (count > 0) {
         countSpan.innerText = count;
         
+        // 選択された全てのサンプルがデータ要件を満たしているかチェック
         let canSendMorph = true;
         let canSendDna = true;
         let canCopyEnv = true;
@@ -794,6 +822,7 @@
         checkboxes.forEach(cb => {
           const sample = samples.find(s => s.id === cb.value);
           if (sample) {
+            // 画像または形態データのどちらかが存在すれば Morphometrics へ送れる
             if ((!sample.morphData || sample.morphData.trim() === "") && (!sample.image_data || sample.image_data.trim() === "")) canSendMorph = false;
             if (!sample.dnaData || sample.dnaData.trim() === "") canSendDna = false;
             if (!sample.envCategory || sample.envCategory.trim() === "") canCopyEnv = false;
@@ -804,6 +833,7 @@
         const btnDna = document.getElementById('btnBulkDna');
         const btnCopyEnv = document.getElementById('btnBulkCopyEnv');
 
+        // データ不足のアプリへの送信・処理ボタンを無効化
         btnMorph.classList.toggle('link-disabled', !canSendMorph);
         btnDna.classList.toggle('link-disabled', !canSendDna);
         btnCopyEnv.classList.toggle('link-disabled', !canCopyEnv);
@@ -823,6 +853,7 @@
       
       if (selectedSamples.length === 0) return;
 
+      // [UPDATE] ガイドライン(v32.2)に基づき sessionStorage へ一括データを厳密な構造で保存し、sourceを刻印
       const exportSamples = selectedSamples.map(s => ({
         id: s.id || generateBaseId(),
         name: s.name || "Unknown_Sample",
@@ -839,9 +870,11 @@
         source: "App_1_Dashboard"
       }));
       
+      // チェックボックスの選択状態を解除して再描画
       document.querySelectorAll('.sample-checkbox').forEach(cb => cb.checked = false);
       renderSamples();
 
+      // 通知と遷移処理
       let targetUrl = '';
       if (type === 'morph') {
         targetUrl = '9_Morphometrics_Studio.html';
@@ -856,6 +889,7 @@
       }
     }
 
+    // TSVコピー処理 (引き算と構造化の適用)
     function copyEnvDataTSV() {
       const checkboxes = document.querySelectorAll('.sample-checkbox:checked');
       if (checkboxes.length === 0) return;
@@ -865,6 +899,8 @@
       
       if (selectedSamples.length === 0) return;
 
+      // 出力列の厳格化：Sample_ID | 系統・個体群 | 環境カテゴリ に固定
+      // v32.2 規定により、先頭にメタデータ（出所）を刻印する
       let tsv = "# Source: Bio-Edu Suite App 1 (Dashboard)\n";
       tsv += "Sample_ID\t系統・個体群\t環境カテゴリ\n";
       selectedSamples.forEach(s => {
@@ -872,6 +908,7 @@
       });
       
       navigator.clipboard.writeText(tsv).then(() => {
+        // チェックボックスの選択状態を解除して再描画
         document.querySelectorAll('.sample-checkbox').forEach(cb => cb.checked = false);
         renderSamples();
         showToast("環境データをTSV形式でクリップボードにコピーしました", "success");
@@ -883,15 +920,21 @@
     function openModal() {
       document.getElementById('modalTitle').innerText = "サンプルの登録";
       document.getElementById('originalSampleId').value = "";
+      
+      // LIMS強化: 登録時に一意のIDをUI上で確実に見せ、保持させる
       document.getElementById('sampleId').value = generateBaseId();
+      
       document.getElementById('sampleName').value = "";
       document.getElementById('envCategory').value = "";
       document.getElementById('envNote').value = "";
+      
+      // 画像エリア・プレビューの初期化
       document.getElementById('imageDataBase64').value = "";
       document.getElementById('imageDropText').innerText = "ここをクリック、または 画像データ をドラッグ＆ドロップ";
       document.getElementById('imageInput').value = "";
       document.getElementById('modalImagePreview').src = "";
       document.getElementById('imagePreviewContainer').style.display = 'none';
+
       document.getElementById('morphData').value = "";
       document.getElementById('dnaData').value = "";
       document.getElementById('sampleModal').style.display = 'flex';
@@ -911,10 +954,12 @@
       document.getElementById('sampleName').value = sample.name;
       document.getElementById('envCategory').value = sample.envCategory || "";
       document.getElementById('envNote').value = sample.envNote || sample.envData || "";
+      
       document.getElementById('imageDataBase64').value = sample.image_data || "";
       document.getElementById('imageDropText').innerText = sample.image_data ? "保存済みの画像データ (変更する場合は再ドロップ)" : "ここをクリック、または 画像データ をドラッグ＆ドロップ";
       document.getElementById('imageInput').value = "";
 
+      // プレビューの表示制御
       if (sample.image_data) {
         document.getElementById('modalImagePreview').src = sample.image_data;
         document.getElementById('imagePreviewContainer').style.display = 'block';
@@ -944,6 +989,7 @@
       let finalId = baseId;
       let counter = 2;
       
+      // IDの重複を厳格に防止
       while (samples.some(s => s.id === finalId && s.id !== originalId)) {
         finalId = `${baseId}-${counter}`;
         counter++;
@@ -960,7 +1006,7 @@
           samples[index].morphData = morph;
           samples[index].dnaData = dna;
           samples[index].date = new Date().toISOString();
-          delete samples[index].envData; 
+          delete samples[index].envData; // 古いプロパティを削除してクレンジング
         }
       } else {
         samples.push({ id: finalId, name: name, envCategory: envCategory, envNote: envNote, image_data: image_data, morphData: morph, dnaData: dna, date: new Date().toISOString() });
@@ -994,6 +1040,7 @@
       });
     }
 
+    // 教育的UIモジュール①: 根拠ポップオーバー
     function toggleRationale(event, id) {
       event.stopPropagation();
       const el = document.getElementById(id);
@@ -1040,6 +1087,7 @@
       document.querySelectorAll('.rationale-text').forEach(el => el.classList.remove('show', 'arrow-top', 'arrow-bottom'));
     }, true);
 
+    // カスタムツールチップ初期化
     function initTooltips() {
       if (document.getElementById('__bes_tooltip')) return;
       const tooltip = document.createElement('div');
@@ -1078,6 +1126,7 @@
       }, true);
     }
 
+    // トースト通知
     function showToast(msg, type = "") {
       const toast = document.getElementById('toast');
       if (!toast) return;
@@ -1111,6 +1160,7 @@
         let x = e.clientX + 15;
         let y = e.clientY + 15;
         
+        // コンテナのサイズを取得して境界判定
         const rect = imageHoverPreview.getBoundingClientRect();
         
         if (x + rect.width > window.innerWidth) {
