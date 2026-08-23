@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <!-- 正規のPWA読み込み -->
+  <!-- 正規のPWA読み込み (外部ファイルを参照) -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1abc9c">
   
@@ -509,6 +509,7 @@
 
         <div class="form-group">
           <label>塩基配列データ</label>
+          <!-- 2025年版重要用語リスト準拠: 「塩基配列」を使用 -->
           <textarea id="dnaData" class="form-control paste-area" placeholder="FASTA形式で塩基配列を入力"></textarea>
           <div class="help-text">後で DNAラボ (⑤ DNA Alignment Studio) に送って同定・系統解析を行えます。</div>
         </div>
@@ -544,6 +545,7 @@
 
   <script>
     // --- Service Worker の登録処理 ---
+    // 正規の sw.js を登録し、インストールプロンプトの要件を満たす
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js')
@@ -581,6 +583,7 @@
         samples = JSON.parse(data);
       } else {
         // [UPDATE] AMMIモデルが正常に回る「直交したデータセット」に再構築（2系統 × 2環境）
+        // 2025年版PDF準拠: 系統(G)には「野生型」「突然変異体」を使用（注釈に基づく）
         samples = [
           {
             id: generateBaseId() + "_WT_A",
@@ -1138,4 +1141,3 @@
   </script>
 </body>
 </html>
-```
