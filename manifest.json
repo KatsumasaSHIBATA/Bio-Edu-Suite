@@ -1,0 +1,17 @@
+{
+  "name": "Bio-Edu Suite | Investigation Dashboard",
+  "short_name": "BioEdu",
+  "description": "統合分類学への第一歩。サンプルデータを登録し各ラボへ解析に出発するアプリ。",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ecf0f1",
+  "theme_color": "#1abc9c",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%232c3e50'/%3E%3Cpath d='M256 120C181 120 120 181 120 256s61 136 136 136 136-61 136-136-61-136-136-136zm0 240c-57.3 0-104-46.7-104-104S198.7 152 256 152s104 46.7 104 104-46.7 104-104 104z' fill='%231abc9c'/%3E%3Cpath d='M256 190c-36.4 0-66 29.6-66 66s29.6 66 66 66 66-29.6 66-66-29.6-66-66-66zm0 102c-19.8 0-36-16.2-36-36s16.2-36 36-36 36 16.2 36 36-16.2 36-36 36z' fill='%23ffffff'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
