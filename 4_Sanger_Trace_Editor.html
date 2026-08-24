@@ -27,17 +27,53 @@
 
         *, *::before, *::after { box-sizing: border-box; }
         
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Noto Sans JP'; background-color: var(--bg-color); color: var(--text-main); margin: 0; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
         
         /* 改行崩れ・テキスト折り返しの補正 */
-        body, .card, p, div, .bench-tip, .step-up-card, .rationale-text, .assist-panel { word-break: normal; overflow-wrap: anywhere; line-height: 1.6; }
+        body, .card, p, div, .bench-tip, .step-up-card, .rationale-text, .assist-panel, .dynamic-hint { word-break: normal; overflow-wrap: anywhere; line-height: 1.6; }
         .label-title, .no-wrap { white-space: nowrap; }
 
-        .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid var(--phase-color); display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 30; flex-shrink: 0; position: sticky; top: 0; }
-        .header { width: 100%; max-width: 1400px; padding: 12px 20px; color: white; display: flex; align-items: center; justify-content: space-between; position: relative; }
-        .header h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 1px; color: #fff; white-space: nowrap; display: flex; align-items: center; }
-        .header p { margin: 4px 0 0 0; font-size: 11px; color: var(--phase-color); font-weight: 600; letter-spacing: 0.5px; }
-        .version-badge { position: absolute; right: 20px; top: 15px; background: var(--secondary); color: var(--phase-color); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid var(--phase-color); }
+        /* ガイドライン第5項: グローバル・ドロワー規格 */
+        .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100dvh; background-color: var(--primary); color: white; display: flex; flex-direction: column; z-index: 1002; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 2px 0 15px rgba(0,0,0,0.2); }
+        .sidebar.open { left: 0; }
+        .sidebar-overlay { display: block; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.5); z-index: 1001; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(2px); }
+        .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
+        
+        .logo-area { padding: 20px; background-color: #1a252f; border-bottom: 4px solid var(--phase-color); text-align: center; }
+        .logo-area h1 { margin: 0; color: #fff; font-size: 20px; font-weight: 700; letter-spacing: 1px; }
+        .logo-area p { margin: 5px 0 0 0; color: var(--phase-color); font-size: 11px; }
+        
+        .nav-menu { flex: 1; padding: 10px 0 20px 0; overflow-y: auto; }
+        .nav-header { padding: 15px 20px 5px 20px; font-size: 11px; color: #95a5a6; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; border-top: 1px solid #34495e; margin-top: 5px;}
+        .nav-header:first-child { border-top: none; margin-top: 0;}
+        .nav-item { padding: 8px 20px 8px 30px; display: flex; align-items: center; gap: 8px; color: #bdc3c7; text-decoration: none; font-size: 13px; transition: 0.2s; border-left: 4px solid transparent;}
+        .nav-item:hover { background-color: var(--secondary); color: white; }
+        
+        .nav-header.p1 { color: #1abc9c; border-top-color: rgba(26, 188, 156, 0.2); }
+        .nav-item.p1:hover, .nav-item.p1.active { color: #1abc9c; border-left-color: #1abc9c; background-color: var(--secondary); font-weight: bold; }
+        .nav-header.p2 { color: #1abc9c; border-top-color: rgba(26, 188, 156, 0.2); }
+        .nav-item.p2:hover, .nav-item.p2.active { color: #1abc9c; border-left-color: #1abc9c; background-color: var(--secondary); font-weight: bold; }
+        .nav-header.p3 { color: #3498db; border-top-color: rgba(52, 152, 219, 0.2); }
+        .nav-item.p3:hover, .nav-item.p3.active { color: #3498db; border-left-color: #3498db; background-color: var(--secondary); font-weight: bold; }
+        .nav-header.p4 { color: #8e44ad; border-top-color: rgba(142, 68, 173, 0.2); }
+        .nav-item.p4:hover, .nav-item.p4.active { color: #9b59b6; border-left-color: #9b59b6; background-color: var(--secondary); font-weight: bold; }
+        .nav-header.p5 { color: #e74c3c; border-top-color: rgba(231, 76, 60, 0.2); }
+        .nav-item.p5:hover, .nav-item.p5.active { color: #e74c3c; border-left-color: #e74c3c; background-color: var(--secondary); font-weight: bold; }
+        .nav-header.p6 { color: #e67e22; border-top-color: rgba(230, 126, 34, 0.2); }
+        .nav-item.p6:hover, .nav-item.p6.active { color: #f39c12; border-left-color: #f39c12; background-color: var(--secondary); font-weight: bold; }
+        .nav-header.extra { color: #f1c40f; border-top-color: rgba(241, 196, 15, 0.2); }
+        .nav-item.extra:hover, .nav-item.extra.active { color: #f39c12; border-left-color: #f39c12; background-color: var(--secondary); font-weight: bold; }
+
+        .system-status { padding: 15px 20px; background-color: #1a252f; border-top: 1px solid #2c3e50; font-size: 11px; color: var(--text-muted); text-align: center; }
+
+        /* ヘッダー・バッジ規格 (v33.4) */
+        .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid var(--phase-color); display: flex; justify-content: center; position: sticky; top: 0; z-index: 30; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+        .header { width: 100%; max-width: 1400px; padding: 12px 20px; box-sizing: border-box; display: flex; align-items: center; justify-content: flex-start; position: relative; }
+        .topbar-hamburger { background: transparent; border: none; color: #fff; cursor: pointer; padding: 4px; margin-right: 16px; margin-left: 0; display: flex; align-items: center; justify-content: center; transition: 0.2s; border-radius: 4px; }
+        .topbar-hamburger:hover { background: rgba(255, 255, 255, 0.1); color: var(--phase-color); }
+        .header-title-group { display: flex; flex-direction: column; justify-content: center; flex: 1; }
+        .header-title-group h1 { margin: 0; font-size: 20px; font-weight: 700; color: #fff; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
+        .header-title-group p { margin: 4px 0 0 0; font-size: 11px; color: var(--phase-color); font-weight: 600; }
 
         .main-content { width: 100%; max-width: 1400px; margin: 0 auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; flex: 1; }
         
@@ -45,31 +81,11 @@
         .card-header { background: var(--secondary); color: white; padding: 10px 18px; font-size: 14px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
         .card-body { padding: 15px; display: flex; flex-direction: column; gap: 12px; }
 
+        /* 根拠表示用スタイル（Z-index: 9000 準拠） */
         .rationale-btn { background: var(--phase-color); color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; flex-shrink: 0; }
         .rationale-btn:hover { transform: scale(1.1); filter: brightness(1.2); }
         
-        /* 根拠表示用スタイル（Z-index: 9000 準拠） */
-        .rationale-text {
-            position: fixed;
-            z-index: 9000;
-            width: max-content;
-            max-width: min(320px, calc(100vw - 24px));
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            border: 1px solid var(--warning);
-            background-color: #fef9e7;
-            color: #7e5109;
-            margin: 0;
-            padding: 12px;
-            border-radius: 6px;
-            line-height: 1.5;
-            font-size: 11px;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.2s, transform 0.2s;
-            transform: translateY(-10px);
-            pointer-events: none;
-            box-sizing: border-box;
-        }
+        .rationale-text { position: fixed; background: #fef9e7; border: 1px solid var(--warning); padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: max-content; max-width: min(320px, calc(100vw - 24px)); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; }
         .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
         .rationale-text::after { content: ''; position: absolute; border-width: 6px; border-style: solid; left: var(--arrow-left, 50%); }
         .rationale-text.arrow-top::after { top: -12px; border-color: transparent transparent #fef9e7 transparent; }
@@ -83,7 +99,7 @@
         .svg-hint { color: var(--warning); }
         .svg-info { color: inherit; }
         .svg-danger { color: var(--danger); }
-        .header-icon { width: 24px; height: 24px; vertical-align: -3px; margin-right: 8px; flex-shrink: 0; }
+        .header-icon { width: 24px; height: 24px; flex-shrink: 0; }
         .btn-icon { width: 14px; height: 14px; vertical-align: -2px; flex-shrink: 0; }
 
         .toolbar-row { display: flex; width: 100%; gap: 15px; align-items: center; flex-wrap: wrap; }
@@ -91,7 +107,7 @@
         
         .divider { width: 1px; height: 24px; background: #dcdde1; margin: 0 15px; flex-shrink: 0; }
 
-        .btn { background: #fdfefe; border: 1px solid var(--border-color); padding: 8px 16px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 5px; border-radius: 4px; font-weight: bold; transition: all 0.2s; color: var(--text-main); white-space: nowrap; }
+        .btn { background: #fdfefe; border: 1px solid var(--border-color); padding: 8px 16px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 5px; border-radius: 4px; font-weight: bold; transition: all 0.2s; color: var(--text-main); white-space: nowrap; width: fit-content; }
         .btn:hover:not(:disabled) { background: #eaf2f8; border-color: #3498db; color: #2980b9; box-shadow: 0 2px 4px rgba(0,0,0,0.1); filter: brightness(1.05); }
         .btn:active:not(:disabled) { transform: scale(0.98); }
         .btn:disabled { color: #a0a0a0; cursor: not-allowed; background: #f4f6f6; border-color: #dcdde1; opacity: 0.6; filter: grayscale(50%); box-shadow: none; transform: none; }
@@ -137,7 +153,6 @@
         
         .base-char { position: absolute; top: 0; width: 20px; text-align: center; margin-left: -10px; font-family: 'Courier New', Courier, monospace; font-size: 14px; font-weight: 900; line-height: 30px; cursor: pointer; user-select: none; transition: 0.1s; border-radius: 2px;}
         .base-char:hover { background: #bdc3c7; }
-        /* 上の線が消えるバグを解消するための inset 指定 (内側枠線) */
         .base-char.selected { background: #8e44ad; color: #fff !important; box-shadow: inset 0 0 0 2px #732d91; z-index: 20;}
         .base-char.deleted { text-decoration: line-through; color: #95a5a6 !important; opacity: 0.5; }
         .base-char.edited { border-bottom: 3px solid var(--danger); background: #fadbd8; }
@@ -189,16 +204,15 @@
         @media screen and (max-width: 900px) {
             .main-content { padding: 10px; }
             .toolbar-row { flex-direction: column; align-items: stretch; gap: 8px; }
-            .header h1 { font-size: 16px; margin-right: 40px; }
-            .version-badge { top: 10px; right: 10px; padding: 2px 6px; }
+            .header-title-group h1 { font-size: 16px; }
             .editor-toolbar { padding: 10px !important; }
             .editor-toolbar > div:nth-child(2) { border-left: none !important; padding-left: 0 !important; border-top: 1px dashed var(--border-color); padding-top: 8px; margin-top: 5px; width: 100%; }
-            .divider { display: none; } /* スマホ等ではディバイダーを非表示 */
+            .divider { display: none; }
         }
     </style>
 <!-- [Absolute-Zero] セクション1/4 完了。省略なしで続行 -->
 </head>
-<body>
+<body class="app-mode">
 
 <!-- 📱 スマホアクセス警告＆PC強制レイアウト (JS判定版) -->
 <div id="mobile-warning-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(44, 62, 80, 0.95); z-index: 999999; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; padding: 30px; box-sizing: border-box; backdrop-filter: blur(5px);">
@@ -215,20 +229,64 @@
     </button>
 </div>
 <script>
-    // 端末がスマホ(iPhone/Android等)か判定し、該当する場合のみ警告を表示
     if (/Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
         document.getElementById('mobile-warning-overlay').style.display = 'flex';
     }
 </script>
 <!-- 警告ここまで -->
 
+<!-- ドロワー用オーバーレイ -->
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<!-- グローバル・ドロワー -->
+<div class="sidebar">
+    <div class="logo-area">
+        <h1>Bio-Edu Suite</h1>
+        <p>Integrated Taxonomy Hub</p>
+    </div>
+    <div class="nav-menu">
+        <div class="nav-header p1">Phase 1: 収集・ハブ</div>
+        <a href="index.html" class="nav-item p1">Investigation Dashboard</a>
+        
+        <div class="nav-header p2">Phase 2: DNAラボ</div>
+        <a href="1_Master_Mix_Studio.html" class="nav-item p2">① PCR Master Mix Studio</a>
+        <a href="2_Thermal_Cycler_Simulator.html" class="nav-item p2">② Thermal Cycler Simulator</a>
+        <a href="3_Virtual_PCR_RFLP.html" class="nav-item p2">③ Virtual PCR & RFLP</a>
+        <a href="4_Sanger_Trace_Editor.html" class="nav-item p2 active">④ Sanger Trace Editor</a>
+        <a href="5_DNA_Alignment_Studio.html" class="nav-item p2">⑤ DNA Alignment Studio</a>
+        <a href="6_Alignment_Print_Studio.html" class="nav-item p2">⑥ Alignment Print Studio</a>
+        <a href="7_Virtual_BLAST_Explorer.html" class="nav-item p2">⑦ Virtual BLAST Explorer</a>
+        <a href="8_Phylogenetic_Tree_Builder.html" class="nav-item p2">⑧ Phylogenetic Tree Builder</a>
+        
+        <div class="nav-header p3">Phase 3: 形態ラボ</div>
+        <a href="9_Morphometrics_Studio.html" class="nav-item p3">⑨ Morphometrics Studio</a>
+        
+        <div class="nav-header p4">Phase 4: 統合検証ルーム</div>
+        <a href="10_integrative_taxonomy_studio.html" class="nav-item p4">⑩ Taxonomy Explorer (統合版)</a>
+        
+        <div class="nav-header p5">Phase 5: 統計遺伝学</div>
+        <a href="11_Statistical_Genetics_Lab.html" class="nav-item p5">⑪ Statistical Genetics Lab</a>
+        
+        <div class="nav-header p6">Phase 6: 構造生物学</div>
+        <a href="12_Central_Dogma_Simulator.html" class="nav-item p6">⑫ Central Dogma Simulator</a>
+        <a href="13_Protein_Structure_Explorer.html" class="nav-item p6">⑬ Protein Structure Explorer</a>
+
+        <div class="nav-header extra">Extra: 拡張パッケージ</div>
+        <a href="lab_packs.html" class="nav-item extra">Lab Packs (教材パック)</a>
+    </div>
+    <div class="system-status">&copy; 2026 Bio-Edu Suite v33.4 | Developed for Bioinformatics & Wet-Lab Education</div>
+</div>
+<!-- ドロワーここまで -->
+
 <div class="header-container">
     <div class="header">
-        <div>
+        <button class="topbar-hamburger" onclick="toggleSidebar()" aria-label="メニューを開く">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <div class="header-title-group">
             <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>Sanger Trace Editor</h1>
             <p>Bio-Edu Suite: Phase 2 / AB1 Binary Parsing, Trace Visualization & Curation</p>
         </div>
-        <div class="version-badge">v33.1</div>
     </div>
 </div>
 
@@ -410,7 +468,7 @@
 </div>
 
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v33.1 | Developed for Bioinformatics & Wet-Lab Education
+    &copy; 2026 Bio-Edu Suite v33.4 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
 <div id="toast">メッセージ</div>
@@ -418,6 +476,14 @@
 <!-- [Absolute-Zero] セクション3/4 完了。省略なしで続行 -->
 <!-- [Absolute-Zero] セクション4/4 開始: Script -->
 <script>
+    // --- グローバル・ドロワー制御 ---
+    function toggleSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
+        if(sidebar) sidebar.classList.toggle('open');
+        if(overlay) overlay.classList.toggle('open');
+    }
+
     // --- 根拠ポップオーバー制御 ---
     function toggleRationale(event, id) {
         event.stopPropagation();
@@ -496,7 +562,6 @@
     let historyStack = [];
     let historyIndex = -1;
     
-    // v31.0: 検索トグル状態
     let isSearchActive = false;
 
     const colorMap = {
@@ -533,7 +598,7 @@
                 historyIndex = -1;
                 saveHistory();
                 
-                if(isSearchActive) clearSearch(); // ファイル読み込み時に検索状態をリセット
+                if(isSearchActive) clearSearch();
 
                 redrawAll();
             } catch (err) {
@@ -689,7 +754,6 @@
         });
         ctx.stroke();
 
-        // QCハイライトの描画
         ab1Data.bases.forEach(b => {
             if (!b.isDeleted && b.isQCWarning) {
                 let x = b.loc * baseWidth * scaleX;
@@ -701,18 +765,15 @@
         let minSel = dragStartIndex !== -1 ? Math.min(dragStartIndex, dragEndIndex) : selectedBaseIndex;
         let maxSel = dragStartIndex !== -1 ? Math.max(dragStartIndex, dragEndIndex) : selectedBaseIndex;
 
-        // --- 紫の点線描画を「中央一本（各塩基のloc位置）」の美しい仕様に復元 ---
         if (minSel !== -1 && maxSel !== -1) {
             let bMin = ab1Data.bases[minSel];
             let bMax = ab1Data.bases[maxSel];
             let startX = bMin.loc * baseWidth * scaleX;
             let endX = bMax.loc * baseWidth * scaleX;
             
-            // ハイライト背景領域
             ctx.fillStyle = 'rgba(142, 68, 173, 0.15)'; 
             ctx.fillRect(startX - 10, 0, (endX - startX) + 20, h);
             
-            // 枠線を廃止し、塩基中央の点線のみを描画
             ctx.beginPath();
             ctx.moveTo(startX, 0);
             ctx.lineTo(startX, h);
@@ -804,8 +865,6 @@
         container.appendChild(frag);
     }
 
-
-    // --- 【完全版】可変スピード型 エッジオートスクロール仕様 (requestAnimationFrame & BinarySearch) ---
     let scrollRafId = null;
     let scrollSpeed = 0;
     let currentMouseX = 0;
@@ -816,8 +875,6 @@
             const scrollLoop = () => {
                 if (scrollSpeed !== 0 && isDraggingBases) {
                     traceContainer.scrollLeft += scrollSpeed;
-                    
-                    // スクロール中、マウス位置に基づいて選択範囲を動的に更新 (バイナリサーチ)
                     const rect = traceContainer.getBoundingClientRect();
                     let containerX = currentMouseX - rect.left + traceContainer.scrollLeft;
                     updateDragSelectionByX(containerX);
@@ -836,7 +893,6 @@
         scrollSpeed = 0;
     }
 
-    // X座標から最も近い塩基のindexを二分探索で特定し、ドラッグ選択範囲を拡張する
     function updateDragSelectionByX(targetX) {
         if (!ab1Data || !ab1Data.bases || ab1Data.bases.length === 0) return;
         const scaleX = parseFloat(document.getElementById('scaleX').value);
@@ -878,7 +934,6 @@
         }
     }
 
-    // document レベルで mousemove を監視し、枠外に出た時の加速も検知する
     document.addEventListener('mousemove', (e) => {
         currentMouseX = e.clientX;
         
@@ -888,10 +943,10 @@
         }
 
         const rect = traceContainer.getBoundingClientRect();
-        const edgeThreshold = 50;  // 検知エリア(px)
-        const acceleration = 0.15; // 加速係数
-        const baseSpeed = 2;       // 基本速度
-        const maxSpeed = 30;       // リミッター (最大速度/フレーム)
+        const edgeThreshold = 50;
+        const acceleration = 0.15;
+        const baseSpeed = 2;
+        const maxSpeed = 30;
 
         let distanceLeft = currentMouseX - rect.left;
         let distanceRight = rect.right - currentMouseX;
@@ -908,13 +963,11 @@
             startAutoScroll();
         } else {
             stopAutoScroll();
-            // スクロールは停止しているが、枠内でのドラッグ（マウス移動）時は選択範囲を更新
             let containerX = currentMouseX - rect.left + traceContainer.scrollLeft;
             updateDragSelectionByX(containerX);
         }
     });
 
-    // マウスを離すか、画面外に出た時のみ安全に停止
     document.addEventListener('mouseup', () => {
         isDraggingBases = false;
         stopAutoScroll();
@@ -926,7 +979,6 @@
             stopAutoScroll();
         }
     });
-
 
     function selectBase(index) {
         selectedBaseIndex = index;
@@ -1057,7 +1109,7 @@
             e.preventDefault();
             if(changed) {
                 saveHistory();
-                runQC(true); // 自動再評価
+                runQC(true);
             } else {
                 redrawAll();
             }
@@ -1107,7 +1159,6 @@
         }
     }
 
-    // v31.0: 検索機能のトグル統合
     function toggleSearch() {
         if (isSearchActive) {
             clearSearch();
@@ -1140,9 +1191,8 @@
                 ab1Data.bases[validIndices[matchIdx + i]].isHighlight = true;
             }
             selectBase(validIndices[matchIdx]);
-            document.getElementById('statusText').innerText = `ステータス: 配列を強調表示しました。`;
+            document.getElementById('statusText').innerText = `ステータス: 塩基配列を強調表示しました。`;
             
-            // トグル状態をクリアモードに変更
             isSearchActive = true;
             document.getElementById('searchInput').disabled = true;
             const btn = document.getElementById('btnSearchToggle');
@@ -1164,7 +1214,6 @@
         redrawAll();
         document.getElementById('statusText').innerText = "ステータス: 検索を解除しました。";
         
-        // トグル状態をハイライトモードに変更
         isSearchActive = false;
         const btn = document.getElementById('btnSearchToggle');
         btn.classList.add('btn-primary');
