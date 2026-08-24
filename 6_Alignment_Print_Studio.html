@@ -51,7 +51,48 @@
             overflow-wrap: anywhere; 
             line-height: 1.6; 
         }
+        .label-title, .no-wrap { white-space: nowrap; }
 
+        /* ガイドライン第5項: グローバル・ドロワー規格 */
+        .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100dvh; background-color: var(--primary); color: white; display: flex; flex-direction: column; z-index: 1002; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 2px 0 15px rgba(0,0,0,0.2); }
+        .sidebar.open { left: 0; }
+        .sidebar-overlay { display: block; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.5); z-index: 1001; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(2px); }
+        .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
+
+        .topbar-hamburger { background: transparent; border: none; color: #fff; cursor: pointer; padding: 4px; margin-right: 16px; margin-left: 0; display: flex; align-items: center; justify-content: center; transition: 0.2s; border-radius: 4px; }
+        .topbar-hamburger:hover { background: rgba(255, 255, 255, 0.1); color: var(--phase-color); }
+
+        .header-title-group { display: flex; flex-direction: column; justify-content: center; }
+
+        /* ダッシュボードメニュー移植用 */
+        .logo-area { padding: 20px; background-color: #1a252f; border-bottom: 4px solid var(--phase-color); text-align: center; }
+        .logo-area h1 { margin: 0; color: #fff; font-size: 20px; font-weight: 700; letter-spacing: 1px; }
+        .logo-area p { margin: 5px 0 0 0; color: var(--phase-color); font-size: 11px; }
+
+        .nav-menu { flex: 1; padding: 10px 0 20px 0; overflow-y: auto; }
+        .nav-header { padding: 15px 20px 5px 20px; font-size: 11px; color: #95a5a6; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; border-top: 1px solid #34495e; margin-top: 5px;}
+        .nav-header:first-child { border-top: none; margin-top: 0;}
+        .nav-item { padding: 8px 20px 8px 30px; display: flex; align-items: center; gap: 8px; color: #bdc3c7; text-decoration: none; font-size: 13px; transition: 0.2s; border-left: 4px solid transparent;}
+        .nav-item:hover { background-color: var(--secondary); color: white; }
+
+        .nav-header.p1 { color: #1abc9c; border-top-color: rgba(26, 188, 156, 0.2); }
+        .nav-item.p1:hover, .nav-item.p1.active { color: #1abc9c; border-left-color: #1abc9c; background-color: var(--secondary); font-weight: bold; }
+        .nav-header.p2 { color: #1abc9c; border-top-color: rgba(26, 188, 156, 0.2); }
+        .nav-item.p2:hover, .nav-item.p2.active { color: #1abc9c; border-left-color: #1abc9c; background-color: var(--secondary); font-weight: bold; }
+        .nav-header.p3 { color: #3498db; border-top-color: rgba(52, 152, 219, 0.2); }
+        .nav-item.p3:hover, .nav-item.p3.active { color: #3498db; border-left-color: #3498db; background-color: var(--secondary); font-weight: bold; }
+        .nav-header.p4 { color: #8e44ad; border-top-color: rgba(142, 68, 173, 0.2); }
+        .nav-item.p4:hover, .nav-item.p4.active { color: #9b59b6; border-left-color: #9b59b6; background-color: var(--secondary); font-weight: bold; }
+        .nav-header.p5 { color: #e74c3c; border-top-color: rgba(231, 76, 60, 0.2); }
+        .nav-item.p5:hover, .nav-item.p5.active { color: #e74c3c; border-left-color: #e74c3c; background-color: var(--secondary); font-weight: bold; }
+        .nav-header.p6 { color: #e67e22; border-top-color: rgba(230, 126, 34, 0.2); }
+        .nav-item.p6:hover, .nav-item.p6.active { color: #f39c12; border-left-color: #f39c12; background-color: var(--secondary); font-weight: bold; }
+        .nav-header.extra { color: #f1c40f; border-top-color: rgba(241, 196, 15, 0.2); }
+        .nav-item.extra:hover, .nav-item.extra.active { color: #f39c12; border-left-color: #f39c12; background-color: var(--secondary); font-weight: bold; }
+
+        .system-status { padding: 15px 20px; background-color: #1a252f; border-top: 1px solid #2c3e50; font-size: 11px; color: var(--text-muted); text-align: center; }
+
+        /* ヘッダーコンテナ */
         .header-container { 
             width: 100%; 
             background: #1a252f; 
@@ -88,27 +129,11 @@
             height: 24px; 
             flex-shrink: 0; 
         }
-        .header-titles {
-            display: flex;
-            flex-direction: column;
-        }
         .header p { 
             margin: 4px 0 0 0; 
             font-size: 11px; 
             color: var(--phase-color); 
             font-weight: 600; 
-        }
-        .version-badge { 
-            position: absolute; 
-            right: 20px; 
-            top: 15px; 
-            background: var(--secondary); 
-            color: var(--phase-color); 
-            padding: 4px 8px; 
-            border-radius: 4px; 
-            font-size: 11px; 
-            font-weight: bold; 
-            border: 1px solid var(--phase-color); 
         }
 
         .main-content { 
@@ -157,26 +182,38 @@
             margin-bottom: 5px; 
         }
 
-        /* 共通 UI コンポーネント */
-        .drop-zone { 
-            border: 2px dashed var(--border-color); 
-            border-radius: 8px; 
-            padding: 16px; 
-            text-align: center; 
-            background: #f8f9fa; 
-            color: var(--text-muted); 
-            cursor: pointer; 
-            transition: all 0.2s; 
-            font-size: 13px;
+        /* ガイドライン第9項① データ読込UI統一 */
+        .drop-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            background: #f8f9fa;
             display: flex;
             flex-direction: row;
+            flex-wrap: nowrap;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            flex-wrap: nowrap;
+            width: 100%;
+            max-width: 100%; /* Print Studio横幅例外許可 */
+            min-height: 60px;
+            box-sizing: border-box;
+            cursor: pointer;
+            transition: 0.2s;
+            overflow: hidden;
         }
-        .drop-zone span {
+        .drop-zone p {
+            margin: 0;
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--text-muted);
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            pointer-events: none;
+        }
+        .drop-zone svg {
+            flex-shrink: 0;
         }
         .drop-zone.dragover { 
             border-color: var(--primary-action); 
@@ -184,10 +221,8 @@
             color: var(--primary-action); 
         }
         .drop-zone:hover { 
-            border-color: var(--primary-action); 
-        }
-        .drop-zone svg {
-            flex-shrink: 0;
+            border-color: var(--phase-color);
+            background: #f4f6f7;
         }
         
         #fileInput {
@@ -200,26 +235,27 @@
             gap: 8px;
         }
         
-        textarea { 
-            width: 100%; 
-            height: 120px; 
-            font-family: 'Courier New', Consolas, monospace; 
-            font-size: 13px; 
-            padding: 16px; 
+        .paste-area { 
             border: 1px solid var(--border-color); 
             border-radius: 4px; 
-            box-sizing: border-box; 
-            resize: vertical; 
-            outline: none; 
+            padding: 16px; 
             background: var(--card-bg); 
-            color: var(--text-main); 
-            line-height: 1.4; 
-            transition: 0.2s; 
+            color: var(--text-main);
+            width: 100%; 
+            max-width: 100%; /* Print Studio横幅例外許可 */
+            min-height: 120px; 
+            font-family: 'Courier New', Consolas, monospace; 
+            font-size: 13px; 
+            resize: vertical; 
+            box-sizing: border-box; 
+            line-height: 1.4;
             white-space: pre; 
             overflow-x: auto;
+            transition: 0.2s;
         }
-        textarea:focus { 
+        .paste-area:focus { 
             border-color: var(--phase-color); 
+            outline: none; 
             box-shadow: 0 0 0 2px rgba(26, 188, 156, 0.2); 
         }
 
@@ -313,7 +349,7 @@
             color: white; 
         }
         
-        /* ボタン規格 (v31.0準拠) */
+        /* ボタン規格 (v31.0/v33.4準拠) */
         .btn-print { 
             background: var(--success); 
             color: white; 
@@ -390,8 +426,7 @@
             pointer-events: auto; 
         } 
         
-        /* 見出し用の専用スコープを適用し、本文の強調と切り離す */
-        .rationale-text strong.section-title { 
+        .rationale-text strong { 
             color: #d35400; 
             display: block;
             margin-bottom: 4px;
@@ -442,8 +477,7 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.02); 
         }
         
-        /* 見出し用の専用スコープを適用し、本文の強調と切り離す */
-        .bench-tip strong.section-title { 
+        .bench-tip strong { 
             color: #2980b9; 
             display: flex;
             align-items: center;
@@ -451,7 +485,7 @@
             margin-bottom: 4px;
             font-size: 13px;
         }
-        .bench-tip strong.section-title svg {
+        .bench-tip strong svg {
             flex-shrink: 0;
         }
 
@@ -561,6 +595,7 @@
             border-radius: 8px; 
             color: var(--text-main); 
             box-shadow: 0 2px 4px rgba(0,0,0,0.02); 
+            margin-top: 25px;
         } 
         .step-up-card h3 { 
             color: var(--text-main); 
@@ -632,7 +667,7 @@
         @media print { @page { size: A4 portrait; margin: 15mm; } }
     </style>
 </head>
-<body>
+<body class="app-mode">
 
 <!-- 📱 スマホアクセス警告＆PC強制レイアウト (JS判定版) -->
 <div id="mobile-warning-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(44, 62, 80, 0.95); z-index: 999999; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; padding: 30px; box-sizing: border-box; backdrop-filter: blur(5px);">
@@ -656,16 +691,61 @@
 </script>
 <!-- 警告ここまで -->
 
+<!-- ドロワー用オーバーレイ -->
+<div class="sidebar-overlay no-print" onclick="toggleSidebar()"></div>
+
+<div class="sidebar no-print">
+    <div class="logo-area">
+        <h1>Bio-Edu Suite</h1>
+        <p>Integrated Taxonomy Hub</p>
+    </div>
+    <div class="nav-menu">
+        <div class="nav-header p1">Phase 1: 収集・ハブ</div>
+        <a href="index.html" class="nav-item p1">Investigation Dashboard</a>
+        
+        <div class="nav-header p2">Phase 2: DNAラボ</div>
+        <a href="1_Master_Mix_Studio.html" class="nav-item p2">① PCR Master Mix Studio</a>
+        <a href="2_Thermal_Cycler_Simulator.html" class="nav-item p2">② Thermal Cycler Simulator</a>
+        <a href="3_Virtual_PCR_RFLP.html" class="nav-item p2">③ Virtual PCR & RFLP</a>
+        <a href="4_Sanger_Trace_Editor.html" class="nav-item p2">④ Sanger Trace Editor</a>
+        <a href="5_DNA_Alignment_Studio.html" class="nav-item p2">⑤ DNA Alignment Studio</a>
+        <a href="6_Alignment_Print_Studio.html" class="nav-item p2 active">⑥ Alignment Print Studio</a>
+        <a href="7_Virtual_BLAST_Explorer.html" class="nav-item p2">⑦ Virtual BLAST Explorer</a>
+        <a href="8_Phylogenetic_Tree_Builder.html" class="nav-item p2">⑧ Phylogenetic Tree Builder</a>
+        
+        <div class="nav-header p3">Phase 3: 形態ラボ</div>
+        <a href="9_Morphometrics_Studio.html" class="nav-item p3">⑨ Morphometrics Studio</a>
+        
+        <div class="nav-header p4">Phase 4: 統合検証ルーム</div>
+        <a href="10_integrative_taxonomy_studio.html" class="nav-item p4">⑩ Taxonomy Explorer (統合版)</a>
+        
+        <div class="nav-header p5">Phase 5: 統計遺伝学</div>
+        <a href="11_Statistical_Genetics_Lab.html" class="nav-item p5">⑪ Statistical Genetics Lab</a>
+        
+        <div class="nav-header p6">Phase 6: 構造生物学</div>
+        <a href="12_Central_Dogma_Simulator.html" class="nav-item p6">⑫ Central Dogma Simulator</a>
+        <a href="13_Protein_Structure_Explorer.html" class="nav-item p6">⑬ Protein Structure Explorer</a>
+
+        <div class="nav-header extra">Extra: 拡張パッケージ</div>
+        <a href="lab_packs.html" class="nav-item extra">Lab Packs (教材パック)</a>
+    </div>
+    <div class="system-status">&copy; 2026 Bio-Edu Suite v33.4 | Developed for Bioinformatics & Wet-Lab Education</div>
+</div>
+
 <div class="header-container no-print">
     <div class="header">
-        <div class="header-titles">
-            <h1>
-                <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>
-                Alignment Print Studio
-            </h1>
-            <p>Bio-Edu Suite: Phase EXTRA / Smart Paging & Formatting for CLUSTAL Data</p>
+        <div style="display: flex; align-items: center;">
+            <button class="topbar-hamburger" onclick="toggleSidebar()" aria-label="メニューを開く">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+            </button>
+            <div class="header-title-group">
+                <h1>
+                    <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>
+                    Alignment Print Studio
+                </h1>
+                <p>Bio-Edu Suite: Phase EXTRA / Smart Paging & Formatting for CLUSTAL Data</p>
+            </div>
         </div>
-        <div class="version-badge">v33.1</div>
     </div>
 </div>
 
@@ -678,8 +758,7 @@
         
         <div class="control-panel-body">
             <div id="rat_print" class="rationale-text">
-                <!-- .section-title により見出し専用スタイルを適用し、本文の強調タグはスコープ外にしてブラウザデフォルトのboldを効かせる -->
-                <strong class="section-title">【根拠：なぜ論文用の書式ツールが必要なのか？】</strong>
+                <strong>【根拠：なぜ論文用の書式ツールが必要なのか？】</strong>
                 ・アライメント結果を「60塩基ごとのブロック」に分けて表示するCLUSTAL形式は、論文や学会発表における世界標準フォーマットです。<br>
                 ・このブロックが、ページをまたいで「上半分が1ページ目、下半分が2ページ目」に分断されることは、読み手を極度に混乱させるため<strong>論文の図表ルールとして絶対にNG</strong>です。<br>
                 ・このツールは、指定したキーワードを使って「ここまでが1ブロック」と認識し、絶対に途中で改ページさせない（<code>page-break-inside: avoid</code>）魔法のレイアウトを自動生成します。
@@ -693,11 +772,11 @@
             <div class="input-wrapper">
                 <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" data-tooltip="ここをクリックするか、ファイルをドラッグ＆ドロップして塩基配列・アミノ酸配列のデータを読み込みます">
                     <svg class="btn-icon" style="width: 18px; height: 18px; margin-right: 4px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-                    <span>ここをクリック、またはアライメントデータをドラッグ＆ドロップ</span>
+                    <p id="dropText">ここをクリック、または 塩基配列データ をドラッグ＆ドロップ</p>
                     <input type="file" id="fileInput" accept=".fasta,.txt,.aln">
                 </div>
 
-                <textarea id="inputText" placeholder="塩基配列またはアミノ酸配列のアライメント結果（CLUSTAL形式など）をここに貼り付け（Ctrl+V）てください。"></textarea>
+                <textarea id="inputText" class="paste-area" placeholder="塩基配列またはアミノ酸配列のアライメント結果（CLUSTAL形式など）をここに貼り付け（Ctrl+V）てください。"></textarea>
             </div>
             
             <div class="settings-grid">
@@ -731,8 +810,7 @@
             </div>
 
             <div class="bench-tip">
-                <!-- .section-title により見出し専用スタイルを適用し、本文の強調タグはスコープ外にしてブラウザデフォルトのboldを効かせる -->
-                <strong class="section-title"><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（等幅フォントの絶対ルール）</strong>
+                <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（等幅フォントの絶対ルール）</strong>
                 塩基配列やアミノ酸配列をWordやPowerPointにコピペする際、Arialや游ゴシックなどの「プロポーショナルフォント（文字ごとに幅が違うフォント）」を使うと、<strong>縦のラインが完全にズレてしまいデータが台無しになります。</strong>
                 本ツールは、強制的に「Courier New」などの等幅フォントを適用するため、コピー＆ペーストのミスを防ぐことができます。
             </div>
@@ -756,7 +834,7 @@
         </p>
     </div>
 
-    <div style="margin-top: 20px;" class="no-print">
+    <div style="margin-top: 20px; width: 100%; text-align: left;" class="no-print">
         <details style="cursor: pointer;">
             <summary style="font-weight: bold; color: var(--text-muted); font-size: 13px;">
                 References & Algorithms
@@ -764,7 +842,7 @@
             <div style="padding: 10px 0 0 15px; font-size: 11px; color: var(--text-muted); line-height: 1.6;">
                 <p style="margin-bottom: 8px;">本アプリケーションの計算エンジンは、以下のアルゴリズムおよび進化モデルに基づき実装されています。</p>
                 <ul style="padding-left: 20px; margin: 0; display: flex; flex-direction: column; gap: 6px;">
-                    <li><strong>CLUSTAL Alignment Format & Algorithm:</strong> Thompson, J. D., Higgins, D. G., & Gibson, T. J. (1994). CLUSTAL W: improving the sensitivity of progressive multiple sequence alignment through sequence weighting, position-specific gap penalties and weight matrix choice. <i>Nucleic Acids Research</i>, 22(22), 4673–4680.</li>
+                    <li><strong>[CLUSTAL Alignment Format & Algorithm]:</strong> Thompson, J. D., Higgins, D. G., & Gibson, T. J. (1994). CLUSTAL W: improving the sensitivity of progressive multiple sequence alignment through sequence weighting, position-specific gap penalties and weight matrix choice. <i>Nucleic Acids Research</i>, 22(22), 4673–4680.</li>
                 </ul>
             </div>
         </details>
@@ -777,10 +855,18 @@
 
 <!-- 共通フッター -->
 <div class="footer no-print">
-    &copy; 2026 Bio-Edu Suite v33.1 | Developed for Bioinformatics & Wet-Lab Education
+    &copy; 2026 Bio-Edu Suite v33.4 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
 <script>
+    // グローバル・ドロワー開閉ロジック
+    function toggleSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
+        if(sidebar) sidebar.classList.toggle('open');
+        if(overlay) overlay.classList.toggle('open');
+    }
+
     // 根拠 (Rationale ポップオーバー) 表示ロジック (v31.0準拠)
     function toggleRationale(event, id) { 
         event.stopPropagation(); 
