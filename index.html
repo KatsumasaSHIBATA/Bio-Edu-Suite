@@ -40,11 +40,21 @@
     body, .card, p, div, .bench-tip, .step-up-card, .rationale-text, .assist-panel, .dynamic-hint { word-break: normal; overflow-wrap: anywhere; line-height: 1.6; }
     .label-title, .no-wrap { white-space: nowrap; }
 
-    /* モバイル用ヘッダー（PCでは非表示） */
-    .mobile-header { display: none; }
-    .sidebar-overlay { display: none; }
+    /* ガイドライン第5項: グローバル・ドロワー規格 */
+    .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100dvh; background-color: var(--primary); color: white; display: flex; flex-direction: column; z-index: 1002; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 2px 0 15px rgba(0,0,0,0.2); }
+    .sidebar.open { left: 0; }
+    .sidebar-overlay { display: block; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.5); z-index: 1001; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(2px); }
+    .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
+    
+    @media (min-width: 769px) {
+      body.dashboard-mode .sidebar { position: relative; left: 0; flex-shrink: 0; z-index: 10; box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
+      body.dashboard-mode .sidebar-overlay { display: none !important; }
+      body.dashboard-mode .topbar-hamburger { display: none; }
+    }
+    
+    .topbar-hamburger { background: transparent; border: none; color: var(--primary); cursor: pointer; padding: 4px; margin-right: 12px; display: flex; align-items: center; justify-content: center; transition: 0.2s; border-radius: 4px; }
+    .topbar-hamburger:hover { background: #ecf0f1; color: var(--phase-color); }
 
-    .sidebar { width: 280px; background-color: var(--primary); color: white; display: flex; flex-direction: column; flex-shrink: 0; transition: left 0.3s ease; z-index: 10; box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
     .logo-area { padding: 20px; background-color: #1a252f; border-bottom: 4px solid var(--phase-color); text-align: center; }
     .logo-area h1 { margin: 0; color: #fff; font-size: 20px; font-weight: 700; letter-spacing: 1px; }
     .logo-area p { margin: 5px 0 0 0; color: var(--phase-color); font-size: 11px; }
@@ -321,13 +331,6 @@
     /* レスポンシブ対応 */
     @media (max-width: 768px) {
       body { flex-direction: column; }
-      .mobile-header { display: flex; justify-content: space-between; align-items: center; background-color: #1a252f; padding: 15px 20px; border-bottom: 4px solid var(--phase-color); z-index: 30; }
-      .mobile-header h1 { margin: 0; color: #fff; font-size: 18px; font-weight: 700; letter-spacing: 1px; text-align: center; }
-      .hamburger-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: flex-start; width: 30px; height: 30px;}
-      .sidebar { position: fixed; top: 0; left: -100%; width: 280px; height: 100dvh; z-index: 1002; transition: left 0.3s ease; }
-      .sidebar.open { left: 0; }
-      .sidebar-overlay { display: block; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.6); z-index: 1001; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(2px); }
-      .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
       .topbar { padding: 0 15px; height: 50px; }
       .topbar h2 { font-size: 16px; }
       .content-area { padding: 15px; padding-bottom: 220px; } /* スマホ時はパネルが縦長になるため余白増 */
@@ -339,14 +342,7 @@
     }
   </style>
 </head>
-<body>
-
-  <!-- スマホ専用ヘッダー (左ハンバーガー) -->
-  <div class="mobile-header">
-    <button class="hamburger-btn" onclick="toggleSidebar()" aria-label="メニューを開く"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
-    <h1>Bio-Edu Suite</h1>
-    <div style="width: 30px;"></div> <!-- レイアウト中央合わせ用のスペーサー -->
-  </div>
+<body class="dashboard-mode">
   
   <!-- ドロワー用オーバーレイ -->
   <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
@@ -361,30 +357,30 @@
       <a href="index.html" class="nav-item p1 active">Investigation Dashboard</a>
       
       <div class="nav-header p2">Phase 2: DNAラボ</div>
-      <a href="1_Master_Mix_Studio.html" class="nav-item p2" target="_blank" rel="noopener noreferrer">① PCR Master Mix Studio</a>
-      <a href="2_Thermal_Cycler_Simulator.html" class="nav-item p2" target="_blank" rel="noopener noreferrer">② Thermal Cycler Simulator</a>
-      <a href="3_Virtual_PCR_RFLP.html" class="nav-item p2" target="_blank" rel="noopener noreferrer">③ Virtual PCR & RFLP</a>
-      <a href="4_Sanger_Trace_Editor.html" class="nav-item p2" target="_blank" rel="noopener noreferrer">④ Sanger Trace Editor</a>
-      <a href="5_DNA_Alignment_Studio.html" class="nav-item p2" target="_blank" rel="noopener noreferrer">⑤ DNA Alignment Studio</a>
-      <a href="6_Alignment_Print_Studio.html" class="nav-item p2" target="_blank" rel="noopener noreferrer">⑥ Alignment Print Studio</a>
-      <a href="7_Virtual_BLAST_Explorer.html" class="nav-item p2" target="_blank" rel="noopener noreferrer">⑦ Virtual BLAST Explorer</a>
-      <a href="8_Phylogenetic_Tree_Builder.html" class="nav-item p2" target="_blank" rel="noopener noreferrer">⑧ Phylogenetic Tree Builder</a>
+      <a href="1_Master_Mix_Studio.html" class="nav-item p2">① PCR Master Mix Studio</a>
+      <a href="2_Thermal_Cycler_Simulator.html" class="nav-item p2">② Thermal Cycler Simulator</a>
+      <a href="3_Virtual_PCR_RFLP.html" class="nav-item p2">③ Virtual PCR & RFLP</a>
+      <a href="4_Sanger_Trace_Editor.html" class="nav-item p2">④ Sanger Trace Editor</a>
+      <a href="5_DNA_Alignment_Studio.html" class="nav-item p2">⑤ DNA Alignment Studio</a>
+      <a href="6_Alignment_Print_Studio.html" class="nav-item p2">⑥ Alignment Print Studio</a>
+      <a href="7_Virtual_BLAST_Explorer.html" class="nav-item p2">⑦ Virtual BLAST Explorer</a>
+      <a href="8_Phylogenetic_Tree_Builder.html" class="nav-item p2">⑧ Phylogenetic Tree Builder</a>
       
       <div class="nav-header p3">Phase 3: 形態ラボ</div>
-      <a href="9_Morphometrics_Studio.html" class="nav-item p3" target="_blank" rel="noopener noreferrer">⑨ Morphometrics Studio</a>
+      <a href="9_Morphometrics_Studio.html" class="nav-item p3">⑨ Morphometrics Studio</a>
       
       <div class="nav-header p4">Phase 4: 統合検証ルーム</div>
-      <a href="10_integrative_taxonomy_studio.html" class="nav-item p4" target="_blank" rel="noopener noreferrer">⑩ Taxonomy Explorer (統合版)</a>
+      <a href="10_integrative_taxonomy_studio.html" class="nav-item p4">⑩ Taxonomy Explorer (統合版)</a>
       
       <div class="nav-header p5">Phase 5: 統計遺伝学</div>
-      <a href="11_Statistical_Genetics_Lab.html" class="nav-item p5" target="_blank" rel="noopener noreferrer">⑪ Statistical Genetics Lab</a>
+      <a href="11_Statistical_Genetics_Lab.html" class="nav-item p5">⑪ Statistical Genetics Lab</a>
       
       <div class="nav-header p6">Phase 6: 構造生物学</div>
-      <a href="12_Central_Dogma_Simulator.html" class="nav-item p6" target="_blank" rel="noopener noreferrer">⑫ Central Dogma Simulator</a>
-      <a href="13_Protein_Structure_Explorer.html" class="nav-item p6" target="_blank" rel="noopener noreferrer">⑬ Protein Structure Explorer</a>
+      <a href="12_Central_Dogma_Simulator.html" class="nav-item p6">⑫ Central Dogma Simulator</a>
+      <a href="13_Protein_Structure_Explorer.html" class="nav-item p6">⑬ Protein Structure Explorer</a>
 
       <div class="nav-header extra">Extra: 拡張パッケージ</div>
-      <a href="lab_packs.html" class="nav-item extra" target="_blank" rel="noopener noreferrer">Lab Packs (教材パック)</a>
+      <a href="lab_packs.html" class="nav-item extra">Lab Packs (教材パック)</a>
     </div>
     <!-- フッターのバージョンをv33.0へ完全同期 -->
     <div class="system-status">&copy; 2026 Bio-Edu Suite v33.0 | Developed for Bioinformatics & Wet-Lab Education</div>
@@ -394,6 +390,9 @@
   <div class="main-content">
     <div class="topbar">
       <div style="display: flex; align-items: center; gap: 12px;">
+        <button class="topbar-hamburger" onclick="toggleSidebar()" aria-label="メニューを開く">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
         <h2>Investigation Dashboard</h2>
         <!-- ポップオーバー形式の教育的ガイド -->
         <div class="rationale-wrapper">
@@ -567,8 +566,8 @@
     function toggleSidebar() {
       const sidebar = document.querySelector('.sidebar');
       const overlay = document.querySelector('.sidebar-overlay');
-      sidebar.classList.toggle('open');
-      overlay.classList.toggle('open');
+      if(sidebar) sidebar.classList.toggle('open');
+      if(overlay) overlay.classList.toggle('open');
     }
 
     // --- STREAMING_CHUNK:データロード (2025年用語対応・突然変異体) ---
@@ -856,7 +855,7 @@
       }
 
       if(targetUrl) {
-        setTimeout(() => { window.open(targetUrl, '_blank'); }, 500);
+        setTimeout(() => { window.location.href = targetUrl; }, 500);
       }
     }
 
