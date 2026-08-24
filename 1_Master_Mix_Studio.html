@@ -26,18 +26,62 @@
         }
 
         *, *::before, *::after { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Noto Sans JP'; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
 
         /* 改行崩れ・テキスト折り返しの補正（ガイドライン第4項） */
         body, .card, p, div, .bench-tip, .step-up-card, .rationale-text { word-break: normal; overflow-wrap: anywhere; line-height: 1.6; }
         .label-title, .no-wrap { white-space: nowrap; }
 
+        /* ガイドライン第5項: グローバル・ドロワー規格 */
+        .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100dvh; background-color: var(--primary); color: white; display: flex; flex-direction: column; z-index: 1002; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 2px 0 15px rgba(0,0,0,0.2); }
+        .sidebar.open { left: 0; }
+        .sidebar-overlay { display: block; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.5); z-index: 1001; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(2px); }
+        .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
+        
+        .topbar-hamburger { background: transparent; border: none; color: white; cursor: pointer; padding: 4px; margin-right: 12px; display: flex; align-items: center; justify-content: center; transition: 0.2s; border-radius: 4px; }
+        .topbar-hamburger:hover { background: rgba(255,255,255,0.1); color: var(--phase-color); }
+
+        .logo-area { padding: 20px; background-color: #1a252f; border-bottom: 4px solid var(--phase-color); text-align: center; }
+        .logo-area h1 { margin: 0; color: #fff; font-size: 20px; font-weight: 700; letter-spacing: 1px; }
+        .logo-area p { margin: 5px 0 0 0; color: var(--phase-color); font-size: 11px; }
+        
+        .nav-menu { flex: 1; padding: 10px 0 20px 0; overflow-y: auto; }
+        .nav-header { padding: 15px 20px 5px 20px; font-size: 11px; color: #95a5a6; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; border-top: 1px solid #34495e; margin-top: 5px;}
+        .nav-header:first-child { border-top: none; margin-top: 0;}
+        .nav-item { padding: 8px 20px 8px 30px; display: flex; align-items: center; gap: 8px; color: #bdc3c7; text-decoration: none; font-size: 13px; transition: 0.2s; border-left: 4px solid transparent;}
+        .nav-item:hover { background-color: var(--secondary); color: white; }
+        
+        /* フェーズごとのカラーテーマ */
+        .nav-header.p1 { color: #1abc9c; border-top-color: rgba(26, 188, 156, 0.2); }
+        .nav-item.p1:hover, .nav-item.p1.active { color: #1abc9c; border-left-color: #1abc9c; background-color: var(--secondary); font-weight: bold; }
+        
+        .nav-header.p2 { color: #1abc9c; border-top-color: rgba(26, 188, 156, 0.2); }
+        .nav-item.p2:hover, .nav-item.p2.active { color: #1abc9c; border-left-color: #1abc9c; background-color: var(--secondary); font-weight: bold; }
+        
+        .nav-header.p3 { color: #3498db; border-top-color: rgba(52, 152, 219, 0.2); }
+        .nav-item.p3:hover, .nav-item.p3.active { color: #3498db; border-left-color: #3498db; background-color: var(--secondary); font-weight: bold; }
+        
+        .nav-header.p4 { color: #8e44ad; border-top-color: rgba(142, 68, 173, 0.2); }
+        .nav-item.p4:hover, .nav-item.p4.active { color: #9b59b6; border-left-color: #9b59b6; background-color: var(--secondary); font-weight: bold; }
+        
+        .nav-header.p5 { color: #e74c3c; border-top-color: rgba(231, 76, 60, 0.2); }
+        .nav-item.p5:hover, .nav-item.p5.active { color: #e74c3c; border-left-color: #e74c3c; background-color: var(--secondary); font-weight: bold; }
+        
+        .nav-header.p6 { color: #e67e22; border-top-color: rgba(230, 126, 34, 0.2); }
+        .nav-item.p6:hover, .nav-item.p6.active { color: #f39c12; border-left-color: #f39c12; background-color: var(--secondary); font-weight: bold; }
+        
+        .nav-header.extra { color: #f1c40f; border-top-color: rgba(241, 196, 15, 0.2); }
+        .nav-item.extra:hover, .nav-item.extra.active { color: #f39c12; border-left-color: #f39c12; background-color: var(--secondary); font-weight: bold; }
+
+        .system-status { padding: 15px 20px; background-color: #1a252f; border-top: 1px solid #2c3e50; font-size: 11px; color: var(--text-muted); text-align: center; }
+
         /* 共通ヘッダー */
         .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid #1abc9c; display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 30; flex-shrink: 0; position: sticky; top: 0; }
-        .header { width: 100%; max-width: 1400px; padding: 12px 20px; color: white; display: flex; align-items: center; justify-content: space-between; position: relative; }
-        .header h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 1px; color: #fff; white-space: nowrap; }
-        .header p { margin: 4px 0 0 0; font-size: 11px; color: #1abc9c; font-weight: 600; }
-        .version-badge { position: absolute; right: 20px; top: 15px; background: #34495e; color: #1abc9c; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid #1abc9c; }
+        .header { width: 100%; max-width: 1400px; padding: 12px 20px; color: white; display: flex; align-items: center; justify-content: space-between; position: relative; box-sizing: border-box; }
+        .header-title-area { display: flex; align-items: center; gap: 8px;}
+        .header h1 { margin: 0; font-size: 20px; font-weight: 700; color: #fff; white-space: nowrap; display: flex; align-items: center; gap: 8px;}
+        .header p { margin: 4px 0 0 0; font-size: 11px; color: var(--phase-color); font-weight: 600; padding-left: 36px;} /* ハンバーガーアイコン分インデント */
+        .version-badge { position: absolute; right: 20px; top: 15px; background: var(--secondary); color: var(--phase-color); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid var(--phase-color); }
         
         .main-content { width: 100%; max-width: 1400px; padding: 20px; display: flex; flex-wrap: wrap; gap: 20px; flex: 1; align-items: flex-start; justify-content: center;}
         /* ヘッダー(1400px)との整合。カード群はflexの比率(1 : 1.5)を保ったまま上限を設け、余白は中央寄せで吸収する */
@@ -49,25 +93,25 @@
         .card-header { background: #34495e; color: white; padding: 12px 18px; font-size: 15px; font-weight: bold; display: flex; align-items: center; gap: 10px; position: relative; border-radius: 4px 4px 0 0; }
         .card-body { padding: 18px; flex: 1; display: flex; flex-direction: column; position: relative; }
         
-        /* 根拠表示用スタイル（ガイドライン第5項① 準拠：クリック駆動・position:fixed・フリップ計算） */
-        .rationale-btn { background: #1abc9c; color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; flex-shrink: 0; }
+        /* 根拠表示用スタイル（ガイドライン第6項① 準拠） */
+        .rationale-btn { background: var(--phase-color); color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; flex-shrink: 0; }
         .rationale-btn:hover { transform: scale(1.1); filter: brightness(1.2); }
-        .rationale-text { position: fixed; background: #fef9e7; border: 1px solid #f39c12; padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: 320px; max-width: calc(100vw - 24px); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; font-weight: normal; }
+        .rationale-text { position: fixed; background: #fef9e7; border: 1px solid var(--warning); padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: max-content; max-width: min(320px, calc(100vw - 24px)); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; font-weight: normal; }
         .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
-        /* 吹き出しの尻尾（.pop-arrow）。JS が --arrow-left とフリップ方向クラスを設定する */
-        .rationale-text::after {
-            content: ''; position: absolute; width: 10px; height: 10px;
-            background: #fef9e7; transform: rotate(45deg);
-            left: var(--arrow-left, 50%); margin-left: -5px;
-        }
-        .rationale-text.arrow-top::after    { top: -6px; border-left: 1px solid #f39c12; border-top: 1px solid #f39c12; }
-        .rationale-text.arrow-bottom::after { bottom: -6px; border-right: 1px solid #f39c12; border-bottom: 1px solid #f39c12; }
+        .rationale-text strong { color: #d35400; display: block; margin-bottom: 4px; font-size: 12px; }
+        /* 吹き出しの尻尾 */
+        .rationale-text::after { content: ''; position: absolute; border-width: 6px; border-style: solid; left: var(--arrow-left, 50%); }
+        .rationale-text.arrow-top::after { top: -12px; border-color: transparent transparent #fef9e7 transparent; }
+        .rationale-text.arrow-bottom::after { bottom: -12px; border-color: #fef9e7 transparent transparent transparent; }
+        .rationale-text::before { content: ''; position: absolute; border-width: 7px; border-style: solid; left: calc(var(--arrow-left, 50%) - 1px); }
+        .rationale-text.arrow-top::before { top: -14px; border-color: transparent transparent var(--warning) transparent; }
+        .rationale-text.arrow-bottom::before { bottom: -14px; border-color: var(--warning) transparent transparent transparent; }
         
         /* ヘッダーアイコン（インラインSVG / stroke="currentColor" で見出し色に同期） */
-        .header-icon { width: 24px; height: 24px; flex-shrink: 0; margin-right: 6px; }
+        .header-icon { width: 24px; height: 24px; flex-shrink: 0; }
         .btn-icon { width: 14px; height: 14px; vertical-align: -2px; flex-shrink: 0; }
-        .rationale-text > strong:first-child { color: #d35400; display: block; margin-bottom: 4px; font-size: 12px; }
-
+        .svg-hint { color: var(--warning); }
+        
         .input-group { margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; background: #f8f9fa; padding: 8px 12px; border-radius: 6px; border: 1px solid #e0e6ed;}
         .input-group label { font-size: 12px; font-weight: 600; color: #34495e; flex: 1; }
         /* 単位（ng/μL等）が改行しないように幅を確保し縮小を防ぐ */
@@ -76,7 +120,7 @@
         input[type="number"], select { padding: 6px 8px; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 13px; font-weight: bold; color: #2c3e50; outline: none; transition: 0.2s;}
         input[type="number"]:focus, select:focus { border-color: #3498db; box-shadow: 0 0 0 2px rgba(52,152,219,0.2); }
         input[type="number"] { width: 75px; text-align: right; }
-        input[type="number"].error { border-color: #e74c3c; background: #fdf2f2; color: #c0392b; }
+        input[type="number"].error { border-color: #e74c3c; background: #fdf2f2; color: #c0392b; box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2); }
         
         .toggle-container { display: flex; gap: 5px; margin-bottom: 15px; background: #ecf0f1; padding: 4px; border-radius: 6px; }
         .toggle-container label { flex: 1; text-align: center; padding: 8px; font-size: 11px; font-weight: bold; color: #7f8c8d; cursor: pointer; border-radius: 4px; user-select: none; transition: 0.2s;}
@@ -101,8 +145,8 @@
         .calc-panel { background: #fdfefe; border: 1px solid #e5e8e8; padding: 12px; border-radius: 6px; margin-bottom: 15px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);}
 
         /* 現場のコツパネル */
-        .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px; border-radius: 0; font-size: 11px; color: #2c3e50; margin-top: auto; line-height: 1.6; }
-        .bench-tip strong { color: #2980b9; font-size: 12px;}
+        .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px 15px; border-radius: 0 4px 4px 0; font-size: 12px; color: var(--text-main); margin: 15px 0; line-height: 1.6; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .bench-tip strong { color: #2980b9; display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 13px;}
 
         /* より高度な解析ツールへ枠 (.step-up-card) */
         .step-up-card { background: #f8f9fa; border: 1px solid #d1d5db; padding: 20px; border-radius: 8px; margin-top: 25px; color: #2c3e50; box-shadow: 0 2px 4px rgba(0,0,0,0.02); width: 100%; box-sizing: border-box; }
@@ -131,7 +175,8 @@
         #toast.info { background: var(--phase-color); }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-        /* --- 📱 スマホ最適化（レスポンシブ・デザイン） --- */
+        /* --- 📱 スマホ最適化（レスポンシブ・デザイン） --- 
+           例外規定により、アプリ①は警告を出さずレスポンシブを維持 */
         @media screen and (max-width: 768px) {
             /* 画面の余白を減らして広く使う */
             .main-content { padding: 10px; flex-direction: column !important; justify-content: flex-start; }
@@ -143,9 +188,11 @@
             .slider-container, .slider-group { width: 100%; justify-content: space-between; }
             
             /* ヘッダー周りの調整 */
-            .header h1 { font-size: 16px; margin-right: 40px; }
+            .header-title-area { max-width: 70%; overflow: hidden;}
+            .header h1 { font-size: 16px; margin-right: 0;}
             .version-badge { top: 10px; right: 10px; padding: 2px 6px; }
             .header-primer-stats { flex-direction: column; align-items: flex-start; }
+            .header p { padding-left: 0; margin-top: 0; margin-left: 8px; font-size: 10px;}
             
             /* 横スクロール領域を「スマホ特有の滑らかなスクロール」にする */
             .matrix-container, .sequence-grid, .trace-outer-container, .canvas-container, .alignment-detail { 
@@ -162,15 +209,64 @@
         }
     </style>
 </head>
-<body>
+<body class="app-mode">
+
+<!-- グローバル・ドロワー用オーバーレイ -->
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<div class="sidebar">
+    <div class="logo-area">
+        <h1>Bio-Edu Suite</h1>
+        <p>Integrated Taxonomy Hub</p>
+    </div>
+    <div class="nav-menu">
+        <div class="nav-header p1">Phase 1: 収集・ハブ</div>
+        <a href="index.html" class="nav-item p1">Investigation Dashboard</a>
+        
+        <div class="nav-header p2">Phase 2: DNAラボ</div>
+        <a href="1_Master_Mix_Studio.html" class="nav-item p2 active">① PCR Master Mix Studio</a>
+        <a href="2_Thermal_Cycler_Simulator.html" class="nav-item p2">② Thermal Cycler Simulator</a>
+        <a href="3_Virtual_PCR_RFLP.html" class="nav-item p2">③ Virtual PCR & RFLP</a>
+        <a href="4_Sanger_Trace_Editor.html" class="nav-item p2">④ Sanger Trace Editor</a>
+        <a href="5_DNA_Alignment_Studio.html" class="nav-item p2">⑤ DNA Alignment Studio</a>
+        <a href="6_Alignment_Print_Studio.html" class="nav-item p2">⑥ Alignment Print Studio</a>
+        <a href="7_Virtual_BLAST_Explorer.html" class="nav-item p2">⑦ Virtual BLAST Explorer</a>
+        <a href="8_Phylogenetic_Tree_Builder.html" class="nav-item p2">⑧ Phylogenetic Tree Builder</a>
+        
+        <div class="nav-header p3">Phase 3: 形態ラボ</div>
+        <a href="9_Morphometrics_Studio.html" class="nav-item p3">⑨ Morphometrics Studio</a>
+        
+        <div class="nav-header p4">Phase 4: 統合検証ルーム</div>
+        <a href="10_integrative_taxonomy_studio.html" class="nav-item p4">⑩ Taxonomy Explorer (統合版)</a>
+        
+        <div class="nav-header p5">Phase 5: 統計遺伝学</div>
+        <a href="11_Statistical_Genetics_Lab.html" class="nav-item p5">⑪ Statistical Genetics Lab</a>
+        
+        <div class="nav-header p6">Phase 6: 構造生物学</div>
+        <a href="12_Central_Dogma_Simulator.html" class="nav-item p6">⑫ Central Dogma Simulator</a>
+        <a href="13_Protein_Structure_Explorer.html" class="nav-item p6">⑬ Protein Structure Explorer</a>
+
+        <div class="nav-header extra">Extra: 拡張パッケージ</div>
+        <a href="lab_packs.html" class="nav-item extra">Lab Packs (教材パック)</a>
+    </div>
+    <div class="system-status">&copy; 2026 Bio-Edu Suite v33.3 | Developed for Bioinformatics & Wet-Lab Education</div>
+</div>
 
 <div class="header-container">
     <div class="header">
         <div>
-            <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>PCR Master Mix Studio</h1>
+            <div class="header-title-area">
+                <button class="topbar-hamburger" onclick="toggleSidebar()" aria-label="メニューを開く">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+                </button>
+                <h1>
+                    <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>
+                    PCR Master Mix Studio
+                </h1>
+            </div>
             <p>Bio-Edu Suite: Phase 2 / Precision Planning & Preparation</p>
         </div>
-        <div class="version-badge">v33.1</div>
+        <div class="version-badge">v33.3</div>
     </div>
 </div>
 
@@ -185,11 +281,13 @@
             <div class="card-body">
                 <div id="rat_dil" class="rationale-text">
                     <strong>【根拠：なぜDNA抽出液を薄めるのか？】</strong>
-                    ・<strong>阻害物質の回避：</strong> 粗抽出液には、PCR酵素を阻害するタンパク質や脂質が含まれています。<br>
-                    ・<strong>ターゲットDNAの過剰：</strong> サンプル（筋肉細胞のミトコンドリア等）によってはターゲットDNAが過剰な場合があります。
-                    そのままでは濃すぎて失敗するため、「DNAが薄まるリスク」より「阻害を回避するメリット」を優先し、適宜（10倍等に）希釈するのが鉄則です。<br>
-                    ・<strong>希釈の基本ルール：</strong>希釈の前と後で、含まれる物質の総量は変わらないという原則があります。<br>
-                    公式：C<sub>1</sub> &times; V<sub>1</sub> = C<sub>2</sub> &times; V<sub>2</sub>
+                    <strong>【阻害物質の回避】</strong>
+                    ・粗抽出液には、PCR酵素を阻害するタンパク質や脂質が含まれています。<br>
+                    <strong>【ターゲットDNAの過剰】</strong>
+                    ・サンプルによってはターゲットDNAが過剰な場合があります。そのままでは濃すぎて失敗するため、「DNAが薄まるリスク」より「阻害を回避するメリット」を優先し、適宜希釈するのが鉄則です。<br>
+                    <strong>【希釈の基本ルール】</strong>
+                    ・希釈の前と後で、含まれる物質の総量は変わらないという原則があります。<br>
+                    ・公式：C<sub>1</sub> &times; V<sub>1</sub> = C<sub>2</sub> &times; V<sub>2</sub>
                 </div>
                 <div class="toggle-container">
                     <input type="radio" id="dil_mode_ratio" name="dil_mode" checked onchange="toggleDilutionMode()">
@@ -234,8 +332,11 @@
                     <div class="result-row"><span>DW (滅菌水):</span><span class="result-val" id="res_dil_water">45.0 μL</span></div>
                 </div>
 
-                <div class="bench-tip" style="margin-top: 15px;">
-                    <strong><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--warning); margin-right:4px;"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（保存について）</strong><br>
+                <div class="bench-tip">
+                    <strong>
+                        <svg class="btn-icon svg-hint" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>
+                        現場のコツ（保存について）
+                    </strong>
                     ・<strong>原液の保存:</strong> 粗抽出（簡易抽出）の場合は沈殿物を吸わないよう上澄みだけを別チューブに移して保存します。精製キット（カラム等）で抽出した場合は全量をそのまま-20℃で保存可能です。<br>
                     ・<strong>希釈液の保存:</strong> しばらくの間なら-20℃でOKですが、長期保存するとチューブ壁面に吸着して濃度が低下するため、次回の実験時に原液から作り直します。
                 </div>
@@ -250,9 +351,12 @@
                 <div id="rat_vol" class="rationale-text">
                     <strong>【根拠：なぜ総液量を変えるのか？】</strong>
                     ・PCRの液量は、その後の「ゴール」から逆算します。<br>
-                    ・<strong>泳動のみ(10-20µL):</strong> 増幅確認だけなので、酵素節約のため少量。<br>
-                    ・<strong>RFLP用(30µL等):</strong> コントロール(5µL)＋酵素A(10µL)＋酵素B(10µL)と、後で液を「分割」するために多めに作ります。<br>
-                    ・<strong>シーケンス用(50µL):</strong> 精製（カラム等）でのDNA吸着ロスを見越し、大容量で回して量を稼ぎます。
+                    <strong>【泳動のみ(10-20µL)】</strong>
+                    ・増幅確認だけなので、酵素節約のため少量。<br>
+                    <strong>【RFLP用(30µL等)】</strong>
+                    ・コントロール(5µL)＋酵素A(10µL)＋酵素B(10µL)と、後で液を「分割」するために多めに作ります。<br>
+                    <strong>【シーケンス用(50µL)】</strong>
+                    ・精製（カラム等）でのDNA吸着ロスを見越し、大容量で回して量を稼ぎます。
                 </div>
                 <div class="calc-panel">
                     <div class="input-group" style="background:transparent; border:none; padding:0; margin-bottom:8px;">
@@ -283,8 +387,11 @@
                     <input type="number" id="mm_total_vol" value="30" step="1" style="background:#2c3e50; color:white;" oninput="recalcVolumes()"><span>μL</span>
                 </div>
                 
-                <div class="bench-tip" style="margin-top: 15px;">
-                    <strong><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--warning); margin-right:4px;"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（スケールダウンと酵素処理）</strong><br>
+                <div class="bench-tip">
+                    <strong>
+                        <svg class="btn-icon svg-hint" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>
+                        現場のコツ（スケールダウンと酵素処理）
+                    </strong>
                     ・<strong>スケールダウン:</strong> 標準的なプロトコルでは余裕を持たせた総液量（30µL〜など）を設定しますが、予算が限られる教育現場や大量のサンプルを処理する研究室では、試薬を節約するために「スケールダウン（半量や20µL系への縮小）」を行うことがよくあります。目的の液量に合わせてパラメーターを調整してみましょう。<br>
                     ・<strong>制限酵素処理:</strong> 1〜2種（標準）なら1つのチューブ内で同時に処理できますが、3種の場合はバッファーの適合性が難しくなるため、別々のチューブに分注して個別に処理することを推奨します。
                 </div>
@@ -299,12 +406,18 @@
         <div class="card-body">
             <div id="rat_mm" class="rationale-text">
                 <strong>【注意：計算の罠と根拠】</strong>
-                ・<strong>総液量（分母）の罠:</strong> 濃度計算の基準となる「総液量」とは、MMだけの量ではなく、「最後にDNAを加えた後の完全な全量」のことです。<br>
-                ・<strong>Primerの独立計算とノイズ回避:</strong> FとRは別々の物質です。濃度が高すぎるとプライマー同士が結合して「プライマーダイマー」というノイズが発生し、本命のDNA増幅を阻害します。これを防ぐため「それぞれ別々に」総液量の1/20〜1/30を入れます。<br>
-                ・<strong>サンプル数の数え方:</strong> 「実サンプル」＋「ポジコン(成功確認)」＋「ネガコン(水・コンタミ確認)」の合計チューブ数を入れます。ネガコンは実験の証明に【必須】です。<br>
-                ・<strong>マージン（N+1）:</strong> チップ内側に残る物理的ロスを防ぐため、必ず余裕を持たせて作ります（標準は10%増し）。<br>
-                ・<strong>DNA抽出液の過剰添加:</strong> DNA液（特に粗抽出液）を総液量の20%以上入れると、混雑する不純物やPCR阻害物質により酵素が働きません。<br>
-                ・<strong>酵素(Taq)の入れすぎ:</strong> 酵素の原液には凍結防止のグリセロールが含まれており、これが総液量の5%を超えるとPCR反応を強力に阻害します。
+                <strong>【総液量（分母）の罠】</strong>
+                ・濃度計算の基準となる「総液量」とは、MMだけの量ではなく、「最後にDNAを加えた後の完全な全量」のことです。<br>
+                <strong>【Primerの独立計算とノイズ回避】</strong>
+                ・FとRは別々の物質です。濃度が高すぎるとプライマー同士が結合して「プライマーダイマー」というノイズが発生し、本命のDNA増幅を阻害します。これを防ぐため「それぞれ別々に」総液量の1/20〜1/30を入れます。<br>
+                <strong>【サンプル数の数え方】</strong>
+                ・「実サンプル」＋「ポジコン(成功確認)」＋「ネガコン(水・コンタミ確認)」の合計チューブ数を入れます。ネガコンは実験の証明に必須です。<br>
+                <strong>【マージン（N+1）】</strong>
+                ・チップ内側に残る物理的ロスを防ぐため、必ず余裕を持たせて作ります（標準は10%増し）。<br>
+                <strong>【DNA抽出液の過剰添加】</strong>
+                ・DNA液（特に粗抽出液）を総液量の20%以上入れると、混雑する不純物やPCR阻害物質により酵素が働きません。<br>
+                <strong>【酵素(Taq)の入れすぎ】</strong>
+                ・酵素の原液には凍結防止のグリセロールが含まれており、これが総液量の5%を超えるとPCR反応を強力に阻害します。
             </div>
             <div class="input-group">
                 <label>使用する酵素</label>
@@ -347,8 +460,11 @@
                 </tbody>
             </table>
 
-            <div class="bench-tip" style="margin-top: 15px;">
-                <strong><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--warning); margin-right:4px;"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（試薬を入れる黄金の順番）</strong><br>
+            <div class="bench-tip">
+                <strong>
+                    <svg class="btn-icon svg-hint" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>
+                    現場のコツ（試薬を入れる黄金の順番）
+                </strong>
                 表の上から順番に入れるのがプロの鉄則です！
                 一番量が多い水(DW)を底に入れ、酵素(Taq)は浸透圧ショックで死なないようMMの最後に加えます。DNAはコンタミを防ぐため、各チューブにMMを配り終わった後、<strong>完全に別枠で一番最後</strong>に入れます。
             </div>
@@ -361,7 +477,7 @@
     
     <!-- より高度な解析ツールへ & 学術クレジット -->
     <div class="step-up-card">
-        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>より高度な解析ツールへ</h3>
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>より高度な解析ツールへ</h3>
         <p>本シミュレーターで学んだPCRの試薬調整や最適化の概念は、実際の実験計画において不可欠です。より複雑なマルチプレックスPCRや、特定の塩基配列を増幅するためのプライマー設計には、「Primer3」や「NCBI Primer-BLAST」などのプロフェッショナル向けツールが活用されています。</p>
     </div>
 
@@ -382,14 +498,22 @@
 </div>
 
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v33.1 | Developed for Bioinformatics & Wet-Lab Education
+    &copy; 2026 Bio-Edu Suite v33.3 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
 <!-- トースト通知用のコンテナ -->
 <div id="toast" class="toast"></div>
 
 <script>
-    // --- 追加: 入力値のフォーマットとエラーハンドリング ---
+    // --- グローバル・ドロワー制御（ガイドライン第5項） ---
+    function toggleSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
+        if(sidebar) sidebar.classList.toggle('open');
+        if(overlay) overlay.classList.toggle('open');
+    }
+
+    // --- 入力値のフォーマットとエラーハンドリング ---
     function handleTableInput(inputEl) {
         const valStr = inputEl.value;
         if (valStr.includes('.')) {
@@ -409,7 +533,7 @@
         }
     }
 
-    // --- 教育的UIモジュール①: 根拠ポップオーバー（ガイドライン第5項① 準拠 / フリップ計算付き絶対配置） ---
+    // --- 教育的UIモジュール①: 根拠ポップオーバー（ガイドライン第6項① 準拠 / フリップ計算付き絶対配置） ---
     function toggleRationale(event, id) {
         event.stopPropagation();
         const el = document.getElementById(id);
@@ -417,56 +541,58 @@
         const isShown = el.classList.contains('show');
 
         // 他のポップオーバーを閉じる
-        document.querySelectorAll('.rationale-text').forEach(e => e.classList.remove('show'));
+        document.querySelectorAll('.rationale-text').forEach(e => {
+            e.classList.remove('show', 'arrow-top', 'arrow-bottom');
+        });
 
         if(!isShown) {
             if (el.parentNode !== document.body) document.body.appendChild(el);
             el.style.top = '0px'; el.style.left = '0px';
             el.classList.add('show');
 
-            // フリップ計算による絶対配置
+            // フリップ計算による絶対配置 (offsetWidthを用いた親要素追従)
             const elHeight = el.offsetHeight;
-            const elWidth  = el.offsetWidth;
+            const elWidth = el.offsetWidth;
             const rect = btn.getBoundingClientRect();
 
-            let topPos = rect.bottom + 10;
+            let topPos = rect.bottom + 12;
             let arrowClass = 'arrow-top';
             // 画面下端に見切れる場合は上側に配置
             if (rect.bottom + elHeight + 20 > window.innerHeight) {
-                topPos = rect.top - elHeight - 10;
+                topPos = rect.top - elHeight - 12;
                 arrowClass = 'arrow-bottom';
             }
+            el.classList.add(arrowClass);
             el.style.top = topPos + 'px';
 
-            // 左右位置の調整（幅は固定値ではなく offsetWidth で動的算出）
-            const btnCenter = rect.left + rect.width / 2;
-            let leftPos = btnCenter - elWidth / 2;
-            if (leftPos + elWidth > window.innerWidth - 10) leftPos = window.innerWidth - elWidth - 10;
+            // 左右位置の調整 (offsetWidth を使用してはみ出し防止)
+            let leftPos = rect.left - (elWidth / 2) + (rect.width / 2);
+            if (leftPos + elWidth > window.innerWidth) leftPos = window.innerWidth - elWidth - 10;
             if (leftPos < 10) leftPos = 10;
             el.style.left = leftPos + 'px';
 
-            // 吹き出しの尻尾をボタン中央へ追従させる（両端12pxは食い込ませない）
-            let arrowLeft = btnCenter - leftPos;
-            if (arrowLeft < 12) arrowLeft = 12;
-            if (arrowLeft > elWidth - 12) arrowLeft = elWidth - 12;
-            el.classList.remove('arrow-top', 'arrow-bottom');
-            el.classList.add(arrowClass);
-            el.style.setProperty('--arrow-left', arrowLeft + 'px');
+            // 尻尾の水平位置をボタン中央に合わせるカスタムプロパティ
+            const arrowOffset = rect.left - leftPos + (rect.width / 2) - 6;
+            el.style.setProperty('--arrow-left', arrowOffset + 'px');
         }
     }
 
     // 外部クリック・スクロールで閉じる
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.rationale-text') && !e.target.closest('.rationale-btn')) {
-            document.querySelectorAll('.rationale-text').forEach(el => el.classList.remove('show'));
+            document.querySelectorAll('.rationale-text').forEach(el => {
+                el.classList.remove('show', 'arrow-top', 'arrow-bottom');
+            });
         }
     });
 
     document.addEventListener('scroll', () => {
-        document.querySelectorAll('.rationale-text').forEach(el => el.classList.remove('show'));
+        document.querySelectorAll('.rationale-text').forEach(el => {
+            el.classList.remove('show', 'arrow-top', 'arrow-bottom');
+        });
     }, true);
 
-    // --- カスタムツールチップ初期化（ガイドライン第5項④ 準拠 / ネイティブ title 属性は使用禁止） ---
+    // --- カスタムツールチップ初期化（ガイドライン第6項④ 準拠 / ネイティブ title 属性は使用禁止） ---
     function initTooltips() {
         if (document.getElementById('__bes_tooltip')) return; // 二重初期化を防ぐ
         const tooltip = document.createElement('div');
@@ -505,7 +631,7 @@
         }, true);
     }
     
-    // --- トースト通知（ガイドライン第5項⑤ 準拠 / alert() は使用禁止） ---
+    // --- トースト通知（ガイドライン第6項⑤ 準拠 / alert() は使用禁止） ---
     // type: ""(=成功/緑) | "error" | "warning" | "info"。'success' 等の未知値は既定の緑にフォールバックする
     function showToast(msg, type = "") {
         const toast = document.getElementById('toast');
