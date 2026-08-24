@@ -35,9 +35,52 @@
 
  .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid var(--phase-color); display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 30; flex-shrink: 0; position: sticky; top: 0; }
  .header { width: 100%; max-width: 1400px; padding: 12px 20px; color: white; display: flex; align-items: center; justify-content: space-between; position: relative; }
- .header h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 1px; color: #fff; white-space: nowrap; }
+ .header h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 1px; color: #fff; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
  .header p { margin: 4px 0 0 0; font-size: 11px; color: var(--phase-color); font-weight: 600; letter-spacing: 0.5px; }
  .version-badge { position: absolute; right: 20px; top: 15px; background: var(--secondary); color: var(--phase-color); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid var(--phase-color); }
+
+ /* グローバル・ドロワー規格 */
+ .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100dvh; background-color: var(--primary); color: white; display: flex; flex-direction: column; z-index: 1002; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 2px 0 15px rgba(0,0,0,0.2); }
+ .sidebar.open { left: 0; }
+ .sidebar-overlay { display: block; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.5); z-index: 1001; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(2px); }
+ .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
+ 
+ .topbar-hamburger { background: transparent; border: none; color: white; cursor: pointer; padding: 6px; margin-right: 12px; display: flex; align-items: center; justify-content: center; transition: 0.2s; border-radius: 4px; }
+ .topbar-hamburger:hover { background: rgba(255,255,255,0.1); color: var(--phase-color); }
+
+ .logo-area { padding: 20px; background-color: #1a252f; border-bottom: 4px solid var(--phase-color); text-align: center; }
+ .logo-area h1 { margin: 0; color: #fff; font-size: 20px; font-weight: 700; letter-spacing: 1px; }
+ .logo-area p { margin: 5px 0 0 0; color: var(--phase-color); font-size: 11px; }
+ 
+ .nav-menu { flex: 1; padding: 10px 0 20px 0; overflow-y: auto; }
+ .nav-header { padding: 15px 20px 5px 20px; font-size: 11px; color: #95a5a6; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; border-top: 1px solid #34495e; margin-top: 5px;}
+ .nav-header:first-child { border-top: none; margin-top: 0;}
+ .nav-item { padding: 8px 20px 8px 30px; display: flex; align-items: center; gap: 8px; color: #bdc3c7; text-decoration: none; font-size: 13px; transition: 0.2s; border-left: 4px solid transparent;}
+ .nav-item:hover { background-color: var(--secondary); color: white; }
+ 
+ /* フェーズごとのカラーテーマ */
+ .nav-header.p1 { color: #1abc9c; border-top-color: rgba(26, 188, 156, 0.2); }
+ .nav-item.p1:hover, .nav-item.p1.active { color: #1abc9c; border-left-color: #1abc9c; background-color: var(--secondary); font-weight: bold; }
+ 
+ .nav-header.p2 { color: #1abc9c; border-top-color: rgba(26, 188, 156, 0.2); }
+ .nav-item.p2:hover, .nav-item.p2.active { color: #1abc9c; border-left-color: #1abc9c; background-color: var(--secondary); font-weight: bold; }
+ 
+ .nav-header.p3 { color: #3498db; border-top-color: rgba(52, 152, 219, 0.2); }
+ .nav-item.p3:hover, .nav-item.p3.active { color: #3498db; border-left-color: #3498db; background-color: var(--secondary); font-weight: bold; }
+ 
+ .nav-header.p4 { color: #8e44ad; border-top-color: rgba(142, 68, 173, 0.2); }
+ .nav-item.p4:hover, .nav-item.p4.active { color: #9b59b6; border-left-color: #9b59b6; background-color: var(--secondary); font-weight: bold; }
+ 
+ .nav-header.p5 { color: #e74c3c; border-top-color: rgba(231, 76, 60, 0.2); }
+ .nav-item.p5:hover, .nav-item.p5.active { color: #e74c3c; border-left-color: #e74c3c; background-color: var(--secondary); font-weight: bold; }
+ 
+ .nav-header.p6 { color: #e67e22; border-top-color: rgba(230, 126, 34, 0.2); }
+ .nav-item.p6:hover, .nav-item.p6.active { color: #f39c12; border-left-color: #f39c12; background-color: var(--secondary); font-weight: bold; }
+ 
+ .nav-header.extra { color: #f1c40f; border-top-color: rgba(241, 196, 15, 0.2); }
+ .nav-item.extra:hover, .nav-item.extra.active { color: #f39c12; border-left-color: #f39c12; background-color: var(--secondary); font-weight: bold; }
+
+ .system-status { padding: 15px 20px; background-color: #1a252f; border-top: 1px solid #2c3e50; font-size: 11px; color: var(--text-muted); text-align: center; }
 
  /* CSS Gridレイアウト (左: 380px, 右: 残り全て) */
  .main-content { width: 100%; max-width: 1400px; padding: 20px; display: grid; grid-template-columns: 380px 1fr; gap: 20px; align-items: start; flex: 1; }
@@ -55,7 +98,7 @@
  .rationale-btn { background: var(--phase-color); color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; flex-shrink: 0;}
  .rationale-btn:hover { transform: scale(1.1); filter: brightness(1.2); }
 
- /* 【③専用】#enzymeModal は独立したモーダルUIとして定義する（rationale-textからは完全に分離し、オレンジの枠線や光彩が干渉しないようにする） */
+ /* 【③専用】#enzymeModal は独立したモーダルUIとして定義する */
  #enzymeModal {
  display: none;
  background: #ffffff;
@@ -154,7 +197,7 @@
  .error { color: #e74c3c; font-weight: bold; }
 
  /* 🔬 ゲルデザイン (右パネル) */
- /* sticky ヘッダー（約82px）の下に潜らないよう追従位置を補正（元: top: 20px） */
+ /* sticky ヘッダー（約82px）の下に潜らないよう追従位置を補正 */
  .gel-card { border-top-color: var(--phase-color); display: flex; flex-direction: column; position: sticky; top: 100px; }
  
  .gel-panel { flex: 1; overflow-x: auto; overflow-y: auto; background: #111; padding: 20px; border-radius: 6px; box-shadow: inset 0 8px 16px rgba(0,0,0,0.8); display: flex; flex-direction: column; position: relative; min-height: 550px; }
@@ -178,8 +221,7 @@
 
  /* JS駆動の動的ツールチップ用スタイル */
  [data-tooltip] { cursor: pointer; }
- /* カスタムツールチップ（ガイドライン第5項④ 準拠 / ネイティブ title 属性は使用しない）
- ※本文が最長52文字の日本語のため nowrap では狭い端末で画面外に溢れる。折り返し＋幅上限で堅牢化 */
+ /* カスタムツールチップ（ガイドライン第5項④ 準拠 / ネイティブ title 属性は使用しない） */
  .custom-tooltip { position: fixed; background: rgba(44, 62, 80, 0.95); color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 11px; pointer-events: none; z-index: 9999; opacity: 0; transition: opacity 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-weight: normal; line-height: 1.4; display: none; white-space: normal; width: max-content; max-width: min(320px, 90vw); text-align: center; box-sizing: border-box; }
  .custom-tooltip::after { content: ''; position: absolute; border-width: 5px; border-style: solid; left: 50%; transform: translateX(-50%); }
  .custom-tooltip.show-top::after { top: 100%; border-color: rgba(44, 62, 80, 0.95) transparent transparent transparent; }
@@ -226,7 +268,7 @@
  }
  </style>
 </head>
-<body>
+<body class="app-mode">
 
 <!-- 📱 スマホアクセス警告＆PC強制レイアウト (JS判定版) -->
 <div id="mobile-warning-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(44, 62, 80, 0.95); z-index: 999999; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; padding: 30px; box-sizing: border-box; backdrop-filter: blur(5px);">
@@ -250,13 +292,60 @@
 </script>
 <!-- 警告ここまで -->
 
+<!-- ドロワー用オーバーレイ -->
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<!-- サイドバー -->
+<div class="sidebar">
+  <div class="logo-area">
+    <h1>Bio-Edu Suite</h1>
+    <p>Integrated Taxonomy Hub</p>
+  </div>
+  <div class="nav-menu">
+    <div class="nav-header p1">Phase 1: 収集・ハブ</div>
+    <a href="index.html" class="nav-item p1">Investigation Dashboard</a>
+    
+    <div class="nav-header p2">Phase 2: DNAラボ</div>
+    <a href="1_Master_Mix_Studio.html" class="nav-item p2">① PCR Master Mix Studio</a>
+    <a href="2_Thermal_Cycler_Simulator.html" class="nav-item p2">② Thermal Cycler Simulator</a>
+    <a href="3_Virtual_PCR_RFLP.html" class="nav-item p2 active">③ Virtual PCR & RFLP</a>
+    <a href="4_Sanger_Trace_Editor.html" class="nav-item p2">④ Sanger Trace Editor</a>
+    <a href="5_DNA_Alignment_Studio.html" class="nav-item p2">⑤ DNA Alignment Studio</a>
+    <a href="6_Alignment_Print_Studio.html" class="nav-item p2">⑥ Alignment Print Studio</a>
+    <a href="7_Virtual_BLAST_Explorer.html" class="nav-item p2">⑦ Virtual BLAST Explorer</a>
+    <a href="8_Phylogenetic_Tree_Builder.html" class="nav-item p2">⑧ Phylogenetic Tree Builder</a>
+    
+    <div class="nav-header p3">Phase 3: 形態ラボ</div>
+    <a href="9_Morphometrics_Studio.html" class="nav-item p3">⑨ Morphometrics Studio</a>
+    
+    <div class="nav-header p4">Phase 4: 統合検証ルーム</div>
+    <a href="10_integrative_taxonomy_studio.html" class="nav-item p4">⑩ Taxonomy Explorer (統合版)</a>
+    
+    <div class="nav-header p5">Phase 5: 統計遺伝学</div>
+    <a href="11_Statistical_Genetics_Lab.html" class="nav-item p5">⑪ Statistical Genetics Lab</a>
+    
+    <div class="nav-header p6">Phase 6: 構造生物学</div>
+    <a href="12_Central_Dogma_Simulator.html" class="nav-item p6">⑫ Central Dogma Simulator</a>
+    <a href="13_Protein_Structure_Explorer.html" class="nav-item p6">⑬ Protein Structure Explorer</a>
+
+    <div class="nav-header extra">Extra: 拡張パッケージ</div>
+    <a href="lab_packs.html" class="nav-item extra">Lab Packs (教材パック)</a>
+  </div>
+  <div class="system-status">&copy; 2026 Bio-Edu Suite v33.3 | Developed for Bioinformatics & Wet-Lab Education</div>
+</div>
+
 <div class="header-container">
  <div class="header">
- <div>
- <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>Virtual PCR &amp; RFLP Simulator</h1>
- <p>Bio-Edu Suite: Phase 2 / In Silico Amplification & Digestion</p>
- </div>
- <div class="version-badge">v33.1</div>
+  <div style="display: flex; align-items: center;">
+   <button class="topbar-hamburger" onclick="toggleSidebar()" aria-label="メニューを開く">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+   </button>
+   <div>
+    <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>Virtual PCR &amp; RFLP Simulator</h1>
+    <p>Bio-Edu Suite: Phase 2 / In Silico Amplification & Digestion</p>
+   </div>
+  </div>
+  <div class="version-badge">v33.3</div>
  </div>
 </div>
 
@@ -269,7 +358,7 @@
  <div class="settings-group">
  <h4>1. 鋳型DNA（FASTA）の入力 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_fasta')">?</button></h4>
  <div id="rat_fasta" class="rationale-text">
- <strong>【根拠：元のDNA配列入力】</strong>
+ <strong>【根拠：元のDNAの塩基配列入力】</strong>
  ・ここには、抽出液の中に含まれているはずの「元のDNAの塩基配列（ターゲット領域周辺）」を入力します。NCBI等のデータベースから取得したFASTA形式のテキストデータを貼り付けます。
  </div>
  
@@ -291,14 +380,14 @@
  <div id="fileStatus" class="file-status" style="margin-top: 5px; font-size: 11px; color: var(--text-muted);"></div>
  </div>
  
- <textarea id="fastaInput" placeholder="FASTA形式などのテキストデータを貼り付け"></textarea>
+ <textarea id="fastaInput" class="paste-area" placeholder="FASTA形式などのテキストデータを貼り付け"></textarea>
  </div>
 
  <div class="settings-group">
  <h4>2. PCR設定 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_pcr')">?</button></h4>
  <div id="rat_pcr" class="rationale-text">
  <strong>【根拠：ミスマッチ許容率】</strong>
- ・プライマーはDNAに100%一致しなくても、変異等による多少の塩基配列の違いならくっついて増幅します（特に遠縁の生物種の場合）。これを再現するため、あえて0%〜30%の「遊び（Fuzzy）」を持たせて検索します。
+ ・プライマーはDNAに100%一致しなくても、突然変異等による多少の塩基配列の違いならくっついて増幅します（特に遠縁の生物種の場合）。これを再現するため、あえて0%〜30%の「遊び（Fuzzy）」を持たせて検索します。
  </div>
  <div class="input-group">
  <label>Primer F (5' ➡ 3'):</label>
@@ -348,8 +437,8 @@
  <h4>4. 電気泳動設定 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_gel')">?</button></h4>
  <div id="rat_gel" class="rationale-text">
  <strong>【根拠：ゲル濃度と泳動時間】</strong>
- ・アガロース濃度： 濃度が高いと網目が細かくなり、小さいDNA断片の分離が良くなります。低いと大きな断片を分けるのに適しています。<br>
- ・泳動時間： 長く流すほどバンドの間隔が広がり見やすくなりますが、短すぎると分離せず、長すぎるとゲルから抜け落ちてしまいます。
+ ・アガロース濃度：濃度が高いと網目が細かくなり、小さいDNA断片の分離が良くなります。低いと大きな断片を分けるのに適しています。<br>
+ ・泳動時間：長く流すほどバンドの間隔が広がり見やすくなりますが、短すぎると分離せず、長すぎるとゲルから抜け落ちてしまいます。
  </div>
  <div style="display: flex; gap: 10px; margin-bottom: 5px;">
  <div style="flex: 1;">
@@ -458,7 +547,7 @@
 </div>
 
 <div class="footer">
- &copy; 2026 Bio-Edu Suite v33.1 | Developed for Bioinformatics & Wet-Lab Education
+ &copy; 2026 Bio-Edu Suite v33.3 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
 <!-- トースト通知用要素 -->
@@ -487,9 +576,9 @@
 <!-- 隠し解説テキスト（RFLPマーカー探索の極意） -->
 <div id="rat_rflp_strategy" class="rationale-text">
  <strong>【根拠：RFLPマーカー探索の極意】</strong>
- <strong>【なぜ4〜5塩基を狙う？】</strong>
+ <strong>【根拠：なぜ4〜5塩基を狙う？】</strong>
  ・EcoR I などの6塩基認識（確率1/4096）は、1,000bpの短いDNAでは「切断部位がない」ことが殆どです。Hinf I や Taq I などの4〜5塩基認識（確率1/256〜1/1024）から試すのが鉄則です。
- <strong>【当たりパターンの見分け方】</strong>
+ <strong>【注意：当たりパターンの見分け方】</strong>
  ・「全部切れない」「全部同じ長さで切れる」酵素では種を区別できません。種ごとにバンドの数や長さが明確に違うパターンが出る酵素を探しましょう。100bp以下が大量に出る細かすぎる酵素もNGです。
 </div>
 
@@ -1218,6 +1307,13 @@
  } finally {
  if(loader) loader.style.display = 'none';
  }
+ }
+
+ function toggleSidebar() {
+   const sidebar = document.querySelector('.sidebar');
+   const overlay = document.querySelector('.sidebar-overlay');
+   if(sidebar) sidebar.classList.toggle('open');
+   if(overlay) overlay.classList.toggle('open');
  }
 </script>
 
