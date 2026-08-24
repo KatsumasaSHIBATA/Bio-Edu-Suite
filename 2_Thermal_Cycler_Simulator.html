@@ -33,7 +33,7 @@
  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f3f4; color: #2c3e50; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
  
  /* 改行崩れ・テキスト折り返しの補正（ガイドライン第4項） */
- body, .card, p, div, .bench-tip, .pro-invite, .rationale-text, .assist-panel, .dynamic-hint { word-break: normal; overflow-wrap: anywhere; line-height: 1.6; }
+ body, .card, p, div, .bench-tip, .step-up-card, .rationale-text, .assist-panel, .dynamic-hint { word-break: normal; overflow-wrap: anywhere; line-height: 1.6; }
  .label-title, .no-wrap { white-space: nowrap; }
 
  /* ガイドライン第5項: グローバル・ドロワー規格 */
@@ -42,49 +42,70 @@
  .sidebar-overlay { display: block; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.5); z-index: 1001; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(2px); }
  .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
  
- .topbar-hamburger { background: transparent; border: none; color: #fff; cursor: pointer; padding: 4px; margin-right: 12px; display: flex; align-items: center; justify-content: center; transition: 0.2s; border-radius: 4px; }
- .topbar-hamburger:hover { background: #34495e; color: var(--phase-color); }
-
+ /* ダッシュボード専用スタイル (PC表示時は常に展開して固定) - 本アプリでは.app-modeなので適用外だが共通規格として記載 */
+ @media (min-width: 769px) {
+   body.dashboard-mode .sidebar { position: relative; left: 0; flex-shrink: 0; z-index: 10; box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
+   body.dashboard-mode .sidebar-overlay { display: none !important; }
+ }
+ 
+ /* ナビゲーションメニュー用スタイル */
  .logo-area { padding: 20px; background-color: #1a252f; border-bottom: 4px solid var(--phase-color); text-align: center; }
  .logo-area h1 { margin: 0; color: #fff; font-size: 20px; font-weight: 700; letter-spacing: 1px; }
  .logo-area p { margin: 5px 0 0 0; color: var(--phase-color); font-size: 11px; }
- 
  .nav-menu { flex: 1; padding: 10px 0 20px 0; overflow-y: auto; }
+ .nav-menu::-webkit-scrollbar { width: 6px; }
+ .nav-menu::-webkit-scrollbar-thumb { background-color: #34495e; border-radius: 3px; }
  .nav-header { padding: 15px 20px 5px 20px; font-size: 11px; color: #95a5a6; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; border-top: 1px solid #34495e; margin-top: 5px;}
  .nav-header:first-child { border-top: none; margin-top: 0;}
  .nav-item { padding: 8px 20px 8px 30px; display: flex; align-items: center; gap: 8px; color: #bdc3c7; text-decoration: none; font-size: 13px; transition: 0.2s; border-left: 4px solid transparent;}
  .nav-item:hover { background-color: var(--secondary); color: white; }
- 
- /* フェーズごとのカラーテーマ */
  .nav-header.p1 { color: #1abc9c; border-top-color: rgba(26, 188, 156, 0.2); }
  .nav-item.p1:hover, .nav-item.p1.active { color: #1abc9c; border-left-color: #1abc9c; background-color: var(--secondary); font-weight: bold; }
- 
  .nav-header.p2 { color: #1abc9c; border-top-color: rgba(26, 188, 156, 0.2); }
  .nav-item.p2:hover, .nav-item.p2.active { color: #1abc9c; border-left-color: #1abc9c; background-color: var(--secondary); font-weight: bold; }
- 
  .nav-header.p3 { color: #3498db; border-top-color: rgba(52, 152, 219, 0.2); }
  .nav-item.p3:hover, .nav-item.p3.active { color: #3498db; border-left-color: #3498db; background-color: var(--secondary); font-weight: bold; }
- 
  .nav-header.p4 { color: #8e44ad; border-top-color: rgba(142, 68, 173, 0.2); }
  .nav-item.p4:hover, .nav-item.p4.active { color: #9b59b6; border-left-color: #9b59b6; background-color: var(--secondary); font-weight: bold; }
- 
  .nav-header.p5 { color: #e74c3c; border-top-color: rgba(231, 76, 60, 0.2); }
  .nav-item.p5:hover, .nav-item.p5.active { color: #e74c3c; border-left-color: #e74c3c; background-color: var(--secondary); font-weight: bold; }
- 
  .nav-header.p6 { color: #e67e22; border-top-color: rgba(230, 126, 34, 0.2); }
  .nav-item.p6:hover, .nav-item.p6.active { color: #f39c12; border-left-color: #f39c12; background-color: var(--secondary); font-weight: bold; }
- 
  .nav-header.extra { color: #f1c40f; border-top-color: rgba(241, 196, 15, 0.2); }
  .nav-item.extra:hover, .nav-item.extra.active { color: #f39c12; border-left-color: #f39c12; background-color: var(--secondary); font-weight: bold; }
-
- /* 完全統一フッター規格 */
  .system-status { padding: 15px 20px; background-color: #1a252f; border-top: 1px solid #2c3e50; font-size: 11px; color: var(--text-muted); text-align: center; }
+
+ /* トップバー内ハンバーガーボタン */
+ .topbar-hamburger { 
+     background: transparent; 
+     border: none; 
+     color: #fff; 
+     cursor: pointer; 
+     padding: 4px; 
+     margin-right: 16px; 
+     margin-left: 0; 
+     display: flex; 
+     align-items: center; 
+     justify-content: center; 
+     transition: 0.2s; 
+     border-radius: 4px; 
+ }
+ .topbar-hamburger:hover { 
+     background: rgba(255, 255, 255, 0.1); 
+     color: var(--phase-color); 
+ }
+ 
+ /* ヘッダータイトルグループ */
+ .header-title-group {
+     display: flex;
+     flex-direction: column; 
+     justify-content: center;
+ }
 
  .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid var(--phase-color); display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 30; flex-shrink: 0; position: sticky; top: 0; }
  .header { width: 100%; max-width: 1400px; padding: 12px 20px; color: white; display: flex; align-items: center; justify-content: space-between; position: relative; }
- .header h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 1px; color: #fff; padding-right: 70px; line-height: 1.3; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
+ .header h1 { margin: 0; font-size: 20px; font-weight: 700; color: #fff; line-height: 1.3; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
  .header p { margin: 4px 0 0 0; font-size: 11px; color: var(--phase-color); font-weight: 600; letter-spacing: 0.5px; }
- .version-badge { position: absolute; right: 20px; top: 15px; background: #34495e; color: var(--phase-color); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid var(--phase-color); }
 
  .main-content { width: 100%; max-width: 1400px; padding: 25px 20px; display: flex; flex-direction: column; align-items: center; gap: 25px; flex: 1; }
 
@@ -236,7 +257,7 @@
  .hw-btn:active { transform: translateY(3px); box-shadow: none !important; margin-top: 3px; margin-bottom: -3px; }
 
  .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; justify-content: center; align-items: center; padding: 20px; }
- /* ガイドライン第7項適用: モーダル幅を400pxへ完全統一 */
+ /* ガイドライン第8項適用: モーダル幅を400pxへ完全統一 */
  .modal-content { background: white; width: 400px; max-height: 90vh; border-radius: 8px; padding: 30px; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.8); position: relative; }
  
  .feedback-box { background: #fdf2e9; border: 2px solid #e67e22; border-radius: 8px; padding: 20px; text-align: left; }
@@ -306,8 +327,7 @@
    .tm-container { grid-column: span 1 !important; }
    .bench-tip { grid-column: span 1 !important; }
 
-   .header h1 { font-size: 18px; padding-right: 60px; white-space: normal; }
-   .version-badge { top: 12px; right: 10px; }
+   .header h1 { font-size: 18px; white-space: normal; }
 
    .scenario-panel h2 { padding: 12px 15px; margin-top: 0; }
    .scenario-desc, .scenario-inputs { padding: 0 15px; }
@@ -354,47 +374,47 @@
 </head>
 <body class="app-mode">
 
-  <!-- ドロワー用オーバーレイ -->
-  <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+<!-- ドロワー用オーバーレイ -->
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
-  <div class="sidebar">
-    <div class="logo-area">
-      <h1>Bio-Edu Suite</h1>
-      <p>Integrated Taxonomy Hub</p>
-    </div>
-    <div class="nav-menu">
-      <div class="nav-header p1">Phase 1: 収集・ハブ</div>
-      <a href="index.html" class="nav-item p1">Investigation Dashboard</a>
-      
-      <div class="nav-header p2">Phase 2: DNAラボ</div>
-      <a href="1_Master_Mix_Studio.html" class="nav-item p2">① PCR Master Mix Studio</a>
-      <a href="2_Thermal_Cycler_Simulator.html" class="nav-item p2 active">② Thermal Cycler Simulator</a>
-      <a href="3_Virtual_PCR_RFLP.html" class="nav-item p2">③ Virtual PCR & RFLP</a>
-      <a href="4_Sanger_Trace_Editor.html" class="nav-item p2">④ Sanger Trace Editor</a>
-      <a href="5_DNA_Alignment_Studio.html" class="nav-item p2">⑤ DNA Alignment Studio</a>
-      <a href="6_Alignment_Print_Studio.html" class="nav-item p2">⑥ Alignment Print Studio</a>
-      <a href="7_Virtual_BLAST_Explorer.html" class="nav-item p2">⑦ Virtual BLAST Explorer</a>
-      <a href="8_Phylogenetic_Tree_Builder.html" class="nav-item p2">⑧ Phylogenetic Tree Builder</a>
-      
-      <div class="nav-header p3">Phase 3: 形態ラボ</div>
-      <a href="9_Morphometrics_Studio.html" class="nav-item p3">⑨ Morphometrics Studio</a>
-      
-      <div class="nav-header p4">Phase 4: 統合検証ルーム</div>
-      <a href="10_integrative_taxonomy_studio.html" class="nav-item p4">⑩ Taxonomy Explorer (統合版)</a>
-      
-      <div class="nav-header p5">Phase 5: 統計遺伝学</div>
-      <a href="11_Statistical_Genetics_Lab.html" class="nav-item p5">⑪ Statistical Genetics Lab</a>
-      
-      <div class="nav-header p6">Phase 6: 構造生物学</div>
-      <a href="12_Central_Dogma_Simulator.html" class="nav-item p6">⑫ Central Dogma Simulator</a>
-      <a href="13_Protein_Structure_Explorer.html" class="nav-item p6">⑬ Protein Structure Explorer</a>
-
-      <div class="nav-header extra">Extra: 拡張パッケージ</div>
-      <a href="lab_packs.html" class="nav-item extra">Lab Packs (教材パック)</a>
-    </div>
-    <!-- フッターのバージョンをv33.3へ完全同期 -->
-    <div class="system-status">&copy; 2026 Bio-Edu Suite v33.3 | Developed for Bioinformatics & Wet-Lab Education</div>
+<div class="sidebar">
+  <div class="logo-area">
+    <h1>Bio-Edu Suite</h1>
+    <p>Integrated Taxonomy Hub</p>
   </div>
+  <div class="nav-menu">
+    <div class="nav-header p1">Phase 1: 収集・ハブ</div>
+    <a href="index.html" class="nav-item p1">Investigation Dashboard</a>
+    
+    <div class="nav-header p2">Phase 2: DNAラボ</div>
+    <a href="1_Master_Mix_Studio.html" class="nav-item p2">① PCR Master Mix Studio</a>
+    <a href="2_Thermal_Cycler_Simulator.html" class="nav-item p2 active">② Thermal Cycler Simulator</a>
+    <a href="3_Virtual_PCR_RFLP.html" class="nav-item p2">③ Virtual PCR & RFLP</a>
+    <a href="4_Sanger_Trace_Editor.html" class="nav-item p2">④ Sanger Trace Editor</a>
+    <a href="5_DNA_Alignment_Studio.html" class="nav-item p2">⑤ DNA Alignment Studio</a>
+    <a href="6_Alignment_Print_Studio.html" class="nav-item p2">⑥ Alignment Print Studio</a>
+    <a href="7_Virtual_BLAST_Explorer.html" class="nav-item p2">⑦ Virtual BLAST Explorer</a>
+    <a href="8_Phylogenetic_Tree_Builder.html" class="nav-item p2">⑧ Phylogenetic Tree Builder</a>
+    
+    <div class="nav-header p3">Phase 3: 形態ラボ</div>
+    <a href="9_Morphometrics_Studio.html" class="nav-item p3">⑨ Morphometrics Studio</a>
+    
+    <div class="nav-header p4">Phase 4: 統合検証ルーム</div>
+    <a href="10_integrative_taxonomy_studio.html" class="nav-item p4">⑩ Taxonomy Explorer (統合版)</a>
+    
+    <div class="nav-header p5">Phase 5: 統計遺伝学</div>
+    <a href="11_Statistical_Genetics_Lab.html" class="nav-item p5">⑪ Statistical Genetics Lab</a>
+    
+    <div class="nav-header p6">Phase 6: 構造生物学</div>
+    <a href="12_Central_Dogma_Simulator.html" class="nav-item p6">⑫ Central Dogma Simulator</a>
+    <a href="13_Protein_Structure_Explorer.html" class="nav-item p6">⑬ Protein Structure Explorer</a>
+
+    <div class="nav-header extra">Extra: 拡張パッケージ</div>
+    <a href="lab_packs.html" class="nav-item extra">Lab Packs (教材パック)</a>
+  </div>
+  <!-- フッターのバージョンをv33.4へ完全同期 -->
+  <div class="system-status">&copy; 2026 Bio-Edu Suite v33.4 | Developed for Bioinformatics & Wet-Lab Education</div>
+</div>
 
 <div class="header-container">
  <div class="header">
@@ -402,12 +422,11 @@
  <button class="topbar-hamburger" onclick="toggleSidebar()" aria-label="メニューを開く">
  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
  </button>
- <div>
+ <div class="header-title-group">
  <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>Thermal Cycler Simulator</h1>
  <p>Bio-Edu Suite: Phase 2 / PCR Protocol Optimization & Logical Troubleshooting</p>
  </div>
  </div>
- <div class="version-badge">v33.3</div>
  </div>
 </div>
 
@@ -492,7 +511,7 @@
  <div id="rat_vol" class="rationale-text">
  <strong>【根拠：反応液量(VOL)の重要性】</strong>
  ・PCR機器は、入力された「VOL」の液量に基づいて、ヒーターの加熱・冷却パワー（熱容量）を自動計算しています。ここが間違っていると、設定温度に達するスピードが狂い、実験が失敗します。<br><br>
- <strong>【補足：表示が小数点第2位までの理由】</strong>
+<strong>【参考：表示が小数点第2位までの理由】</strong>
  ・アプリ1から読み込んだ「総液量」に基づいて比率（スケール）計算が自動で行われるため、割り切れない細かい数値が出ることがあります。ここでは「計算上の正確な必要量」を可視化するためにあえて小数点第2位まで表示しています。（実際の実験では、これを四捨五入してピペットの目盛りに合わせて測ります）
  </div>
  <div class="vol-guide" id="volGuideText">標準反応液量: 20 µL</div>
@@ -574,7 +593,6 @@
 
  <h3 style="color:#2c3e50; font-size:13px; border-bottom: 1px solid #bdc3c7; padding-bottom: 5px; margin-bottom: 8px; margin-top: 0;">各酵素の公式推奨条件</h3>
  <div style="font-size: 11px; line-height: 1.5; color: #34495e;">
- <!-- SVGのカラー同期適用（.svg-infoを削除してcurrentColorを継承させる） -->
  <p style="font-weight:bold; margin-top:0; margin-bottom:5px; color:var(--danger);"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px; margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>計算のヒント: 1 kb = 1000 bp。増幅長を1000で割って時間を計算。</p>
  <div class="table-responsive">
  <table class="manual-table">
@@ -667,7 +685,6 @@
  2. <b>[▼] [▲]</b> キーで設定項目を選び(↓点滅)、<b>[ENT]</b> で編集モードへ入ります。<br>
  3. テンキーで数値を入力。（例: 94.5℃なら「9」「4」「5」、2分30秒なら「0」「2」「3」「0」）<br>
  4. 再度 <b>[ENT]</b> で確定。<b>[C]</b> キーで入力を最初からやり直し。<br>
- <!-- SVGのカラー同期適用（.svg-infoを削除してcurrentColorを継承させる） -->
  <span style="font-weight:bold; color:#d35400;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px; margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>無限大(∞)の入力: PART3の最後の時間で「9999」と入力。</span>
  </div>
 
@@ -700,7 +717,7 @@
  </div>
 
  <!-- 学術クレジット -->
- <div style="margin-top: 20px; width: 100%;">
+ <div style="margin-top: 20px; width: 100%; text-align: left;">
  <details style="cursor: pointer;">
  <summary style="font-weight: bold; color: var(--text-muted); font-size: 13px;">
  References & Algorithms
@@ -724,12 +741,20 @@
 </div>
 
 <div class="footer">
- &copy; 2026 Bio-Edu Suite v33.3 | Developed for Bioinformatics & Wet-Lab Education
+ &copy; 2026 Bio-Edu Suite v33.4 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
 <div id="toast" class="toast"></div>
 
 <script>
+ // --- グローバル・ドロワー制御（ガイドライン第5項） ---
+ function toggleSidebar() {
+   const sidebar = document.querySelector('.sidebar');
+   const overlay = document.querySelector('.sidebar-overlay');
+   if(sidebar) sidebar.classList.toggle('open');
+   if(overlay) overlay.classList.toggle('open');
+ }
+
  // === カセット方式対応のための状態・定義 ===
  let currentModelId = "thermogen";
 
@@ -1193,14 +1218,6 @@
     el.classList.remove('show', 'arrow-top', 'arrow-bottom');
  });
  }, true);
-
- // グローバル・ドロワー制御
- function toggleSidebar() {
-   const sidebar = document.querySelector('.sidebar');
-   const overlay = document.querySelector('.sidebar-overlay');
-   if(sidebar) sidebar.classList.toggle('open');
-   if(overlay) overlay.classList.toggle('open');
- }
 
  const recipes = {
  KODOne: {
@@ -2035,7 +2052,6 @@
 
  if (hints.length > 0) {
  let errorHtml = `<div class="feedback-box"><div class="feedback-title"><svg class="svg-danger" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -3px; margin-right: 6px;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>論理的エラー：設定の科学的根拠を見直してください</div><ul class="hint-list">`;
- // SVGのカラー同期適用（.svg-infoを削除してcurrentColorを継承させる）
  hints.forEach(h => errorHtml += `<li><span class="hint-label"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px; margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>${h.label} について</span>${h.text}</li>`);
  errorHtml += '</ul></div>';
  msgDiv.innerHTML = errorHtml;
