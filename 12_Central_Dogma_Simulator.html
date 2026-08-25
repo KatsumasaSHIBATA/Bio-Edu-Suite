@@ -38,12 +38,61 @@
   .ml-auto { margin-left: auto; }
   .empty-message { color: var(--text-muted); padding: 20px; width: 100%; text-align: center; }
 
+  /* ガイドライン第5項: グローバル・ドロワー規格 */
+  .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100dvh; background-color: var(--primary); color: white; display: flex; flex-direction: column; z-index: 1002; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 2px 0 15px rgba(0,0,0,0.2); }
+  .sidebar.open { left: 0; }
+  .sidebar-overlay { display: block; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.5); z-index: 1001; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(2px); }
+  .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
+  
+  @media (min-width: 769px) {
+    body.dashboard-mode .sidebar { position: relative; left: 0; flex-shrink: 0; z-index: 10; box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
+    body.dashboard-mode .sidebar-overlay { display: none !important; }
+    body.dashboard-mode .topbar-hamburger { display: none; }
+  }
+
+  /* ドロワーのメニューUI */
+  .logo-area { padding: 20px; background-color: #1a252f; border-bottom: 4px solid var(--phase-color); text-align: center; }
+  .logo-area h1 { margin: 0; color: #fff; font-size: 20px; font-weight: 700; letter-spacing: 1px; }
+  .logo-area p { margin: 5px 0 0 0; color: var(--phase-color); font-size: 11px; }
+  
+  .nav-menu { flex: 1; padding: 10px 0 20px 0; overflow-y: auto; }
+  .nav-header { padding: 15px 20px 5px 20px; font-size: 11px; color: #95a5a6; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; border-top: 1px solid #34495e; margin-top: 5px;}
+  .nav-header:first-child { border-top: none; margin-top: 0;}
+  .nav-item { padding: 8px 20px 8px 30px; display: flex; align-items: center; gap: 8px; color: #bdc3c7; text-decoration: none; font-size: 13px; transition: 0.2s; border-left: 4px solid transparent;}
+  .nav-item:hover { background-color: var(--secondary); color: white; }
+  
+  .nav-header.p1 { color: #1abc9c; border-top-color: rgba(26, 188, 156, 0.2); }
+  .nav-item.p1:hover, .nav-item.p1.active { color: #1abc9c; border-left-color: #1abc9c; background-color: var(--secondary); font-weight: bold; }
+  
+  .nav-header.p2 { color: #1abc9c; border-top-color: rgba(26, 188, 156, 0.2); }
+  .nav-item.p2:hover, .nav-item.p2.active { color: #1abc9c; border-left-color: #1abc9c; background-color: var(--secondary); font-weight: bold; }
+  
+  .nav-header.p3 { color: #3498db; border-top-color: rgba(52, 152, 219, 0.2); }
+  .nav-item.p3:hover, .nav-item.p3.active { color: #3498db; border-left-color: #3498db; background-color: var(--secondary); font-weight: bold; }
+  
+  .nav-header.p4 { color: #8e44ad; border-top-color: rgba(142, 68, 173, 0.2); }
+  .nav-item.p4:hover, .nav-item.p4.active { color: #9b59b6; border-left-color: #9b59b6; background-color: var(--secondary); font-weight: bold; }
+  
+  .nav-header.p5 { color: #e74c3c; border-top-color: rgba(231, 76, 60, 0.2); }
+  .nav-item.p5:hover, .nav-item.p5.active { color: #e74c3c; border-left-color: #e74c3c; background-color: var(--secondary); font-weight: bold; }
+  
+  .nav-header.p6 { color: #e67e22; border-top-color: rgba(230, 126, 34, 0.2); }
+  .nav-item.p6:hover, .nav-item.p6.active { color: #f39c12; border-left-color: #f39c12; background-color: var(--secondary); font-weight: bold; }
+  
+  .nav-header.extra { color: #f1c40f; border-top-color: rgba(241, 196, 15, 0.2); }
+  .nav-item.extra:hover, .nav-item.extra.active { color: #f39c12; border-left-color: #f39c12; background-color: var(--secondary); font-weight: bold; }
+  
+  .system-status { padding: 15px 20px; background-color: #1a252f; border-top: 1px solid #2c3e50; font-size: 11px; color: var(--text-muted); text-align: center; }
+
   /* ガイドライン第5項・第12項 共通ヘッダーとZ-index階層 */
   .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid var(--phase-color); display: flex; justify-content: center; position: sticky; top: 0; z-index: 30; box-shadow: 0 2px 10px rgba(0,0,0,0.15); flex-shrink: 0; }
-  .header { width: 100%; max-width: 1400px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; position: relative; }
+  .header { width: 100%; max-width: 1400px; padding: 12px 20px; display: flex; align-items: center; position: relative; }
   .header h1 { margin: 0; font-size: 20px; font-weight: 700; color: #fff; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
   .header p { margin: 4px 0 0 0; font-size: 11px; color: var(--phase-color); font-weight: 600; letter-spacing: 0.5px; }
-  .version-badge { position: absolute; right: 20px; top: 15px; background: var(--secondary); color: var(--phase-color); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid var(--phase-color); }
+
+  .topbar-hamburger { background: transparent; border: none; color: #fff; cursor: pointer; padding: 4px; margin-right: 16px; margin-left: 0; display: flex; align-items: center; justify-content: center; transition: 0.2s; border-radius: 4px; }
+  .topbar-hamburger:hover { background: rgba(255, 255, 255, 0.1); color: var(--phase-color); }
+  .header-title-group { display: flex; flex-direction: column; justify-content: center; }
 
   /* ガイドライン第10項 左右分割レイアウトと余白 */
   .main-content { width: 100%; max-width: 1400px; margin: 0 auto; padding: 24px; display: grid; grid-template-columns: 35fr 65fr; gap: 24px; align-items: start; flex: 1; }
@@ -65,7 +114,7 @@
   .tooltip-icon { width: 12px; height: 12px; vertical-align: -1px; margin-right: 4px; }
 
   /* ガイドライン第6項② 現場のコツ専用デザイン */
-  .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px 16px; border-radius: 0 4px 4px 0; font-size: 12px; color: var(--text-main); line-height: 1.6; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+  .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px 16px; border-radius: 0 4px 4px 0; font-size: 12px; color: var(--text-main); line-height: 1.6; box-shadow: 0 2px 5px rgba(0,0,0,0.02); margin: 15px 0; }
   .bench-tip strong { color: #2980b9; display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 13px; }
 
   /* ガイドライン第6項⑥ 動的ヒントのフラットデザイン */
@@ -76,7 +125,7 @@
   .rationale-btn { background: var(--phase-color); color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; flex-shrink: 0; }
   .rationale-btn:hover { transform: scale(1.1); filter: brightness(1.2); }
   
-  .rationale-text { position: fixed; background: #fef9e7; border: 1px solid var(--warning); padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: max-content; max-width: min(320px, calc(100vw - 24px)); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; }
+  .rationale-text { position: fixed; background: #fef9e7; border: 1px solid var(--warning); padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: max-content; max-width: min(320px, calc(100vw - 24px)); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; }
   .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
   .rationale-text strong { color: #d35400; display: block; margin-bottom: 4px; font-size: 12px; }
   .rationale-text::after { content: ''; position: absolute; border-width: 6px; border-style: solid; left: var(--arrow-left, 50%); }
@@ -109,13 +158,13 @@
   /* 入力フォーム類 */
   .form-group { display: flex; flex-direction: column; gap: 8px; }
   .form-group label { font-size: 13px; font-weight: 600; color: var(--secondary); }
-  .drop-zone { border: 2px dashed var(--border-color); border-radius: 8px; padding: 16px; text-align: center; background: #f8f9fa; transition: 0.2s; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .drop-zone { border: 2px dashed var(--border-color); border-radius: 8px; padding: 16px; background: #f8f9fa; display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 8px; width: 100%; max-width: 450px; min-height: 60px; box-sizing: border-box; cursor: pointer; transition: 0.2s; overflow: hidden; margin: 0 auto; }
   .drop-zone:hover, .drop-zone.dragover { background: #e8f8f5; border-color: var(--phase-color); }
-  .drop-zone-content { display: flex; align-items: center; justify-content: center; gap: 4px; }
-  .drop-zone p { margin: 0; font-size: 12px; color: var(--text-muted); font-weight: bold; pointer-events: none;}
+  .drop-zone p { margin: 0; font-size: 12px; font-weight: bold; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
+  .drop-zone svg { flex-shrink: 0; }
   input[type="file"] { display: none; }
 
-  textarea { width: 100%; height: 100px; font-family: 'Courier New', Consolas, monospace; font-size: 12px; padding: 12px; border: 1px solid var(--border-color); border-radius: 4px; resize: vertical; outline: none; background: #fdfefe; transition: 0.2s; }
+  textarea { width: 100%; height: 100px; font-family: 'Courier New', Consolas, monospace; font-size: 12px; padding: 12px; border: 1px solid var(--border-color); border-radius: 4px; resize: vertical; outline: none; background: #fdfefe; transition: 0.2s; box-sizing: border-box; }
   textarea:focus { border-color: var(--phase-color); box-shadow: 0 0 0 2px rgba(230, 126, 34, 0.2); }
 
   /* 解析結果エリア共通 */
@@ -180,7 +229,7 @@
   .bg-basic { background: #dbeafe; }
 
   /* ガイドライン第6項⑦ より高度な解析ツールへ枠 */
-  .step-up-card { background: #f8f9fa; border: 1px solid #d1d5db; padding: 20px; border-radius: 8px; margin-top: 24px; color: #2c3e50; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+  .step-up-card { background: #f8f9fa; border: 1px solid #d1d5db; padding: 20px; border-radius: 8px; margin-top: 25px; color: #2c3e50; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
   .step-up-card h3 { color: #2c3e50; margin-top: 0; font-size: 15px; display: flex; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 12px; }
   .step-up-card h3 svg { margin-right: 8px; width: 20px; height: 20px; flex-shrink: 0; }
   .step-up-card p { margin: 0; font-size: 13px; line-height: 1.6; }
@@ -190,7 +239,7 @@
   .footer { background: #1a252f; padding: 12px 20px; text-align: center; font-size: 11px; color: var(--text-muted); letter-spacing: 1px; flex-shrink: 0; }
   
   /* ガイドライン第6項⑤ トースト通知 */
-  #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 12px 24px; border-radius: 30px; font-weight: bold; font-size: 13px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 100000; pointer-events: none; text-align: center; max-width: 90vw; word-break: auto-phrase; white-space: pre-wrap; }
+  #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 12px 24px; border-radius: 30px; font-weight: bold; font-size: 13px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 100000; pointer-events: none; text-align: center; max-width: 90vw; box-sizing: border-box; word-break: auto-phrase; white-space: pre-wrap; }
   #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
   #toast.error { background: var(--danger); }
   #toast.warning { background: var(--warning); color: #7e5109; }
@@ -204,7 +253,7 @@
   }
   </style>
 </head>
-<body>
+<body class="app-mode">
 
 <!-- 📱 スマホアクセス警告＆PC強制レイアウト (JS判定版) -->
 <div id="mobile-warning-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(44, 62, 80, 0.95); z-index: 999999; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; padding: 30px; box-sizing: border-box; backdrop-filter: blur(5px);">
@@ -228,13 +277,57 @@
 </script>
 <!-- 警告ここまで -->
 
+<!-- ドロワー用オーバーレイ -->
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<div class="sidebar">
+  <div class="logo-area">
+    <h1>Bio-Edu Suite</h1>
+    <p>Integrated Taxonomy Hub</p>
+  </div>
+  <div class="nav-menu">
+    <div class="nav-header p1">Phase 1: 収集・ハブ</div>
+    <a href="index.html" class="nav-item p1">Investigation Dashboard</a>
+    
+    <div class="nav-header p2">Phase 2: DNAラボ</div>
+    <a href="1_Master_Mix_Studio.html" class="nav-item p2">① PCR Master Mix Studio</a>
+    <a href="2_Thermal_Cycler_Simulator.html" class="nav-item p2">② Thermal Cycler Simulator</a>
+    <a href="3_Virtual_PCR_RFLP.html" class="nav-item p2">③ Virtual PCR & RFLP</a>
+    <a href="4_Sanger_Trace_Editor.html" class="nav-item p2">④ Sanger Trace Editor</a>
+    <a href="5_DNA_Alignment_Studio.html" class="nav-item p2">⑤ DNA Alignment Studio</a>
+    <a href="6_Alignment_Print_Studio.html" class="nav-item p2">⑥ Alignment Print Studio</a>
+    <a href="7_Virtual_BLAST_Explorer.html" class="nav-item p2">⑦ Virtual BLAST Explorer</a>
+    <a href="8_Phylogenetic_Tree_Builder.html" class="nav-item p2">⑧ Phylogenetic Tree Builder</a>
+    
+    <div class="nav-header p3">Phase 3: 形態ラボ</div>
+    <a href="9_Morphometrics_Studio.html" class="nav-item p3">⑨ Morphometrics Studio</a>
+    
+    <div class="nav-header p4">Phase 4: 統合検証ルーム</div>
+    <a href="10_integrative_taxonomy_studio.html" class="nav-item p4">⑩ Taxonomy Explorer (統合版)</a>
+    
+    <div class="nav-header p5">Phase 5: 統計遺伝学</div>
+    <a href="11_Statistical_Genetics_Lab.html" class="nav-item p5">⑪ Statistical Genetics Lab</a>
+    
+    <div class="nav-header p6">Phase 6: 構造生物学</div>
+    <a href="12_Central_Dogma_Simulator.html" class="nav-item p6 active">⑫ Central Dogma Simulator</a>
+    <a href="13_Protein_Structure_Explorer.html" class="nav-item p6">⑬ Protein Structure Explorer</a>
+
+    <div class="nav-header extra">Extra: 拡張パッケージ</div>
+    <a href="lab_packs.html" class="nav-item extra">Lab Packs (教材パック)</a>
+  </div>
+  <div class="system-status">&copy; 2026 Bio-Edu Suite v33.4 | Developed for Bioinformatics & Wet-Lab Education</div>
+</div>
+
 <div class="header-container">
   <div class="header">
-    <div>
+    <button class="topbar-hamburger" onclick="toggleSidebar()" aria-label="メニューを開く">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <div class="header-title-group">
       <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>Central Dogma Simulator</h1>
       <p>Bio-Edu Suite: Phase 6 / Transcription, Translation & Mutation Detector</p>
     </div>
-    <div class="version-badge">v33.1</div>
+    <!-- バージョンバッジ廃止 -->
   </div>
 </div>
 
@@ -252,18 +345,16 @@
         <div class="form-group">
           <label>生データ (塩基配列 / アミノ酸配列)</label>
           <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" data-tooltip="FASTA形式のファイルをドラッグ＆ドロップまたはクリックで読み込みます">
-            <div class="drop-zone-content">
-              <svg class="svg-info" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-              <p>ここをクリック、または FASTAファイル をドラッグ＆ドロップ</p>
-            </div>
+            <svg class="btn-icon svg-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+            <p>ここをクリック、または FASTAファイル をドラッグ＆ドロップ</p>
             <input type="file" id="fileInput" accept=".fasta,.fas,.txt,.seq" onchange="handleFileSelect(event)" multiple>
           </div>
         </div>
 
-        <textarea id="dnaInput" placeholder="FASTA形式の塩基配列を入力してください" data-tooltip="FASTA形式のDNAの塩基配列をここに入力します"></textarea>
+        <textarea id="dnaInput" class="paste-area" placeholder="FASTA形式の塩基配列を入力してください" data-tooltip="FASTA形式のDNAの塩基配列をここに入力します"></textarea>
 
         <div id="inputHintDefault" class="bench-tip">
-          <strong><svg class="svg-hint" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>【現場のコツ（比較モード）】</strong>
+          <strong><svg class="svg-hint" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（比較モード）</strong>
           2つの塩基配列（野生型と突然変異体）を同時入力すると、自動で比較モードになり、翻訳時に突然変異箇所を検出してアプリ⑬へ同期します。
         </div>
         
@@ -291,7 +382,7 @@
         </div>
       </div>
       <div class="card-body">
-        <button class="btn btn-primary btn-block" onclick="runTranscription()" data-tooltip="入力されたDNAの塩基配列をmRNAに転写します">転写</button>
+        <button class="btn btn-primary btn-block" onclick="runTranscription()" data-tooltip="入力されたDNAの塩基配列をmRNAに転写します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>転写</button>
       </div>
     </div>
 
@@ -308,7 +399,7 @@
         </div>
       </div>
       <div class="card-body">
-        <button class="btn btn-primary btn-block" onclick="runTranslation()" id="btnTranslate" disabled data-tooltip="転写されたmRNAをアミノ酸配列に翻訳します">翻訳</button>
+        <button class="btn btn-primary btn-block" onclick="runTranslation()" id="btnTranslate" disabled data-tooltip="転写されたmRNAをアミノ酸配列に翻訳します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>翻訳</button>
 
         <div class="legend-panel">
           <span class="legend-title">アミノ酸の化学的性質 (性質急変に注意)</span>
@@ -364,7 +455,7 @@
 
 </div>
 
-<div style="margin-top: 10px; margin-bottom: 20px; width: 100%; max-width: 1400px; margin-left: auto; margin-right: auto; padding: 0 24px; box-sizing: border-box;">
+<div style="margin-top: 20px; width: 100%; text-align: left; padding: 0 24px; box-sizing: border-box; max-width: 1400px; margin-left: auto; margin-right: auto;">
     <details style="cursor: pointer;">
         <summary style="font-weight: bold; color: var(--text-muted); font-size: 13px;">
             References & Algorithms
@@ -386,12 +477,20 @@
 </div>
 
 <div class="footer">
-  &copy; 2026 Bio-Edu Suite v33.1 | Developed for Bioinformatics & Wet-Lab Education
+  &copy; 2026 Bio-Edu Suite v33.4 | Developed for Bioinformatics & Wet-Lab Education
 </div>
 
 <div id="toast"></div>
 
 <script>
+  // --- ドロワー開閉制御 ---
+  function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    if(sidebar) sidebar.classList.toggle('open');
+    if(overlay) overlay.classList.toggle('open');
+  }
+
   // --- トースト通知（ガイドライン第5項⑤ 準拠） ---
   function showToast(msg, type = "") {
     const toast = document.getElementById('toast');
@@ -442,6 +541,7 @@
     }); 
   } 
   window.addEventListener('DOMContentLoaded', initTooltips);
+  
   // --- 教育的UIモジュール①: 根拠ポップオーバー（ガイドライン第6項① 準拠 / offsetWidthベース） ---
   function toggleRationale(event, id) { 
     event.stopPropagation(); 
@@ -488,7 +588,7 @@
   } 
 
   document.addEventListener('click', (e) => { 
-    if (!e.target.closest('.rationale-text') && !e.target.closest('.rationale-btn')) { 
+    if (!e.target.closest('.rationale-text') && !e.target.closest('.rationale-btn') && !e.target.closest('.sidebar-overlay') && !e.target.closest('.topbar-hamburger')) { 
       document.querySelectorAll('.rationale-text').forEach(el => { 
         el.classList.remove('show', 'arrow-top', 'arrow-bottom'); 
       }); 
@@ -500,6 +600,7 @@
       el.classList.remove('show', 'arrow-top', 'arrow-bottom'); 
     }); 
   }, true); 
+
   const dropZone = document.getElementById('dropZone');
   ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => { dropZone.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); }, false); });
   dropZone.addEventListener('dragover', () => dropZone.classList.add('dragover'));
@@ -550,7 +651,7 @@
       }
     }
     if(currentSeq) seqs.push({name: currentName, seq: currentSeq});
-    // PDF規格準拠：IT用語の徹底排除 (第7次監査是正)
+    // PDF規格準拠：IT用語の徹底排除
     if(!hasHeader && seqs.length === 1) seqs[0].name = "入力塩基配列";
     return seqs;
   }
@@ -666,6 +767,7 @@
     document.getElementById('btnTranslate').disabled = false;
     document.getElementById('statusText').innerText = "ステータス: 転写完了。塩基の色付けが適用されました。続いて「翻訳」を実行してください。";
   }
+
   const aminoAcids = {
     'A': { code3: 'Ala', name: 'Alanine', property: '非極性 (疎水性)', groupClass: 'aa-nonpolar' },
     'R': { code3: 'Arg', name: 'Arginine', property: '塩基性 (+)', groupClass: 'aa-basic' },
