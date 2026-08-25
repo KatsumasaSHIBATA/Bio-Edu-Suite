@@ -21,7 +21,7 @@
  --warning: #f39c12; /* ヒント・教育ポップオーバー */
 
  /* 【アプリ個別】フェーズカラー (Phase 6) */
- --phase-color: #e67e22; /* 💡 ガイドライン第3項: Phase 6のオレンジに修正 */
+ --phase-color: #e67e22; 
  }
 
  /* ガイドライン第5項: 共通レイアウトと改行崩れ補正 */
@@ -33,12 +33,47 @@
  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Noto Sans JP'; font-size: 14px; color: var(--text-main); line-height: 1.6; background-color: var(--bg-color); margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
  .sequence-text { font-family: 'Courier New', Consolas, monospace; letter-spacing: 1px; }
 
- /* ガイドライン第5項: ヘッダー・バッジ規格 */
+ /* ガイドライン第5項: グローバル・ドロワー規格 */
+ .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100dvh; background-color: var(--primary); color: white; display: flex; flex-direction: column; z-index: 1002; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 2px 0 15px rgba(0,0,0,0.2); }
+ .sidebar.open { left: 0; }
+ .sidebar-overlay { display: block; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.5); z-index: 1001; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(2px); }
+ .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
+ 
+ .topbar-hamburger { background: transparent; border: none; color: #fff; cursor: pointer; padding: 4px; margin-right: 16px; margin-left: 0; display: flex; align-items: center; justify-content: center; transition: 0.2s; border-radius: 4px; }
+ .topbar-hamburger:hover { background: rgba(255, 255, 255, 0.1); color: var(--phase-color); }
+ 
+ .header-title-group { display: flex; flex-direction: column; justify-content: center; }
+
+ /* サイドバー内部のスタイル */
+ .logo-area { padding: 20px; background-color: #1a252f; border-bottom: 4px solid var(--phase-color); text-align: center; }
+ .logo-area h1 { margin: 0; color: #fff; font-size: 20px; font-weight: 700; letter-spacing: 1px; }
+ .logo-area p { margin: 5px 0 0 0; color: var(--phase-color); font-size: 11px; }
+ .nav-menu { flex: 1; padding: 10px 0 20px 0; overflow-y: auto; }
+ .nav-header { padding: 15px 20px 5px 20px; font-size: 11px; color: #95a5a6; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; border-top: 1px solid #34495e; margin-top: 5px;}
+ .nav-header:first-child { border-top: none; margin-top: 0;}
+ .nav-item { padding: 8px 20px 8px 30px; display: flex; align-items: center; gap: 8px; color: #bdc3c7; text-decoration: none; font-size: 13px; transition: 0.2s; border-left: 4px solid transparent;}
+ .nav-item:hover { background-color: var(--secondary); color: white; }
+ .nav-header.p1 { color: #1abc9c; border-top-color: rgba(26, 188, 156, 0.2); }
+ .nav-item.p1:hover, .nav-item.p1.active { color: #1abc9c; border-left-color: #1abc9c; background-color: var(--secondary); font-weight: bold; }
+ .nav-header.p2 { color: #1abc9c; border-top-color: rgba(26, 188, 156, 0.2); }
+ .nav-item.p2:hover, .nav-item.p2.active { color: #1abc9c; border-left-color: #1abc9c; background-color: var(--secondary); font-weight: bold; }
+ .nav-header.p3 { color: #3498db; border-top-color: rgba(52, 152, 219, 0.2); }
+ .nav-item.p3:hover, .nav-item.p3.active { color: #3498db; border-left-color: #3498db; background-color: var(--secondary); font-weight: bold; }
+ .nav-header.p4 { color: #8e44ad; border-top-color: rgba(142, 68, 173, 0.2); }
+ .nav-item.p4:hover, .nav-item.p4.active { color: #9b59b6; border-left-color: #9b59b6; background-color: var(--secondary); font-weight: bold; }
+ .nav-header.p5 { color: #e74c3c; border-top-color: rgba(231, 76, 60, 0.2); }
+ .nav-item.p5:hover, .nav-item.p5.active { color: #e74c3c; border-left-color: #e74c3c; background-color: var(--secondary); font-weight: bold; }
+ .nav-header.p6 { color: #e67e22; border-top-color: rgba(230, 126, 34, 0.2); }
+ .nav-item.p6:hover, .nav-item.p6.active { color: #f39c12; border-left-color: #f39c12; background-color: var(--secondary); font-weight: bold; }
+ .nav-header.extra { color: #f1c40f; border-top-color: rgba(241, 196, 15, 0.2); }
+ .nav-item.extra:hover, .nav-item.extra.active { color: #f39c12; border-left-color: #f39c12; background-color: var(--secondary); font-weight: bold; }
+ .system-status { padding: 15px 20px; background-color: #1a252f; border-top: 1px solid #2c3e50; font-size: 11px; color: var(--text-muted); text-align: center; }
+
+ /* ガイドライン第5項: ヘッダー規格 */
  .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid var(--phase-color); display: flex; justify-content: center; position: sticky; top: 0; z-index: 30; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
  .header { width: 100%; max-width: 1400px; padding: 12px 20px; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; position: relative; }
  .header h1 { margin: 0; font-size: 20px; font-weight: 700; color: #fff; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
  .header p { margin: 4px 0 0 0; font-size: 11px; color: var(--phase-color); font-weight: 600; }
- .version-badge { position: absolute; right: 20px; top: 15px; background: var(--secondary); color: var(--phase-color); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid var(--phase-color); }
 
  /* ガイドライン第10項: レイアウト・余白 */
  .main-content { width: 100%; max-width: 1400px; padding: 24px 20px; display: grid; grid-template-columns: 380px 1fr; gap: 24px; align-items: start; flex: 1; }
@@ -48,7 +83,6 @@
  .card-header { background: var(--secondary); color: white; padding: 12px 16px; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: space-between; }
  .card-body { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
 
- /* 💡 パッチ適用箇所: インラインスタイルのCSS抽出 (.control-panel 用) */
  .input-group-col { display: flex; flex-direction: column; gap: 8px; }
  .input-group-row { display: flex; width: 100%; gap: 8px; align-items: center; }
  .flex-1 { flex: 1; }
@@ -67,7 +101,6 @@
  .btn:hover { box-shadow: 0 2px 4px rgba(0,0,0,0.1); filter: brightness(1.05); }
  .btn:active { transform: scale(0.98); }
  
- /* 💡 パッチ適用箇所: 無効化ボタンの白化と枠線の視認性確保 */
  .btn:disabled { background-color: #f8f9fa !important; color: #bdc3c7 !important; border: 1px solid #bdc3c7 !important; cursor: not-allowed; filter: grayscale(50%); box-shadow: none !important; pointer-events: none; }
 
  /* ガイドライン第4項: ボタンカラー意味論 */
@@ -80,12 +113,11 @@
  
  /* ガイドライン第11項②: ボタングループのスマートアライメント */
  .btn-group-grid { display: grid; gap: 8px; }
- .btn-group-grid .btn { width: 100%; justify-content: center; } /* グリッド内では幅を100%に */
+ .btn-group-grid .btn { width: 100%; justify-content: center; } 
 
  .btn-full-width { width: 100%; justify-content: center; }
  .btn-clear-action { color: var(--danger); border-color: var(--danger); padding: 4px 8px; font-size: 11px; }
  
- /* 💡 パッチ適用箇所: インラインスタイルの完全削除 (ガイドライン第6項⑥) */
  #af_info_panel { display: none; margin-top: 12px; }
  #af_info_panel .btn { margin-top: 8px; }
 
@@ -103,8 +135,8 @@
  
  .rationale-text { position: fixed; background: #fef9e7; border: 1px solid var(--warning); padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: max-content; max-width: min(320px, calc(100vw - 24px)); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; }
  .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
- /* 💡 パッチ適用箇所: strongタグが改行されないようにインライン要素化 */
- .rationale-text strong { color: #d35400; display: inline; margin-right: 4px; font-size: 12px; }
+ /* ガイドライン準拠: strongタグは見出し専用とし、単独行にする */
+ .rationale-text strong { color: #d35400; display: block; margin-bottom: 4px; font-size: 12px; }
  /* 吹き出しの尻尾 */
  .rationale-text::after { content: ''; position: absolute; border-width: 6px; border-style: solid; left: var(--arrow-left, 50%); }
  .rationale-text.arrow-top::after { top: -12px; border-color: transparent transparent #fef9e7 transparent; }
@@ -139,7 +171,6 @@
  .chain-selector-area { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border-color); }
  .chain-checkbox { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: bold; cursor: pointer; background: #f8f9fa; padding: 4px 8px; border-radius: 4px; border: 1px solid #dee2e6;}
 
- /* 💡 パッチ適用箇所: インラインスタイルのCSS完全抽出 (ガイドライン第6項⑦) */
  .step-up-card { background: #f8f9fa; border: 1px solid #d1d5db; padding: 20px; border-radius: 8px; margin: 24px auto; width: 100%; max-width: 1400px; display: block; box-sizing: border-box; color: #2c3e50; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
  .step-up-card h3 { color: #2c3e50; margin-top: 0; font-size: 15px; display: flex; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 12px; }
  .step-up-card h3 svg { margin-right: 8px; width: 20px; height: 20px; flex-shrink: 0; }
@@ -185,7 +216,50 @@
  }
  </style>
 </head>
-<body>
+<body class="app-mode">
+
+<!-- ドロワー用オーバーレイ -->
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<!-- グローバル・ドロワー -->
+<div class="sidebar">
+  <div class="logo-area">
+    <h1>Bio-Edu Suite</h1>
+    <p>Integrated Taxonomy Hub</p>
+  </div>
+  <div class="nav-menu">
+    <div class="nav-header p1">Phase 1: 収集・ハブ</div>
+    <a href="index.html" class="nav-item p1">Investigation Dashboard</a>
+    
+    <div class="nav-header p2">Phase 2: DNAラボ</div>
+    <a href="1_Master_Mix_Studio.html" class="nav-item p2">① PCR Master Mix Studio</a>
+    <a href="2_Thermal_Cycler_Simulator.html" class="nav-item p2">② Thermal Cycler Simulator</a>
+    <a href="3_Virtual_PCR_RFLP.html" class="nav-item p2">③ Virtual PCR & RFLP</a>
+    <a href="4_Sanger_Trace_Editor.html" class="nav-item p2">④ Sanger Trace Editor</a>
+    <a href="5_DNA_Alignment_Studio.html" class="nav-item p2">⑤ DNA Alignment Studio</a>
+    <a href="6_Alignment_Print_Studio.html" class="nav-item p2">⑥ Alignment Print Studio</a>
+    <a href="7_Virtual_BLAST_Explorer.html" class="nav-item p2">⑦ Virtual BLAST Explorer</a>
+    <a href="8_Phylogenetic_Tree_Builder.html" class="nav-item p2">⑧ Phylogenetic Tree Builder</a>
+    
+    <div class="nav-header p3">Phase 3: 形態ラボ</div>
+    <a href="9_Morphometrics_Studio.html" class="nav-item p3">⑨ Morphometrics Studio</a>
+    
+    <div class="nav-header p4">Phase 4: 統合検証ルーム</div>
+    <a href="10_integrative_taxonomy_studio.html" class="nav-item p4">⑩ Taxonomy Explorer (統合版)</a>
+    
+    <div class="nav-header p5">Phase 5: 統計遺伝学</div>
+    <a href="11_Statistical_Genetics_Lab.html" class="nav-item p5">⑪ Statistical Genetics Lab</a>
+    
+    <div class="nav-header p6">Phase 6: 構造生物学</div>
+    <a href="12_Central_Dogma_Simulator.html" class="nav-item p6">⑫ Central Dogma Simulator</a>
+    <a href="13_Protein_Structure_Explorer.html" class="nav-item p6 active">⑬ Protein Structure Explorer</a>
+
+    <div class="nav-header extra">Extra: 拡張パッケージ</div>
+    <a href="lab_packs.html" class="nav-item extra">Lab Packs (教材パック)</a>
+  </div>
+  <!-- フッターのバージョンをv33.4へ完全同期 -->
+  <div class="system-status">&copy; 2026 Bio-Edu Suite v33.4 | Developed for Bioinformatics & Wet-Lab Education</div>
+</div>
 
 <!-- 📱 スマホアクセス警告＆PC強制レイアウト (JS判定版) -->
 <div id="mobile-warning-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(44, 62, 80, 0.95); z-index: 999999; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; padding: 30px; box-sizing: border-box; backdrop-filter: blur(5px);">
@@ -202,7 +276,6 @@
     </button>
 </div>
 <script>
-    // 端末がスマホ(iPhone/Android等)か判定し、該当する場合のみ警告を表示
     if (/Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
         document.getElementById('mobile-warning-overlay').style.display = 'flex';
     }
@@ -211,15 +284,18 @@
 
 <div class="header-container">
  <div class="header">
- <div>
+ <div style="display: flex; align-items: center; width: 100%;">
+ <button class="topbar-hamburger" onclick="toggleSidebar()" aria-label="メニューを開く">
+ <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+ </button>
+ <div class="header-title-group">
  <h1>
  <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
  Protein Structure Explorer
  </h1>
- <!-- 💡 パッチ適用箇所: ヘッダーサブタイトルからIT禁止用語を排除し元の指定に復元 -->
  <p>Bio-Edu Suite: Phase 6 / Integrated Amino Acid Sequence & 3D Structure Analysis</p>
  </div>
- <div class="version-badge">v33.1</div>
+ </div>
  </div>
 </div>
 
@@ -241,12 +317,12 @@
  </div>
 
  <div id="rat_pdb" class="rationale-text">
- <strong>【オンラインデータベースからの自動取得】</strong><br>
- ・<strong>PDB (Protein Data Bank)</strong>: X線等で実際に撮影された「本物」の実測構造です（例: <code>2HHB</code>）。<br>
- ・<strong>AlphaFold</strong>: AIが高精度に予測した構造です。UniProt IDを入力します（例: <code>P68871</code>）。<br>
+ <strong>【機能：オンラインデータベースからの自動取得】</strong>
+ ・<b>PDB (Protein Data Bank)</b>: X線等で実際に撮影された「本物」の実測構造です（例: <code>2HHB</code>）。<br>
+ ・<b>AlphaFold</b>: AIが高精度に予測した構造です。UniProt IDを入力します（例: <code>P68871</code>）。<br>
  ※文字数（4文字ならPDB、それ以上ならAlphaFold）からシステムが自動で判断します。<br>
  <span style="display:inline-block; margin-top:6px; padding:6px 10px; background:#fff; border:1px solid var(--warning); border-radius:4px; width:100%;">
- <strong>【AlphaFold 予測信頼度（pLDDT）の色分け】</strong><br>
+ <b>【AlphaFold 予測信頼度（pLDDT）の色分け】</b><br>
  <span style="color:#0053d6; font-weight:bold;">■ 青（高い）</span> 〜 
  <span style="color:#65cbfa; font-weight:bold;">■ 水</span> 〜 
  <span style="color:#ffd111; font-weight:bold;">■ 黄</span> 〜 
@@ -256,8 +332,8 @@
 
  <div class="step-label" style="margin-top:8px;">2. ローカルデータの入力 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_af')" data-tooltip="データの読み込みについて">?</button></div>
  <div id="rat_af" class="rationale-text">
- <strong>【お手元のデータを直接読み込む場合】</strong><br>
- ・ご自身のPCに保存されている通常の <strong>PDBファイル</strong> や、AlphaFold等からダウンロードした <strong>CIFファイル</strong>、オンラインデータベースにはない独自のモデリング構造などを、下の枠内に直接ドラッグ＆ドロップして表示することができます。
+ <strong>【機能：お手元のデータを直接読み込む場合】</strong>
+ ・ご自身のPCに保存されている通常の <b>PDBファイル</b> や、AlphaFold等からダウンロードした <b>CIFファイル</b>、オンラインデータベースにはない独自のモデリング構造などを、下の枠内に直接ドラッグ＆ドロップして表示することができます。
  </div>
  
  <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
@@ -279,9 +355,9 @@
  </div>
  <div class="card-body">
  <div id="rat_sync" class="rationale-text">
- <strong>【根拠：アミノ酸配列から3D構造への因果関係】</strong><br>
- ・DNAの突然変異そのものを見るのではなく、「翻訳された結果としてのアミノ酸の性質変化」が立体構造の崩壊を規定します。
- <strong>アプリ⑫（Central Dogma Simulator）</strong> で特定したアミノ酸の性質変化（例：親水性から疎水性へ）が、3D空間でどのような位置にあるか（水に触れる表面に露出しているか、内側に隠れているか）を視覚的に確認し、タンパク質の機能異常のメカニズムを推論してみましょう。
+ <strong>【根拠：アミノ酸配列から3D構造への因果関係】</strong>
+ ・DNAの突然変異そのものを見るのではなく、「翻訳された結果としてのアミノ酸の性質変化」が立体構造の崩壊を規定します。<br>
+ ・<b>アプリ⑫（Central Dogma Simulator）</b> で特定したアミノ酸の性質変化（例：親水性から疎水性へ）が、3D空間でどのような位置にあるか（水に触れる表面に露出しているか、内側に隠れているか）を視覚的に確認し、タンパク質の機能異常のメカニズムを推論してみましょう。
  </div>
 
  <div class="input-group-col">
@@ -301,7 +377,7 @@
 
  <div class="step-label" style="margin-top:8px;">2. 分子の強調表示 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_mol')">?</button></div>
  <div id="rat_mol" class="rationale-text">
- <strong>【根拠：タンパク質の機能発現】</strong><br>
+ <strong>【根拠：タンパク質の機能発現】</strong>
  ・タンパク質は単体では働きません。中心にある「ヘム」などのリガンドや、結合した「DNA」を表示して初めて機能が見えてきます。
  </div>
  
@@ -322,11 +398,12 @@
  
  <div class="step-label">1. スタイルの使い分け <button class="rationale-btn" onclick="toggleRationale(event, 'rat_style')">?</button></div>
  <div id="rat_style" class="rationale-text">
- <strong>【サブユニット】</strong><br>・複数のポリペプチドがどう組み合わさっているか（四次構造）を確認します。<br>
- <strong>【リボン】</strong><br>・αヘリックスやβシートなどの二次構造の全体像を直感的に把握します。<br>
- <strong>【表面】</strong><br>・タンパク質の「皮膚」を表示します。薬やDNAがはまる「ポケット」を探すのに使います。<br>
- <strong>【空間充填】</strong><br>・すべての原子を球で描き、分子の実際の「体積・密度感」をリアルに表現します。<br>
- <strong>【ハイドロパシー】</strong><br>・疎水性アミノ酸を赤、親水性を青で塗り分け、疎水性相互作用の「接着面」を可視化します。
+ <strong>【機能：表示スタイルの使い分け】</strong>
+ ・<b>サブユニット</b>: 複数のポリペプチドがどう組み合わさっているか（四次構造）を確認します。<br>
+ ・<b>リボン</b>: αヘリックスやβシートなどの二次構造の全体像を直感的に把握します。<br>
+ ・<b>表面</b>: タンパク質の「皮膚」を表示します。薬やDNAがはまる「ポケット」を探すのに使います。<br>
+ ・<b>空間充填</b>: すべての原子を球で描き、分子の実際の「体積・密度感」をリアルに表現します。<br>
+ ・<b>ハイドロパシー</b>: 疎水性アミノ酸を赤、親水性を青で塗り分け、疎水性相互作用の「接着面」を可視化します。
  </div>
  
  <div class="btn-group-grid" style="grid-template-columns: 1fr 1fr;">
@@ -372,7 +449,6 @@
  <div class="card viewer-card">
  <div class="card-header">
  <span>3Dタンパク質ビューア</span>
- <!-- 💡 パッチ適用箇所: ハードコードカラーの撤廃 -->
  <span id="dataInfo" style="font-size:12px; font-weight:normal; color:var(--warning);">READY: データを読み込んでください</span>
  </div>
  <div id="gldiv"></div>
@@ -399,7 +475,7 @@
  <input type="range" id="clipSlider" min="0" max="100" value="100" oninput="updateClipping(this.value)" style="flex: 1; min-width: 150px; cursor: pointer; height: 6px; border-radius: 3px; accent-color: var(--phase-color);">
  <button class="rationale-btn" style="position: relative; z-index: 10;" onclick="toggleRationale(event, 'rat_clip')" data-tooltip="断面カットとは？">?</button>
  <div id="rat_clip" class="rationale-text">
- <strong>【断面から内部構造を見る】</strong><br>
+ <strong>【機能：断面カットから内部構造を見る】</strong>
  ・スライダーを左に動かすと、手前側から分子を切り取り「断面」を表示します。突然変異したアミノ酸が、相手の分子にどれほど深く食い込んでいるか（結合の深さ）が一目瞭然になります。
  </div>
  </div>
@@ -421,7 +497,6 @@
  </div>
 </div>
 
-<!-- 💡 パッチ適用箇所: インラインスタイルの完全抽出 (ガイドライン第6項⑦) -->
 <div class="step-up-card">
  <h3>
  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
@@ -434,7 +509,7 @@
  </p>
 </div>
 
-<!-- 💡 パッチ適用箇所: 要求された学術クレジットのアコーディオン -->
+<!-- 学術クレジットのアコーディオン -->
 <div style="margin-top: 10px; margin-bottom: 20px; width: 100%; max-width: 1400px; margin-left: auto; margin-right: auto; padding: 0 24px; box-sizing: border-box;">
     <details style="cursor: pointer;">
         <summary style="font-weight: bold; color: var(--text-muted); font-size: 13px;">
@@ -452,15 +527,13 @@
 </div>
 
 <!-- ガイドライン第9項④: フッター -->
-<div class="footer">&copy; 2026 Bio-Edu Suite v33.1 | Developed for Bioinformatics & Wet-Lab Education</div>
+<div class="footer">&copy; 2026 Bio-Edu Suite v33.4 | Developed for Bioinformatics & Wet-Lab Education</div>
 
 <!-- トースト通知 -->
 <div id="toast"></div>
 
 <!-- ツールチップ -->
 <!-- JSロジック initTooltips() にて動的生成するためDOM配置不要 -->
-
-<!-- [Absolute-Zero] セクション2/3 完了。省略なしで続行 -->
 
 <script>
  let viewer = null;
@@ -477,13 +550,11 @@
  let isEnvViewActive = false; // 周辺5Å表示フラグ
  let isDataLoaded = false; // PNG保存ボタン制御用フラグ
 
- // 💡 パッチ適用箇所: JS内のハードコードカラー撤廃のためのキャッシュ変数
  let themeWarningColor = "#f39c12"; // デフォルトフェールセーフ
 
  const nucleicResidues = ["A", "C", "G", "T", "U", "DA", "DC", "DG", "DT", "ADE", "CYT", "GUA", "THY", "URA"];
  const aaMap = {"ALA":"A","ARG":"R","ASN":"N","ASP":"D","CYS":"C","GLN":"Q","GLU":"E","GLY":"G","HIS":"H","ILE":"I","LEU":"L","LYS":"K","MET":"M","PHE":"F","PRO":"P","SER":"S","THR":"T","TRP":"W","TYR":"Y","VAL":"V"};
 
- // 💡 パッチ: アミノ酸の性質を定義する辞書を追加 (アプリ⑫/旧⑨準拠)
  const aaInfo = {
  "ALA": { name: "アラニン", type: "疎水性 (Non-polar)" },
  "ARG": { name: "アルギニン", type: "親水性 (Basic, +)" },
@@ -507,7 +578,13 @@
  "VAL": { name: "バリン", type: "疎水性 (Non-polar)" }
  };
 
- // --- 追加パッチ: トースト通知 ---
+ function toggleSidebar() {
+   const sidebar = document.querySelector('.sidebar');
+   const overlay = document.querySelector('.sidebar-overlay');
+   if(sidebar) sidebar.classList.toggle('open');
+   if(overlay) overlay.classList.toggle('open');
+ }
+
  function showToast(msg, type = "") {
  const toast = document.getElementById('toast');
  if (!toast) return;
@@ -528,11 +605,9 @@
  initDragAndDrop(); 
  initTooltips(); // ガイドライン第6項④
  
- // 💡 パッチ適用箇所: テーマカラー変数の動的取得
  themeWarningColor = getComputedStyle(document.documentElement).getPropertyValue('--warning').trim();
  });
 
- // 💡 パッチ適用箇所: Group分類の正直な通知 (Group 2) と 鮮度管理ロジック (ガイドライン第7項)
  window.onload = function() {
  setTimeout(() => {
  const data = localStorage.getItem('bio_edu_suite_mutations');
@@ -564,7 +639,6 @@
  }, 500);
  };
 
- // 💡 パッチ: すべての解説パネルをスマートなポップオーバーにする処理
  function toggleRationale(event, id) {
  event.stopPropagation();
  const el = document.getElementById(id);
@@ -612,7 +686,6 @@
  }
  }
 
- // 💡 パッチ: 画面外クリックやスクロールでポップオーバーを自動で閉じる
  document.addEventListener('click', (e) => {
  if (!e.target.closest('.rationale-text') && !e.target.closest('.rationale-btn')) {
  document.querySelectorAll('.rationale-text').forEach(el => {
@@ -707,7 +780,6 @@
  if (e.dataTransfer.files.length) handleFileObj(e.dataTransfer.files[0]);
  });
 
- // 💡 パッチ適用箇所: テキストエリアからのペーストにも対応
  document.addEventListener('paste', (e) => {
  const tagName = e.target.tagName.toLowerCase();
  if(tagName === 'input') return;
@@ -756,12 +828,12 @@
  document.getElementById('af_info_panel').style.display = 'none';
  }
 
- isEnvViewActive = false; // 💡 パッチ: データ新規ロード時に周辺5Åフラグを確実に初期化
+ isEnvViewActive = false;
  document.getElementById('btnEnv').classList.remove('active');
  document.getElementById('btnEnv').querySelector('.btn-text').innerText = '周辺5Å: OFF';
 
  isDataLoaded = true;
- document.getElementById('btnExport').disabled = false; // 💡 PNG保存ボタンの活性化
+ document.getElementById('btnExport').disabled = false;
 
  updateVisuals(); 
  viewer.zoomTo();
@@ -779,8 +851,6 @@
  }
 
  function updateVisuals() {
- // 💡 修正: 表示スタイル変更時にも周辺表示をリセットせず維持する
- // 💡 修正: 現在のスライダーのクリッピング状態を維持する
  let currentClip = document.getElementById('clipSlider').value;
 
  viewer.removeAllSurfaces();
@@ -802,13 +872,12 @@
  const hydrophobic = ['VAL','ILE','LEU','MET','PHE','TRP','CYS','ALA'];
  const hydrophilic = ['ARG','LYS','ASP','GLU','ASN','GLN','HIS','SER','THR','TYR'];
  if (hydrophobic.includes(atom.resn)) return '#e74c3c'; // 赤: 疎水性 (接着面)
- if (hydrophic.includes(atom.resn)) return '#3498db'; // 青: 親水性
+ if (hydrophilic.includes(atom.resn)) return '#3498db'; // 青: 親水性
  return '#bdc3c7'; // その他
  };
  baseStyle = {sphere: {colorfunc: hydroColor}}; 
  }
 
- // 💡 修正: 周辺5Å表示がアクティブな場合、全体を半透明にして周辺のスタイルのみ適用する
  if (isEnvViewActive && selectedResidues.length > 0) {
  // 全体を半透明にする
  viewer.setStyle({}, {cartoon: {opacity: 0.2, color: '#bdc3c7'}});
@@ -825,7 +894,6 @@
  finalEnvSel.and.push({chain: visibleChains});
  }
 
- // 現在のスタイルが「空間充填」または「ハイドロパシー」ならそのまま適用し、それ以外は結合が見えやすいスティックにする
  if (currentStyleMode === 'sphere' || currentStyleMode === 'hydrophobicity') {
  viewer.setStyle(finalEnvSel, baseStyle);
  } else {
@@ -865,7 +933,6 @@
  viewer.setStyle({chain: c}, {hide: true});
  });
 
- /* 💡 パッチ適用箇所: 対象残基のハイライトと「黄色のオーラ（Halo）」の処理 */
  selectedResidues.forEach(sel => {
  let highlightStyle = {cartoon: {color: 'red'}, stick: {color: 'red', radius: 0.5}, sphere: {scale: 1.1, color: 'red'}};
  let haloStyle = null; 
@@ -873,7 +940,6 @@
  if (currentStyleMode === 'sphere') {
  highlightStyle = {sphere: {color: 'red'}}; 
  } else if (currentStyleMode === 'hydrophobicity') {
- // ハイドロパシー時は赤色で塗りつぶさず「元の色を維持」する
  const hydroColor = atom => {
  const hydrophobic = ['VAL','ILE','LEU','MET','PHE','TRP','CYS','ALA'];
  const hydrophilic = ['ARG','LYS','ASP','GLU','ASN','GLN','HIS','SER','THR','TYR'];
@@ -882,14 +948,12 @@
  return '#bdc3c7';
  };
  highlightStyle = {sphere: {scale: 1.1, colorfunc: hydroColor}}; 
- // 💡 修正: ハードコードカラーをCSS変数のキャッシュに置換
  haloStyle = {sphere: {color: themeWarningColor || '#f39c12', scale: 1.5, opacity: 0.5}};
  
  } else if (isEnvViewActive) {
  highlightStyle = {sphere: {color: 'red', scale: 1.1}};
  }
 
- // ラベル用テキストの生成関数
  const getLabelText = (resi, chainId) => {
  let model = viewer.getModel(0);
  if (!model) return `Res:${resi}`;
@@ -905,7 +969,6 @@
  visibleChains.forEach(c => {
  let s = {resi: sel.resi, chain: c};
  viewer.setStyle(s, highlightStyle);
- // 💡 黄色オーラがある場合は上から重ねる (addStyle)
  if (haloStyle) viewer.addStyle(s, haloStyle);
  
  if(showLabels) {
@@ -932,7 +995,7 @@
  }
  });
 
- updateClearButton(); // 💡 クリアボタンの状態更新
+ updateClearButton();
  updateClipping(currentClip);
  }
 
@@ -950,7 +1013,6 @@
  return;
  }
  
- // フラグを切り替えてから一気に updateVisuals で描画を処理させる
  isEnvViewActive = !isEnvViewActive;
  updateVisuals();
  
@@ -965,7 +1027,6 @@
  }
  }
 
- // --- 追加パッチ: 断面カット (Clipping Plane) ---
  function updateClipping(value) {
  if (!viewer) return;
  let percent = parseInt(value); // 100: 手前(カットなし), 0: 奥(全部カット)
@@ -973,21 +1034,17 @@
  if (percent === 100) {
  viewer.setSlab(-10000, 10000); 
  } else {
- // 💡 修正: カメラのズーム状態に合わせてクリップ面を動的に計算
  let view = viewer.getView();
- // 3DmolのカメラZ位置（対象からの距離）を概算取得
  let camZ = 150; 
  if (view && view.z !== undefined) camZ = Math.abs(view.z);
  else if (view && view[2] !== undefined) camZ = Math.abs(view[2]);
  
- // 分子の平均的な半径（Å）
  let R = 60; 
- // percentが100(手前) -> 0(奥) になるにつれて near(クリップ面) を奥へ移動
  let near = camZ - R + (R * 2) * ((100 - percent) / 100);
  
  viewer.setSlab(near, 10000);
  }
- viewer.render(); // リアルタイムに再描画
+ viewer.render(); 
  }
 
  function extractSequenceAndChains() {
@@ -1011,12 +1068,10 @@
  currentChain = atom.chain;
  }
  
- // 💡 パッチ: アミノ酸配列のホバー時に表示するリッチなツールチップテキストを構築
  let aa1 = aaMap[atom.resn] || "X"; 
  let info = aaInfo[atom.resn];
  let tooltipText = info ? `<strong style='color:var(--phase-color);'>${info.name} (${atom.resn})</strong><br>残基番号: ${atom.resi}<br>性質: ${info.type}` : `残基番号: ${atom.resi}`;
  
- // 既存のtitle属性を削除し、モダンなdata-tooltipに切り替え
  seqHtml += `<span class="aa-letter" data-resi="${atom.resi}" data-chain="${atom.chain}" data-tooltip="${tooltipText}">${aa1}</span>`;
  });
 
@@ -1051,7 +1106,6 @@
  updateVisuals(); 
  }
  
- /* 💡 パッチ適用箇所: JSからのSVG上書きを防ぎ、.btn-text のみを更新する (v26.2 違反解消) */
  function toggleLabels() { 
  showLabels = !showLabels; 
  const btn = document.getElementById('btnLabel');
@@ -1077,7 +1131,6 @@
  extractSequenceAndChains(); 
  }
 
- // 💡 パッチ適用箇所: グローバルでのドラッグ状態管理 (ガイドライン第13項準拠)
  let isDraggingSeq = false;
  let currentDragMode = true;
  let autoScrollFrame = null;
@@ -1093,7 +1146,6 @@
  currentDragMode = !selectedResidues.some(r => r.resi == e.target.dataset.resi && r.chain == e.target.dataset.chain); 
  processResidue(e.target.dataset.resi, e.target.dataset.chain, currentDragMode); 
  updateVisuals(); 
- // ガイドライン第13項: スクロール検知開始
  checkAutoScroll();
  } 
  };
@@ -1105,7 +1157,6 @@
  } 
  };
  
- // ドラッグ中の座標取得
  document.addEventListener('mousemove', (e) => {
  if(isDraggingSeq) {
  currentMouseX = e.clientX;
@@ -1113,7 +1164,6 @@
  }
  });
  
- // ドラッグ終了とスクロール停止
  document.addEventListener('mouseup', () => { 
  isDraggingSeq = false; 
  if(autoScrollFrame) {
@@ -1123,32 +1173,27 @@
  });
  }
 
- // 💡 パッチ適用箇所: ガイドライン第13項 可変スピード型エッジオートスクロール (縦方向対応版)
  function checkAutoScroll() { 
  if (!isDraggingSeq) return; 
  const wrap = document.querySelector('.sequence-body'); 
  if (!wrap) return;
  const rect = wrap.getBoundingClientRect(); 
 
- const scrollTriggerArea = 50; // 検知エリア幅 
- const maxSpeed = 30; // 最大速度 
+ const scrollTriggerArea = 50; 
+ const maxSpeed = 30; 
  let scrollSpeed = 0; 
 
- // 下端の検知 
  if (currentMouseY > rect.bottom - scrollTriggerArea) { 
- let dist = currentMouseY - (rect.bottom - scrollTriggerArea); // 超過距離 
- scrollSpeed = Math.min(maxSpeed, (dist / scrollTriggerArea) * maxSpeed); // 線形補間 
+ let dist = currentMouseY - (rect.bottom - scrollTriggerArea); 
+ scrollSpeed = Math.min(maxSpeed, (dist / scrollTriggerArea) * maxSpeed); 
  } 
- // 上端の検知 
  else if (currentMouseY < rect.top + scrollTriggerArea) { 
- let dist = (rect.top + scrollTriggerArea) - currentMouseY; // 超過距離 
- scrollSpeed = -Math.min(maxSpeed, (dist / scrollTriggerArea) * maxSpeed); // 線形補間 
+ let dist = (rect.top + scrollTriggerArea) - currentMouseY; 
+ scrollSpeed = -Math.min(maxSpeed, (dist / scrollTriggerArea) * maxSpeed); 
  } 
 
- // スクロール実行と再帰ループ 
  if (scrollSpeed !== 0) { 
  wrap.scrollTop += scrollSpeed; 
- // スクロールによって移動した要素を検知して選択状態を更新
  let el = document.elementFromPoint(currentMouseX, currentMouseY);
  if (el && el.classList.contains('aa-letter')) {
  processResidue(el.dataset.resi, el.dataset.chain, currentDragMode);
@@ -1188,7 +1233,6 @@
  const url = viewer.pngURI();
  const a = document.createElement('a');
  a.href = url;
- // ガイドライン第8項: エクスポート名の定数化
  const d = new Date();
  const dateStr = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
  a.download = `BioEdu_Export_${dateStr}.png`;
@@ -1224,7 +1268,6 @@
  }
  });
 
- // --- 追加パッチ: ツールチップ制御 (v1.6から移植) ---
  function initTooltips() {
  const tooltip = document.createElement('div');
  tooltip.id = 'globalTooltip';
