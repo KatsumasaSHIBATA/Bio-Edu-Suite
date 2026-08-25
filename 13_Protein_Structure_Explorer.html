@@ -171,7 +171,11 @@
  .chain-selector-area { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border-color); }
  .chain-checkbox { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: bold; cursor: pointer; background: #f8f9fa; padding: 4px 8px; border-radius: 4px; border: 1px solid #dee2e6;}
 
- .step-up-card { background: #f8f9fa; border: 1px solid #d1d5db; padding: 20px; border-radius: 8px; margin: 24px auto; width: 100%; max-width: 1400px; display: block; box-sizing: border-box; color: #2c3e50; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+ /* ガイドライン第6項⑦ / 第9項③: より高度な解析ツールへ枠 */
+ .step-up-card { 
+    background: #f8f9fa; border: 1px solid #d1d5db; padding: 20px; border-radius: 8px; margin-top: 25px; color: #2c3e50; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    grid-column: 1 / -1; /* グリッド全幅に展開 */
+ }
  .step-up-card h3 { color: #2c3e50; margin-top: 0; font-size: 15px; display: flex; align-items: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 12px; }
  .step-up-card h3 svg { margin-right: 8px; width: 20px; height: 20px; flex-shrink: 0; }
  .step-up-card h3 span { font-size: 0.8em; opacity: 0.7; margin-left: 8px; font-weight: normal; }
@@ -495,36 +499,38 @@
  </div>
  </div>
  </div>
-</div>
 
-<div class="step-up-card">
- <h3>
- <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
- より高度な解析ツールへ
- </h3>
- <p>
- Bio-Edu Suiteで「全体構造の把握」と「疎水性相互作用の理解」を学んだら、次は実際の研究現場で使われているプロフェッショナル向けソフトウェアに挑戦してみましょう。
- <span>・<b>UCSF Chimera / ChimeraX</b>：強力な構造解析ソフト。電子顕微鏡マップの重ね合わせや、自動ドッキングが可能です。</span>
- <span>・<b>PyMOL</b>：世界中の論文で最もよく使われる構造描画ツール。複雑なアニメーションや、ミリ単位での水素結合の距離測定が可能です。</span>
- </p>
-</div>
+ <!-- ガイドライン第6項⑦ / 第9項③ 厳格準拠配置: main-content内最下層へ移動 -->
+ <div class="step-up-card">
+  <h3>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+  より高度な解析ツールへ
+  </h3>
+  <p>
+  Bio-Edu Suiteで「全体構造の把握」と「疎水性相互作用の理解」を学んだら、次は実際の研究現場で使われているプロフェッショナル向けソフトウェアに挑戦してみましょう。
+  <span>・<b>UCSF Chimera / ChimeraX</b>：強力な構造解析ソフト。電子顕微鏡マップの重ね合わせや、自動ドッキングが可能です。</span>
+  <span>・<b>PyMOL</b>：世界中の論文で最もよく使われる構造描画ツール。複雑なアニメーションや、ミリ単位での水素結合の距離測定が可能です。</span>
+  </p>
+ </div>
 
-<!-- 学術クレジットのアコーディオン -->
-<div style="margin-top: 10px; margin-bottom: 20px; width: 100%; max-width: 1400px; margin-left: auto; margin-right: auto; padding: 0 24px; box-sizing: border-box;">
-    <details style="cursor: pointer;">
-        <summary style="font-weight: bold; color: var(--text-muted); font-size: 13px;">
-            References & Algorithms
-        </summary>
-        <div style="padding: 10px 0 0 15px; font-size: 11px; color: var(--text-muted); line-height: 1.6;">
-            <p style="margin-bottom: 8px;">本アプリケーションのシミュレーションは、以下のセントラルドグマおよび遺伝暗号に関する古典的文献に基づき実装されています。</p>
-            <ul style="padding-left: 20px; margin: 0; display: flex; flex-direction: column; gap: 6px;">
-                <li><strong>Central Dogma of Molecular Biology:</strong> Crick, F. (1970). Central dogma of molecular biology. <em>Nature</em>, 227(5258), 561–563.</li>
-                <li><strong>The Standard Genetic Code:</strong> Nirenberg, M., Leder, P., Bernfield, M., Brimacombe, R., Trupin, J., Rottman, F., & O'Neal, C. (1965). RNA codewords and protein synthesis, VII. On the general nature of the RNA code. <em>Proceedings of the National Academy of Sciences</em>, 53(6), 1161–1168.</li>
-                <li><strong>Amino Acid Properties & Classification:</strong> Taylor, W. R. (1986). The classification of amino acid conservation. <em>Journal of Theoretical Biology</em>, 119(2), 205–218.</li>
-            </ul>
-        </div>
-    </details>
-</div>
+ <!-- 学術クレジットのアコーディオン (main-content内最下層へ移動) -->
+ <div style="grid-column: 1 / -1; margin-top: 10px; margin-bottom: 20px; width: 100%; padding: 0; box-sizing: border-box;">
+     <details style="cursor: pointer;">
+         <summary style="font-weight: bold; color: var(--text-muted); font-size: 13px;">
+             References & Algorithms
+         </summary>
+         <div style="padding: 10px 0 0 15px; font-size: 11px; color: var(--text-muted); line-height: 1.6;">
+             <p style="margin-bottom: 8px;">本アプリケーションのシミュレーションは、以下のセントラルドグマおよび遺伝暗号に関する古典的文献に基づき実装されています。</p>
+             <ul style="padding-left: 20px; margin: 0; display: flex; flex-direction: column; gap: 6px;">
+                 <li><strong>Central Dogma of Molecular Biology:</strong> Crick, F. (1970). Central dogma of molecular biology. <em>Nature</em>, 227(5258), 561–563.</li>
+                 <li><strong>The Standard Genetic Code:</strong> Nirenberg, M., Leder, P., Bernfield, M., Brimacombe, R., Trupin, J., Rottman, F., & O'Neal, C. (1965). RNA codewords and protein synthesis, VII. On the general nature of the RNA code. <em>Proceedings of the National Academy of Sciences</em>, 53(6), 1161–1168.</li>
+                 <li><strong>Amino Acid Properties & Classification:</strong> Taylor, W. R. (1986). The classification of amino acid conservation. <em>Journal of Theoretical Biology</em>, 119(2), 205–218.</li>
+             </ul>
+         </div>
+     </details>
+ </div>
+
+</div> <!-- main-content終了 -->
 
 <!-- ガイドライン第9項④: フッター -->
 <div class="footer">&copy; 2026 Bio-Edu Suite v33.4 | Developed for Bioinformatics & Wet-Lab Education</div>
