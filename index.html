@@ -703,9 +703,19 @@
     
     // ご意見箱（Googleフォーム）への動的パラメータ付き遷移
     function openFeedbackForm() {
-        const baseUrl = "https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform";
-        const appName = document.title;
-        const prefilledUrl = `${baseUrl}?entry.12345678=${encodeURIComponent(appName)}`;
+        // スマホの場合はメニューを自動で閉じる
+        if (window.innerWidth <= 768) {
+          document.querySelector('.sidebar').classList.remove('open');
+          const overlay = document.querySelector('.sidebar-overlay');
+          if (overlay) overlay.classList.remove('open');
+        }
+
+        const baseUrl = "https://docs.google.com/forms/d/e/1FAIpQLSet9LJgsTO0aZ6pbdekLr4fBeeDPAxREk8xmzY1f-gTcDnFrQ/viewform";
+        const entryId = "entry.1969218085";
+        
+        const appName = document.title; // ページタイトル（例: Investigation Dashboard | Bio-Edu Suite）
+        const prefilledUrl = `${baseUrl}?usp=pp_url&${entryId}=${encodeURIComponent(appName)}`;
+        
         window.open(prefilledUrl, '_blank');
     }
 
