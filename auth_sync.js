@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signInAnonymously, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // 1. Firebaseの設定情報
@@ -47,5 +47,36 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
+// Googleアカウントでのポップアップログイン関数
+export function loginWithGoogle() {
+  const provider = new GoogleAuthProvider();
+  signInWithPopup(auth, provider)
+    .then((result) => {
+      console.log("Googleログイン成功:", result.user.email);
+      alert("Googleアカウントでログインしました！");
+    })
+    .catch((error) => {
+      console.error("ログインエラー:", error);
+      alert("ログインに失敗しました: " + error.message);
+    });
+}
+
+// ルーム参加コード（Kahoot方式）の処理用関数
+export function joinRoomCode() {
+  const codeInput = document.getElementById("roomCodeInput");
+  if (!codeInput) return;
+  const roomCode = codeInput.value.trim();
+  
+  if (!roomCode) {
+    alert("ルームコードを入力してください。");
+    return;
+  }
+  
+  // 匿名ログイン状態でルームコードを保存・紐づける処理
+  localStorage.setItem("bio_edu_room_code", roomCode);
+  alert(`ルーム「${roomCode}」に参加しました！`);
+  console.log("ルーム参加コード:", roomCode);
+}
+
 // 他のファイルから呼び出せるようにエクスポート
-export { app, auth, db };
+export { app, auth, db, loginWithGoogle, joinRoomCode };
