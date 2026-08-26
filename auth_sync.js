@@ -76,5 +76,5 @@ export function joinRoomCode() {
   console.log("ルーム参加コード:", roomCode);
 }
 
-// 他のファイルから呼び出せるようにエクスポート（重複なし）
-export { app, auth, db, loginWithGoogle, joinRoomCode };
+// まとめてエクスポート（※これ以外の場所で export は使っていません）
+export { app, auth, db };
