@@ -130,15 +130,35 @@
     .mobile-hamburger { background: transparent; border: none; color: white; cursor: pointer; padding: 4px; display: none; align-items: center; justify-content: center; border-radius: 4px; transition: 0.2s; }
     .mobile-hamburger:hover { background: rgba(255,255,255,0.1); }
     
-    /* アカウントボタンのスマホ時アイコン化 */
-    .account-btn { padding: 8px 16px; font-size: 13px; border-radius: 20px; }
+    /* アカウント統合ボタン（フラット・透過） */
+    .account-btn {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      padding: 6px 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      border-radius: 20px;
+      transition: opacity 0.2s;
+    }
+    .account-btn:hover { opacity: 0.8; }
+    .account-user-icon {
+      width: 20px;
+      height: 20px;
+      stroke: #bdc3c7;
+      transition: stroke 0.3s;
+      flex-shrink: 0;
+    }
 
     @media (max-width: 768px) {
       .header { padding: 10px 15px; }
       .header h1 { font-size: 16px; }
       .mobile-hamburger { display: flex; }
-      .account-btn .btn-text { display: none; }
-      .account-btn { padding: 0; border-radius: 50%; width: 36px; height: 36px; font-size: 16px; justify-content: center; gap: 0;}
+      .account-btn { padding: 4px !important; }
+      .account-btn .btn-text { display: none !important; }
+      .account-user-icon { width: 22px; height: 22px; }
     }
 
     /* ヘッダーアイコン */
@@ -311,18 +331,7 @@
       .bulk-action-panel { width: 100%; padding: 12px 16px; border-radius: 12px 12px 0 0;}
       .bulk-action-buttons { grid-template-columns: 1fr; }
     }
-    /* スマホ時のバッジ省略表示 */
-.sync-badge {
-  display: inline-block;
-}
-@media (max-width: 768px) {
-  .sync-badge {
-    width: 1.2em;
-    overflow: hidden;
-    white-space: nowrap;
-    vertical-align: bottom;
-  }
-}
+    
   </style>
 </head>
 <body class="dashboard-mode no-select-ui">
@@ -451,15 +460,16 @@
           </div>
         </div>
         
-       <!-- 正しいヘッダー右側のボタン -->
-        <div class="header-right" style="display: flex; align-items: center; gap: 12px;">
-          <span id="sync-status-badge" class="sync-badge" style="font-size: 13px; font-weight: bold; color: #bdc3c7;">⚪️ 接続中...</span>
-          <button class="btn btn-primary account-btn" onclick="openAccountSettings(); triggerHapticFeedback();">
-            👤 <span class="btn-text">アカウント・同期設定</span>
+       <!-- ヘッダー右側（統合アカウントボタン） -->
+        <div class="header-right">
+          <button id="accountBtn" class="account-btn" onclick="openAccountSettings(); triggerHapticFeedback();" data-tooltip="アカウント・同期設定">
+            <svg id="accountUserIcon" class="account-user-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span id="accountStatusText" class="btn-text" style="font-size: 13px; font-weight: bold; color: #bdc3c7;">接続中...</span>
           </button>
         </div>
-      </div>
-    </div>
 
     <div class="content-area">
 
@@ -593,34 +603,44 @@
 
   <!-- アカウント・同期設定モーダル -->
   <div class="modal-overlay" id="accountModal">
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 380px;">
       <div class="modal-header">
         <h3 style="margin: 0; font-size: 16px;">アカウント・同期設定</h3>
-        <button class="modal-close" onclick="closeAccountSettings(); triggerHapticFeedback();" data-tooltip="閉じる"><svg class="btn-icon" style="margin:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        <button class="modal-close" onclick="closeAccountSettings(); triggerHapticFeedback();" data-tooltip="閉じる">
+          <svg class="btn-icon" style="margin:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
       </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label>Firebase クラウド同期</label>
-          <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
-            <!-- モーダル内の状態表示用テキスト（IDを付与） -->
-            <span id="modalSyncStatus" style="font-size: 14px; font-weight: bold; color: var(--success);">🟢 クラウド同期中（自動接続）</span>
-          </div>
-          <button class="btn btn-secondary" style="width: 100%; margin-bottom: 10px;" onclick="window.handleGoogleLogin(); triggerHapticFeedback();">Googleアカウントでログイン</button>
-          <div class="help-text">ログインすると、Googleアカウント間でデータを引き継げます。</div>
-        </div>
+      <div class="modal-body" style="padding: 20px;">
         
-        <hr style="border: 0; border-top: 1px solid #ecf0f1; margin: 20px 0;">
-
-        <div class="form-group">
-          <label>ルーム参加コード (Kahoot方式)</label>
-          <div style="display: flex; gap: 10px;">
-            <!-- 入力欄にIDを付与 -->
-            <input type="text" id="roomCodeInput" class="form-control" placeholder="例: 123456" style="flex: 1;">
-            <!-- 参加ボタンに機能を紐づけ -->
-            <button class="btn btn-primary" onclick="window.handleJoinRoom(); triggerHapticFeedback();">参加</button>
+        <!-- ① 未ログイン時（ゲスト） -->
+        <div id="modalLoggedOutView">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <span style="font-size: 14px; font-weight: bold; color: var(--text-muted);">⚪️ ゲストモード</span>
           </div>
-          <div class="help-text">先生から共有されたコードを入力し、匿名でクラスのセッションに参加します。</div>
+          <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 16px 0; line-height: 1.6;">
+            現在は端末内のみにデータが保存されています。Googleアカウントでログインすると、自宅のPCや他の端末とデータを自動同期できます。
+          </p>
+          <button class="btn btn-primary" style="width: 100%;" onclick="window.handleGoogleLogin(); triggerHapticFeedback();">
+            Googleアカウントでログイン
+          </button>
         </div>
+
+        <!-- ② ログイン中 -->
+        <div id="modalLoggedInView" style="display: none;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <span style="font-size: 14px; font-weight: bold; color: var(--phase-color);">🟢 クラウド同期中</span>
+          </div>
+          
+          <div style="background: #f8f9fa; border: 1px solid #e1e8ed; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
+            <div id="userNameDisplay" style="font-weight: bold; font-size: 14px; color: var(--primary);"></div>
+            <div id="userEmailDisplay" style="font-size: 11px; color: var(--text-muted); margin-top: 2px;"></div>
+          </div>
+
+          <button class="btn btn-secondary" style="width: 100%; color: var(--danger); border-color: #f5b7b1;" onclick="window.handleLogout(); triggerHapticFeedback();">
+            ログアウト
+          </button>
+        </div>
+
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="closeAccountSettings(); triggerHapticFeedback();">閉じる</button>
@@ -1279,13 +1299,10 @@
   </script>
   
   <script type="module">
-    import { loginWithGoogle, joinRoomCode } from './auth_sync.js';
+    import { loginWithGoogle, logoutUser } from './auth_sync.js';
     window.handleGoogleLogin = loginWithGoogle;
-    window.handleJoinRoom = joinRoomCode;
+    window.handleLogout = logoutUser;
   </script>
-  
-  <!-- Firebase同期スクリプトの読み込みを追加 -->
-  <script type="module" src="auth_sync.js"></script>
 
 </body>
 </html>
