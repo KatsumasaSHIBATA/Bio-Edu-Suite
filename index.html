@@ -311,6 +311,18 @@
       .bulk-action-panel { width: 100%; padding: 12px 16px; border-radius: 12px 12px 0 0;}
       .bulk-action-buttons { grid-template-columns: 1fr; }
     }
+    /* スマホ時のバッジ省略表示 */
+.sync-badge {
+  display: inline-block;
+}
+@media (max-width: 768px) {
+  .sync-badge {
+    width: 1.2em;
+    overflow: hidden;
+    white-space: nowrap;
+    vertical-align: bottom;
+  }
+}
   </style>
 </head>
 <body class="dashboard-mode no-select-ui">
@@ -439,12 +451,31 @@
           </div>
         </div>
         
-        <div class="header-right" style="display: flex; align-items: center; gap: 12px;">
-          <span id="sync-status-badge" style="font-size: 13px; font-weight: bold; color: #bdc3c7;">⚪️ 接続中...</span>
-          <button class="btn btn-primary account-btn" onclick="openAccountSettings(); triggerHapticFeedback();">
-            👤 <span class="btn-text">アカウント・同期設定</span>
-          </button>
+        <!-- 同期設定モーダル -->
+  <div class="modal-overlay" id="accountModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 style="margin: 0; font-size: 16px;">同期設定</h3>
+        <button class="modal-close" onclick="closeAccountSettings(); triggerHapticFeedback();" data-tooltip="閉じる"><svg class="btn-icon" style="margin:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Firebase クラウド同期</label>
+          <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
+            <span style="font-size: 16px;">🟢</span>
+            <span style="font-size: 14px; font-weight: bold; color: var(--success);">同期中</span>
+          </div>
+          <div class="help-text" style="color: var(--text-main); font-weight: bold; font-size: 12px;">
+            現在は自動的にクラウドと同期されています。<br>
+            <span style="color: var(--text-muted); font-weight: normal; font-size: 11px;">※面倒なアカウント登録やログインは不要です。</span>
+          </div>
         </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeAccountSettings(); triggerHapticFeedback();">閉じる</button>
+      </div>
+    </div>
+  </div>
       </div>
     </div>
 
