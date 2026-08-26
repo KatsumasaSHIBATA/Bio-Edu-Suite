@@ -26,6 +26,7 @@ enableIndexedDbPersistence(db).catch((err) => {
 // 4. ログイン状態の監視とステータスバッジの書き換え
 onAuthStateChanged(auth, (user) => {
   const badge = document.getElementById("sync-status-badge");
+  const modalStatus = document.getElementById("modalSyncStatus");
   
   if (user) {
     // ログイン（同期）成功時
@@ -33,11 +34,19 @@ onAuthStateChanged(auth, (user) => {
     if (badge) {
       badge.textContent = "🟢 同期中";
     }
+    if (modalStatus) {
+      modalStatus.textContent = "🟢 クラウド同期中（自動接続）";
+      modalStatus.style.color = "var(--success)";
+    }
   } else {
     // ログアウト（未接続）時
     console.log("未接続。匿名ログインを試みます...");
     if (badge) {
       badge.textContent = "🔴 オフライン";
+    }
+    if (modalStatus) {
+      modalStatus.textContent = "🔴 オフライン（ローカル保存中）";
+      modalStatus.style.color = "var(--danger)";
     }
     // 自動的に匿名ログインを実行
     signInAnonymously(auth).catch((error) => {
