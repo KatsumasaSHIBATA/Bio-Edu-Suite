@@ -36,7 +36,7 @@
     *, *::before, *::after { box-sizing: border-box; }
     
     /* 画面レイアウトの根本設定 */
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Noto Sans JP'; font-size: 14px; background-color: var(--bg-color); color: var(--text-main); margin: 0; height: 100vh; overflow: hidden; overscroll-behavior-y: none; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Noto Sans JP'; font-size: 14px; background-color: var(--bg-color); color: var(--text-main); margin: 0; height: 100vh; overflow: hidden; overscroll-behavior-y: none; display: flex; flex-direction: row;}
 
     /* 改行崩れ・テキスト折り返しの補正（ガイドライン第5項） */
     body, .card, p, div, .bench-tip, .step-up-card, .rationale-text, .assist-panel, .dynamic-hint { word-break: normal; overflow-wrap: anywhere; line-height: 1.6; }
@@ -45,33 +45,23 @@
     /* PWAネイティブ質感・ブラウザ挙動封印 */
     .no-select-ui { user-select: none; -webkit-touch-callout: none; }
 
-    /* ---------------------------------------------------
-       グローバル・ドロワー (Peg Menu) 規格 (v33.7 改定 / v33.8 調整)
-       --------------------------------------------------- */
-    .sidebar { position: fixed; top: 0; left: 0; width: 60px; height: 100dvh; background-color: var(--primary); color: white; display: flex; flex-direction: column; z-index: 1002; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 2px 0 15px rgba(0,0,0,0.2); overflow-x: hidden; }
+    .sidebar { position: fixed; top: 0; left: 0; width: 60px; height: 100dvh; background-color: var(--primary); color: white; display: flex; flex-direction: column; z-index: 1002; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), left 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 2px 0 15px rgba(0,0,0,0.2); overflow-x: hidden; }
     .sidebar-overlay { display: block; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.5); z-index: 1001; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(2px); }
     .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
     
-    /* スクロールバーの隠蔽 (v33.8 追加) */
+    /* スクロールバーの完全隠蔽 */
     .sidebar::-webkit-scrollbar, .nav-menu::-webkit-scrollbar { display: none; }
     .sidebar, .nav-menu { -ms-overflow-style: none; scrollbar-width: none; }
     
-    @media (min-width: 769px) {
-      .sidebar:hover, .sidebar.pinned { width: 280px; }
-    }
-    @media (max-width: 768px) {
-      .sidebar { width: 60px; } 
-      .sidebar.open { width: 280px; }
-    }
+    /* サイドバーヘッダー (右端配置) */
+    .sidebar-header { height: 60px; display: flex; align-items: center; justify-content: flex-end; padding-right: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); flex-shrink: 0; width: 100%; transition: 0.3s; }
     
-    /* サイドバーヘッダー (ハンバーガーボタン専用領域 / v33.8 アンカー固定) */
-    .sidebar-header { height: 60px; display: flex; align-items: center; justify-content: flex-start; padding-left: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); flex-shrink: 0; width: 100%; transition: 0.3s; }
-    
-    /* ハンバーガーアニメーション (v33.8 改定 - SVG反転) */
+    /* ハンバーガーアニメーション (≡ と × の切り替え) */
     .hamburger-btn { background: transparent; border: none; color: white; cursor: pointer; padding: 8px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; border-radius: 4px; }
-    .hamburger-btn svg { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
     .hamburger-btn:hover { background: rgba(255,255,255,0.1); }
-    .sidebar.pinned .hamburger-btn svg, .sidebar.open .hamburger-btn svg { transform: scaleX(-1); }
+    .hamburger-btn .icon-close { display: none; }
+    .sidebar.pinned .hamburger-btn .icon-menu, .sidebar.open .hamburger-btn .icon-menu { display: none; }
+    .sidebar.pinned .hamburger-btn .icon-close, .sidebar.open .hamburger-btn .icon-close { display: block; }
 
     .nav-menu { flex: 1; padding: 10px 0 20px 0; overflow-y: auto; overflow-x: hidden; }
     
@@ -81,8 +71,15 @@
     .sidebar.pinned .nav-text, .sidebar.pinned .nav-header-text, .sidebar.pinned .sidebar-action-text,
     .sidebar.open .nav-text, .sidebar.open .nav-header-text, .sidebar.open .sidebar-action-text { opacity: 1; }
 
-    .nav-header { padding: 15px 20px 5px 20px; font-size: 11px; color: #95a5a6; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 5px; white-space: nowrap; overflow: hidden; }
-    .nav-header.p1 { border-top: none; margin-top: 0;}
+    /* ナビ見出しのカラー復元 */
+    .nav-header { padding: 15px 20px 5px 20px; font-size: 11px; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 5px; white-space: nowrap; overflow: hidden; }
+    .nav-header.p1 { color: #1abc9c; border-top: none; margin-top: 0; }
+    .nav-header.p2 { color: #1abc9c; }
+    .nav-header.p3 { color: #3498db; }
+    .nav-header.p4 { color: #8e44ad; }
+    .nav-header.p5 { color: #e74c3c; }
+    .nav-header.p6 { color: #e67e22; }
+    .nav-header.extra { color: #f1c40f; }
     
     .nav-item { padding: 12px 20px; display: flex; align-items: center; gap: 12px; color: #bdc3c7; text-decoration: none; font-size: 13px; transition: 0.2s; border-left: 4px solid transparent; white-space: nowrap; overflow: hidden; }
     .nav-item:hover { background-color: rgba(255,255,255,0.05); color: white; }
@@ -106,31 +103,50 @@
     /* マイクロインタラクション（沈み込み） */
     .btn:active, .sidebar-action-btn:active { transform: scale(0.97); }
 
-    /* ---------------------------------------------------
-       メインラッパーとヘッダーレイアウト 
-       --------------------------------------------------- */
-    .main-wrapper { display: flex; flex-direction: column; overflow: hidden; position: relative; padding-left: 60px; height: 100%; transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-sizing: border-box; width: 100%; }
-    body.has-pinned-sidebar .main-wrapper { padding-left: 280px; }
+    .main-wrapper { display: flex; flex-direction: column; overflow: hidden; position: relative; padding-left: 60px; height: 100%; min-height: 100vh; transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-sizing: border-box; width: 100%; }
     
-    @media (max-width: 768px) {
-      .main-wrapper { padding-left: 60px; }
-      body.has-pinned-sidebar .main-wrapper { padding-left: 60px; } /* スマホ時はメイン領域を押し出さない */
+    @media (min-width: 769px) {
+      .sidebar:hover, .sidebar.pinned { width: 280px; }
+      body.has-pinned-sidebar .main-wrapper { padding-left: 280px; }
     }
     
-    /* グローバルヘッダー規格 */  
+    /* スマホ閲覧時のドロワー完全隠蔽 */
+    @media (max-width: 768px) {
+      .sidebar { width: 280px; left: -280px; } 
+      .sidebar.open { left: 0; }
+      .main-wrapper { padding-left: 0; }
+      body.has-pinned-sidebar .main-wrapper { padding-left: 0; }
+    }
+    
+    /* ヘッダーのフルード化と左寄せ固定 */  
     .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid var(--phase-color); display: flex; position: sticky; top: 0; z-index: 30; box-shadow: 0 2px 10px rgba(0,0,0,0.15); flex-shrink: 0; }  
-    /* v33.8 padding調整・右寄せバランス調整 */
-    .header { margin: 0 auto; width: 100%; max-width: 1400px; padding: 12px 24px; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; position: relative; }  
+    .header { width: 100%; padding: 12px 24px; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; position: relative; }  
+    .header-left { display: flex; align-items: center; gap: 12px; }
     .header h1 { margin: 0; font-size: 20px; font-weight: 700; color: #fff; white-space: nowrap; display: flex; align-items: center; gap: 8px; }  
     .header p { margin: 4px 0 0 0; font-size: 11px; color: var(--phase-color); font-weight: 600; }  
     .header-title-group { display: flex; flex-direction: column; justify-content: center; }
     
-    /* ヘッダーアイコン（インラインSVG / ガイドライン第2項準拠 24px固定） */
+    /* スマホ用ヘッダーハンバーガー */
+    .mobile-hamburger { background: transparent; border: none; color: white; cursor: pointer; padding: 4px; display: none; align-items: center; justify-content: center; border-radius: 4px; transition: 0.2s; }
+    .mobile-hamburger:hover { background: rgba(255,255,255,0.1); }
+    
+    /* アカウントボタンのスマホ時アイコン化 */
+    .account-btn { padding: 8px 16px; font-size: 13px; border-radius: 20px; }
+
+    @media (max-width: 768px) {
+      .header { padding: 10px 15px; }
+      .header h1 { font-size: 16px; }
+      .mobile-hamburger { display: flex; }
+      .account-btn .btn-text { display: none; }
+      .account-btn { padding: 0; border-radius: 50%; width: 36px; height: 36px; font-size: 16px; justify-content: center; gap: 0;}
+    }
+
+    /* ヘッダーアイコン */
     .header-icon { width: 24px; height: 24px; flex-shrink: 0; margin-right: 6px; }
     .btn-icon { width: 16px; height: 16px; vertical-align: -3px; flex-shrink: 0; }
     .svg-danger { color: var(--danger); }
     
-    .content-area { flex: 1; padding: 25px; overflow-y: auto; padding-bottom: 120px; /* 一括送信パネル分の余白 */ }
+    .content-area { flex: 1; padding: 25px; overflow-y: auto; padding-bottom: 120px; }
 
     .action-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     .btn { padding: 8px 16px; border: none; border-radius: 4px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: fit-content; }
@@ -139,10 +155,10 @@
     .btn-secondary { background-color: #fdfefe; color: var(--text-main); border: 1px solid var(--border-color); }
     .btn-secondary:hover { background-color: #f4f6f7; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
-    /* 完全統一フッター規格 v33.7版 */
-    .footer { padding: 15px 20px; background-color: #1a252f; border-top: 2px solid var(--phase-color); font-size: 11px; color: #bdc3c7; text-align: center; margin-top: auto; flex-shrink: 0; }
+    /* 完全統一フッター規格 */
+    .footer { padding: 15px 20px; background-color: #1a252f; border-top: 1px solid #2c3e50; font-size: 11px; color: #bdc3c7; text-align: center; margin-top: auto; flex-shrink: 0; }
 
-    /* サンプルグリッド */
+    /* サンプルグリッドとフリッカー対策 */
     .sample-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
     .sample-card { 
       background: var(--card-bg); 
@@ -154,9 +170,13 @@
       border: 1px solid #e1e8ed; 
       border-top: 4px solid var(--phase-color);
       position: relative;
+      will-change: transform;
+      backface-visibility: hidden;
     }
     .sample-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
     
+    .sample-thumbnail { will-change: transform; backface-visibility: hidden; }
+
     .card-header { padding: 15px; border-bottom: 1px solid #ecf0f1; display: flex; justify-content: space-between; align-items: flex-start; border-radius: 8px 8px 0 0; }
     .card-title { margin: 0; font-size: 16px; font-weight: bold; color: var(--primary); }
     .card-id { font-size: 11px; color: var(--text-muted); font-family: monospace; background: #f4f6f7; padding: 2px 6px; border-radius: 4px; margin-top: 4px; display: inline-block; }
@@ -245,7 +265,6 @@
 
     /* モーダル */
     .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(2px); }
-    /* ガイドライン第8項: 幅の完全統一 (width: 400px) */
     .modal-content { background: white; border-radius: 8px; width: 400px; max-width: 95vw; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border-top: 6px solid var(--phase-color); z-index: 1010;}
     .modal-header { padding: 15px 20px; background: #f8f9f9; color: var(--primary); border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ecf0f1; }
     .modal-header h3 { margin: 0; font-size: 16px; }
@@ -268,6 +287,13 @@
     .paste-area { border: 1px solid var(--border-color); border-radius: 4px; padding: 12px; background: #fdfefe; width: 100%; max-width: 450px; min-height: 100px; font-family: 'Courier New', Consolas, monospace; font-size: 12px; resize: vertical; box-sizing: border-box; }
     .paste-area:focus { border-color: var(--phase-color); outline: none; box-shadow: 0 0 0 2px rgba(26, 188, 156, 0.2); }
 
+    /* ツールチップ (data-tooltip) */
+    [data-tooltip] { position: relative; cursor: pointer; }
+    .custom-tooltip { position: fixed; top: 0; left: 0; background: rgba(44, 62, 80, 0.95); color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 11px; pointer-events: none; z-index: 9999; opacity: 0; transition: opacity 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-weight: normal; line-height: 1.4; display: none; white-space: normal; width: max-content; max-width: min(320px, 90vw); text-align: center; box-sizing: border-box; }
+    .custom-tooltip::after { content: ''; position: absolute; border-width: 5px; border-style: solid; left: 50%; transform: translateX(-50%); }
+    .custom-tooltip.show-top::after { top: 100%; border-color: rgba(44, 62, 80, 0.95) transparent transparent transparent; }
+    .custom-tooltip.show-bottom::after { bottom: 100%; border-color: transparent transparent rgba(44, 62, 80, 0.95) transparent; }
+
     /* トースト通知 */
     #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 12px 24px; border-radius: 30px; font-weight: bold; font-size: 13px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 100000; pointer-events: none; text-align: center; max-width: 90vw; box-sizing: border-box; word-break: auto-phrase; }
     #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
@@ -277,18 +303,7 @@
 
     .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); background: white; border-radius: 8px; border: 2px dashed #bdc3c7; }
 
-    /* ツールチップ (data-tooltip) */
-    [data-tooltip] { position: relative; cursor: pointer; }
-    .custom-tooltip { position: fixed; background: rgba(44, 62, 80, 0.95); color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 11px; pointer-events: none; z-index: 9999; opacity: 0; transition: opacity 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-weight: normal; line-height: 1.4; display: none; white-space: normal; width: max-content; max-width: min(320px, 90vw); text-align: center; box-sizing: border-box; }
-    .custom-tooltip::after { content: ''; position: absolute; border-width: 5px; border-style: solid; left: 50%; transform: translateX(-50%); }
-    .custom-tooltip.show-top::after { top: 100%; border-color: rgba(44, 62, 80, 0.95) transparent transparent transparent; }
-    .custom-tooltip.show-bottom::after { bottom: 100%; border-color: transparent transparent rgba(44, 62, 80, 0.95) transparent; }
-
-    /* レスポンシブ対応 */
     @media (max-width: 768px) {
-      .header-container { padding: 0; }
-      .header { padding: 10px 15px; } /* スマホ時は少しタイトに */
-      .header h1 { font-size: 16px; }
       .content-area { padding: 15px; padding-bottom: 220px; }
       .modal-content { width: 95%; margin: 10px; max-height: 95vh; }
       .modal-footer { flex-direction: column; }
@@ -306,9 +321,11 @@
   <!-- グローバル・ドロワー (Peg Menu) -->
   <div class="sidebar">
     <div class="sidebar-header">
-      <button class="hamburger-btn" onclick="toggleSidebarPin(); triggerHapticFeedback();" aria-label="メニューを開く/固定">
-        <!-- パネル左展開を示すSVGアイコンへ差し替え -->
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><path d="M14 9l3 3-3 3"></path></svg>
+      <button class="hamburger-btn" onclick="toggleSidebarPin(); triggerHapticFeedback();" aria-label="メニューを開く/閉じる">
+        <!-- ≡ アイコン (v34.1 回帰) -->
+        <svg class="icon-menu" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        <!-- × アイコン -->
+        <svg class="icon-close" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
       </button>
     </div>
 
@@ -322,63 +339,63 @@
       <div class="nav-header p2"><span class="nav-header-text">Phase 2: DNAラボ</span></div>
       <a href="1_Master_Mix_Studio.html" class="nav-item p2">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>
-        <span class="nav-text">① PCR Master Mix Studio</span>
+        <span class="nav-text">PCR Master Mix Studio</span>
       </a>
       <a href="2_Thermal_Cycler_Simulator.html" class="nav-item p2">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>
-        <span class="nav-text">② Thermal Cycler Simulator</span>
+        <span class="nav-text">Thermal Cycler Simulator</span>
       </a>
       <a href="3_Virtual_PCR_RFLP.html" class="nav-item p2">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>
-        <span class="nav-text">③ Virtual PCR & RFLP</span>
+        <span class="nav-text">Virtual PCR & RFLP</span>
       </a>
       <a href="4_Sanger_Trace_Editor.html" class="nav-item p2">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>
-        <span class="nav-text">④ Sanger Trace Editor</span>
+        <span class="nav-text">Sanger Trace Editor</span>
       </a>
       <a href="5_DNA_Alignment_Studio.html" class="nav-item p2">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>
-        <span class="nav-text">⑤ DNA Alignment Studio</span>
+        <span class="nav-text">DNA Alignment Studio</span>
       </a>
       <a href="6_Alignment_Print_Studio.html" class="nav-item p2">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>
-        <span class="nav-text">⑥ Alignment Print Studio</span>
+        <span class="nav-text">Alignment Print Studio</span>
       </a>
       <a href="7_Virtual_BLAST_Explorer.html" class="nav-item p2">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>
-        <span class="nav-text">⑦ Virtual BLAST Explorer</span>
+        <span class="nav-text">Virtual BLAST Explorer</span>
       </a>
       <a href="8_Phylogenetic_Tree_Builder.html" class="nav-item p2">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>
-        <span class="nav-text">⑧ Phylogenetic Tree Builder</span>
+        <span class="nav-text">Phylogenetic Tree Builder</span>
       </a>
       
       <div class="nav-header p3"><span class="nav-header-text">Phase 3: 形態ラボ</span></div>
       <a href="9_Morphometrics_Studio.html" class="nav-item p3">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 21h18L3 3z"/><path d="M7 21v-2M11 21v-2M15 21v-2"/></svg>
-        <span class="nav-text">⑨ Morphometrics Studio</span>
+        <span class="nav-text">Morphometrics Studio</span>
       </a>
       
       <div class="nav-header p4"><span class="nav-header-text">Phase 4: 統合検証ルーム</span></div>
       <a href="10_integrative_taxonomy_studio.html" class="nav-item p4">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3v18M8 21h8M4 7h16"/><path d="M4 7l-2 5h4z"/><path d="M20 7l-2 5h4z"/></svg>
-        <span class="nav-text">⑩ Taxonomy Explorer (統合版)</span>
+        <span class="nav-text">Taxonomy Explorer (統合版)</span>
       </a>
       
       <div class="nav-header p5"><span class="nav-header-text">Phase 5: 統計遺伝学</span></div>
       <a href="11_Statistical_Genetics_Lab.html" class="nav-item p5">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 21h18"/><path d="M7 21V10M12 21V4M17 21V14"/></svg>
-        <span class="nav-text">⑪ Statistical Genetics Lab</span>
+        <span class="nav-text">Statistical Genetics Lab</span>
       </a>
       
       <div class="nav-header p6"><span class="nav-header-text">Phase 6: 構造生物学</span></div>
       <a href="12_Central_Dogma_Simulator.html" class="nav-item p6">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-        <span class="nav-text">⑫ Central Dogma Simulator</span>
+        <span class="nav-text">Central Dogma Simulator</span>
       </a>
       <a href="13_Protein_Structure_Explorer.html" class="nav-item p6">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-        <span class="nav-text">⑬ Protein Structure Explorer</span>
+        <span class="nav-text">Protein Structure Explorer</span>
       </a>
 
       <div class="nav-header extra"><span class="nav-header-text">Extra: 拡張パッケージ</span></div>
@@ -401,15 +418,20 @@
     </div>
   </div>
 
-  <!-- メインラッパー (v33.7 再構築) -->
   <div class="main-wrapper">
     
     <!-- グローバルヘッダー -->
     <div class="header-container">
       <div class="header">
-        <div style="display: flex; align-items: center; gap: 12px;">
+        <div class="header-left">
+          <!-- スマホ用ヘッダーハンバーガー -->
+          <button class="mobile-hamburger" onclick="toggleSidebarPin(); triggerHapticFeedback();" aria-label="メニューを開く">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          </button>
+          
           <div class="header-title-group">
             <h1>
+              <!-- Phase 1 公式SVGアイコン復活 -->
               <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
               Investigation Dashboard
             </h1>
@@ -417,10 +439,9 @@
           </div>
         </div>
         
-        <!-- ヘッダー右側のスマート化: アカウント・同期設定のみに集約 -->
         <div class="header-right">
-          <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px; border-radius: 20px;" onclick="triggerHapticFeedback();">
-            👤 アカウント・同期設定
+          <button class="btn btn-primary account-btn" onclick="openAccountSettings(); triggerHapticFeedback();">
+            👤 <span class="btn-text">アカウント・同期設定</span>
           </button>
         </div>
       </div>
@@ -439,9 +460,9 @@
 
     </div>
     
-    <!-- ダークテーマ・フッター規格 v33.7版 -->
+    <!-- ダークテーマ・フッター規格 v33.9版 -->
     <div class="footer">
-      &copy; 2026 Bio-Edu Suite v33.8 | Developed for Bioinformatics & Wet-Lab Education
+      &copy; 2026 Bio-Edu Suite v34.1 | Developed for Bioinformatics & Wet-Lab Education
     </div>
     
     <!-- フローティング・アクション・バー -->
@@ -556,15 +577,49 @@
     </div>
   </div>
 
+  <!-- アカウント・同期設定モーダル -->
+  <div class="modal-overlay" id="accountModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 style="margin: 0; font-size: 16px;">アカウント・同期設定</h3>
+        <button class="modal-close" onclick="closeAccountSettings(); triggerHapticFeedback();" data-tooltip="閉じる"><svg class="btn-icon" style="margin:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Firebase クラウド同期</label>
+          <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+            <div style="width: 12px; height: 12px; border-radius: 50%; background-color: var(--border-color);" id="syncIndicator"></div>
+            <span style="font-size: 13px; font-weight: bold; color: var(--text-muted);" id="syncStatusText">オフライン（ローカル保存中）</span>
+          </div>
+          <button class="btn btn-secondary" style="width: 100%; margin-bottom: 10px;" onclick="triggerHapticFeedback();">Googleアカウントでログイン</button>
+          <div class="help-text">ログインすると、端末間でデータが自動同期されます。</div>
+        </div>
+        
+        <hr style="border: 0; border-top: 1px solid #ecf0f1; margin: 20px 0;">
+
+        <div class="form-group">
+          <label>ルーム参加コード (Kahoot方式)</label>
+          <div style="display: flex; gap: 10px;">
+            <input type="text" class="form-control" placeholder="例: 123456" style="flex: 1;">
+            <button class="btn btn-primary" onclick="triggerHapticFeedback();">参加</button>
+          </div>
+          <div class="help-text">先生から共有されたコードを入力し、匿名でクラスのセッションに参加します。</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeAccountSettings(); triggerHapticFeedback();">閉じる</button>
+      </div>
+    </div>
+  </div>
+
   <div id="toast"></div>
   
-  <!-- 画像ホバープレビュー用コンテナ -->
-  <div id="imageHoverPreview" style="position:fixed; z-index:100000; display:none; pointer-events:none; background:white; padding:4px; border-radius:6px; box-shadow:0 10px 30px rgba(0,0,0,0.3); border:2px solid var(--phase-color);">
+  <!-- 画像ホバープレビュー用コンテナ (フリッカー対策済み) -->
+  <div id="imageHoverPreview" style="position:fixed; top:0; left:0; z-index:100000; display:none; pointer-events:none; background:white; padding:4px; border-radius:6px; box-shadow:0 10px 30px rgba(0,0,0,0.3); border:2px solid var(--phase-color);">
     <img src="" style="max-width:300px; max-height:300px; object-fit:contain; border-radius:4px; display:block;">
   </div>
 
   <script>
-    // --- STREAMING_CHUNK:PWA Service Worker登録とデータ初期化 ---
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js')
@@ -595,7 +650,7 @@
       }
     }
 
-    // Peg Menu ピン留め切り替え (v33.7 改定)
+    // Peg Menu ピン留め切り替え
     function toggleSidebarPin() {
       const sidebar = document.querySelector('.sidebar');
       const overlay = document.querySelector('.sidebar-overlay');
@@ -627,7 +682,14 @@
         }, "初期化する");
     }
 
-    // --- STREAMING_CHUNK:データロード (2025年用語対応・突然変異体) ---
+    function openAccountSettings() {
+      document.getElementById('accountModal').style.display = 'flex';
+    }
+
+    function closeAccountSettings() {
+      document.getElementById('accountModal').style.display = 'none';
+    }
+
     function loadSamples() {
       const data = localStorage.getItem(STORAGE_KEY);
       if (data) {
@@ -693,7 +755,6 @@
       return `${yyyy}${mm}${dd}_${hh}${min}${sec}`;
     }
 
-    // --- STREAMING_CHUNK:LIMS 画像最適化とプレビューロジック ---
     function setupDropZone() {
       const dropZone = document.getElementById('imageDropZone');
       dropZone.addEventListener('dragover', (e) => {
@@ -771,7 +832,6 @@
       reader.readAsDataURL(file);
     }
 
-    // --- STREAMING_CHUNK:UIレンダリング (サムネイル・フレキシブルレイアウト適用) ---
     function renderSamples() {
       const grid = document.getElementById('sampleGrid');
       grid.innerHTML = '';
@@ -834,7 +894,6 @@
       updateBulkPanel();
     }
 
-    // --- STREAMING_CHUNK:フローティングパネルと送信制御 ---
     function updateBulkPanel(event) {
       if(event) event.stopPropagation();
       
@@ -917,7 +976,6 @@
       }
     }
 
-    // --- STREAMING_CHUNK:TSVエクスポートとCRUD処理 ---
     function copyEnvDataTSV() {
       const checkboxes = document.querySelectorAll('.sample-checkbox:checked');
       if (checkboxes.length === 0) return;
@@ -1033,7 +1091,6 @@
       showToast("サンプルを記録しました", "success");
     }
 
-    // --- STREAMING_CHUNK:ユーティリティと教育的モジュール ---
     function showConfirm(message, onOk, okLabel = "削除する") {
       document.getElementById('confirmMessage').innerText = message;
       const btn = document.getElementById('confirmOkBtn');
