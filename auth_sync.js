@@ -32,7 +32,6 @@ onAuthStateChanged(auth, (user) => {
     console.log("Firebaseに接続しました (UID:", user.uid, ")");
     if (badge) {
       badge.textContent = "🟢 同期中";
-      // 必要に応じて色を変更するスタイルを追加できます
     }
   } else {
     // ログアウト（未接続）時
@@ -47,7 +46,7 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-// Googleアカウントでのポップアップログイン関数
+// 5. Googleアカウントでのポップアップログイン関数
 export function loginWithGoogle() {
   const provider = new GoogleAuthProvider();
   signInWithPopup(auth, provider)
@@ -61,7 +60,7 @@ export function loginWithGoogle() {
     });
 }
 
-// ルーム参加コード（Kahoot方式）の処理用関数
+// 6. ルーム参加コード（Kahoot方式）の処理用関数
 export function joinRoomCode() {
   const codeInput = document.getElementById("roomCodeInput");
   if (!codeInput) return;
@@ -72,11 +71,10 @@ export function joinRoomCode() {
     return;
   }
   
-  // 匿名ログイン状態でルームコードを保存・紐づける処理
   localStorage.setItem("bio_edu_room_code", roomCode);
   alert(`ルーム「${roomCode}」に参加しました！`);
   console.log("ルーム参加コード:", roomCode);
 }
 
-// 他のファイルから呼び出せるようにエクスポート
+// 他のファイルから呼び出せるようにエクスポート（重複なし）
 export { app, auth, db, loginWithGoogle, joinRoomCode };
