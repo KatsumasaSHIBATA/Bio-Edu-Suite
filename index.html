@@ -601,13 +601,12 @@
       <div class="modal-body">
         <div class="form-group">
           <label>Firebase クラウド同期</label>
-          <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
-            <div style="width: 12px; height: 12px; border-radius: 50%; background-color: var(--border-color);" id="syncIndicator"></div>
-            <span style="font-size: 13px; font-weight: bold; color: var(--text-muted);" id="syncStatusText">オフライン（ローカル保存中）</span>
+          <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
+            <!-- モーダル内の状態表示用テキスト（IDを付与） -->
+            <span id="modalSyncStatus" style="font-size: 14px; font-weight: bold; color: var(--success);">🟢 クラウド同期中（自動接続）</span>
           </div>
-          <!-- Googleログインボタンに機能を紐づけ -->
           <button class="btn btn-secondary" style="width: 100%; margin-bottom: 10px;" onclick="window.handleGoogleLogin(); triggerHapticFeedback();">Googleアカウントでログイン</button>
-          <div class="help-text">ログインすると、端末間でデータが自動同期されます。</div>
+          <div class="help-text">ログインすると、Googleアカウント間でデータを引き継げます。</div>
         </div>
         
         <hr style="border: 0; border-top: 1px solid #ecf0f1; margin: 20px 0;">
