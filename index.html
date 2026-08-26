@@ -33,17 +33,41 @@
       --text-muted: #7f8c8d;
     }
 
-    *, *::before, *::after { box-sizing: border-box; }
-    
-    /* 画面レイアウトの根本設定 */
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Noto Sans JP'; font-size: 14px; background-color: var(--bg-color); color: var(--text-main); margin: 0; height: 100vh; overflow: hidden; overscroll-behavior-y: none; display: flex; flex-direction: row;}
+    *, *::before, *::after { 
+  box-sizing: border-box; 
+  /* タップ時の青い枠を完全消去 */
+  -webkit-tap-highlight-color: transparent;
+}
 
-    /* 改行崩れ・テキスト折り返しの補正（ガイドライン第5項） */
-    body, .card, p, div, .bench-tip, .step-up-card, .rationale-text, .assist-panel, .dynamic-hint { word-break: normal; overflow-wrap: anywhere; line-height: 1.6; }
-    .label-title, .no-wrap { white-space: nowrap; }
+/* ダブルタップズーム防止 & 画面全体の高さ固定 */
+html, body {
+  touch-action: manipulation;
+  height: 100%;
+  height: 100dvh;
+}
 
-    /* PWAネイティブ質感・ブラウザ挙動封印 */
-    .no-select-ui { user-select: none; -webkit-touch-callout: none; }
+body { 
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Noto Sans JP'; 
+  font-size: 14px; 
+  background-color: var(--bg-color); 
+  color: var(--text-main); 
+  margin: 0; 
+  overflow: hidden; 
+  overscroll-behavior: none; 
+  display: flex; 
+  flex-direction: row;
+}
+
+/* 全体でテキスト選択と長押しメニューを防止しつつ、入力欄だけ許可 */
+body.no-select-ui { 
+  user-select: none; 
+  -webkit-user-select: none; 
+  -webkit-touch-callout: none; 
+}
+input, textarea {
+  user-select: text;
+  -webkit-user-select: text;
+}
 
     .sidebar { position: fixed; top: 0; left: 0; width: 60px; height: 100dvh; background-color: var(--primary); color: white; display: flex; flex-direction: column; z-index: 1002; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), left 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 2px 0 15px rgba(0,0,0,0.2); overflow-x: hidden; }
     .sidebar-overlay { display: block; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.5); z-index: 1001; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(2px); }
@@ -291,7 +315,13 @@
     .modal-header h3 { margin: 0; font-size: 16px; }
     .modal-close { background: none; border: none; color: #7f8c8d; font-size: 20px; cursor: pointer; padding: 0 5px; font-weight: bold; }
     .modal-close:hover { color: var(--danger); }
-    .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+    .modal-body { 
+  padding: 20px; 
+  overflow-y: auto; 
+  flex: 1; 
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
     .modal-footer { padding: 15px 20px; border-top: 1px solid #ecf0f1; display: flex; justify-content: flex-end; gap: 10px; background: #fdfefe; border-radius: 0 0 8px 8px; }
 
     .form-group { margin-bottom: 15px; }
