@@ -585,15 +585,16 @@
         <h3 style="margin: 0; font-size: 16px;">アカウント・同期設定</h3>
         <button class="modal-close" onclick="closeAccountSettings(); triggerHapticFeedback();" data-tooltip="閉じる"><svg class="btn-icon" style="margin:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
       </div>
-      <div class="modal-body">
-        <div class="form-group">
+      <div class="form-group">
           <label>Firebase クラウド同期</label>
           <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
-            <div style="width: 12px; height: 12px; border-radius: 50%; background-color: var(--border-color);" id="syncIndicator"></div>
-            <span style="font-size: 13px; font-weight: bold; color: var(--text-muted);" id="syncStatusText">オフライン（ローカル保存中）</span>
+            <div style="width: 12px; height: 12px; border-radius: 50%; background-color: var(--success);"></div>
+            <span style="font-size: 13px; font-weight: bold; color: var(--success);">🟢 同期中</span>
           </div>
-          <button class="btn btn-secondary" style="width: 100%; margin-bottom: 10px;" onclick="triggerHapticFeedback();">Googleアカウントでログイン</button>
-          <div class="help-text">ログインすると、端末間でデータが自動同期されます。</div>
+          <div class="help-text" style="color: var(--text-main); font-weight: bold; font-size: 12px;">
+            現在は自動的にクラウドと同期されています。<br>
+            <span style="color: var(--text-muted); font-weight: normal; font-size: 11px;">※面倒なアカウント登録やログインは不要です。</span>
+          </div>
         </div>
         
         <hr style="border: 0; border-top: 1px solid #ecf0f1; margin: 20px 0;">
