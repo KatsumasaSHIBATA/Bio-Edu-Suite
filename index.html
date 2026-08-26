@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   
   <!-- 正規のPWA読み込み -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#1abc9c">
-  
-  <!-- iOS向け設定 -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<!-- ノッチ・ステータスバーをヘッダーと同じ紺色に指定 -->
+<meta name="theme-color" content="#1a252f">
+
+<!-- iOS向け設定（透過かつ上部コンテンツと滑らかに一体化） -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="BioEdu">
   <link rel="apple-touch-icon" href="icon-192.png">
 
@@ -324,31 +325,68 @@ input, textarea {
       transform: rotate(45deg);
     }
 
-    /* フローティング・アクション・バー (一括送信パネル) */
-    .bulk-action-panel {
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translate(-50%, 120%);
-      background: white;
-      padding: 16px 24px;
-      border-radius: 8px 8px 0 0;
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      z-index: 100;
-      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      width: 90%;
-      max-width: 800px;
-      border: 1px solid var(--border-color);
-      border-bottom: none;
-    }
-    .bulk-action-panel.show { transform: translate(-50%, 0); }
-    .bulk-action-panel.show { bottom: 0; }
-    .bulk-action-info { font-weight: bold; color: var(--primary); font-size: 14px; text-align: center; }
-    .bulk-action-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
-    .bulk-action-buttons .btn { width: 100%; display: flex; align-items: center; justify-content: center; }
+    /* フローティング・アクション・バー (ヘッダー/フッター統一ダーク仕様) */
+.bulk-action-panel {
+  position: fixed; /* absoluteからfixedにしてスクロールに追従・安定化 */
+  bottom: 0;
+  left: 50%;
+  transform: translate(-50%, 120%);
+  /* フッターと同じ紺色をベースに、わずかに透過してすりガラス効果 */
+  background: rgba(26, 37, 47, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 16px 24px calc(16px + env(safe-area-inset-bottom, 0px)) 24px; /* iPhone下部バー対応 */
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -4px 25px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 1000;
+  transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  width: 92%;
+  max-width: 800px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: none;
+}
+
+.bulk-action-panel.show { 
+  transform: translate(-50%, 0); 
+}
+
+/* 選択中カウントテキストのカラー調整 */
+.bulk-action-info { 
+  font-weight: bold; 
+  color: #ecf0f1; 
+  font-size: 13px; 
+  text-align: center; 
+}
+.bulk-action-info span {
+  color: var(--phase-color); /* 件数部分をアクセントカラーで強調 */
+  font-size: 15px;
+}
+
+.bulk-action-buttons { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+  gap: 10px; 
+}
+.bulk-action-buttons .btn { 
+  width: 100%; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+}
+
+/* 3つ目のボタン「環境メタデータをコピー」をダークパネル用に最適化 */
+.bulk-action-buttons .btn-secondary {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ecf0f1;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.bulk-action-buttons .btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
 
     /* リンクボタンのカラー（ガイドライン第4項準拠） */
     .link-dna { color: white; background: #1abc9c; border: 1px solid #16a085; }
