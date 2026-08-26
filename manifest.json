@@ -1,1 +1,37 @@
-{"name": "Bio-Edu Suite","short_name": "BioEdu","description": "統合分類学への第一歩。サンプルデータを登録し各ラボへ解析に出発するアプリ。","start_url": "./index.html","display": "standalone","background_color": "#ecf0f1","theme_color": "#1abc9c","icons": [{"src": "./icon-192.png","sizes": "192x192","type": "image/png","purpose": "any maskable"},{"src": "./icon-512.png","sizes": "512x512","type": "image/png","purpose": "any maskable"}]}
+{
+  "name": "Bio-Edu Suite",
+  "short_name": "BioEdu",
+  "description": "統合分類学への第一歩。サンプルデータを登録し各ラボへ解析に出発するアプリ。",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#1a252f",
+  "theme_color": "#1abc9c",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
