@@ -711,6 +711,13 @@
 
     // データ初期化（カスタム確認ダイアログ仕様へ変更）
     function confirmDataReset() {
+        // スマホの場合はメニューを自動で閉じる
+        if (window.innerWidth <= 768) {
+          document.querySelector('.sidebar').classList.remove('open');
+          const overlay = document.querySelector('.sidebar-overlay');
+          if (overlay) overlay.classList.remove('open');
+        }
+
         showConfirm("すべての入力データおよびローカル保存データを初期化しますか？この操作は取り消せません。", () => {
             localStorage.clear();
             sessionStorage.clear();
