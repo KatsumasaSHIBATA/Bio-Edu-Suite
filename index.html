@@ -455,7 +455,7 @@
         <div class="header-right" style="display: flex; align-items: center; gap: 12px;">
           <span id="sync-status-badge" class="sync-badge" style="font-size: 13px; font-weight: bold; color: #bdc3c7;">⚪️ 接続中...</span>
           <button class="btn btn-primary account-btn" onclick="openAccountSettings(); triggerHapticFeedback();">
-            👤 <span class="btn-text">同期設定</span>
+            👤 <span class="btn-text">アカウント・同期設定</span>
           </button>
         </div>
       </div>
@@ -591,11 +591,11 @@
     </div>
   </div>
 
-  <!-- 同期設定モーダル -->
+  <!-- アカウント・同期設定モーダル -->
   <div class="modal-overlay" id="accountModal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 style="margin: 0; font-size: 16px;">同期設定</h3>
+        <h3 style="margin: 0; font-size: 16px;">アカウント・同期設定</h3>
         <button class="modal-close" onclick="closeAccountSettings(); triggerHapticFeedback();" data-tooltip="閉じる"><svg class="btn-icon" style="margin:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
       </div>
       <div class="modal-body">
@@ -605,8 +605,22 @@
             <div style="width: 12px; height: 12px; border-radius: 50%; background-color: var(--border-color);" id="syncIndicator"></div>
             <span style="font-size: 13px; font-weight: bold; color: var(--text-muted);" id="syncStatusText">オフライン（ローカル保存中）</span>
           </div>
-          <button class="btn btn-secondary" style="width: 100%; margin-bottom: 10px;" onclick="triggerHapticFeedback();">Googleアカウントでログイン</button>
+          <!-- Googleログインボタンに機能を紐づけ -->
+          <button class="btn btn-secondary" style="width: 100%; margin-bottom: 10px;" onclick="window.handleGoogleLogin(); triggerHapticFeedback();">Googleアカウントでログイン</button>
           <div class="help-text">ログインすると、端末間でデータが自動同期されます。</div>
+        </div>
+        
+        <hr style="border: 0; border-top: 1px solid #ecf0f1; margin: 20px 0;">
+
+        <div class="form-group">
+          <label>ルーム参加コード (Kahoot方式)</label>
+          <div style="display: flex; gap: 10px;">
+            <!-- 入力欄にIDを付与 -->
+            <input type="text" id="roomCodeInput" class="form-control" placeholder="例: 123456" style="flex: 1;">
+            <!-- 参加ボタンに機能を紐づけ -->
+            <button class="btn btn-primary" onclick="window.handleJoinRoom(); triggerHapticFeedback();">参加</button>
+          </div>
+          <div class="help-text">先生から共有されたコードを入力し、匿名でクラスのセッションに参加します。</div>
         </div>
       </div>
       <div class="modal-footer">
@@ -1263,6 +1277,12 @@
         previewImg.src = '';
       }
     }, true);
+  </script>
+  
+  <script type="module">
+    import { loginWithGoogle, joinRoomCode } from './auth_sync.js';
+    window.handleGoogleLogin = loginWithGoogle;
+    window.handleJoinRoom = joinRoomCode;
   </script>
   
   <!-- Firebase同期スクリプトの読み込みを追加 -->
