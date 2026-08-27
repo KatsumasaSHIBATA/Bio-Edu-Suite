@@ -1113,7 +1113,7 @@ db_data <span class="kd">=</span> []
       if (overlay) overlay.classList.remove('open');
     }
 
-    showConfirm("⚠️ 【確認】すべての入力データおよびローカル保存データを初期化しますか？\nこの操作は取り消せません。", () => {
+    showConfirm("すべての入力データおよびローカル保存データを初期化しますか？\nこの操作は取り消せません。", () => {
         localStorage.clear(); sessionStorage.clear(); location.reload();
     }, "初期化する");
   }
