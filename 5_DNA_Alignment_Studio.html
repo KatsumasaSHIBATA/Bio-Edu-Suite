@@ -3,8 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1024">
+    <!-- 正規のPWA読み込み（ガイドライン第15項） -->
+    <link rel="manifest" href="manifest.json">
+    <!-- ノッチ・ステータスバーをヘッダーと同じ紺色に指定 -->
+    <meta name="theme-color" content="#1a252f">
+    
+    <!-- iOS向け設定（透過かつ上部コンテンツと滑らかに一体化） -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="BioEdu">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <title>⑤ DNA Alignment Studio | Bio-Edu Suite</title>
     <style>
+        /* 画面読み込み・遷移時の白飛び防止（ガイドライン第15項） */
+        html { background-color: #1a252f; }
+        body { animation: pageFadeIn 0.15s ease-out forwards; }
+        @keyframes pageFadeIn { from { opacity: 0.85; } to { opacity: 1; } }
+        /* タップハイライトの消去・ダブルタップズーム防止（第15項） */
+        *, *::before, *::after { -webkit-tap-highlight-color: transparent; }
+        html, body { touch-action: manipulation; }
+        input, textarea { user-select: text; -webkit-user-select: text; }
         /* テーマカラー規格（ガイドライン第3項） */
         :root {
             --primary: #2c3e50;        
@@ -126,6 +144,15 @@
         .header-right { display: flex; justify-content: flex-end; }
         .mobile-hamburger { display: none; background: transparent; border: none; color: #fff; cursor: pointer; padding: 4px; border-radius: 4px; margin-left: -8px;}
         .mobile-hamburger:hover { background: rgba(255, 255, 255, 0.1); color: var(--phase-color); }
+        /* アカウント統合ボタン（フラット・透過 / マスターと同期） */
+        .account-btn { background: transparent !important; border: none !important; box-shadow: none !important; padding: 6px 10px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border-radius: 20px; transition: opacity 0.2s; }
+        .account-btn:hover { opacity: 0.8; }
+        .account-user-icon { width: 20px; height: 20px; stroke: #bdc3c7; transition: stroke 0.3s; flex-shrink: 0; }
+        @media (max-width: 768px) {
+            .account-btn { padding: 4px !important; }
+            .account-btn .btn-text { display: none !important; }
+            .account-user-icon { width: 22px; height: 22px; }
+        }
 
         .main-content { width: 100%; max-width: 1400px; margin: 0 auto; padding: 15px; display: flex; flex-direction: column; gap: 24px; flex: 1; }
         
@@ -306,6 +333,10 @@
         
         /* 共通フッター (.footer) */
         .footer { width: 100%; background: #1a252f; padding: 12px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; margin-top: auto; border-top: 1px solid #2c3e50; flex-shrink: 0; }
+        /* セーフエリア対応（第15項）※既存の値を保ったまま余白のみ加算する */
+        .sidebar { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+        .header-container { padding-top: env(safe-area-inset-top, 0px); }
+        .footer { padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0px)) 20px; }
         
         .loader { border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid #fff; border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite; display: inline-block; margin-left: 5px; vertical-align: middle; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -490,9 +521,13 @@
                 </div>
             </div>
             <div class="header-right">
-                <div style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: 13px; font-weight: bold; color: var(--text-muted); background: rgba(0,0,0,0.05); border-radius: 20px;">
-                    <span id="sync-status-badge" class="sync-badge">⚪️ 接続中...</span>
-                </div>
+                <button id="accountBtn" class="account-btn" onclick="openAccountSettings(); triggerHapticFeedback();" data-tooltip="アカウント・同期設定">
+                    <svg id="accountUserIcon" class="account-user-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <span id="accountStatusText" class="btn-text" style="font-size: 13px; font-weight: bold; color: #bdc3c7;">接続中...</span>
+                </button>
             </div>
         </div>
     </div>
@@ -827,6 +862,15 @@
     function closeConfirm() {
         document.getElementById('confirmModal').style.display = 'none';
         document.getElementById('confirmOkBtn').onclick = null;
+    }
+
+    // --- アカウント・同期設定モーダル（第8項） ---
+    function openAccountSettings() {
+        document.getElementById('accountModal').style.display = 'flex';
+    }
+
+    function closeAccountSettings() {
+        document.getElementById('accountModal').style.display = 'none';
     }
 
     // ==========================================
@@ -2196,8 +2240,60 @@
 
 </script>
   
-  <!-- Firebase同期スクリプトの読み込みを追加 -->
-  <script type="module" src="auth_sync.js"></script>
+<!-- アカウント・同期設定（ログインパネル）モーダル -->
+<div class="modal-overlay" id="accountModal">
+  <div class="modal-content" style="max-width: 380px;">
+    <div class="modal-header">
+      <h3 style="margin: 0; font-size: 16px;">アカウント・同期設定</h3>
+      <button class="modal-close" onclick="closeAccountSettings(); triggerHapticFeedback();" data-tooltip="閉じる">
+        <svg class="btn-icon" style="margin:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="padding: 20px;">
+
+      <!-- ① 未ログイン時（ゲスト）ビュー -->
+      <div id="modalLoggedOutView">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+          <span style="font-size: 14px; font-weight: bold; color: var(--text-muted);">⚪️ ゲストモード</span>
+        </div>
+        <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 16px 0; line-height: 1.6;">
+          現在は端末内のみにデータが保存されています。Googleアカウントでログインすると、自宅のPCや他の端末とデータを自動同期できます。
+        </p>
+        <button class="btn btn-primary" style="width: 100%;" onclick="window.handleGoogleLogin(); triggerHapticFeedback();">
+          Googleアカウントでログイン
+        </button>
+      </div>
+
+      <!-- ② ログイン中ビュー -->
+      <div id="modalLoggedInView" style="display: none;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+          <span id="syncStatusBadge" style="font-size: 14px; font-weight: bold; color: var(--phase-color);">🟢 クラウド同期中</span>
+        </div>
+
+        <div style="background: #f8f9fa; border: 1px solid #e1e8ed; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
+          <div id="userNameDisplay" style="font-weight: bold; font-size: 14px; color: var(--primary);"></div>
+          <div id="userEmailDisplay" style="font-size: 11px; color: var(--text-muted); margin-top: 2px;"></div>
+          <!-- オフライン時の状態メッセージ領域 -->
+          <div id="syncStatusNote" style="font-size: 11px; color: var(--danger); margin-top: 6px; display: none;">
+            ※オフライン中です。データは端末内に一時保存され、再接続時に自動同期されます。
+          </div>
+        </div>
+
+        <button class="btn btn-secondary" style="width: 100%; color: var(--danger); border-color: #f5b7b1;" onclick="window.handleLogout(); triggerHapticFeedback();">
+          ログアウト
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Firebase認証（auth_sync.js）の読み込み -->
+<script type="module">
+  import { loginWithGoogle, logoutUser } from './auth_sync.js';
+  window.handleGoogleLogin = loginWithGoogle;
+  window.handleLogout = logoutUser;
+</script>
 
 </body>
 </html>
