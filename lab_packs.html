@@ -2,17 +2,42 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    
+    <!-- 正規のPWA読み込み -->
+    <link rel="manifest" href="manifest.json">
+    <!-- ノッチ・ステータスバーをヘッダーと同じ紺色に指定 -->
+    <meta name="theme-color" content="#1a252f">
+
+    <!-- iOS向け設定（透過かつ上部コンテンツと滑らかに一体化） -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="BioEdu">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
     <title>Bio-Edu Lab Packs | Bio-Edu Suite</title>
     
     <style>
+        /* 画面読み込み・遷移時の白飛び防止 */
+        html { background-color: #1a252f; }
+        
+        body {
+            background-color: var(--bg-color);
+            animation: pageFadeIn 0.15s ease-out forwards;
+        }
+
+        @keyframes pageFadeIn {
+            from { opacity: 0.85; }
+            to { opacity: 1; }
+        }
+
         :root {
             /* 共通ベースカラー */
             --primary: #2c3e50;        /* ダークネイビー */
             --secondary: #34495e;      /* ネイビー */
             --bg-color: #f0f3f4;       /* ライトグレー */
             --card-bg: #ffffff;        /* ホワイト */
-            --text-main: #2c3e50;      /* メインテキスト */
+            --text-main: #333333;      /* メインテキスト */
             --text-muted: #7f8c8d;     /* 補足テキスト */
             --border-color: #bdc3c7;   /* ボーダー */
             
@@ -23,7 +48,7 @@
             
             /* Lab Packs 特殊レイヤー (サンフラワー・ゴールド) */
             --phase-color: #f39c12;
-            --phase-color-light: #f5b041;
+            --phase-color-hover: #e67e22;
             --phase-color-bg: #fef9e7;
         }
 
@@ -32,188 +57,236 @@
         .svg-info { color: inherit; } /* ℹ️ 情報・ルール用 */
         .svg-danger { color: var(--danger); } /* 🚨 警告・エラー用 */
 
-        *, *::before, *::after { box-sizing: border-box; }
-        html { scroll-behavior: smooth; }
+        *, *::before, *::after { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent; /* タップ時の青い枠を完全消去 */
+        }
+        
+        /* ダブルタップズーム防止 & 画面全体の高さ固定 */
+        html, body {
+            touch-action: manipulation;
+            height: 100%;
+            height: 100dvh;
+        }
 
         body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Noto Sans JP'; 
+            font-size: 14px; 
             background-color: var(--bg-color); 
             color: var(--text-main); 
             margin: 0; 
+            overflow: hidden; 
+            overscroll-behavior: none; 
             display: flex; 
-            flex-direction: column; 
-            min-height: 100vh; 
-            overflow-x: hidden; 
+            flex-direction: row;
         }
         
-        /* 改行崩れ・テキスト折り返しの補正（ガイドライン第4項） */
-        body, .card, p, div, .bench-tip, .pro-invite, .rationale-text, .assist-panel { word-break: normal; overflow-wrap: anywhere; line-height: 1.6; }
-        .label-title, .no-wrap { white-space: nowrap; }
+        /* PWAネイティブアプリ化 (テキスト選択防止) */
+        body.no-select-ui { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+        input, textarea, pre { user-select: text; -webkit-user-select: text; }
 
-        /* ガイドライン第5項: グローバル・ドロワー規格 */
-        .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100dvh; background-color: var(--primary); color: white; display: flex; flex-direction: column; z-index: 1002; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 2px 0 15px rgba(0,0,0,0.2); }
-        .sidebar.open { left: 0; }
+        /* 改行崩れ・テキスト折り返しの補正 */
+        p, div, .bench-tip, .pro-invite, .rationale-text, .assist-panel, .dynamic-hint { word-break: normal; overflow-wrap: anywhere; line-height: 1.6; }
+        .label-title, .no-wrap { white-space: nowrap; }
+        .sequence-text { font-family: 'Courier New', Consolas, monospace; letter-spacing: 1px; }
+
+        /* ---------------------------------------------------
+           CSS実装規格: グローバル・ドロワー (Peg Menu)
+        --------------------------------------------------- */
+        .sidebar { 
+            position: fixed; top: 0; left: 0; width: 60px; height: 100dvh; 
+            background-color: var(--primary); color: white; display: flex; flex-direction: column; 
+            z-index: 1002; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), left 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            box-shadow: 2px 0 15px rgba(0,0,0,0.2); overflow-x: hidden; 
+            padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+        }
         .sidebar-overlay { display: block; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.5); z-index: 1001; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(2px); }
         .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
 
-        .logo-area { padding: 20px; background-color: #1a252f; border-bottom: 4px solid var(--phase-color); text-align: center; }
-        .logo-area h1 { margin: 0; color: #fff; font-size: 20px; font-weight: 700; letter-spacing: 1px; }
-        .logo-area p { margin: 5px 0 0 0; color: var(--phase-color); font-size: 11px; }
-        
-        .nav-menu { flex: 1; padding: 10px 0 20px 0; overflow-y: auto; }
-        .nav-header { padding: 15px 20px 5px 20px; font-size: 11px; color: #95a5a6; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; border-top: 1px solid #34495e; margin-top: 5px;}
-        .nav-header:first-child { border-top: none; margin-top: 0;}
-        .nav-item { padding: 8px 20px 8px 30px; display: flex; align-items: center; gap: 8px; color: #bdc3c7; text-decoration: none; font-size: 13px; transition: 0.2s; border-left: 4px solid transparent;}
-        .nav-item:hover { background-color: var(--secondary); color: white; }
-        
-        .nav-header.p1 { color: #1abc9c; border-top-color: rgba(26, 188, 156, 0.2); }
-        .nav-item.p1:hover, .nav-item.p1.active { color: #1abc9c; border-left-color: #1abc9c; background-color: var(--secondary); font-weight: bold; }
-        
-        .nav-header.p2 { color: #1abc9c; border-top-color: rgba(26, 188, 156, 0.2); }
-        .nav-item.p2:hover, .nav-item.p2.active { color: #1abc9c; border-left-color: #1abc9c; background-color: var(--secondary); font-weight: bold; }
-        
-        .nav-header.p3 { color: #3498db; border-top-color: rgba(52, 152, 219, 0.2); }
-        .nav-item.p3:hover, .nav-item.p3.active { color: #3498db; border-left-color: #3498db; background-color: var(--secondary); font-weight: bold; }
-        
-        .nav-header.p4 { color: #8e44ad; border-top-color: rgba(142, 68, 173, 0.2); }
-        .nav-item.p4:hover, .nav-item.p4.active { color: #9b59b6; border-left-color: #9b59b6; background-color: var(--secondary); font-weight: bold; }
-        
-        .nav-header.p5 { color: #e74c3c; border-top-color: rgba(231, 76, 60, 0.2); }
-        .nav-item.p5:hover, .nav-item.p5.active { color: #e74c3c; border-left-color: #e74c3c; background-color: var(--secondary); font-weight: bold; }
-        
-        .nav-header.p6 { color: #e67e22; border-top-color: rgba(230, 126, 34, 0.2); }
-        .nav-item.p6:hover, .nav-item.p6.active { color: #f39c12; border-left-color: #f39c12; background-color: var(--secondary); font-weight: bold; }
-        
-        .nav-header.extra { color: #f1c40f; border-top-color: rgba(241, 196, 15, 0.2); }
-        .nav-item.extra:hover, .nav-item.extra.active { color: #f39c12; border-left-color: #f39c12; background-color: var(--secondary); font-weight: bold; }
+        .sidebar::-webkit-scrollbar, .nav-menu::-webkit-scrollbar { display: none; }
+        .sidebar, .nav-menu { -ms-overflow-style: none; scrollbar-width: none; }
 
-        .system-status { padding: 15px 20px; background-color: #1a252f; border-top: 1px solid #2c3e50; font-size: 11px; color: var(--text-muted); text-align: center; }
+        .sidebar-header { height: 60px; display: flex; align-items: center; justify-content: flex-end; padding-right: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); flex-shrink: 0; width: 100%; transition: 0.3s; }
+        
+        .hamburger-btn { background: transparent; border: none; color: white; cursor: pointer; padding: 8px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; border-radius: 4px; }
+        .hamburger-btn:hover { background: rgba(255,255,255,0.1); }
+        .hamburger-btn .icon-close { display: none; }
+        .sidebar.pinned .hamburger-btn .icon-menu, .sidebar.open .hamburger-btn .icon-menu { display: none; }
+        .sidebar.pinned .hamburger-btn .icon-close, .sidebar.open .hamburger-btn .icon-close { display: block; }
 
-        .topbar-hamburger { 
-            background: transparent; 
-            border: none; 
-            color: #fff; 
-            cursor: pointer; 
-            padding: 4px; 
-            margin-right: 16px; 
-            margin-left: 0; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            transition: 0.2s; 
-            border-radius: 4px; 
+        .nav-menu { flex: 1; padding: 10px 0 20px 0; overflow-y: auto; overflow-x: hidden; }
+        
+        .nav-text, .nav-header-text, .sidebar-action-text { opacity: 0; transition: opacity 0.2s; white-space: nowrap; }
+        .sidebar:hover .nav-text, .sidebar:hover .nav-header-text, .sidebar:hover .sidebar-action-text,
+        .sidebar.pinned .nav-text, .sidebar.pinned .nav-header-text, .sidebar.pinned .sidebar-action-text,
+        .sidebar.open .nav-text, .sidebar.open .nav-header-text, .sidebar.open .sidebar-action-text { opacity: 1; }
+
+        .nav-header { padding: 15px 20px 5px 20px; font-size: 11px; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 5px; white-space: nowrap; overflow: hidden; }
+        .nav-header.p1 { color: #1abc9c; border-top: none; margin-top: 0; }
+        .nav-header.p2 { color: #1abc9c; }
+        .nav-header.p3 { color: #3498db; }
+        .nav-header.p4 { color: #8e44ad; }
+        .nav-header.p5 { color: #e74c3c; }
+        .nav-header.p6 { color: #e67e22; }
+        .nav-header.extra { color: #f1c40f; }
+        
+        .nav-item { padding: 12px 20px; display: flex; align-items: center; gap: 12px; color: #bdc3c7; text-decoration: none; font-size: 13px; transition: 0.2s; border-left: 4px solid transparent; white-space: nowrap; overflow: hidden; }
+        .nav-item:hover { background-color: rgba(255,255,255,0.05); color: white; }
+        .nav-icon { width: 20px; height: 20px; flex-shrink: 0; }
+        
+        .nav-item.p1:hover, .nav-item.p1.active { color: #1abc9c; border-left-color: #1abc9c; background-color: rgba(255,255,255,0.05); font-weight: bold; }
+        .nav-item.p2:hover, .nav-item.p2.active { color: #1abc9c; border-left-color: #1abc9c; background-color: rgba(255,255,255,0.05); font-weight: bold; }
+        .nav-item.p3:hover, .nav-item.p3.active { color: #3498db; border-left-color: #3498db; background-color: rgba(255,255,255,0.05); font-weight: bold; }
+        .nav-item.p4:hover, .nav-item.p4.active { color: #8e44ad; border-left-color: #8e44ad; background-color: rgba(255,255,255,0.05); font-weight: bold; }
+        .nav-item.p5:hover, .nav-item.p5.active { color: #e74c3c; border-left-color: #e74c3c; background-color: rgba(255,255,255,0.05); font-weight: bold; }
+        .nav-item.p6:hover, .nav-item.p6.active { color: #e67e22; border-left-color: #e67e22; background-color: rgba(255,255,255,0.05); font-weight: bold; }
+        .nav-item.extra:hover, .nav-item.extra.active { color: #f1c40f; border-left-color: #f1c40f; background-color: rgba(255,255,255,0.05); font-weight: bold; }
+
+        .sidebar-footer-actions { margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1); padding: 10px 0; }
+        .sidebar-action-btn { display: flex; align-items: center; width: 100%; gap: 12px; padding: 12px 20px; background: transparent; border: none; color: #bdc3c7; cursor: pointer; text-align: left; transition: 0.2s; font-size: 13px; white-space: nowrap; overflow: hidden; }
+        .sidebar-action-btn:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .sidebar-action-btn.danger:hover { color: var(--danger); }
+        .sidebar-action-btn:active { transform: scale(0.97); }
+
+        .main-wrapper { 
+            display: flex; flex-direction: column; overflow: hidden; position: relative; 
+            padding-left: 60px; height: 100dvh; max-height: 100dvh; 
+            transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-sizing: border-box; width: 100%; 
         }
-        .topbar-hamburger:hover { 
-            background: rgba(255, 255, 255, 0.1); 
-            color: var(--phase-color); 
-        }
-        .header-title-group {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .header-container { width: 100%; background: #1a252f; border-bottom: 4px solid var(--phase-color); display: flex; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); z-index: 30; flex-shrink: 0; position: sticky; top: 0;}
-        .header { width: 100%; max-width: 1400px; padding: 12px 20px; color: white; display: flex; align-items: center; justify-content: space-between; position: relative; }
-        .header h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 1px; color: #fff; display: flex; align-items: center;}
-        .header p { margin: 4px 0 0 0; font-size: 11px; color: var(--phase-color); font-weight: 600; letter-spacing: 0.5px; }
         
-        .main-content { width: 100%; max-width: 1400px; margin: 0 auto; padding: 40px 20px; flex: 1; display: flex; flex-direction: column; }
+        @media (min-width: 769px) {
+            .sidebar:hover, .sidebar.pinned { width: 280px; }
+            body.has-pinned-sidebar .main-wrapper { padding-left: 280px; }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar { width: 280px; left: -280px; } 
+            .sidebar.open { left: 0; }
+            .main-wrapper { padding-left: 0; height: 100dvh; }
+            body.has-pinned-sidebar .main-wrapper { padding-left: 0; }
+        }
 
-        .hero-section { text-align: center; margin-bottom: 40px; padding: 0 20px; }
+        /* ---------------------------------------------------
+           グローバルヘッダー・フッター
+        --------------------------------------------------- */
+        .header-container { 
+            width: 100%; background: #1a252f; border-bottom: 4px solid var(--phase-color); 
+            display: flex; position: sticky; top: 0; z-index: 30; box-shadow: 0 2px 10px rgba(0,0,0,0.15); 
+            flex-shrink: 0; padding-top: env(safe-area-inset-top, 0px);
+        }
+        .header { width: 100%; padding: 12px 24px; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; position: relative; }  
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .header h1 { margin: 0; font-size: 20px; font-weight: 700; color: #fff; white-space: nowrap; display: flex; align-items: center; gap: 8px; }  
+        .header p { margin: 4px 0 0 0; font-size: 11px; color: var(--phase-color); font-weight: 600; }  
+        .header-title-group { display: flex; flex-direction: column; justify-content: center; }
+        
+        .mobile-hamburger { background: transparent; border: none; color: white; cursor: pointer; padding: 4px; display: none; align-items: center; justify-content: center; border-radius: 4px; transition: 0.2s; }
+        .mobile-hamburger:hover { background: rgba(255,255,255,0.1); }
+        
+        /* アカウント統合ボタン */
+        .header-right { display: flex; justify-content: flex-end; }
+        .account-btn { background: transparent !important; border: none !important; box-shadow: none !important; padding: 6px 10px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border-radius: 20px; transition: opacity 0.2s; }
+        .account-btn:hover { opacity: 0.8; }
+        .account-user-icon { width: 20px; height: 20px; stroke: #bdc3c7; transition: stroke 0.3s; flex-shrink: 0; }
+
+        @media (max-width: 768px) {
+            .header { padding: 10px 15px; }
+            .header h1 { font-size: 16px; }
+            .mobile-hamburger { display: flex; }
+            .account-btn { padding: 4px !important; }
+            .account-btn .btn-text { display: none !important; }
+            .account-user-icon { width: 22px; height: 22px; }
+        }
+
+        .header-icon { width: 24px; height: 24px; flex-shrink: 0; vertical-align: -3px; margin-right: 6px; }
+        .btn-icon { width: 14px; height: 14px; vertical-align: -2px; flex-shrink: 0; }
+
+        .footer { padding: 15px 20px calc(15px + env(safe-area-inset-bottom, 0px)) 20px; background-color: #1a252f; border-top: 1px solid #2c3e50; font-size: 11px; color: #bdc3c7; text-align: center; margin-top: auto; flex-shrink: 0; }
+
+        /* コンテンツエリア */
+        .content-area { 
+            flex: 1; padding: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; 
+            overscroll-behavior-y: contain; 
+        }
+        
+        .main-content { width: 100%; max-width: 1400px; margin: 0 auto; padding: 40px 20px; display: flex; flex-direction: column; }
+
+        .hero-section { text-align: center; margin-bottom: 20px; padding: 0 20px; }
         .hero-section p { margin: 0 auto; color: var(--text-muted); font-size: 14px; line-height: 1.6; max-width: 900px; }
         .hero-section strong { color: var(--primary); }
+        
+        .level-header { border-bottom: 2px solid var(--primary); margin: 30px 0 20px 0; padding-bottom: 10px; color: var(--primary); }
+        .level-header h2 { margin: 0; font-size: 20px; display: flex; align-items: center; gap: 10px; font-weight: 700; }
+        .level-header .level-badge { background: var(--phase-color); color: white; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; }
 
-        .pack-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        /* ---------------------------------------------------
+           グリッド幅の拡大 (微調整依頼対応)
+        --------------------------------------------------- */
+        .pack-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(480px, 1fr)); gap: 24px; margin-bottom: 20px; align-items: stretch; }
 
-        .card { background: var(--card-bg); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid var(--border-color); border-top: 4px solid var(--phase-color); }
+        .card { background: var(--card-bg); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid var(--border-color); border-top: 4px solid var(--phase-color); will-change: transform; backface-visibility: hidden; }
         .card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
         
-        .card-header { padding: 10px 15px; display: flex; align-items: center; gap: 10px; color: white; position: relative; overflow: hidden; background: var(--secondary); }
+        .card-header { padding: 12px 16px; display: flex; align-items: center; gap: 10px; color: white; position: relative; overflow: hidden; background: var(--secondary); }
         .card-title-area { z-index: 1; }
-        .card-title { font-size: 14px; font-weight: bold; margin: 0 0 3px 0; }
-        .card-tags { display: flex; gap: 5px; flex-wrap: wrap; }
-        .tag { font-size: 10px; padding: 2px 6px; border-radius: 3px; font-weight: bold; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);}
-
-        .card-body { padding: 15px; flex: 1; display: flex; flex-direction: column; gap: 10px;}
+        .card-title { font-size: 16px; font-weight: bold; margin: 0 0 6px 0; letter-spacing: 0.5px;}
+        .card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
         
-        .scenario-box { font-size: 12px; color: var(--secondary); line-height: 1.5; }
-        
-        .db-info { background: #fdfefe; padding: 8px 10px; border-radius: 4px; font-size: 11px; color: var(--secondary); border: 1px solid var(--border-color); line-height: 1.5;}
-        .db-info strong { color: var(--primary); }
+        .tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; border: 1px solid rgba(255,255,255,0.4); display: flex; align-items: center; gap: 4px;}
+        .tag.badge-gene { background: #8e44ad; color: white; border: none; }
+        .tag.badge-morph { background: #e67e22; color: white; border: none; }
+        .tag.badge-eco { background: #27ae60; color: white; border: none; }
+        .tag.badge-target { background: rgba(255,255,255,0.2); }
 
-        .section-title { font-weight: bold; color: var(--primary); font-size: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; margin-top: 5px; display: flex; align-items: center; gap: 5px;}
-
-        .step-list { list-style: none; padding: 0; margin: 0; font-size: 11px; color: #555; }
-        .step-list li { margin-bottom: 8px; padding-left: 18px; position: relative; line-height: 1.5; }
-        .step-list li::before { content: "✓"; position: absolute; left: 0; top: 0; color: var(--success); font-weight: bold; }
-        .step-highlight { font-weight: bold; color: #d35400; }
+        .card-body { padding: 20px 16px; flex: 1; display: flex; flex-direction: column; gap: 14px;}
         
-        .app-link { color: #2980b9; font-weight: bold; text-decoration: none; border-bottom: 1px dotted #2980b9; }
-        .app-link:hover { color: var(--danger); border-bottom-color: var(--danger); }
-
-        .primer-box { background: #fdfefe; padding: 8px; border-radius: 4px; border: 1px solid var(--border-color); font-family: 'Courier New', Consolas, monospace; font-size: 10px; margin-top: 5px; color: var(--primary); word-break: break-all;}
-        .reference-text { text-align: right; margin-top: 6px; font-size: 9px; color: var(--text-muted); font-family: 'Segoe UI', sans-serif;}
+        .scenario-box { font-size: 13px; color: var(--secondary); line-height: 1.6; padding-bottom: 12px; border-bottom: 1px dashed var(--border-color);}
         
-        .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px; border-radius: 0 4px 4px 0; font-size: 11px; color: #2c3e50; line-height: 1.5; margin-bottom: 10px; margin-top: auto; }
-        .bench-tip strong { color: #2980b9; font-size: 12px; display: flex; align-items: center; gap: 6px; margin-bottom: 4px;}
+        .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px 15px; border-radius: 0 4px 4px 0; font-size: 12px; color: var(--text-main); line-height: 1.6; margin-bottom: 10px; margin-top: auto; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
+        .bench-tip strong { color: #2980b9; display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 13px;}
 
         .action-area { display: flex; gap: 10px; margin-top: 10px; padding-top: 5px;}
-        .btn-download { flex: 1; background-color: var(--secondary); color: white; border: 1px solid var(--primary); text-decoration: none; padding: 10px; text-align: center; border-radius: 4px; font-size: 12px; font-weight: bold; transition: 0.2s; display: flex; align-items: center; justify-content: center;}
-        .btn-download:hover { background-color: var(--phase-color); border-color: var(--phase-color); }
-        .btn-download:active { transform: translateY(3px); }
-        
-        [data-tooltip] { position: relative; cursor: pointer; }
-        /* カスタムツールチップ（ガイドライン第5項④ 準拠 / ネイティブ title 属性は使用しない）
-           ※本文が最長52文字の日本語のため nowrap では狭い端末で画面外に溢れる。折り返し＋幅上限で堅牢化 */
-        .custom-tooltip { position: fixed; background: rgba(44, 62, 80, 0.95); color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 11px; pointer-events: none; z-index: 9999; opacity: 0; transition: opacity 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-weight: normal; line-height: 1.4; display: none; white-space: normal; width: max-content; max-width: min(320px, 90vw); text-align: center; box-sizing: border-box; }
-        .custom-tooltip::after { content: ''; position: absolute; border-width: 5px; border-style: solid; left: 50%; transform: translateX(-50%); }
-        .custom-tooltip.show-top::after { top: 100%; border-color: rgba(44, 62, 80, 0.95) transparent transparent transparent; }
-        .custom-tooltip.show-bottom::after { bottom: 100%; border-color: transparent transparent rgba(44, 62, 80, 0.95) transparent; }
+        .btn-download { flex: 1; background-color: var(--card-bg); color: var(--secondary); border: 1px solid var(--secondary); text-decoration: none; padding: 12px; text-align: center; border-radius: 4px; font-size: 13px; font-weight: bold; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;}
+        .btn-download:hover { background-color: var(--secondary); color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); filter: brightness(1.05);}
+        .btn-download:active { transform: scale(0.98); }
+        .btn-download.primary-action { background-color: #3498db; color: white; border-color: #3498db; }
+        .btn-download.primary-action:hover { background-color: #2980b9; border-color: #2980b9; }
 
-
+        /* 根拠ポップオーバー (v31.0 準拠) */
         .rationale-btn { background: var(--phase-color); color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; flex-shrink: 0; }
         .rationale-btn:hover { transform: scale(1.1); filter: brightness(1.2); }
 
-        .rationale-text { 
-            position: fixed; background: #fef9e7; border: 1px solid #f39c12; padding: 12px; border-radius: 6px; 
-            font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
-            z-index: 9000; 
-            /* 見切れ防止の修正: calcを使用してどんな画面幅でも必ず左右10pxの余白を担保 */
-            width: 320px; max-width: calc(100vw - 20px); box-sizing: border-box;
-            opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0;
-            pointer-events: none;
-        }
-        .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
-        /* 吹き出しの尻尾（.pop-arrow）。JS が --arrow-left とフリップ方向クラスを設定する */
-        .rationale-text::after {
-            content: ''; position: absolute; width: 10px; height: 10px;
-            background: #fef9e7; transform: rotate(45deg);
-            left: var(--arrow-left, 50%); margin-left: -5px;
-        }
-        .rationale-text.arrow-top::after    { top: -6px; border-left: 1px solid #f39c12; border-top: 1px solid #f39c12; }
-        .rationale-text.arrow-bottom::after { bottom: -6px; border-right: 1px solid #f39c12; border-bottom: 1px solid #f39c12; }
-        /* ヘッダーアイコン（インラインSVG / stroke="currentColor" で見出し色に同期） */
-        .header-icon { width: 24px; height: 24px; flex-shrink: 0; vertical-align: -3px; margin-right: 6px; }
-        .btn-icon { width: 14px; height: 14px; vertical-align: -2px; flex-shrink: 0; }
-        .rationale-text strong { color: #d35400; display: block; margin-bottom: 6px; font-size: 12px; }
-        .rationale-text p { margin: 0; padding: 0; }
+        .rationale-text { position: fixed; background: #fef9e7; border: 1px solid var(--warning); padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: max-content; max-width: min(320px, calc(100vw - 24px)); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; }    
+        .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }    
+        .rationale-text strong { color: #d35400; display: block; margin-bottom: 4px; font-size: 12px; }    
+        .rationale-text::after { content: ''; position: absolute; border-width: 6px; border-style: solid; left: var(--arrow-left, 50%); }    
+        .rationale-text.arrow-top::after { top: -12px; border-color: transparent transparent #fef9e7 transparent; }    
+        .rationale-text.arrow-bottom::after { bottom: -12px; border-color: #fef9e7 transparent transparent transparent; }    
+        .rationale-text::before { content: ''; position: absolute; border-width: 7px; border-style: solid; left: calc(var(--arrow-left, 50%) - 1px); }    
+        .rationale-text.arrow-top::before { top: -14px; border-color: transparent transparent var(--warning) transparent; }    
+        .rationale-text.arrow-bottom::before { bottom: -14px; border-color: var(--warning) transparent transparent transparent; }
+
+        /* ツールチップ (v34.2 準拠) */
+        [data-tooltip] { position: relative; cursor: pointer; }
+        .custom-tooltip { position: fixed; top: 0; left: 0; background: rgba(44, 62, 80, 0.95); color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 11px; pointer-events: none; z-index: 9999; opacity: 0; transition: opacity 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-weight: normal; line-height: 1.4; display: none; white-space: normal; width: max-content; max-width: min(320px, 90vw); text-align: center; box-sizing: border-box; }    
+        .custom-tooltip::after { content: ''; position: absolute; border-width: 5px; border-style: solid; left: 50%; transform: translateX(-50%); }    
+        .custom-tooltip.show-top::after { top: 100%; border-color: rgba(44, 62, 80, 0.95) transparent transparent transparent; }    
+        .custom-tooltip.show-bottom::after { bottom: 100%; border-color: transparent transparent rgba(44, 62, 80, 0.95) transparent; }
 
         #appendix-data { display: none; }
 
         .section-divider { margin: 60px 0 40px; border: none; border-top: 2px dashed var(--border-color); }
         .tl-header { text-align: center; margin-bottom: 30px; }
-        .tl-header h2 { margin: 0; color: var(--primary); font-size: 24px; }
-        .tl-header p { margin: 5px 0 0 0; color: var(--text-muted); font-size: 14px; }
+        .tl-header h2 { margin: 0; color: var(--primary); font-size: 20px; font-weight: 700; }
+        .tl-header p { margin: 5px 0 0 0; color: var(--text-muted); font-size: 13px; }
 
-        .tl-container { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; width: 100%; margin: 0 auto; align-items: start; }
+        .tl-container { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; width: 100%; margin: 0 auto; align-items: start; }
         .tl-card { background: var(--card-bg); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--border-color); border-top: 4px solid var(--phase-color); min-width: 0; }
-        .tl-card-header { padding: 15px 20px; background: var(--secondary); color: white; font-size: 16px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+        .tl-card-header { padding: 15px 20px; background: var(--secondary); color: white; font-size: 15px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
         .tl-card-body { padding: 25px 20px; display: flex; flex-direction: column; gap: 15px; }
         .tl-card-body p { font-size: 13px; line-height: 1.6; margin: 0; color: var(--text-main); }
         
         .code-container { position: relative; background: #1e293b; border-radius: 8px; overflow: hidden; margin-top: 5px; border: 1px solid #0f172a; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); min-width: 0; width: 100%; max-width: 100%; box-sizing: border-box;}
-        
         .code-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: #334155; border-bottom: 1px solid #0f172a; color: #cbd5e1; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.5px;}
         .code-header-left { display: flex; align-items: center; }
         .code-header-right { display: flex; align-items: center; gap: 12px; }
@@ -221,397 +294,405 @@
         .code-action-btn:hover { color: #f8fafc; background: rgba(255, 255, 255, 0.1); transform: scale(1.05); }
         .code-action-btn:active { transform: scale(0.95); }
         .code-action-btn svg { width: 18px; height: 18px; stroke-width: 2px; }
-        
         pre { color: #f8f8f2; padding: 16px 20px; overflow-x: auto; font-family: 'Consolas', 'Monaco', monospace; font-size: 12px; line-height: 1.5; margin: 0; max-height: 400px; }
         .kd { color: #ff79c6; } /* keyword */
         .s { color: #f1fa8c; } /* string */
         .c { color: #6272a4; } /* comment */
         .nf { color: #50fa7b; } /* function */
 
-        .footer { width: 100%; background: #1a252f; padding: 12px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; margin-top: auto; border-top: 1px solid #2c3e50; flex-shrink: 0; }
-
-        /* トースト通知 */
-        /* トースト通知（ガイドライン第5項⑤ 準拠 / alert() は使用禁止） */
-        #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 12px 24px; border-radius: 30px; font-weight: bold; font-size: 13px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 100000; pointer-events: none; text-align: center; max-width: 90vw; box-sizing: border-box; word-break: auto-phrase; }
-        #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-        #toast.error { background: var(--danger); }
-        #toast.warning { background: var(--warning); color: #7e5109; }
+        /* トースト通知 (v34.2 準拠) */
+        #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 12px 24px; border-radius: 30px; font-weight: bold; font-size: 13px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 100000; pointer-events: none; text-align: center; max-width: 90vw; box-sizing: border-box; word-break: auto-phrase; }    
+        #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }    
+        #toast.error { background: var(--danger); }    
+        #toast.warning { background: var(--warning); color: #7e5109; }    
         #toast.info { background: var(--phase-color); }
 
+        /* モーダル共通 (v34.2) */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(44, 62, 80, 0.85); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(2px); }
+        .modal-content { background: white; border-radius: 8px; width: 100%; max-width: 400px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: modalFadeIn 0.3s cubic-bezier(0.25, 1, 0.5, 1); margin: 0 16px;}
+        @keyframes modalFadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .modal-header { padding: 15px 20px; background: #f8f9f9; color: var(--primary); border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ecf0f1; }
+        .modal-close { background: none; border: none; color: #7f8c8d; font-size: 20px; cursor: pointer; padding: 0 5px; font-weight: bold; }
+        .modal-close:hover { color: var(--danger); }
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 8px 16px; border-radius: 4px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s; border: none; white-space: nowrap; }
+        .btn-primary { background-color: var(--phase-color); color: white; }
+        .btn-primary:hover { filter: brightness(1.05); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn-secondary { background: #fdfefe; border: 1px solid var(--border-color); color: var(--text-main); }
+        .btn-secondary:hover { background: #f4f6f7; }
+
         @media screen and (max-width: 768px) {
-            .header { padding: 10px 15px; }
-            .header h1 { font-size: 16px; margin-right: 60px; }
             .pack-grid { grid-template-columns: 1fr; }
             .action-area { flex-direction: column; }
             .btn-download { width: 100%; }
-            .db-info, .scenario-box, .bench-tip, .step-list { word-break: break-word; overflow-wrap: break-word; }
-            
             .tl-container { grid-template-columns: minmax(0, 1fr); padding: 0; }
         }
     </style>
 </head>
-<body class="app-mode">
+<body class="dashboard-mode no-select-ui">
 
 <!-- ドロワー用オーバーレイ -->
-<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+<div class="sidebar-overlay" onclick="toggleSidebarPin(); triggerHapticFeedback();"></div>
 
 <div class="sidebar">
-    <div class="logo-area">
-      <h1>Bio-Edu Suite</h1>
-      <p>Integrated Taxonomy Hub</p>
+    <div class="sidebar-header">
+        <button class="hamburger-btn" onclick="toggleSidebarPin(); triggerHapticFeedback();" aria-label="メニューを開く/閉じる">
+            <!-- ≡ アイコン -->
+            <svg class="icon-menu" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            <!-- × アイコン -->
+            <svg class="icon-close" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
     </div>
     <div class="nav-menu">
-      <div class="nav-header p1">Phase 1: 収集・ハブ</div>
-      <a href="index.html" class="nav-item p1">Investigation Dashboard</a>
-      
-      <div class="nav-header p2">Phase 2: DNAラボ</div>
-      <a href="1_Master_Mix_Studio.html" class="nav-item p2">① PCR Master Mix Studio</a>
-      <a href="2_Thermal_Cycler_Simulator.html" class="nav-item p2">② Thermal Cycler Simulator</a>
-      <a href="3_Virtual_PCR_RFLP.html" class="nav-item p2">③ Virtual PCR & RFLP</a>
-      <a href="4_Sanger_Trace_Editor.html" class="nav-item p2">④ Sanger Trace Editor</a>
-      <a href="5_DNA_Alignment_Studio.html" class="nav-item p2">⑤ DNA Alignment Studio</a>
-      <a href="6_Alignment_Print_Studio.html" class="nav-item p2">⑥ Alignment Print Studio</a>
-      <a href="7_Virtual_BLAST_Explorer.html" class="nav-item p2">⑦ Virtual BLAST Explorer</a>
-      <a href="8_Phylogenetic_Tree_Builder.html" class="nav-item p2">⑧ Phylogenetic Tree Builder</a>
-      
-      <div class="nav-header p3">Phase 3: 形態ラボ</div>
-      <a href="9_Morphometrics_Studio.html" class="nav-item p3">⑨ Morphometrics Studio</a>
-      
-      <div class="nav-header p4">Phase 4: 統合検証ルーム</div>
-      <a href="10_integrative_taxonomy_studio.html" class="nav-item p4">⑩ Taxonomy Explorer (統合版)</a>
-      
-      <div class="nav-header p5">Phase 5: 統計遺伝学</div>
-      <a href="11_Statistical_Genetics_Lab.html" class="nav-item p5">⑪ Statistical Genetics Lab</a>
-      
-      <div class="nav-header p6">Phase 6: 構造生物学</div>
-      <a href="12_Central_Dogma_Simulator.html" class="nav-item p6">⑫ Central Dogma Simulator</a>
-      <a href="13_Protein_Structure_Explorer.html" class="nav-item p6">⑬ Protein Structure Explorer</a>
-
-      <div class="nav-header extra">Extra: 拡張パッケージ</div>
-      <a href="lab_packs.html" class="nav-item extra active">Lab Packs (教材パック)</a>
-    </div>
-    <!-- フッターのバージョンをv33.4へ完全同期 -->
-    <div class="system-status">&copy; 2026 Bio-Edu Suite v33.4 | Developed for Bioinformatics & Wet-Lab Education</div>
-</div>
-
-<div class="header-container">
-    <div class="header">
-        <div style="display: flex; align-items: center;">
-            <button class="topbar-hamburger" onclick="toggleSidebar()" aria-label="メニューを開く">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
-            </button>
-            <div class="header-title-group">
-                <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="4" rx="2" ry="2"/><path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg>Bio-Edu Lab Packs</h1>
-                <p>Bio-Edu Suite:&nbsp;Extra / Wet & Dry Integrated Packages</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="main-content">
-    <div class="hero-section">
-        <p>
-            安全で確実なWet実験とブラウザ完結のDry解析を統合した、実践的DNA解析パッケージです。<br>
-            各パックのJSONファイルは「Virtual BLAST Explorer（アプリ⑦）」の専用カセットとして機能するほか、誰でも独自の探究データベースカセットを自作して読み込ませることが可能です。
-        </p>
-    </div>
-
-    <div class="pack-grid">
+        <div class="nav-header p1"><span class="nav-header-text">Phase 1: 収集・ハブ</span></div>
+        <a href="index.html" class="nav-item p1">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <span class="nav-text">Investigation Dashboard</span>
+        </a>
         
-        <!-- 1. 肉種鑑別パック -->
-        <div class="card">
-            <div class="card-header">
-                <div class="card-title-area">
-                    <h3 class="card-title">肉種鑑別パック</h3>
-                    <div class="card-tags">
-                        <span class="tag">標的: cytb</span>
-                        <span class="tag">L14816/H15173</span>
-                    </div>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="scenario-box"><strong>【Mission】</strong>「牛肉100%」と書かれた謎のミンチ肉。本当にウシのDNAしか入っていないのか？食品表示の真偽を特定せよ！</div>
-                
-                <div class="db-info">
-                    <strong>収録DB (全10種):</strong> ウシ、ブタ、ニワトリ、ヒツジ、ヤギ、ウマ、ジビエ（イノシシ、シカ、ヒグマ、ミンククジラ）
-                </div>
+        <div class="nav-header p2"><span class="nav-header-text">Phase 2: DNAラボ</span></div>
+        <a href="1_Master_Mix_Studio.html" class="nav-item p2"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg><span class="nav-text">① PCR Master Mix Studio</span></a>
+        <a href="2_Thermal_Cycler_Simulator.html" class="nav-item p2"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg><span class="nav-text">② Thermal Cycler Simulator</span></a>
+        <a href="3_Virtual_PCR_RFLP.html" class="nav-item p2"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg><span class="nav-text">③ Virtual PCR & RFLP</span></a>
+        <a href="4_Sanger_Trace_Editor.html" class="nav-item p2"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg><span class="nav-text">④ Sanger Trace Editor</span></a>
+        <a href="5_DNA_Alignment_Studio.html" class="nav-item p2"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg><span class="nav-text">⑤ DNA Alignment Studio</span></a>
+        <a href="6_Alignment_Print_Studio.html" class="nav-item p2"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg><span class="nav-text">⑥ Alignment Print Studio</span></a>
+        <a href="7_Virtual_BLAST_Explorer.html" class="nav-item p2"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg><span class="nav-text">⑦ Virtual BLAST Explorer</span></a>
+        <a href="8_Phylogenetic_Tree_Builder.html" class="nav-item p2"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg><span class="nav-text">⑧ Phylogenetic Tree Builder</span></a>
+        
+        <div class="nav-header p3"><span class="nav-header-text">Phase 3: 形態ラボ</span></div>
+        <a href="9_Morphometrics_Studio.html" class="nav-item p3"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 21h18L3 3z"/><path d="M7 21v-2M11 21v-2M15 21v-2"/></svg><span class="nav-text">⑨ Morphometrics Studio</span></a>
+        
+        <div class="nav-header p4"><span class="nav-header-text">Phase 4: 統合検証ルーム</span></div>
+        <a href="10_integrative_taxonomy_studio.html" class="nav-item p4"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3v18M8 21h8M4 7h16"/><path d="M4 7l-2 5h4z"/><path d="M20 7l-2 5h4z"/></svg><span class="nav-text">⑩ Taxonomy Explorer (統合版)</span></a>
+        
+        <div class="nav-header p5"><span class="nav-header-text">Phase 5: 統計遺伝学</span></div>
+        <a href="11_Statistical_Genetics_Lab.html" class="nav-item p5"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 21h18"/><path d="M7 21V10M12 21V4M17 21V14"/></svg><span class="nav-text">⑪ Statistical Genetics Lab</span></a>
+        
+        <div class="nav-header p6"><span class="nav-header-text">Phase 6: 構造生物学</span></div>
+        <a href="12_Central_Dogma_Simulator.html" class="nav-item p6"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg><span class="nav-text">⑫ Central Dogma Simulator</span></a>
+        <a href="13_Protein_Structure_Explorer.html" class="nav-item p6"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg><span class="nav-text">⑬ Protein Structure Explorer</span></a>
 
-                <div class="section-title">実験＆解析 パイプライン</div>
-                <ul class="step-list">
-                    <li><span class="step-highlight">Wet:</span> 推奨: 煮沸Chelex法 <button class="rationale-btn" onclick="toggleRationale(event, 'data-method-chelex')" aria-label="なぜこの手法？">?</button></li>
-                    <li><span class="step-highlight">Dry:</span> <a href="./1_Master_Mix_Studio.html" class="app-link">アプリ①</a>で反応液を設計し、<a href="./2_Thermal_Cycler_Simulator.html" class="app-link">アプリ②</a>で熱プロファイルを最適化。
-                        <div class="primer-box">
-                            F: 5'-CCATCCAACATCTCAGCATGATGAAA-3'<br>
-                            R: 5'-CCCCTCAGAATGATATTTGTCCTCA-3'
-                            <div class="reference-text">Kocher <i>et al.</i> (1989) PNAS.</div>
-                        </div>
-                    </li>
-                    <li><span class="step-highlight">Dry:</span> <a href="./7_Virtual_BLAST_Explorer.html" class="app-link">アプリ⑦</a>でDBと照合。</li>
-                </ul>
-
-                <div class="bench-tip">
-                    <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（脂質の回避）</strong>
-                    安価で確実なサンプルが手に入ります。脂質が強力なPCR阻害剤となるため、赤身の多い部分を選ぶか、抽出液上澄みの「油膜」を避けてピペッティングさせるのが確実にバンドを出すコツです。
-                </div>
-
-                <div class="action-area">
-                    <a href="./cartridges/Cartridge1_Meat_ID.json" download class="btn-download" data-tooltip="全10種の解析データベース（JSON）を取得">カセット(JSON)をダウンロード</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- 2. シーフード偽装パック -->
-        <div class="card">
-            <div class="card-header">
-                <div class="card-title-area">
-                    <h3 class="card-title">シーフード偽装 鑑定パック</h3>
-                    <div class="card-tags">
-                        <span class="tag">標的: COI</span>
-                        <span class="tag">FishF1/FishR1</span>
-                    </div>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="scenario-box"><strong>【Mission】</strong>お弁当の「白身魚フライ」や「ネギトロ」は本物か？それとも深海魚や代替魚か？DNAバーコーディングで偽装を暴け！</div>
-                
-                <div class="db-info">
-                    <strong>収録DB (全14種):</strong> マダイ/ティラピア、クロマグロ/アカマンボウ、シシャモ類、ウナギなど。
-                </div>
-
-                <div class="section-title">実験＆解析 パイプライン</div>
-                <ul class="step-list">
-                    <li><span class="step-highlight">Wet:</span> 推奨: HotSHOT法（アルカリ熱抽出） <button class="rationale-btn" onclick="toggleRationale(event, 'data-method-hotshot')" aria-label="なぜこの手法？">?</button></li>
-                    <li><span class="step-highlight">Dry:</span> <a href="./1_Master_Mix_Studio.html" class="app-link">アプリ①</a>と<a href="./2_Thermal_Cycler_Simulator.html" class="app-link">アプリ②</a>で反応系を構築。
-                        <div class="primer-box">
-                            F: 5'-TCAACCAACCACAAAGACATTGGCAC-3'<br>
-                            R: 5'-TAGACTTCTGGGTGGCCAAAGAATCA-3'
-                            <div class="reference-text">Ward <i>et al.</i> (2005) Philos Trans R Soc Lond B.</div>
-                        </div>
-                    </li>
-                    <li><span class="step-highlight">Dry:</span> <a href="./7_Virtual_BLAST_Explorer.html" class="app-link">アプリ⑦</a> で照合し社会問題を議論。</li>
-                </ul>
-
-                <div class="bench-tip">
-                    <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（PCR阻害の回避）</strong>
-                    加工食品に含まれる着色料や添加物がPCRを阻害することがあります。DNAがうまく増幅しない班が出た場合は、抽出したDNA溶液を滅菌水で10〜100倍に希釈させて再挑戦すると劇的に改善します。
-                </div>
-
-                <div class="action-area">
-                    <a href="./cartridges/Cartridge2_Seafood_Fraud.json" download class="btn-download" data-tooltip="全14種の解析データベース（JSON）を取得">カセット(JSON)をダウンロード</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- 3. 人類進化パック -->
-        <div class="card">
-            <div class="card-header">
-                <div class="card-title-area">
-                    <h3 class="card-title">自分のルーツ探求パック</h3>
-                    <div class="card-tags">
-                        <span class="tag">標的: cytb</span>
-                        <span class="tag">L14816/H15173</span>
-                    </div>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="scenario-box"><strong>【Mission】</strong>自分の細胞からDNAを取り出し、ネアンデルタール人やチンパンジーのDNAの塩基配列と比較せよ！私たちは進化のどこにいるのか？</div>
-                
-                <div class="db-info">
-                    <strong>収録DB (全7種):</strong> 現生人類(ヒト)、ネアンデルタール人、デニソワ人、チンパンジー、ボノボ、ゴリラ、オランウータン。
-                </div>
-
-                <div class="section-title">実験＆解析 パイプライン</div>
-                <ul class="step-list">
-                    <li><span class="step-highlight">Wet:</span> 推奨: 口腔粘膜スワブのChelex法 <button class="rationale-btn" onclick="toggleRationale(event, 'data-method-chelex')" aria-label="なぜこの手法？">?</button></li>
-                    <li><span class="step-highlight">Dry:</span> <a href="./1_Master_Mix_Studio.html" class="app-link">アプリ①</a>・<a href="./2_Thermal_Cycler_Simulator.html" class="app-link">アプリ②</a>でDNAの増幅条件を設計。
-                        <div class="primer-box">
-                            F: 5'-CCATCCAACATCTCAGCATGATGAAA-3'<br>
-                            R: 5'-CCCCTCAGAATGATATTTGTCCTCA-3'
-                            <div class="reference-text">Kocher <i>et al.</i> (1989) PNAS.</div>
-                        </div>
-                    </li>
-                    <li><span class="step-highlight">Dry:</span> <a href="./7_Virtual_BLAST_Explorer.html" class="app-link">アプリ⑦</a> で照合し、<a href="./8_Phylogenetic_Tree_Builder.html" class="app-link">アプリ⑧</a>で系統樹を描画。</li>
-                </ul>
-
-                <div class="bench-tip">
-                    <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（コンタミの防止）</strong>
-                    古代骨からの抽出は教養レベルではコンタミのため100%不可能です。Dry解析で古代人と比較するハイブリッド型にします。※食後は食べ物のDNAが混じるため、採取前のうがいを徹底してください。
-                </div>
-
-                <div class="action-area">
-                    <a href="./cartridges/Cartridge3_Human_Evolution.json" download class="btn-download" data-tooltip="全7種の解析データベース（JSON）を取得">カセット(JSON)をダウンロード</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- 4. 環境DNA -->
-        <div class="card">
-            <div class="card-header">
-                <div class="card-title-area">
-                    <h3 class="card-title">環境DNA (eDNA) 調査パック</h3>
-                    <div class="card-tags">
-                        <span class="tag">標的: 12S</span>
-                        <span class="tag">MiFish-U</span>
-                    </div>
-                </div>
-            </div>
-            <div class="card-body">
-                <!-- PDF用語準拠: 外来種 -> 外来生物 -->
-                <div class="scenario-box"><strong>【Mission】</strong>コップ一杯の水から、そこに潜む外来生物（ブラックバス等）の存在を証明し、生態系の危機を可視化せよ！</div>
-                
-                <div class="db-info">
-                    <strong>収録DB (全6種):</strong> オオサンショウウオ（在来/外来）、ニホンイシガメ、アカミミガメ、ブラックバス、ブルーギル。
-                </div>
-
-                <div class="section-title">実験＆解析 パイプライン</div>
-                <ul class="step-list">
-                    <li><span class="step-highlight">Wet:</span> 推奨: 飼育水ペレットのChelex法 <button class="rationale-btn" onclick="toggleRationale(event, 'data-method-chelex')" aria-label="なぜこの手法？">?</button></li>
-                    <li><span class="step-highlight">Dry:</span> <a href="./1_Master_Mix_Studio.html" class="app-link">アプリ①</a>と<a href="./2_Thermal_Cycler_Simulator.html" class="app-link">アプリ②</a>でMiFish条件を構築。
-                        <div class="primer-box">
-                            F: 5'-GTCGGTAAAACTCGTGCCAGC-3'<br>
-                            R: 5'-CATAGTGGGGTATCTAATCCCAGTTTG-3'
-                            <div class="reference-text">Miya <i>et al.</i> (2015) R Soc Open Sci.</div>
-                        </div>
-                    </li>
-                    <!-- PDF用語準拠: 外来種 -> 外来生物 -->
-                    <li><span class="step-highlight">Dry:</span> <a href="./7_Virtual_BLAST_Explorer.html" class="app-link">アプリ⑦</a> で外来生物のDNAシグナルを検出。</li>
-                </ul>
-
-                <div class="bench-tip">
-                    <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（サンプルの選び方）</strong>
-                    野外の池の水をろ過するには高価なフィルターが必要で、泥によるPCR阻害で失敗しがちです。事前にターゲット魚種を飼育した「水槽の水」を遠心分離して使えば、確実かつ安価に成功します。
-                </div>
-
-                <div class="action-area">
-                    <a href="./cartridges/Cartridge4_eDNA.json" download class="btn-download" data-tooltip="全6種の解析データベース（JSON）を取得">カセット(JSON)をダウンロード</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- 5. ベクター -->
-        <div class="card">
-            <div class="card-header">
-                <div class="card-title-area">
-                    <h3 class="card-title">身近な衛生昆虫バーコーディングパック</h3>
-                    <div class="card-tags">
-                        <span class="tag">標的: COI</span>
-                        <span class="tag">LCO1490/HCO2198</span>
-                    </div>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="scenario-box"><strong>【Mission】</strong>教室にいた羽虫や、家で見つけた謎の虫…この虫の正体をDNAバーコーディングで特定せよ！</div>
-                
-                <div class="db-info">
-                    <strong>収録DB (全7種):</strong> 蚊（ネッタイシマカ等）、マダニ類、トコジラミ。
-                </div>
-
-                <div class="section-title">実験＆解析 パイプライン</div>
-                <ul class="step-list">
-                    <li><span class="step-highlight">Wet:</span> 推奨: 物理破砕＋HotSHOT法 <button class="rationale-btn" onclick="toggleRationale(event, 'data-method-insect')" aria-label="なぜこの手法？">?</button></li>
-                    <li><span class="step-highlight">Dry:</span> <a href="./1_Master_Mix_Studio.html" class="app-link">アプリ①</a>と<a href="./2_Thermal_Cycler_Simulator.html" class="app-link">アプリ②</a>で反応条件を計算。
-                        <div class="primer-box">
-                            F: 5'-GGTCAACAAATCATAAAGATATTGG-3'<br>
-                            R: 5'-TAAACTTCAGGGTGACCAAAAAATCA-3'
-                            <div class="reference-text">Folmer <i>et al.</i> (1994) Mol Mar Biol Biotechnol.</div>
-                        </div>
-                    </li>
-                    <li><span class="step-highlight">Dry:</span> <a href="./7_Virtual_BLAST_Explorer.html" class="app-link">アプリ⑦</a> でDB照合し、公衆衛生リスクや分類を評価。</li>
-                </ul>
-
-                <div class="bench-tip">
-                    <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（安全と濃度の調整）</strong>
-                    マダニ等の危険なベクターを生徒に野外採集させるのは安全面で困難です。アリや餌用コオロギ等の安全な昆虫を使用します。丸ごと使うと色素や阻害物質が濃すぎるため、「脚を1本だけ」切って使うのが秘訣です。
-                </div>
-
-                <div class="action-area">
-                    <a href="./cartridges/Cartridge5_Vectors.json" download class="btn-download" data-tooltip="全7種の解析データベース（JSON）を取得">カセット(JSON)をダウンロード</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- 6. 同胞種(寄生虫) 鑑別パック -->
-        <div class="card">
-            <div class="card-header">
-                <div class="card-title-area">
-                    <h3 class="card-title">アニサキス科線虫の同胞種鑑別パック</h3>
-                    <div class="card-tags">
-                        <!-- PDF用語準拠: 総称としての「核酸」で濁さず、対象が明確な最重要語である「DNA」を付記 -->
-                        <span class="tag">標的: 核DNA ITS領域</span>
-                        <span class="tag">NC5/NC2</span>
-                    </div>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="scenario-box"><strong>【Mission】</strong>形態では区別不可能なアニサキスやシュードテラノーバの『同胞種』をDNAのハサミ(制限酵素)で切り分けて鑑別し、さらに進化の過程で宿主を乗り換えた「異端児」を系統樹から探し出せ！</div>
-                
-                <div class="db-info">
-                    <strong>収録DB (全20種):</strong> アニサキス科コンプリート。<i>A. simplex</i> 同胞種群、<i>Pseudoterranova</i> 同胞種（南極系統・種E含む）、宿主転換した異端児、および近縁属。
-                </div>
-
-                <div class="section-title">実験＆解析 パイプライン</div>
-                <ul class="step-list">
-                    <li><span class="step-highlight">Wet:</span> 推奨: PK＋Chelex法 <button class="rationale-btn" onclick="toggleRationale(event, 'data-method-parasite')" aria-label="なぜこの手法？">?</button></li>
-                    <li><span class="step-highlight">Dry:</span> <a href="./3_PCR_RFLP_Simulator.html" class="app-link">アプリ③</a>で制限酵素（<i>Hinf</i> I 等）を探索し、同胞種を切り分けるRFLPマーカーを自ら「発見」する。
-                        <div class="primer-box">
-                            F (NC5): 5'-GTAGGTGAACCTGCGGAAGGATCATT-3'<br>
-                            R (NC2): 5'-TTAGTTTCTTTTCCTCCGCT-3'
-                            <div class="reference-text">Zhu <i>et al.</i> (2002) Parasitology.</div>
-                        </div>
-                    </li>
-                    <li><span class="step-highlight">Dry:</span> <a href="./8_Phylogenetic_Tree_Builder.html" class="app-link">アプリ⑧</a>で全20種の系統樹を描き、宿主転換の歴史を考察。</li>
-                </ul>
-
-                <div class="bench-tip">
-                    <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（同胞種鑑別の手法）</strong>
-                    同胞種鑑別のゴールドスタンダードは「核DNA(ITS)のPCR-RFLP」です。データベースには最新論文(2023)に基づくマニアックな南極種やイルカ寄生種も収録。系統樹を描かせれば「アザラシ由来なのにイルカに浮気した種」を発見させる最高の探究学習が可能です。
-                </div>
-
-                <div class="action-area">
-                    <a href="./cartridges/Cartridge6_Anisakidae_ITS_Academic.json" download class="btn-download" data-tooltip="アニサキス科の最新ITSデータベース（JSON）を取得">カセット(JSON)をダウンロード</a>
-                </div>
-            </div>
-        </div>
-
+        <div class="nav-header extra"><span class="nav-header-text">Extra: 拡張パッケージ</span></div>
+        <a href="lab_packs.html" class="nav-item extra active">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="4" rx="2" ry="2"/><path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg>
+            <span class="nav-text">Lab Packs (教材パック)</span>
+        </a>
     </div>
-
-    <hr class="section-divider">
     
-    <div class="tl-header">
-        <h2>Creator's Lounge - カセット自作ガイド</h2>
+    <div class="sidebar-footer-actions">
+        <button class="sidebar-action-btn" onclick="openFeedbackForm(); triggerHapticFeedback();">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            <span class="sidebar-action-text">ご意見・フィードバック</span>
+        </button>
+        <button class="sidebar-action-btn danger" onclick="confirmDataReset(); triggerHapticFeedback();">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            <span class="sidebar-action-text">データを初期化</span>
+        </button>
+    </div>
+</div>
+
+<div class="main-wrapper">
+    <div class="header-container">
+        <div class="header">
+            <div class="header-left">
+                <button class="mobile-hamburger" onclick="toggleSidebarPin(); triggerHapticFeedback();" aria-label="メニューを開く">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
+                <div class="header-title-group">
+                    <h1 title="Bio-Edu Lab Packs">
+                        <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="4" rx="2" ry="2"/><path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg>
+                        Lab Packs (教材パック)
+                    </h1>
+                    <p>Bio-Edu Suite:&nbsp;Extra / Wet & Dry Integrated Packages</p>
+                </div>
+            </div>
+            
+            <div class="header-right">
+                <button id="accountBtn" class="account-btn" onclick="openAccountSettings(); triggerHapticFeedback();" data-tooltip="アカウント・同期設定">
+                    <svg id="accountUserIcon" class="account-user-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <span id="accountStatusText" class="btn-text" style="font-size: 13px; font-weight: bold; color: #bdc3c7;">接続中...</span>
+                </button>
+            </div>
+        </div>
     </div>
 
-    <div class="tl-container">
-        <!-- 1. 自動作成スクリプト -->
-        <div class="tl-card">
-            <div class="tl-card-header">
-                学名リストから全自動生成 (推奨: Google Colab)
+    <div class="content-area">
+        <div class="main-content">
+            <div class="hero-section">
+                <p>
+                    安全で確実なWet実験とブラウザ完結のDry解析を統合した、実践的DNA解析パッケージです。<br>
+                    ミッション（謎解き）主導の構成で、生徒の探求心を「身近な謎」から「統合分類学」の深淵へと導きます。
+                </p>
             </div>
-            <div class="tl-card-body">
-                <p>
-                    最も強力で簡単な方法です。調べたい生物の「学名リスト」を渡すだけで、PythonがNCBI（米国立生物工学情報センター）にアクセスし、<b>正しいミトコンドリアゲノムを探し出し、目的の遺伝子（COI等）だけを正確に切り出して</b>JSONを作成します。
-                </p>
-                
-                <div class="section-title"><span>[手順]</span> 実行手順</div>
-                <p>
-                    ① ブラウザで <a href="https://colab.research.google.com/" target="_blank" style="color:#2980b9; font-weight:bold; text-decoration: none;">Google Colaboratory</a> を開き、「ノートブックを新規作成」します。<br>
-                    ② 以下のコードをコードセルに貼り付け、再生ボタン（▶）を押して実行します。<br>
-                    ③ 左側の「フォルダ📁」アイコンから、完成した <code>MyCustomDB.json</code> をダウンロードし、アプリ⑦に読み込ませます。
-                </p>
 
-                <div class="code-container">
-                    <div class="code-header">
-                        <div class="code-header-left">Python</div>
-                        <div class="code-header-right">
-                            <button class="code-action-btn" onclick="downloadCode('python-script', 'MyCustomDB_Generator.py')" aria-label="ダウンロード" data-tooltip="コードをダウンロード">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
-                            </button>
-                            <button class="code-action-btn" onclick="copyCode(this, 'python-script')" aria-label="コピー" data-tooltip="コードをコピー">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" /></svg>
-                            </button>
+            <!-- ============================================== -->
+            <!-- Level 1 -->
+            <!-- ============================================== -->
+            <div class="level-header">
+                <h2><span class="level-badge">Level 1</span> 興味喚起と身近なミッション</h2>
+            </div>
+            <div class="pack-grid">
+                
+                <!-- 1-A. 肉種鑑別パック -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title-area">
+                            <h3 class="card-title">1-A. 食肉偽装の真実を暴け</h3>
+                            <div class="card-tags">
+                                <span class="tag badge-gene">遺伝子</span>
+                                <span class="tag badge-target">標的: cytb</span>
+                            </div>
                         </div>
                     </div>
-                    <pre id="python-script"><span class="c">!pip install biopython</span>
+                    <div class="card-body">
+                        <div class="scenario-box"><strong>【Mission】</strong>「牛肉100%」と書かれた謎のミンチ肉。本当にウシのDNAしか入っていないのか？食品表示の真偽を特定せよ！</div>
+                        
+                        <p style="font-size: 13px; color: var(--text-main); margin: 0;">
+                            ミトコンドリアDNAのcytb遺伝子が種ごとに固有の塩基配列の変異を持つことを利用します。食品表示の偽装という身近な社会問題に対し、DNAという「動かぬ証拠」を用いて科学的に真実を解き明かすプロセスを体験します。AluI制限酵素によるRFLP解析のみに特化し、シンプルかつ強力な証明力を発揮します。
+                        </p>
+
+                        <div class="bench-tip">
+                            <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（脂質の回避）</strong>
+                            推奨: 煮沸Chelex法 <button class="rationale-btn" onclick="toggleRationale(event, 'data-method-chelex')" aria-label="なぜこの手法？">?</button><br>
+                            脂質が強力なPCR阻害剤となるため、赤身の多い部分を選ぶか、抽出液上澄みの「油膜」を避けてピペッティングさせるのが確実にバンドを出す秘訣です。
+                        </div>
+
+                        <div class="action-area">
+                            <a href="./cartridges/Cartridge1_Meat_ID.json" download class="btn-download primary-action" data-tooltip="全10種の解析データベース（JSON）を取得">
+                                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                解析カセットを取得
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1-B. 環境DNA調査パック -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title-area">
+                            <h3 class="card-title">1-B. 環境DNA (eDNA) 調査</h3>
+                            <div class="card-tags">
+                                <span class="tag badge-eco">生態</span>
+                                <span class="tag badge-gene">遺伝子</span>
+                                <span class="tag badge-target">標的: 12S</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="scenario-box"><strong>【Mission】</strong>「見えない生物を探す」。コップ一杯の水から、そこに潜む外来生物の存在を証明し、生態系の危機を可視化せよ！</div>
+                        
+                        <p style="font-size: 13px; color: var(--text-main); margin: 0;">
+                            採水した水に含まれる細胞片やフン由来の微量のDNA（eDNA）を増幅し、外来生物の生息域を特定します。生態系保全に向けた最先端の調査手法をブラウザ上でシミュレーションし、姿が見えなくても生息していることを証明する重要性を学びます。
+                        </p>
+
+                        <div class="bench-tip">
+                            <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（サンプルの選び方）</strong>
+                            野外の池の水をろ過するには高価なフィルターが必要で、泥によるPCR阻害で失敗しがちです。事前に外来生物を飼育した「水槽の水」を遠心分離して使えば、確実かつ安価に成功体験を積ませることができます。
+                        </div>
+
+                        <div class="action-area">
+                            <a href="./cartridges/Cartridge4_eDNA.json" download class="btn-download primary-action" data-tooltip="全6種の解析データベース（JSON）を取得">
+                                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                解析カセットを取得
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================== -->
+            <!-- Level 2 -->
+            <!-- ============================================== -->
+            <div class="level-header">
+                <h2><span class="level-badge" style="background: #e67e22;">Level 2</span> 形態学・比較解剖学への拡張</h2>
+            </div>
+            <div class="pack-grid">
+                
+                <!-- 2-A. 形態比較 -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title-area">
+                            <h3 class="card-title">2-A. フライドチキンから辿る哺乳類の腕</h3>
+                            <div class="card-tags">
+                                <span class="tag badge-morph">形態</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="scenario-box"><strong>【Mission】</strong>日常の食材（鳥）から、哺乳類（ヒトなど）の骨格の「相同器官」を比較し、共通祖先からの進化の痕跡を見つけ出せ！</div>
+                        
+                        <p style="font-size: 13px; color: var(--text-main); margin: 0;">
+                            鳥類の翼とヒトの腕は、見た目も働きも全く異なりますが、骨格の基本構造は驚くほど一致しています。フライドチキンの骨を解剖学的に観察し、この相同器官の比較を通じて、共通祖先からどのように形質が適応進化したのか、マクロな視点から形態進化のダイナミズムに迫ります。
+                        </p>
+
+                        <div class="bench-tip">
+                            <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（手羽先の活用）</strong>
+                            市販の手羽先（またはフライドチキン）を煮込んで骨を取り出すことで、橈骨（とうこつ）や尺骨（しゃっこつ）といった前肢の構造を簡単に、安価に観察できます。
+                        </div>
+
+                        <div class="action-area">
+                            <a href="./cartridges/Cartridge_Chicken_Wing.json" download class="btn-download primary-action" data-tooltip="フライドチキンから抽出した骨格座標データベース（JSON）を取得">
+                                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                解析カセットを取得
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2-B. 収斂進化 -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title-area">
+                            <h3 class="card-title">2-B. そっくりさんは本当の親戚か？</h3>
+                            <div class="card-tags">
+                                <span class="tag badge-morph">形態</span>
+                                <span class="tag badge-gene">遺伝子</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="scenario-box"><strong>【Mission】</strong>サメ（魚類）とイルカ（哺乳類）。形態だけで分類する限界に挑み、塩基配列から「収斂進化」の矛盾を暴け！</div>
+                        
+                        <p style="font-size: 13px; color: var(--text-main); margin: 0;">
+                            サメとイルカは共に流線型の体つきを持ちますが、これらは全く異なる系統が同じ水生環境に適応した結果生じた「収斂進化（しゅうれんしんか）」です。形態分類の落とし穴を実感しつつ、DNAの塩基配列情報がいかに系統推定において強力な指標となるかを検証します。
+                        </p>
+
+                        <div class="bench-tip">
+                            <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（収斂進化の導入）</strong>
+                            有袋類のフクロオオカミと真獣類のオオカミなど、環境への適応によって形質が似通る概念を視覚的に提示することで、DNA配列による系統推定の説得力が増します。
+                        </div>
+
+                        <div class="action-area">
+                            <a href="./cartridges/Cartridge_Convergence.json" download class="btn-download primary-action" data-tooltip="収斂進化を比較するデータベースを取得">
+                                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                解析カセットを取得
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================== -->
+            <!-- Level 3 -->
+            <!-- ============================================== -->
+            <div class="level-header">
+                <h2><span class="level-badge" style="background: #e74c3c;">Level 3</span> 統合分類学の実践</h2>
+            </div>
+            <div class="pack-grid">
+                
+                <!-- 3-A. アニサキス -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title-area">
+                            <h3 class="card-title">3-A. アニサキス同胞種 統合鑑別</h3>
+                            <div class="card-tags">
+                                <span class="tag badge-eco">生態</span>
+                                <span class="tag badge-morph">形態</span>
+                                <span class="tag badge-gene">遺伝子</span>
+                                <span class="tag badge-target">標的: 核DNA ITS領域</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="scenario-box"><strong>【Mission】</strong>形態では区別不可能な『同胞種』をDNAで鑑別し、生態（寄生宿主）と微細構造（形態）を総合して、進化の過程で宿主を乗り換えた「異端児」を探し出せ！</div>
+                        
+                        <p style="font-size: 13px; color: var(--text-main); margin: 0;">
+                            アニサキス症の原因となる線虫類は、形態的特徴だけでは種レベルの鑑別が極めて困難な「同胞種（隠蔽種）」を含んでいます。本ミッションでは、生態学的要因（最終宿主がイルカかアザラシか）、形態的微細構造、そして核DNA ITS領域のRFLP解析データを完全に統合し、生態・形態・遺伝学の3領域を包括する「統合分類学」の頂点を極めます。
+                        </p>
+
+                        <div class="bench-tip">
+                            <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（同胞種鑑別の手法）</strong>
+                            推奨: PK＋Chelex法 <button class="rationale-btn" onclick="toggleRationale(event, 'data-method-parasite')" aria-label="なぜこの手法？">?</button><br>
+                            同胞種鑑別のゴールドスタンダードは「核DNA ITS領域のPCR-RFLP」です。「アザラシ由来なのにイルカに浮気した種」を発見させる最高の探究学習が可能です。
+                        </div>
+
+                        <div class="action-area">
+                            <a href="./cartridges/Cartridge_Anisakis_Integrative.json" download class="btn-download primary-action" data-tooltip="アニサキス同胞種の統合データベース（JSON）を取得">
+                                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                解析カセットを取得
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3-B. ルーツ探求 -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title-area">
+                            <h3 class="card-title">3-B. 自分のルーツ探求 v2.0</h3>
+                            <div class="card-tags">
+                                <span class="tag badge-gene">遺伝子</span>
+                                <span class="tag badge-eco">生態</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="scenario-box"><strong>【Mission】</strong>自分の細胞からDNAを取り出し、ネアンデルタール人やチンパンジーの塩基配列と比較せよ！私たちは進化のどこにいるのか？</div>
+                        
+                        <p style="font-size: 13px; color: var(--text-main); margin: 0;">
+                            生徒自身の口腔粘膜から採取したDNAを、ネアンデルタール人やデニソワ人、チンパンジーといった類人猿の塩基配列データと比較する究極のパーソナル探求です。分子時計の概念を用いて人類のアフリカ起源と世界への拡散ルートをたどり、自分自身が生命の壮大な歴史の最先端にいることを直結させます。
+                        </p>
+
+                        <div class="bench-tip">
+                            <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（コンタミの防止）</strong>
+                            推奨: 口腔粘膜スワブのChelex法 <button class="rationale-btn" onclick="toggleRationale(event, 'data-method-chelex')" aria-label="なぜこの手法？">?</button><br>
+                            古代骨からの抽出は教養レベルでは困難なため、Dry解析で古代人と比較するハイブリッド型にします。採取前のうがいを徹底してください。
+                        </div>
+
+                        <div class="action-area">
+                            <a href="./cartridges/Cartridge3_Human_Evolution.json" download class="btn-download primary-action" data-tooltip="現生人類や類人猿のデータベース（JSON）を取得">
+                                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                解析カセットを取得
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================== -->
+            <!-- Creator's Lounge -->
+            <!-- ============================================== -->
+            <hr class="section-divider">
+            
+            <div class="tl-header">
+                <h2>Creator's Lounge - カセット自作ガイド</h2>
+                <p>自分だけの探究用データベース（JSON）を自動生成するノウハウ</p>
+            </div>
+
+            <div class="tl-container">
+                <!-- 1. 自動作成スクリプト -->
+                <div class="tl-card">
+                    <div class="tl-card-header">
+                        学名リストから全自動生成 (推奨: Google Colab)
+                    </div>
+                    <div class="tl-card-body">
+                        <p>
+                            最も強力で簡単な方法です。調べたい生物の「学名リスト」を渡すだけで、PythonがNCBI（米国立生物工学情報センター）にアクセスし、<b>正しいミトコンドリアゲノムを探し出し、目的の遺伝子（COI等）だけを正確に切り出して</b>JSONを作成します。
+                        </p>
+                        
+                        <div style="font-weight: bold; color: var(--primary); font-size: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; margin-top: 5px;"><span>[手順]</span> 実行手順</div>
+                        <p>
+                            ① ブラウザで <a href="https://colab.research.google.com/" target="_blank" style="color:#2980b9; font-weight:bold; text-decoration: none;">Google Colaboratory</a> を開き、「ノートブックを新規作成」します。<br>
+                            ② 以下のコードをコードセルに貼り付け、再生ボタン（▶）を押して実行します。<br>
+                            ③ 左側の「フォルダ📁」アイコンから、完成した <code>MyCustomDB.json</code> をダウンロードし、アプリ⑦に読み込ませます。
+                        </p>
+
+                        <div class="code-container">
+                            <div class="code-header">
+                                <div class="code-header-left">Python</div>
+                                <div class="code-header-right">
+                                    <button class="code-action-btn" onclick="downloadCode('python-script', 'MyCustomDB_Generator.py'); triggerHapticFeedback();" aria-label="ダウンロード" data-tooltip="コードをダウンロード">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                                    </button>
+                                    <button class="code-action-btn" onclick="copyCode(this, 'python-script'); triggerHapticFeedback();" aria-label="コピー" data-tooltip="コードをコピー">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" /></svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <pre id="python-script"><span class="c">!pip install biopython</span>
 
 <span class="kd">import</span> time
 <span class="kd">import</span> json
@@ -688,7 +769,6 @@ TARGET_SPECIES <span class="kd">=</span> [
         
         <span class="c"># 部分的な塩基配列そのものがCOIだった場合の保険</span>
         <span class="kd">if not</span> coi_seq <span class="kd">and len</span>(record.seq) <span class="kd">&lt;</span> <span class="mi">2000</span>:
-            <span class="c"># ⚠️ 修正箇所: AIの文字数制限により過去の出力で欠損していた '=' を厳密に復元。</span>
             coi_seq <span class="kd">=</span> <span class="nb">str</span>(record.seq)
 
         <span class="kd">if</span> coi_seq:
@@ -721,46 +801,46 @@ db_data <span class="kd">=</span> []
     json.dump(db_data, f, ensure_ascii<span class="kd">=</span><span class="kc">False</span>, indent<span class="kd">=</span><span class="mi">2</span>)
 <span class="nb">print</span>(<span class="s">f"\n🎉 完了！ {OUTPUT_FILENAME} を保存しました。"</span>)
 </pre>
-                </div>
-                
-                <div class="bench-tip">
-                    <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（なぜこのスクリプトが必要なのか？）</strong>
-                    間違ったAccession IDを指定したり、巨大なゲノム全体（数万塩基）をそのままアプリに読み込ませると、解析に時間がかかったり、ノイズが多くなったりします。このスクリプトはNCBIに<b>「ミトコンドリアの公式な塩基配列（RefSeq）」のみを検索させ、さらに「地図情報（アノテーション）」を利用して必要な遺伝子だけをハサミで切り出す</b>ため、純度100%のクリーンなデータを作成できます。
-                </div>
-            </div>
-        </div>
-
-        <!-- 2. JSONの仕組み（手動） -->
-        <div class="tl-card">
-            <div class="tl-card-header">
-                構造の解説と手動作成（数種類の場合）
-            </div>
-            <div class="tl-card-body">
-                <p>
-                    数種類だけであれば、手作業で作ることも可能です。アプリ⑦が読み込めるデータベースカートリッジは、<b>JSON（ジェイソン）形式</b>というテキストデータです。<br>
-                    1つの生物種につき、以下の6つの情報を持ったブロックを作成し、<code>[ ]</code> で囲みます。
-                </p>
-
-                <div class="section-title"><span>[手順]</span> 作成手順</div>
-                <p>
-                    ① パソコンの「メモ帳（Windows）」または「テキストエディット（Mac）」を開きます。<br>
-                    ② 上記のフォーマットを貼り付け、生物種を増やす場合は <code>}, {</code> のようにカンマで繋ぎます。<br>
-                    ③ ファイルを保存する際、ファイル名の末尾を <code>.json</code> にします（例：<code>MyDatabase.json</code>）。
-                </p>
-                
-                <div class="code-container">
-                    <div class="code-header">
-                        <div class="code-header-left">JSON</div>
-                        <div class="code-header-right">
-                            <button class="code-action-btn" onclick="downloadCode('json-format', 'MyDatabase_Template.json')" aria-label="ダウンロード" data-tooltip="コードをダウンロード">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
-                            </button>
-                            <button class="code-action-btn" onclick="copyCode(this, 'json-format')" aria-label="コピー" data-tooltip="コードをコピー">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" /></svg>
-                            </button>
+                        </div>
+                        
+                        <div class="bench-tip">
+                            <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（なぜこのスクリプトが必要なのか？）</strong>
+                            間違ったAccession IDを指定したり、巨大なゲノム全体（数万の塩基配列）をそのままアプリに読み込ませると、解析に時間がかかったり、ノイズが多くなったりします。このスクリプトはNCBIに<b>「ミトコンドリアの公式な塩基配列（RefSeq）」のみを検索させ、さらに「地図情報（アノテーション）」を利用して必要な遺伝子だけをハサミで切り出す</b>ため、純度100%のクリーンなデータを作成できます。
                         </div>
                     </div>
-                    <pre id="json-format"><span class="s">[</span>
+                </div>
+
+                <!-- 2. JSONの仕組み（手動） -->
+                <div class="tl-card">
+                    <div class="tl-card-header">
+                        構造の解説と手動作成（数種類の場合）
+                    </div>
+                    <div class="tl-card-body">
+                        <p>
+                            数種類だけであれば、手作業で作ることも可能です。アプリ⑦が読み込めるデータベースカートリッジは、<b>JSON（ジェイソン）形式</b>というテキストデータです。<br>
+                            1つの生物種につき、以下の6つの情報を持ったブロックを作成し、<code>[ ]</code> で囲みます。
+                        </p>
+
+                        <div style="font-weight: bold; color: var(--primary); font-size: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; margin-top: 5px;"><span>[手順]</span> 作成手順</div>
+                        <p>
+                            ① パソコンの「メモ帳（Windows）」または「テキストエディット（Mac）」を開きます。<br>
+                            ② 上記のフォーマットを貼り付け、生物種を増やす場合は <code>}, {</code> のようにカンマで繋ぎます。<br>
+                            ③ ファイルを保存する際、ファイル名の末尾を <code>.json</code> にします（例：<code>MyDatabase.json</code>）。
+                        </p>
+                        
+                        <div class="code-container">
+                            <div class="code-header">
+                                <div class="code-header-left">JSON</div>
+                                <div class="code-header-right">
+                                    <button class="code-action-btn" onclick="downloadCode('json-format', 'MyDatabase_Template.json'); triggerHapticFeedback();" aria-label="ダウンロード" data-tooltip="コードをダウンロード">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                                    </button>
+                                    <button class="code-action-btn" onclick="copyCode(this, 'json-format'); triggerHapticFeedback();" aria-label="コピー" data-tooltip="コードをコピー">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" /></svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <pre id="json-format"><span class="s">[</span>
   {
     <span class="s">"name"</span>: <span class="s">"ニホンザル"</span>,
     <span class="s">"scientific_name"</span>: <span class="s">"Macaca fuscata"</span>,
@@ -770,149 +850,267 @@ db_data <span class="kd">=</span> []
     <span class="s">"sequence"</span>: <span class="s">"ACCCTGTATTTACTATTTGGTGCATGAGCTGGAATCATA..."</span>
   }
 <span class="s">]</span></pre>
+                        </div>
+
+                        <div class="bench-tip">
+                            <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（文字コードの罠と必須項目）</strong>
+                            ・<b>文字コード：</b> Windowsのメモ帳で保存する際、文字コード（エンコード）が「ANSI」や「Shift-JIS」になっていると日本語が文字化けします。保存ダイアログ下部で、必ず「UTF-8」にして保存してください。<br>
+                            ・<b>必須項目：</b> 確実に入力が必要なのは <code>name</code>（画面に表示される名前）と <code>sequence</code>（ATGCの塩基配列）の2つだけです。残りは空欄（<code>""</code>）でもアプリは作動します。
+                        </div>
+                    </div>
                 </div>
 
-                <div class="bench-tip">
-                    <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（文字コードの罠と必須項目）</strong>
-                    ・<b>文字コード：</b> Windowsのメモ帳で保存する際、文字コード（エンコード）が「ANSI」や「Shift-JIS」になっていると日本語が文字化けします。保存ダイアログ下部で、必ず「UTF-8」にして保存してください。<br>
-                    ・<b>必須項目：</b> 確実に入力が必要なのは <code>name</code>（画面に表示される名前）と <code>sequence</code>（ATGCの塩基配列）の2つだけです。残りは空欄（<code>""</code>）でもアプリは作動します。
+            </div>
+
+            <!-- アシスト＆ポップオーバー用データ -->
+            <div id="appendix-data">
+                <div id="data-method-chelex" class="rationale-text">
+                    <strong>【根拠：煮沸Chelex法】</strong>
+                    ・食肉（牛・豚など）・唾液・環境DNA向けの手法です。<br>
+                    ・獣肉には血液（ミオグロビンやヘモグロビン）が豊富に含まれており、その「ヘム鉄」はDNAポリメラーゼの働きを強力に阻害します。<br>
+                    ・特殊なキレート樹脂（Chelex等）を使い、煮沸によって阻害物質を吸着・無毒化するのが科学捜査のスタンダードです。
+                </div>
+                <div id="data-method-hotshot" class="rationale-text">
+                    <strong>【根拠：HotSHOT法（アルカリ熱抽出）】</strong>
+                    ・シーフード（魚肉）向けの手法です。<br>
+                    ・魚の筋肉組織は植物の細胞壁のような硬いバリアを持たず、血液量も獣肉ほど多くありません。<br>
+                    ・強アルカリ（水酸化ナトリウム等）の液に入れて95℃で煮るだけで、一瞬にして細胞が溶け、PCRに必要なクリーンなDNAが抽出できます。
+                </div>
+                <div id="data-method-insect" class="rationale-text">
+                    <strong>【根拠：物理破砕 ＋ HotSHOT法】</strong>
+                    ・昆虫類向けの手法です。<br>
+                    ・昆虫を覆う外骨格（キチン質）は非常に硬い多糖類であり、強力なプロテイナーゼKを使ってもキチン質の壁には歯が立ちません。<br>
+                    ・すりこぎ等で物理的に砕いたあと、強アルカリと熱で一気に細胞を破壊するのが最も早くて確実な方法です。
+                </div>
+                <div id="data-method-parasite" class="rationale-text">
+                    <strong>【根拠：プロテイナーゼK ＋ Chelex法】</strong>
+                    ・寄生虫（アニサキス等）向けの手法です。<br>
+                    ・寄生虫を覆うクチクラ層は、特殊なコラーゲン（タンパク質）が極めて強固に結びついた構造をしており、アルカリ煮沸だけでは破壊できません。<br>
+                    ・強力なタンパク質分解酵素（プロテイナーゼK）を加え、時間をかけてじっくりと組織をバラバラに消化する必要があります。
                 </div>
             </div>
-        </div>
 
-    </div>
-
-    <div id="appendix-data">
-        <div id="data-method-chelex" class="rationale-text">
-            <strong>【根拠：煮沸Chelex法】</strong>
-            ・食肉（牛・豚など）・唾液・環境DNA向けの手法です。<br>
-            ・獣肉には血液（ミオグロビンやヘモグロビン）が豊富に含まれており、その「ヘム鉄」はDNAポリメラーゼの働きを強力に阻害します。<br>
-            ・特殊なキレート樹脂（Chelex等）を使い、煮沸によって阻害物質を吸着・無毒化するのが科学捜査のスタンダードです。
-        </div>
-        <div id="data-method-hotshot" class="rationale-text">
-            <strong>【根拠：HotSHOT法（アルカリ熱抽出）】</strong>
-            ・シーフード（魚肉）向けの手法です。<br>
-            ・魚の筋肉組織は植物の細胞壁のような硬いバリアを持たず、血液量も獣肉ほど多くありません。<br>
-            ・強アルカリ（水酸化ナトリウム等）の液に入れて95℃で煮るだけで、一瞬にして細胞が溶け、PCRに必要なクリーンなDNAが抽出できます。
-        </div>
-        <div id="data-method-insect" class="rationale-text">
-            <strong>【根拠：物理破砕 ＋ HotSHOT法】</strong>
-            ・昆虫類向けの手法です。<br>
-            ・昆虫を覆う外骨格（キチン質）は非常に硬い多糖類であり、強力なプロテイナーゼKを使ってもキチン質の壁には歯が立ちません。<br>
-            ・すりこぎ等で物理的に砕いたあと、強アルカリと熱で一気に細胞を破壊するのが最も早くて確実な方法です。
-        </div>
-        <div id="data-method-parasite" class="rationale-text">
-            <strong>【根拠：プロテイナーゼK ＋ Chelex法】</strong>
-            ・寄生虫（アニサキス等）向けの手法です。<br>
-            ・寄生虫を覆うクチクラ層は、特殊なコラーゲン（タンパク質）が極めて強固に結びついた構造をしており、アルカリ煮沸だけでは破壊できません。<br>
-            ・強力なタンパク質分解酵素（プロテイナーゼK）を加え、時間をかけてじっくりと組織をバラバラに消化する必要があります。
-        </div>
-    </div>
-
-    <div style="margin-top: 20px;">
-        <details style="cursor: pointer; border: none; outline: none;">
-            <summary style="font-weight: bold; color: var(--text-muted); font-size: 13px; outline: none;">
-                References & Algorithms
-            </summary>
-            <div style="padding: 10px 0 0 15px; font-size: 11px; color: var(--text-muted); line-height: 1.6;">
-                <p style="margin-bottom: 8px;">本アプリケーションの実験プロトコル、プライマー設計、および自動化スクリプトは、以下の学術論文（原著）に基づき実装されています。</p>
-                <ul style="padding-left: 20px; margin: 0; display: flex; flex-direction: column; gap: 6px;">
-                    <li><strong>Universal Vertebrate Cytochrome b Primers:</strong> Kocher, T. D., Thomas, W. K., Meyer, A., Edwards, S. V., Pääbo, S., Villablanca, F. X., & Wilson, A. C. (1989). Dynamics of mitochondrial DNA evolution in animals: amplification and sequencing with conserved primers. <i>Proceedings of the National Academy of Sciences</i>, 86(16), 6196–6200.</li>
-                    <li><strong>Fish DNA Barcoding Primers:</strong> Ward, R. D., Zemlak, T. S., Innes, B. H., Last, P. R., & Hebert, P. D. (2005). DNA barcoding Australia's fish species. <i>Philosophical Transactions of the Royal Society B: Biological Sciences</i>, 360(1462), 1847–1857.</li>
-                    <li><strong>MiFish Universal Primers for Environmental DNA:</strong> Miya, M., Sato, Y., Fukunaga, T., Sado, T., Poulsen, J. Y., Sato, K., ... & Iwasaki, W. (2015). MiFish, a set of universal PCR primers for metabarcoding environmental DNA from fishes: detection of more than 230 subtropical marine species. <i>Royal Society Open Science</i>, 2(7), 150088.</li>
-                    <li><strong>Universal Invertebrate COI Primers:</strong> Folmer, O., Black, M., Hoeh, W., Lutz, R., & Vrijenhoek, R. (1994). DNA primers for amplification of mitochondrial cytochrome c oxidase subunit I from diverse metazoan invertebrates. <i>Molecular Marine Biology and Biotechnology</i>, 3(5), 294–299.</li>
-                    <li><strong>Anisakidae ITS rDNA & Sibling Species Identification:</strong> Zhu, X., Gasser, R. B., Podolska, M., & Chilton, N. B. (1998). Characterisation of anisakid nematodes with zoonotic potential by nuclear ribosomal DNA sequences. <i>International Journal for Parasitology</i>, 28(12), 1911–1921.</li>
-                    <li><strong>Chelex 100 DNA Extraction Method:</strong> Walsh, P. S., Metzger, D. A., & Higuchi, R. (1991). Chelex 100 as a medium for simple extraction of DNA for PCR-based typing from forensic material. <i>BioTechniques</i>, 10(4), 506–513.</li>
-                    <li><strong>HotSHOT DNA Extraction Method:</strong> Truett, G. E., Heeger, P., Mynatt, R. L., Truett, A. A., Walker, J. A., & Warman, M. L. (2000). Preparation of PCR-quality mouse genomic DNA with hot sodium hydroxide and tris (HotSHOT). <i>BioTechniques</i>, 29(1), 52–54.</li>
-                    <li><strong>Biopython Library:</strong> Cock, P. J., Antao, T., Chang, J. T., Chapman, B. A., Cox, C. J., Dalke, A., ... & de Hoon, M. J. (2009). Biopython: freely available Python tools for computational molecular biology and bioinformatics. <i>Bioinformatics</i>, 25(11), 1422–1423.</li>
-                    <li><strong>NCBI E-utilities API:</strong> Sayers, E. W., Agarwala, R., Bolton, E. E., Brister, J. R., Canese, K., Clark, K., ... & Ostell, J. (2019). Database resources of the national center for biotechnology information. <i>Nucleic Acids Research</i>, 47(D1), D23–D28.</li>
-                </ul>
+            <!-- 学術クレジット (v33.1 準拠) -->
+            <div style="margin-top: 20px; width: 100%; text-align: left;">
+                <details style="cursor: pointer; outline: none;">
+                    <summary style="font-weight: bold; color: var(--text-muted); font-size: 13px; outline: none;">
+                        References & Algorithms
+                    </summary>
+                    <div style="padding: 10px 0 0 15px; font-size: 11px; color: var(--text-muted); line-height: 1.6;">
+                        <p style="margin-bottom: 8px;">本アプリケーションの実験プロトコル、プライマー設計、および自動化スクリプトは、以下の学術論文（原著）に基づき実装されています。</p>
+                        <ul style="padding-left: 20px; margin: 0; display: flex; flex-direction: column; gap: 6px;">
+                            <li><strong>Universal Vertebrate Cytochrome b Primers:</strong> Kocher, T. D., Thomas, W. K., Meyer, A., Edwards, S. V., Pääbo, S., Villablanca, F. X., & Wilson, A. C. (1989). Dynamics of mitochondrial DNA evolution in animals: amplification and sequencing with conserved primers. <i>Proceedings of the National Academy of Sciences</i>, 86(16), 6196–6200.</li>
+                            <li><strong>Fish DNA Barcoding Primers:</strong> Ward, R. D., Zemlak, T. S., Innes, B. H., Last, P. R., & Hebert, P. D. (2005). DNA barcoding Australia's fish species. <i>Philosophical Transactions of the Royal Society B: Biological Sciences</i>, 360(1462), 1847–1857.</li>
+                            <li><strong>MiFish Universal Primers for Environmental DNA:</strong> Miya, M., Sato, Y., Fukunaga, T., Sado, T., Poulsen, J. Y., Sato, K., ... & Iwasaki, W. (2015). MiFish, a set of universal PCR primers for metabarcoding environmental DNA from fishes: detection of more than 230 subtropical marine species. <i>Royal Society Open Science</i>, 2(7), 150088.</li>
+                            <li><strong>Universal Invertebrate COI Primers:</strong> Folmer, O., Black, M., Hoeh, W., Lutz, R., & Vrijenhoek, R. (1994). DNA primers for amplification of mitochondrial cytochrome c oxidase subunit I from diverse metazoan invertebrates. <i>Molecular Marine Biology and Biotechnology</i>, 3(5), 294–299.</li>
+                            <li><strong>Anisakidae ITS rDNA & Sibling Species Identification:</strong> Zhu, X., Gasser, R. B., Podolska, M., & Chilton, N. B. (1998). Characterisation of anisakid nematodes with zoonotic potential by nuclear ribosomal DNA sequences. <i>International Journal for Parasitology</i>, 28(12), 1911–1921.</li>
+                            <li><strong>Chelex 100 DNA Extraction Method:</strong> Walsh, P. S., Metzger, D. A., & Higuchi, R. (1991). Chelex 100 as a medium for simple extraction of DNA for PCR-based typing from forensic material. <i>BioTechniques</i>, 10(4), 506–513.</li>
+                            <li><strong>HotSHOT DNA Extraction Method:</strong> Truett, G. E., Heeger, P., Mynatt, R. L., Truett, A. A., Walker, J. A., & Warman, M. L. (2000). Preparation of PCR-quality mouse genomic DNA with hot sodium hydroxide and tris (HotSHOT). <i>BioTechniques</i>, 29(1), 52–54.</li>
+                            <li><strong>Biopython Library:</strong> Cock, P. J., Antao, T., Chang, J. T., Chapman, B. A., Cox, C. J., Dalke, A., ... & de Hoon, M. J. (2009). Biopython: freely available Python tools for computational molecular biology and bioinformatics. <i>Bioinformatics</i>, 25(11), 1422–1423.</li>
+                            <li><strong>NCBI E-utilities API:</strong> Sayers, E. W., Agarwala, R., Bolton, E. E., Brister, J. R., Canese, K., Clark, K., ... & Ostell, J. (2019). Database resources of the national center for biotechnology information. <i>Nucleic Acids Research</i>, 47(D1), D23–D28.</li>
+                        </ul>
+                    </div>
+                </details>
             </div>
-        </details>
+        </div> <!-- end of main-content -->
+    </div> <!-- end of content-area -->
+
+    <!-- ダークテーマ・フッター規格 v34.2版 -->
+    <div class="footer">
+        &copy; 2026 Bio-Edu Suite v34.2 | Developed for Bioinformatics & Wet-Lab Education
     </div>
-
-</div>
-
-<div class="footer">
-    &copy; 2026 Bio-Edu Suite v33.4 | Advanced Bioinformatics & Wet-Lab Emulator
-</div>
+</div> <!-- end of main-wrapper -->
 
 <!-- トースト通知 -->
 <div id="toast"></div>
 
+<!-- モーダル: 破壊的アクション用 確認ダイアログ (v34.2 完全統一) -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-content" style="max-width: 400px; border-top: none; text-align: center;">
+    <div class="modal-body" style="padding: 30px 20px 10px;">
+      <svg class="svg-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 42px; height: 42px; margin-bottom: 12px; opacity: 0.9;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+      <h3 id="confirmTitle" style="margin: 0 0 10px 0; font-size: 16px; color: var(--primary);">確認</h3>
+      <div id="confirmMessage" style="font-size: 13px; line-height: 1.6; color: var(--text-main);"></div>
+    </div>
+    <div class="modal-footer" style="border-top: none; background: white; justify-content: center; gap: 12px; padding-bottom: 30px; display: flex;">
+      <button class="btn btn-secondary" onclick="closeConfirm(); triggerHapticFeedback();">キャンセル</button>
+      <button class="btn" id="confirmOkBtn" style="background: var(--danger); color: white;" onclick="triggerHapticFeedback();">実行する</button>
+    </div>
+  </div>
+</div>
+
+<!-- アカウント・同期設定モーダル -->
+<div class="modal-overlay" id="accountModal">
+  <div class="modal-content" style="max-width: 380px;">
+    <div class="modal-header">
+      <h3 style="margin: 0; font-size: 16px;">アカウント・同期設定</h3>
+      <button class="modal-close" onclick="closeAccountSettings(); triggerHapticFeedback();" data-tooltip="閉じる">
+        <svg class="btn-icon" style="margin:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="padding: 20px;">
+      
+      <!-- ① 未ログイン時（ゲスト） -->
+      <div id="modalLoggedOutView">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+          <span style="font-size: 14px; font-weight: bold; color: var(--text-muted);">⚪️ ゲストモード</span>
+        </div>
+        <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 16px 0; line-height: 1.6;">
+          現在は端末内のみにデータが保存されています。Googleアカウントでログインすると、自宅のPCや他の端末とデータを自動同期できます。
+        </p>
+        <button class="btn btn-primary" style="width: 100%;" onclick="window.handleGoogleLogin(); triggerHapticFeedback();">
+          Googleアカウントでログイン
+        </button>
+      </div>
+
+      <!-- ② ログイン中 -->
+      <div id="modalLoggedInView" style="display: none;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+          <span id="syncStatusBadge" style="font-size: 14px; font-weight: bold; color: var(--phase-color);">🟢 クラウド同期中</span>
+        </div>
+        
+        <div style="background: #f8f9fa; border: 1px solid #e1e8ed; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
+          <div id="userNameDisplay" style="font-weight: bold; font-size: 14px; color: var(--primary);"></div>
+          <div id="userEmailDisplay" style="font-size: 11px; color: var(--text-muted); margin-top: 2px;"></div>
+          <div id="syncStatusNote" style="font-size: 11px; color: var(--danger); margin-top: 6px; display: none;">
+            ※オフライン中です。データは端末内に一時保存され、再接続時に自動同期されます。
+          </div>
+        </div>
+
+        <button class="btn btn-secondary" style="width: 100%; color: var(--danger); border-color: #f5b7b1;" onclick="window.handleLogout(); triggerHapticFeedback();">
+          ログアウト
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 <script>
     // ---------------------------------------------------------
-    // グローバル・ドロワー開閉制御
+    // Haptic Feedback
     // ---------------------------------------------------------
-    function toggleSidebar() {
-        const sidebar = document.querySelector('.sidebar');
-        const overlay = document.querySelector('.sidebar-overlay');
-        if(sidebar) sidebar.classList.toggle('open');
-        if(overlay) overlay.classList.toggle('open');
+    function triggerHapticFeedback() {
+        if (navigator.vibrate) {
+            navigator.vibrate(10);
+        }
     }
 
     // ---------------------------------------------------------
-    // 見切れ計算を極限まで強化したポップオーバー切り替えロジック
-    // (Anti-Overflow System 2.0)
+    // グローバル・ドロワー開閉制御 (Peg Menu v34.2 準拠)
+    // ---------------------------------------------------------
+    function toggleSidebarPin() { 
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
+        const isMobile = window.innerWidth <= 768;
+        
+        if (!isMobile) {
+            sidebar.classList.toggle('pinned');
+            document.body.classList.toggle('has-pinned-sidebar', sidebar.classList.contains('pinned'));
+        } else {
+            sidebar.classList.toggle('open');
+            if(overlay) overlay.classList.toggle('open', sidebar.classList.contains('open'));
+        }
+    }
+
+    function openFeedbackForm() {
+        if (window.innerWidth <= 768) {
+          document.querySelector('.sidebar').classList.remove('open');
+          const overlay = document.querySelector('.sidebar-overlay');
+          if (overlay) overlay.classList.remove('open');
+        }
+
+        const baseUrl = "https://docs.google.com/forms/d/e/1FAIpQLSet9LJgsTO0aZ6pbdekLr4fBeeDPAxREk8xmzY1f-gTcDnFrQ/viewform";
+        const entryId = "entry.1969218085";
+        const appName = document.title;
+        const prefilledUrl = `${baseUrl}?usp=pp_url&${entryId}=${encodeURIComponent(appName)}`;
+        window.open(prefilledUrl, '_blank');
+    }
+
+    // ---------------------------------------------------------
+    // Confirm Modal ロジック (v34.2 完全統一)
+    // ---------------------------------------------------------
+    function confirmDataReset() {
+        if (window.innerWidth <= 768) {
+          document.querySelector('.sidebar').classList.remove('open');
+          const overlay = document.querySelector('.sidebar-overlay');
+          if (overlay) overlay.classList.remove('open');
+        }
+
+        showConfirm("⚠️ 【確認】すべての入力データおよびローカル保存データを初期化しますか？\nこの操作は取り消せません。", () => {
+            localStorage.clear(); sessionStorage.clear(); location.reload();
+        }, "初期化する");
+    }
+
+    function showConfirm(message, onOk, okLabel = "実行する", title = "確認") {
+        document.getElementById('confirmTitle').innerText = title;
+        document.getElementById('confirmMessage').innerText = message;
+        const btn = document.getElementById('confirmOkBtn');
+        btn.innerText = okLabel;
+        btn.onclick = () => { closeConfirm(); onOk(); };
+        document.getElementById('confirmModal').style.display = 'flex';
+    }
+
+    function closeConfirm() {
+        document.getElementById('confirmModal').style.display = 'none';
+        document.getElementById('confirmOkBtn').onclick = null;
+    }
+
+    // ---------------------------------------------------------
+    // Account Modal ロジック
+    // ---------------------------------------------------------
+    function openAccountSettings() {
+      document.getElementById('accountModal').style.display = 'flex';
+    }
+
+    function closeAccountSettings() {
+      document.getElementById('accountModal').style.display = 'none';
+    }
+
+    // ---------------------------------------------------------
+    // Rationale (根拠ポップオーバー) フリップ計算ロジック
     // ---------------------------------------------------------
     function toggleRationale(event, id) {
         event.stopPropagation();
+        triggerHapticFeedback();
         const el = document.getElementById(id);
         const btn = event.currentTarget;
         const isShown = el.classList.contains('show');
         
         // 全てのポップオーバーを閉じる
-        document.querySelectorAll('.rationale-text').forEach(e => e.classList.remove('show', 'arrow-top', 'arrow-bottom'));
+        document.querySelectorAll('.rationale-text').forEach(e => {
+            e.classList.remove('show', 'arrow-top', 'arrow-bottom');
+        });
         
         if(!isShown) {
-            // body直下に移動してoverflow:hidden等の親要素の影響を断ち切る
+            // body直下に移動
             if (el.parentNode !== document.body) document.body.appendChild(el);
-            
-            // ちらつき防止のため一旦 0,0 に配置し計算
             el.style.top = '0px'; el.style.left = '0px'; 
             el.classList.add('show');
             
-            // レイアウト計算（画面幅を用いた動的計算）
+            // レイアウト計算
             const elHeight = el.offsetHeight;
             const elWidth = el.offsetWidth;
             const rect = btn.getBoundingClientRect();
-            
-            // iOS Safari等での不具合を防ぐため、より安全なViewportサイズを取得
             const viewportWidth = document.documentElement.clientWidth || window.innerWidth;
             const viewportHeight = document.documentElement.clientHeight || window.innerHeight;
             
-            // 基本はボタンの下に表示
             let topPos = rect.bottom + 12;
             let arrowClass = 'arrow-top';
 
-            // 【フリップ】画面下端に見切れる場合はボタンの上側に配置
             if (rect.bottom + elHeight + 20 > viewportHeight) {
                 topPos = rect.top - elHeight - 12;
                 arrowClass = 'arrow-bottom';
-
-                // それでも上端に見切れる場合 (画面より要素が大きい等) は上端に合わせる
-                if (topPos < 10) {
-                    topPos = 10;
-                }
+                if (topPos < 10) topPos = 10;
             }
             el.classList.add(arrowClass);
             el.style.top = topPos + 'px';
             
-            // 左右の位置調整 (ボタンの中央を基準に、ポップオーバーの中央を合わせる)
             let leftPos = rect.left - (elWidth / 2) + (rect.width / 2);
-            
-            // 画面右端の見切れ防止
-            if (leftPos + elWidth + 10 > viewportWidth) {
-                leftPos = viewportWidth - elWidth - 10;
-            }
-            // 画面左端の見切れ防止 (右端調整の後に判定し、最終的に左端の視認性を優先)
-            if (leftPos < 10) {
-                leftPos = 10;
-            }
-
+            if (leftPos + elWidth + 10 > viewportWidth) leftPos = viewportWidth - elWidth - 10;
+            if (leftPos < 10) leftPos = 10;
             el.style.left = leftPos + 'px';
 
-            // 吹き出しの尻尾をボタン中央へ追従させる（両端12pxは食い込ませない）
             let arrowLeft = rect.left - leftPos + (rect.width / 2) - 6;
             if (arrowLeft < 12) arrowLeft = 12;
             if (arrowLeft > elWidth - 12) arrowLeft = elWidth - 12;
@@ -920,24 +1118,21 @@ db_data <span class="kd">=</span> []
         }
     }
 
-    // 画面のどこかをクリックしたら閉じる
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.rationale-text') && !e.target.closest('.rationale-btn')) {
             document.querySelectorAll('.rationale-text').forEach(el => el.classList.remove('show', 'arrow-top', 'arrow-bottom'));
         }
     });
 
-    // スクロールしたら閉じる
     document.addEventListener('scroll', () => {
         document.querySelectorAll('.rationale-text').forEach(el => el.classList.remove('show', 'arrow-top', 'arrow-bottom'));
     }, true);
 
     // ---------------------------------------------------------
-    // 厳格なステータスカラー・テーマカラー管理を適用したトースト関数
+    // カスタムツールチップ＆トースト
     // ---------------------------------------------------------
-    // --- カスタムツールチップ初期化（ガイドライン第5項④ 準拠 / ネイティブ title 属性は使用禁止） ---
     function initTooltips() {
-        if (document.getElementById('__bes_tooltip')) return; // 二重初期化を防ぐ
+        if (document.getElementById('__bes_tooltip')) return;
         const tooltip = document.createElement('div');
         tooltip.id = '__bes_tooltip';
         tooltip.className = 'custom-tooltip';
@@ -973,8 +1168,7 @@ db_data <span class="kd">=</span> []
             tooltip.style.opacity = '0'; tooltip.style.display = 'none';
         }, true);
     }
-    // --- トースト通知（ガイドライン第5項⑤ 準拠 / alert() は使用禁止） ---
-    // type: ""(=成功/緑) | "error" | "warning" | "info"。'success' 等の未知値は既定の緑にフォールバックする
+
     function showToast(msg, type = "") {
         const toast = document.getElementById('toast');
         if (!toast) return;
@@ -984,19 +1178,16 @@ db_data <span class="kd">=</span> []
         else if (type === "warning") className += " warning";
         else if (type === "info") className += " info";
         toast.className = "";
-        void toast.offsetWidth; // リフローを挟み、連続表示でもアニメーションを再生させる
+        void toast.offsetWidth; 
         toast.className = className;
         setTimeout(() => { toast.classList.remove("show"); }, 3000);
     }
 
     // ---------------------------------------------------------
-    // コピー機能
-    // ---------------------------------------------------------
     // コピー・ダウンロード機能
     // ---------------------------------------------------------
     function copyCode(btn, elementId) {
         const codeElement = document.getElementById(elementId);
-        // HTMLタグを除去して純粋なテキストを取得
         let textToCopy = codeElement.innerText; 
 
         navigator.clipboard.writeText(textToCopy).then(() => {
@@ -1011,7 +1202,6 @@ db_data <span class="kd">=</span> []
             }, 2500);
         }).catch(err => {
             console.error('コピーに失敗しました', err);
-            // Fallback
             const textArea = document.createElement("textarea");
             textArea.value = textToCopy;
             document.body.appendChild(textArea);
@@ -1027,7 +1217,6 @@ db_data <span class="kd">=</span> []
                     btn.style.color = '';
                 }, 2500);
             } catch (err) {
-                console.error('Fallback: Oops, unable to copy', err);
                 showToast('コピーに失敗しました', 'error');
             }
             document.body.removeChild(textArea);
@@ -1049,9 +1238,29 @@ db_data <span class="kd">=</span> []
         showToast(`「${filename}」をダウンロードしました`, 'success');
     }
 
-    // ツールチップ初期化を必ず呼ぶ（ガイドライン第5項④/第6項）
     document.addEventListener('DOMContentLoaded', initTooltips);
 
+</script>
+
+<script type="module">
+    // モックの認証連携ロジック（必要に応じて `auth_sync.js` などへ置き換えてください）
+    window.handleGoogleLogin = function() {
+        document.getElementById('modalLoggedOutView').style.display = 'none';
+        document.getElementById('modalLoggedInView').style.display = 'block';
+        document.getElementById('userNameDisplay').innerText = "BioEdu ゲスト ユーザー";
+        document.getElementById('userEmailDisplay').innerText = "guest@example.com";
+        document.getElementById('accountStatusText').innerText = "オンライン";
+        showToast("Googleアカウントでログインしました", "success");
+        closeAccountSettings();
+    };
+    
+    window.handleLogout = function() {
+        document.getElementById('modalLoggedOutView').style.display = 'block';
+        document.getElementById('modalLoggedInView').style.display = 'none';
+        document.getElementById('accountStatusText').innerText = "オフライン";
+        showToast("ログアウトしました。データは端末内に保存されます。", "info");
+        closeAccountSettings();
+    };
 </script>
 
 </body>
