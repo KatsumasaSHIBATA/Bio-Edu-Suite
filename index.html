@@ -464,7 +464,13 @@ input, textarea {
     .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); background: white; border-radius: 8px; border: 2px dashed #bdc3c7; }
 
     @media (max-width: 768px) {
-      .content-area { padding: 15px; padding-bottom: 220px; }
+      /* min-height: 0 でコンテンツ領域の伸縮を保証し、フッターを画面最下部に固定 */
+      .content-area { 
+        flex: 1 1 auto; 
+        min-height: 0; 
+        padding: 15px; 
+        padding-bottom: 80px; 
+      }
       .modal-content { width: 95%; margin: 10px; max-height: 95vh; }
       .modal-footer { flex-direction: column; }
       .modal-footer .btn { width: 100%; }
