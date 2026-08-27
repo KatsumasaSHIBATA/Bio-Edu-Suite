@@ -23,8 +23,10 @@ enableIndexedDbPersistence(db).catch((err) => {
   console.error("オフライン同期の有効化に失敗しました:", err.code);
 });
 
-// 4. ログイン状態の監視とUI更新
-onAuthStateChanged(auth, (user) => {
+// 4. ログイン状態と通信状態の統合監視UI更新
+let currentUser = null;
+
+function renderAuthStatus(user) {
   const icon = document.getElementById("accountUserIcon");
   const text = document.getElementById("accountStatusText");
   const modalLoggedOut = document.getElementById("modalLoggedOutView");
@@ -32,9 +34,20 @@ onAuthStateChanged(auth, (user) => {
   const userNameDisplay = document.getElementById("userNameDisplay");
   const userEmailDisplay = document.getElementById("userEmailDisplay");
 
+  // ① 通信オフライン（機内モード等）のときは最優先で赤色にする
+  if (!navigator.onLine) {
+    if (icon) icon.style.stroke = "var(--danger)";
+    if (text) {
+      text.textContent = "オフライン";
+      text.style.color = "var(--danger)";
+    }
+    return;
+  }
+
+  // ② オンライン時の通常判定
   if (user && !user.isAnonymous) {
     // 【Googleログイン中】 -> テーマカラー（緑）
-    const shortName = user.displayName || (user.email ? user.email.split('@')[0] : "ログイン中");
+    const shortName = user.displayName || (user.email ? user.email.split('@')[0] : "同期中");
     
     if (icon) icon.style.stroke = "var(--phase-color)";
     if (text) {
@@ -47,7 +60,7 @@ onAuthStateChanged(auth, (user) => {
     if (modalLoggedIn) modalLoggedIn.style.display = "block";
 
   } else if (user && user.isAnonymous) {
-    // 【ゲスト（匿名自動接続）】 -> グレー
+    // 【ゲスト（匿名接続）】 -> グレー
     if (icon) icon.style.stroke = "#bdc3c7";
     if (text) {
       text.textContent = "ゲスト";
@@ -57,11 +70,11 @@ onAuthStateChanged(auth, (user) => {
     if (modalLoggedIn) modalLoggedIn.style.display = "none";
 
   } else {
-    // 【オフライン / 未接続】 -> 赤
-    if (icon) icon.style.stroke = "var(--danger)";
+    // 【未接続・初期化中】 -> グレー（自動匿名ログインを試行）
+    if (icon) icon.style.stroke = "#bdc3c7";
     if (text) {
-      text.textContent = "オフライン";
-      text.style.color = "var(--danger)";
+      text.textContent = "接続中...";
+      text.style.color = "#bdc3c7";
     }
     if (modalLoggedOut) modalLoggedOut.style.display = "block";
     if (modalLoggedIn) modalLoggedIn.style.display = "none";
@@ -70,6 +83,20 @@ onAuthStateChanged(auth, (user) => {
       console.error("匿名ログインエラー:", error);
     });
   }
+}
+
+// 認証状態の変化を監視
+onAuthStateChanged(auth, (user) => {
+  currentUser = user;
+  renderAuthStatus(currentUser);
+});
+
+// 通信切断（機内モードON）と復帰（機内モードOFF）を即座に検知するリスナー
+window.addEventListener("offline", () => {
+  renderAuthStatus(currentUser);
+});
+window.addEventListener("online", () => {
+  renderAuthStatus(currentUser);
 });
 
 // 5. Googleログイン関数
