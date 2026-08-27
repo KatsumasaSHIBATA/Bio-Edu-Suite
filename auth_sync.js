@@ -26,23 +26,86 @@ enableIndexedDbPersistence(db).catch((err) => {
 // 4. ログイン状態と通信状態の統合監視UI更新
 let currentUser = null;
 
-function renderAuthStatus(user) {
+ffunction renderAuthStatus(user) {
   const icon = document.getElementById("accountUserIcon");
   const text = document.getElementById("accountStatusText");
   const modalLoggedOut = document.getElementById("modalLoggedOutView");
   const modalLoggedIn = document.getElementById("modalLoggedInView");
   const userNameDisplay = document.getElementById("userNameDisplay");
   const userEmailDisplay = document.getElementById("userEmailDisplay");
+  const syncBadge = document.getElementById("syncStatusBadge");
+  const syncNote = document.getElementById("syncStatusNote");
 
-  // ① 通信オフライン（機内モード等）のときは最優先で赤色にする
-  if (!navigator.onLine) {
+  const isOnline = navigator.onLine;
+
+  // ① アイコン & ヘッダーテキストの更新
+  if (!isOnline) {
     if (icon) icon.style.stroke = "var(--danger)";
     if (text) {
       text.textContent = "オフライン";
       text.style.color = "var(--danger)";
     }
-    return;
   }
+
+  // ② ログイン状態に応じたモーダル表示制御
+  if (user && !user.isAnonymous) {
+    // 【Googleログイン中】
+    const shortName = user.displayName || (user.email ? user.email.split('@')[0] : "同期中");
+
+    if (isOnline) {
+      if (icon) icon.style.stroke = "var(--phase-color)";
+      if (text) {
+        text.textContent = shortName;
+        text.style.color = "var(--phase-color)";
+      }
+      if (syncBadge) {
+        syncBadge.textContent = "🟢 クラウド同期中";
+        syncBadge.style.color = "var(--phase-color)";
+      }
+      if (syncNote) syncNote.style.display = "none";
+    } else {
+      // ログイン中だがオフラインの場合
+      if (syncBadge) {
+        syncBadge.textContent = "🔴 オフライン（一時停止）";
+        syncBadge.style.color = "var(--danger)";
+      }
+      if (syncNote) syncNote.style.display = "block";
+    }
+
+    if (userNameDisplay) userNameDisplay.textContent = user.displayName || shortName;
+    if (userEmailDisplay) userEmailDisplay.textContent = user.email || "";
+    if (modalLoggedOut) modalLoggedOut.style.display = "none";
+    if (modalLoggedIn) modalLoggedIn.style.display = "block";
+
+  } else if (user && user.isAnonymous) {
+    // 【ゲスト（匿名接続）】
+    if (isOnline) {
+      if (icon) icon.style.stroke = "#bdc3c7";
+      if (text) {
+        text.textContent = "ゲスト";
+        text.style.color = "#bdc3c7";
+      }
+    }
+    if (modalLoggedOut) modalLoggedOut.style.display = "block";
+    if (modalLoggedIn) modalLoggedIn.style.display = "none";
+
+  } else {
+    // 【未接続・初期化中】
+    if (isOnline) {
+      if (icon) icon.style.stroke = "#bdc3c7";
+      if (text) {
+        text.textContent = "接続中...";
+        text.style.color = "#bdc3c7";
+      }
+    }
+    if (modalLoggedOut) modalLoggedOut.style.display = "block";
+    if (modalLoggedIn) modalLoggedIn.style.display = "none";
+
+    signInAnonymously(auth).catch((error) => {
+      console.error("匿名ログインエラー:", error);
+    });
+  }
+}
 
   // ② オンライン時の通常判定
   if (user && !user.isAnonymous) {
