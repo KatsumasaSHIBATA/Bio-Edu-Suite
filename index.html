@@ -337,19 +337,16 @@ input, textarea {
       transform: rotate(45deg);
     }
 
-    /* フローティング・アクション・バー (ヘッダー/フッター統一ダーク仕様) */
+    /* フローティング・アクション・バー (白ベース復元版) */
 .bulk-action-panel {
-  position: fixed; /* absoluteからfixedにしてスクロールに追従・安定化 */
+  position: fixed;
   bottom: 0;
   left: 50%;
   transform: translate(-50%, 120%);
-  /* フッターと同じ紺色をベースに、わずかに透過してすりガラス効果 */
-  background: rgba(26, 37, 47, 0.95);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  padding: 16px 24px calc(16px + env(safe-area-inset-bottom, 0px)) 24px; /* iPhone下部バー対応 */
-  border-radius: 16px 16px 0 0;
-  box-shadow: 0 -4px 25px rgba(0,0,0,0.3);
+  background: #ffffff;
+  padding: 16px 24px calc(16px + env(safe-area-inset-bottom, 0px)) 24px;
+  border-radius: 12px 12px 0 0;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -357,7 +354,7 @@ input, textarea {
   transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   width: 92%;
   max-width: 800px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
   border-bottom: none;
 }
 
@@ -365,16 +362,16 @@ input, textarea {
   transform: translate(-50%, 0); 
 }
 
-/* 選択中カウントテキストのカラー調整 */
+/* 選択中カウントテキスト（ダークグレー） */
 .bulk-action-info { 
   font-weight: bold; 
-  color: #ecf0f1; 
-  font-size: 13px; 
+  color: var(--primary); 
+  font-size: 14px; 
   text-align: center; 
 }
 .bulk-action-info span {
-  color: var(--phase-color); /* 件数部分をアクセントカラーで強調 */
-  font-size: 15px;
+  color: var(--phase-color);
+  font-size: 16px;
 }
 
 .bulk-action-buttons { 
@@ -389,15 +386,14 @@ input, textarea {
   justify-content: center; 
 }
 
-/* 3つ目のボタン「環境メタデータをコピー」をダークパネル用に最適化 */
+/* 3つ目のボタン「環境メタデータをコピー」（元の白・グレー枠線） */
 .bulk-action-buttons .btn-secondary {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #ecf0f1;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: #fdfefe;
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
 }
 .bulk-action-buttons .btn-secondary:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-  color: #fff;
+  background-color: #f4f6f7;
 }
 
     /* リンクボタンのカラー（ガイドライン第4項準拠） */
