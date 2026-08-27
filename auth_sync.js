@@ -26,7 +26,7 @@ enableIndexedDbPersistence(db).catch((err) => {
 // 4. ログイン状態と通信状態の統合監視UI更新
 let currentUser = null;
 
-ffunction renderAuthStatus(user) {
+function renderAuthStatus(user) {
   const icon = document.getElementById("accountUserIcon");
   const text = document.getElementById("accountStatusText");
   const modalLoggedOut = document.getElementById("modalLoggedOutView");
@@ -38,7 +38,7 @@ ffunction renderAuthStatus(user) {
 
   const isOnline = navigator.onLine;
 
-  // ① アイコン & ヘッダーテキストの更新
+  // ① アイコン & ヘッダーテキストの更新（オフライン最優先）
   if (!isOnline) {
     if (icon) icon.style.stroke = "var(--danger)";
     if (text) {
@@ -97,47 +97,6 @@ ffunction renderAuthStatus(user) {
         text.textContent = "接続中...";
         text.style.color = "#bdc3c7";
       }
-    }
-    if (modalLoggedOut) modalLoggedOut.style.display = "block";
-    if (modalLoggedIn) modalLoggedIn.style.display = "none";
-
-    signInAnonymously(auth).catch((error) => {
-      console.error("匿名ログインエラー:", error);
-    });
-  }
-}
-
-  // ② オンライン時の通常判定
-  if (user && !user.isAnonymous) {
-    // 【Googleログイン中】 -> テーマカラー（緑）
-    const shortName = user.displayName || (user.email ? user.email.split('@')[0] : "同期中");
-    
-    if (icon) icon.style.stroke = "var(--phase-color)";
-    if (text) {
-      text.textContent = shortName;
-      text.style.color = "var(--phase-color)";
-    }
-    if (userNameDisplay) userNameDisplay.textContent = user.displayName || shortName;
-    if (userEmailDisplay) userEmailDisplay.textContent = user.email || "";
-    if (modalLoggedOut) modalLoggedOut.style.display = "none";
-    if (modalLoggedIn) modalLoggedIn.style.display = "block";
-
-  } else if (user && user.isAnonymous) {
-    // 【ゲスト（匿名接続）】 -> グレー
-    if (icon) icon.style.stroke = "#bdc3c7";
-    if (text) {
-      text.textContent = "ゲスト";
-      text.style.color = "#bdc3c7";
-    }
-    if (modalLoggedOut) modalLoggedOut.style.display = "block";
-    if (modalLoggedIn) modalLoggedIn.style.display = "none";
-
-  } else {
-    // 【未接続・初期化中】 -> グレー（自動匿名ログインを試行）
-    if (icon) icon.style.stroke = "#bdc3c7";
-    if (text) {
-      text.textContent = "接続中...";
-      text.style.color = "#bdc3c7";
     }
     if (modalLoggedOut) modalLoggedOut.style.display = "block";
     if (modalLoggedIn) modalLoggedIn.style.display = "none";
