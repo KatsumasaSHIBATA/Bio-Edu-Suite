@@ -1262,6 +1262,11 @@ db_data <span class="kd">=</span> []
         closeAccountSettings();
     };
 </script>
-
+<script type="module">
+  import { loginWithGoogle, logoutUser } from './auth_sync.js';
+  window.handleGoogleLogin = loginWithGoogle;
+  window.handleLogout = logoutUser;
+</script>
+    
 </body>
 </html>
