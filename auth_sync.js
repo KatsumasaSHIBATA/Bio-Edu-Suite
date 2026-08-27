@@ -90,20 +90,16 @@ function renderAuthStatus(user) {
     if (modalLoggedIn) modalLoggedIn.style.display = "none";
 
   } else {
-    // 【未接続・初期化中】
+    // 【未接続・初期ロード中】（勝手に匿名ログインを実行せず、ロード待機状態を維持）
     if (isOnline) {
       if (icon) icon.style.stroke = "#bdc3c7";
       if (text) {
-        text.textContent = "接続中...";
+        text.textContent = "ゲスト";
         text.style.color = "#bdc3c7";
       }
     }
     if (modalLoggedOut) modalLoggedOut.style.display = "block";
     if (modalLoggedIn) modalLoggedIn.style.display = "none";
-
-    signInAnonymously(auth).catch((error) => {
-      console.error("匿名ログインエラー:", error);
-    });
   }
 }
 
