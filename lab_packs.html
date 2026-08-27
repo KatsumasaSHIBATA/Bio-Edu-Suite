@@ -770,7 +770,7 @@
             <p>
               ① ブラウザで <a href="https://colab.research.google.com/" target="_blank" style="color:#2980b9; font-weight:bold; text-decoration: none;">Google Colaboratory</a> を開き、「ノートブックを新規作成」します。<br>
               ② 以下のコードをコードセルに貼り付け、再生ボタン（▶）を押して実行します。<br>
-              ③ 左側の「フォルダ📁」アイコンから、完成した <code>MyCustomDB.json</code> をダウンロードし、アプリ⑦に読み込ませます。
+              ③ 左側のフォルダから、完成した <code>MyCustomDB.json</code> をダウンロードし、アプリ⑦に読み込ませます。
             </p>
 
             <div class="code-container">
@@ -1115,7 +1115,7 @@ db_data <span class="kd">=</span> []
       if (overlay) overlay.classList.remove('open');
     }
 
-    showConfirm("すべての入力データおよびローカル保存データを初期化しますか？\nこの操作は取り消せません。", () => {
+    showConfirm("すべての入力データおよびローカル保存データを初期化しますか？この操作は取り消せません。", () => {
         localStorage.clear(); sessionStorage.clear(); location.reload();
     }, "初期化する");
   }
