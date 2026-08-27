@@ -770,12 +770,17 @@ input, textarea {
         <!-- ② ログイン中 -->
         <div id="modalLoggedInView" style="display: none;">
           <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-            <span style="font-size: 14px; font-weight: bold; color: var(--phase-color);">🟢 クラウド同期中</span>
+            <!-- ★ id="syncStatusBadge" を追加 -->
+            <span id="syncStatusBadge" style="font-size: 14px; font-weight: bold; color: var(--phase-color);">🟢 クラウド同期中</span>
           </div>
           
           <div style="background: #f8f9fa; border: 1px solid #e1e8ed; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
             <div id="userNameDisplay" style="font-weight: bold; font-size: 14px; color: var(--primary);"></div>
             <div id="userEmailDisplay" style="font-size: 11px; color: var(--text-muted); margin-top: 2px;"></div>
+            <!-- ★ オフライン時の状態メッセージ領域を追加 -->
+            <div id="syncStatusNote" style="font-size: 11px; color: var(--danger); margin-top: 6px; display: none;">
+              ※オフライン中です。データは端末内に一時保存され、再接続時に自動同期されます。
+            </div>
           </div>
 
           <button class="btn btn-secondary" style="width: 100%; color: var(--danger); border-color: #f5b7b1;" onclick="window.handleLogout(); triggerHapticFeedback();">
