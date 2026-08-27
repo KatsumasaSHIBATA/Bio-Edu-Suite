@@ -160,7 +160,19 @@ input, textarea {
     /* マイクロインタラクション（沈み込み） */
     .btn:active, .sidebar-action-btn:active { transform: scale(0.97); }
 
-    .main-wrapper { display: flex; flex-direction: column; overflow: hidden; position: relative; padding-left: 60px; height: 100%; min-height: 100vh; transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-sizing: border-box; width: 100%; }
+    /* 高さを 100dvh に完全固定し、画面外への突き抜けを防止 */
+    .main-wrapper { 
+      display: flex; 
+      flex-direction: column; 
+      overflow: hidden; 
+      position: relative; 
+      padding-left: 60px; 
+      height: 100dvh; 
+      max-height: 100dvh; 
+      transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+      box-sizing: border-box; 
+      width: 100%; 
+    }
     
     @media (min-width: 769px) {
       .sidebar:hover, .sidebar.pinned { width: 280px; }
@@ -171,7 +183,7 @@ input, textarea {
     @media (max-width: 768px) {
       .sidebar { width: 280px; left: -280px; } 
       .sidebar.open { left: 0; }
-      .main-wrapper { padding-left: 0; }
+      .main-wrapper { padding-left: 0; height: 100dvh; }
       body.has-pinned-sidebar .main-wrapper { padding-left: 0; }
     }
     
