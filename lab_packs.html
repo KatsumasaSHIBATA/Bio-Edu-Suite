@@ -365,6 +365,128 @@
       .btn-download { width: 100%; }
       .tl-container { grid-template-columns: minmax(0, 1fr); padding: 0; }
     }
+
+        /* ===================================================================
+           【第4項-1 Primary（青色系 / #3498db）＝「前進・主要アクション」】
+           ログインは画面を次のステップへ進める主要アクションであり、
+           Phase のアイデンティティを示す Theme/Info（第4項-4）ではない。
+           アプリ側の .btn-primary がフェーズカラーに割り当てられている場合でも、
+           ログインボタンだけは Primary ブルーへ統一する。
+           ※既存の .btn-primary 定義は一切書き換えず、IDスコープの追記のみで上書きする。
+           =================================================================== */
+        #accountModal #modalLoggedOutView .btn-primary {
+          background: #3498db;
+          border-color: #2980b9;
+          color: #fff;
+        }
+        #accountModal #modalLoggedOutView .btn-primary:hover {
+          background: #2980b9;
+        }
+
+        /* ===================================================================
+           【第5項-4 ヘッダー右側スロット（.header-right）の右端固定】
+           ④⑨ は .header の justify-content が flex-start のため、アカウント
+           （人型）ボタンが左のタイトル文字に張り付いていた。ガイドライン第5項の
+           規定どおり .header-left に flex:1 を与えて残余幅を吸収させ、.header 側の
+           justify-content に依存せず右端へ寄せる（index.html と同じ位置）。
+           ※既存の .header / .header-left / .header-right 宣言は一切書き換えず、
+             追記のみで上書きする。
+           =================================================================== */
+        .header-left { flex: 1; justify-content: flex-start; }
+        .header-right { flex-shrink: 0; margin-left: auto; }
+
+        /* ===================================================================
+           【第8項 確認ダイアログ内アイコンの中央寄せ固定】
+           ⑪ Statistical Genetics Lab のみ Tailwind CDN を読み込んでおり、その
+           Preflight が `img, svg, video, ... { display: block }` を当てるため、
+           .modal-content の text-align:center が効かず [i] アイコンが左端へ
+           寄っていた。全ファイルで index.html と同一の中央表示になるよう、
+           確認ダイアログ内のアイコンだけインライン扱いに固定する。
+           （SVGは置換要素のため inline → inline-block でボックスは変わらず、
+             既に中央だった14ファイルの見た目は変化しない）
+           ※既存宣言は一切書き換えず、追記のみで上書きする。
+           =================================================================== */
+        #confirmModal .modal-body > svg { display: inline-block; }
+
+        /* ===================================================================
+           【第5項 補完規格 v34.3.1：ドロワー内 区切り線・ハンバーガーの状態管理】
+           ① 区切り線をフェーズカラーから共通の薄い灰色へ一元化
+           ② 閉鎖時（幅60px・アイコンのみ）は区切り線を隠し、展開時のみ表示
+           ③ ハンバーガーは 閉鎖時=≡ ／ 展開時(hover・pinned・open)=× に統一
+
+           ※旧世代の `.nav-header.p1〜.extra { border-top-color: rgba(<フェーズ色>,0.2) }`
+             は詳細度 (0,2,0) のため、末尾に `.nav-header` (0,1,0) を追記しても勝てない。
+             既存宣言を書き換えずに確実へ上書きするため (0,3,0) 以上で指定する。
+           =================================================================== */
+
+        /* ①② 区切り線：共通の薄い灰色。閉鎖時は透明にして隠す
+           （display / border-width ではなく色を遷移させ、レイアウトを動かさない） */
+        .sidebar .nav-menu .nav-header,
+        .sidebar .sidebar-footer-actions {
+          border-top-color: transparent;
+          transition: border-top-color 0.25s ease;
+        }
+        .sidebar:hover .nav-menu .nav-header,
+        .sidebar.pinned .nav-menu .nav-header,
+        .sidebar.open .nav-menu .nav-header,
+        .sidebar:hover .sidebar-footer-actions,
+        .sidebar.pinned .sidebar-footer-actions,
+        .sidebar.open .sidebar-footer-actions {
+          border-top-color: rgba(255, 255, 255, 0.05);
+        }
+        /* 先頭見出し（Phase 1）は区切り線を持たない。※必ず上記より後方に置くこと */
+        .sidebar .nav-menu .nav-header.p1,
+        .sidebar .nav-menu .nav-header:first-child {
+          border-top: none;
+        }
+
+        /* ③ ハンバーガー（v34.3.2 訂正）:
+              ・未固定（デフォルト）および ホバー時（.sidebar:hover）… ≡ を維持
+              ・固定・展開時（.sidebar.pinned / .sidebar.open）… × へ切り替え
+           ホバーでは切り替えないため :hover では ≡ を明示的に維持し、旧世代アプリに
+           残る `.sidebar:hover .icon-menu { display: none }`（詳細度 0,3,0）を
+           (0,4,0) で打ち消す。
+           ※.pinned / .open の規則は :hover と同詳細度 (0,4,0) のため、
+             「ピン留め中にホバーした」場合に × が勝つよう必ず後方に置く。
+           ×の色は .hamburger-btn の color: white を継承させる（グレー化を禁止） */
+        .sidebar .hamburger-btn .icon-menu { display: block; }
+        .sidebar .hamburger-btn .icon-close { display: none; }
+        .sidebar .hamburger-btn .icon-menu,
+        .sidebar .hamburger-btn .icon-close { color: inherit; }
+        /* ホバー時も ≡ を維持（切り替えない） */
+        .sidebar:hover .hamburger-btn .icon-menu { display: block; }
+        .sidebar:hover .hamburger-btn .icon-close { display: none; }
+        /* 固定・展開時のみ × へ切り替え（:hover 規則より後方に置くこと） */
+        .sidebar.pinned .hamburger-btn .icon-menu,
+        .sidebar.open .hamburger-btn .icon-menu { display: none; }
+        .sidebar.pinned .hamburger-btn .icon-close,
+        .sidebar.open .hamburger-btn .icon-close { display: block; }
+
+        /* ===================================================================
+           【第5項 補完規格 v34.3.3：ハンバーガーボタンの寸法とホバー配色】
+           ① ホバー時は背景のみ変化させ、テキスト色は変えない（index.html 準拠）。
+              ⑤ の `.hamburger-btn:hover { color: var(--phase-color) }` を打ち消す。
+           ② padding を 6px に統一し、閉鎖時の縦センターラインを .nav-icon と揃える。
+              ・サイドバー閉鎖幅 60px、.sidebar-header の padding-right は 12px を維持
+              → ボタン右端 = 60 - 12 = 48px
+              → アイコン中心 = 48 - 6(padding) - 12(アイコン幅24/2) = 30px
+              ・.nav-item は padding-left 20px、.nav-icon は幅 20px
+              → アイコン中心 = 20 + 10 = 30px   … 完全一致
+              （従来の padding: 8px ではボタン幅が 40px となり中心が 28px、左に2pxズレる）
+           ※既存宣言は一切書き換えず、追記のみで上書きする（詳細度 0,2,0 / 0,3,0）。
+           =================================================================== */
+        .sidebar .hamburger-btn { padding: 6px; }
+        .sidebar .hamburger-btn:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
+
+        /* --- 続き：.nav-icon 側のセンターラインを 30px へ揃える ---
+           `.nav-item` には状態変化での横ズレ防止として `border-left: 4px solid transparent`
+           が常時入っているため、padding-left 20px では
+             4(枠線) + 20(padding) + 10(アイコン幅20/2) = 34px
+           となり、ハンバーガー（30px）と 4px ずれる。padding-left を 16px にして
+             4 + 16 + 10 = 30px  … ハンバーガーと完全一致（アプリ⑤と同じ位置）
+           ※枠線を常時確保したままなので、active 切り替え時の横ズレも発生しない。
+           ※アプリ⑤は `.nav-item` に枠線が無く既に 30px のため、この規則は適用しない。 */
+        .sidebar .nav-menu .nav-item { padding-left: 16px; }
   </style>
 </head>
 <body class="dashboard-mode no-select-ui">

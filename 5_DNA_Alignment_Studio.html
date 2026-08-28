@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1024">
-    <!-- 正規のPWA読み込み（ガイドライン第15項） -->
+
+    <!-- 正規のPWA読み込み（ガイドライン第15項①） -->
     <link rel="manifest" href="manifest.json">
     <!-- ノッチ・ステータスバーをヘッダーと同じ紺色に指定 -->
     <meta name="theme-color" content="#1a252f">
-    
+
     <!-- iOS向け設定（透過かつ上部コンテンツと滑らかに一体化） -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -15,14 +16,6 @@
     <link rel="apple-touch-icon" href="icon-192.png">
     <title>⑤ DNA Alignment Studio | Bio-Edu Suite</title>
     <style>
-        /* 画面読み込み・遷移時の白飛び防止（ガイドライン第15項） */
-        html { background-color: #1a252f; }
-        body { animation: pageFadeIn 0.15s ease-out forwards; }
-        @keyframes pageFadeIn { from { opacity: 0.85; } to { opacity: 1; } }
-        /* タップハイライトの消去・ダブルタップズーム防止（第15項） */
-        *, *::before, *::after { -webkit-tap-highlight-color: transparent; }
-        html, body { touch-action: manipulation; }
-        input, textarea { user-select: text; -webkit-user-select: text; }
         /* テーマカラー規格（ガイドライン第3項） */
         :root {
             --primary: #2c3e50;        
@@ -144,15 +137,6 @@
         .header-right { display: flex; justify-content: flex-end; }
         .mobile-hamburger { display: none; background: transparent; border: none; color: #fff; cursor: pointer; padding: 4px; border-radius: 4px; margin-left: -8px;}
         .mobile-hamburger:hover { background: rgba(255, 255, 255, 0.1); color: var(--phase-color); }
-        /* アカウント統合ボタン（フラット・透過 / マスターと同期） */
-        .account-btn { background: transparent !important; border: none !important; box-shadow: none !important; padding: 6px 10px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border-radius: 20px; transition: opacity 0.2s; }
-        .account-btn:hover { opacity: 0.8; }
-        .account-user-icon { width: 20px; height: 20px; stroke: #bdc3c7; transition: stroke 0.3s; flex-shrink: 0; }
-        @media (max-width: 768px) {
-            .account-btn { padding: 4px !important; }
-            .account-btn .btn-text { display: none !important; }
-            .account-user-icon { width: 22px; height: 22px; }
-        }
 
         .main-content { width: 100%; max-width: 1400px; margin: 0 auto; padding: 15px; display: flex; flex-direction: column; gap: 24px; flex: 1; }
         
@@ -333,10 +317,6 @@
         
         /* 共通フッター (.footer) */
         .footer { width: 100%; background: #1a252f; padding: 12px 20px; text-align: center; font-size: 11px; color: #7f8c8d; letter-spacing: 1px; margin-top: auto; border-top: 1px solid #2c3e50; flex-shrink: 0; }
-        /* セーフエリア対応（第15項）※既存の値を保ったまま余白のみ加算する */
-        .sidebar { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
-        .header-container { padding-top: env(safe-area-inset-top, 0px); }
-        .footer { padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0px)) 20px; }
         
         .loader { border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid #fff; border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite; display: inline-block; margin-left: 5px; vertical-align: middle; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -383,6 +363,225 @@
         .modal-header { padding: 15px 20px; background: #f8f9f9; color: var(--primary); border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ecf0f1; }
         .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
         .modal-footer { padding: 15px 20px; border-top: 1px solid #ecf0f1; display: flex; justify-content: flex-end; gap: 10px; background: #fdfefe; border-radius: 0 0 8px 8px; }
+
+        /* ===================================================================
+           【v34.3 外箱アップデート／追記専用ブロック】
+           既存の記述は一切書き換えず、後方定義（カスケード）のみで上書きする。
+           ※本アプリは既に Peg Menu / main-wrapper へ移行済みのため、
+             不足している第15項(PWA)・content-area・アカウント統合ボタンのみを追記する。
+           =================================================================== */
+
+        /* --- 第15項② 画面読み込み・遷移時の白飛び防止 --- */
+        html { background-color: #1a252f; }
+        @keyframes pageFadeIn { from { opacity: 0.85; } to { opacity: 1; } }
+
+        /* --- 第15項② タップハイライト無効化・ダブルタップズーム防止・100dvh完全固定 --- */
+        *, *::before, *::after { -webkit-tap-highlight-color: transparent; }
+        html, body { touch-action: manipulation; height: 100%; height: 100dvh; }
+        body {
+          animation: pageFadeIn 0.15s ease-out forwards;
+          flex-direction: row;
+          align-items: stretch;
+          overscroll-behavior: none;
+        }
+
+        /* --- 第15項② セーフエリア対応 --- */
+        .sidebar { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+        .header-container { padding-top: env(safe-area-inset-top, 0px); }
+
+        /* --- 第15項② メインラッパーのフッター押し出しバグ修正 ---
+           従来の「margin-left ＋ ラッパー自身をスクロール」方式を、
+           「padding-left ＋ 内部 .content-area をスクロール」方式へ切り替える。 */
+        .main-wrapper {
+          margin-left: 0;
+          padding-left: 60px;
+          overflow: hidden;
+          overflow-y: hidden;
+          position: relative;
+          height: 100dvh;
+          max-height: 100dvh;
+          box-sizing: border-box;
+          width: 100%;
+          transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @media (min-width: 769px) {
+          body.has-pinned-sidebar .main-wrapper { margin-left: 0; padding-left: 280px; }
+        }
+        @media (max-width: 768px) {
+          .main-wrapper { margin-left: 0; padding-left: 0; height: 100dvh; }
+          body.has-pinned-sidebar .main-wrapper { margin-left: 0; padding-left: 0; }
+        }
+
+        /* --- 第15項② コンテンツエリア（新設スクロール領域） ---
+           ※既存 .main-content には一切手を加えず、本要素で丸ごとラップする。 */
+        .content-area {
+          flex: 1;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+          overscroll-behavior-y: contain;
+          padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+        }
+        .content-area > .main-content { margin-left: auto; margin-right: auto; }
+
+        /* --- 第5項 アカウント統合ボタン（フラット・透過） --- */
+        .header-right { align-items: center; }
+        .account-btn {
+          background: transparent !important;
+          border: none !important;
+          box-shadow: none !important;
+          padding: 6px 10px;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          cursor: pointer;
+          border-radius: 20px;
+          transition: opacity 0.2s;
+        }
+        .account-btn:hover { opacity: 0.8; }
+        .account-user-icon { width: 20px; height: 20px; stroke: #bdc3c7; transition: stroke 0.3s; flex-shrink: 0; }
+
+        /* --- ダークテーマ・フッター（マスター同期／ホームバー領域の余白確保） --- */
+        .footer {
+          padding: 15px 20px calc(15px + env(safe-area-inset-bottom, 0px)) 20px;
+          background-color: #1a252f;
+          border-top: 1px solid #2c3e50;
+          font-size: 11px;
+          color: #bdc3c7;
+          text-align: center;
+          margin-top: auto;
+          flex-shrink: 0;
+        }
+
+        /* --- 第8項 システム必須モーダル ---
+           既存 .modal-overlay の z-index:1000 は .sidebar(1002) より低く埋もれるため、
+           新規モーダルのみ ID 限定で 1100 へ引き上げる（既存定義は無改変）。 */
+        #confirmModal, #accountModal { z-index: 1100; }
+        #confirmModal .modal-close, #accountModal .modal-close { background: none; border: none; color: #7f8c8d; font-size: 20px; cursor: pointer; padding: 0 5px; font-weight: bold; }
+        #confirmModal .modal-close:hover, #accountModal .modal-close:hover { color: var(--danger); }
+        #confirmModal .btn-icon, #accountModal .btn-icon { width: 16px; height: 16px; flex-shrink: 0; }
+
+        /* --- スマホ時の外箱補正（既存 @media より後方に配置し確実に適用させる） --- */
+        @media (max-width: 768px) {
+          .account-btn { padding: 4px !important; }
+          .account-btn .btn-text { display: none !important; }
+          .account-user-icon { width: 22px; height: 22px; }
+          /* min-height: 0 でコンテンツ領域の伸縮を保証し、フッターを画面最下部に固定 */
+          .content-area { flex: 1 1 auto; min-height: 0; }
+          .modal-footer { flex-direction: column; }
+          .modal-footer .btn { width: 100%; }
+        }
+
+        /* ===================================================================
+           【第4項-1 Primary（青色系 / #3498db）＝「前進・主要アクション」】
+           ログインは画面を次のステップへ進める主要アクションであり、
+           Phase のアイデンティティを示す Theme/Info（第4項-4）ではない。
+           アプリ側の .btn-primary がフェーズカラーに割り当てられている場合でも、
+           ログインボタンだけは Primary ブルーへ統一する。
+           ※既存の .btn-primary 定義は一切書き換えず、IDスコープの追記のみで上書きする。
+           =================================================================== */
+        #accountModal #modalLoggedOutView .btn-primary {
+          background: #3498db;
+          border-color: #2980b9;
+          color: #fff;
+        }
+        #accountModal #modalLoggedOutView .btn-primary:hover {
+          background: #2980b9;
+        }
+
+        /* ===================================================================
+           【第5項-4 ヘッダー右側スロット（.header-right）の右端固定】
+           ④⑨ は .header の justify-content が flex-start のため、アカウント
+           （人型）ボタンが左のタイトル文字に張り付いていた。ガイドライン第5項の
+           規定どおり .header-left に flex:1 を与えて残余幅を吸収させ、.header 側の
+           justify-content に依存せず右端へ寄せる（index.html と同じ位置）。
+           ※既存の .header / .header-left / .header-right 宣言は一切書き換えず、
+             追記のみで上書きする。
+           =================================================================== */
+        .header-left { flex: 1; justify-content: flex-start; }
+        .header-right { flex-shrink: 0; margin-left: auto; }
+
+        /* ===================================================================
+           【第8項 確認ダイアログ内アイコンの中央寄せ固定】
+           ⑪ Statistical Genetics Lab のみ Tailwind CDN を読み込んでおり、その
+           Preflight が `img, svg, video, ... { display: block }` を当てるため、
+           .modal-content の text-align:center が効かず [i] アイコンが左端へ
+           寄っていた。全ファイルで index.html と同一の中央表示になるよう、
+           確認ダイアログ内のアイコンだけインライン扱いに固定する。
+           （SVGは置換要素のため inline → inline-block でボックスは変わらず、
+             既に中央だった14ファイルの見た目は変化しない）
+           ※既存宣言は一切書き換えず、追記のみで上書きする。
+           =================================================================== */
+        #confirmModal .modal-body > svg { display: inline-block; }
+
+        /* ===================================================================
+           【第5項 補完規格 v34.3.1：ドロワー内 区切り線・ハンバーガーの状態管理】
+           ① 区切り線をフェーズカラーから共通の薄い灰色へ一元化
+           ② 閉鎖時（幅60px・アイコンのみ）は区切り線を隠し、展開時のみ表示
+           ③ ハンバーガーは 閉鎖時=≡ ／ 展開時(hover・pinned・open)=× に統一
+
+           ※旧世代の `.nav-header.p1〜.extra { border-top-color: rgba(<フェーズ色>,0.2) }`
+             は詳細度 (0,2,0) のため、末尾に `.nav-header` (0,1,0) を追記しても勝てない。
+             既存宣言を書き換えずに確実へ上書きするため (0,3,0) 以上で指定する。
+           =================================================================== */
+
+        /* ①② 区切り線：共通の薄い灰色。閉鎖時は透明にして隠す
+           （display / border-width ではなく色を遷移させ、レイアウトを動かさない） */
+        .sidebar .nav-menu .nav-header,
+        .sidebar .sidebar-footer-actions {
+          border-top-color: transparent;
+          transition: border-top-color 0.25s ease;
+        }
+        .sidebar:hover .nav-menu .nav-header,
+        .sidebar.pinned .nav-menu .nav-header,
+        .sidebar.open .nav-menu .nav-header,
+        .sidebar:hover .sidebar-footer-actions,
+        .sidebar.pinned .sidebar-footer-actions,
+        .sidebar.open .sidebar-footer-actions {
+          border-top-color: rgba(255, 255, 255, 0.05);
+        }
+        /* 先頭見出し（Phase 1）は区切り線を持たない。※必ず上記より後方に置くこと */
+        .sidebar .nav-menu .nav-header.p1,
+        .sidebar .nav-menu .nav-header:first-child {
+          border-top: none;
+        }
+
+        /* ③ ハンバーガー（v34.3.2 訂正）:
+              ・未固定（デフォルト）および ホバー時（.sidebar:hover）… ≡ を維持
+              ・固定・展開時（.sidebar.pinned / .sidebar.open）… × へ切り替え
+           ホバーでは切り替えないため :hover では ≡ を明示的に維持し、旧世代アプリに
+           残る `.sidebar:hover .icon-menu { display: none }`（詳細度 0,3,0）を
+           (0,4,0) で打ち消す。
+           ※.pinned / .open の規則は :hover と同詳細度 (0,4,0) のため、
+             「ピン留め中にホバーした」場合に × が勝つよう必ず後方に置く。
+           ×の色は .hamburger-btn の color: white を継承させる（グレー化を禁止） */
+        .sidebar .hamburger-btn .icon-menu { display: block; }
+        .sidebar .hamburger-btn .icon-close { display: none; }
+        .sidebar .hamburger-btn .icon-menu,
+        .sidebar .hamburger-btn .icon-close { color: inherit; }
+        /* ホバー時も ≡ を維持（切り替えない） */
+        .sidebar:hover .hamburger-btn .icon-menu { display: block; }
+        .sidebar:hover .hamburger-btn .icon-close { display: none; }
+        /* 固定・展開時のみ × へ切り替え（:hover 規則より後方に置くこと） */
+        .sidebar.pinned .hamburger-btn .icon-menu,
+        .sidebar.open .hamburger-btn .icon-menu { display: none; }
+        .sidebar.pinned .hamburger-btn .icon-close,
+        .sidebar.open .hamburger-btn .icon-close { display: block; }
+
+        /* ===================================================================
+           【第5項 補完規格 v34.3.3：ハンバーガーボタンの寸法とホバー配色】
+           ① ホバー時は背景のみ変化させ、テキスト色は変えない（index.html 準拠）。
+              ⑤ の `.hamburger-btn:hover { color: var(--phase-color) }` を打ち消す。
+           ② padding を 6px に統一し、閉鎖時の縦センターラインを .nav-icon と揃える。
+              ・サイドバー閉鎖幅 60px、.sidebar-header の padding-right は 12px を維持
+              → ボタン右端 = 60 - 12 = 48px
+              → アイコン中心 = 48 - 6(padding) - 12(アイコン幅24/2) = 30px
+              ・.nav-item は padding-left 20px、.nav-icon は幅 20px
+              → アイコン中心 = 20 + 10 = 30px   … 完全一致
+              （従来の padding: 8px ではボタン幅が 40px となり中心が 28px、左に2pxズレる）
+           ※既存宣言は一切書き換えず、追記のみで上書きする（詳細度 0,2,0 / 0,3,0）。
+           =================================================================== */
+        .sidebar .hamburger-btn { padding: 6px; }
+        .sidebar .hamburger-btn:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
     </style>
 </head>
 <body class="app-mode no-select-ui">
@@ -521,17 +720,19 @@
                 </div>
             </div>
             <div class="header-right">
-                <button id="accountBtn" class="account-btn" onclick="openAccountSettings(); triggerHapticFeedback();" data-tooltip="アカウント・同期設定">
-                    <svg id="accountUserIcon" class="account-user-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                    <span id="accountStatusText" class="btn-text" style="font-size: 13px; font-weight: bold; color: #bdc3c7;">接続中...</span>
-                </button>
+            <button id="accountBtn" class="account-btn" onclick="openAccountSettings(); triggerHapticFeedback();" data-tooltip="アカウント・同期設定">
+            <svg id="accountUserIcon" class="account-user-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span id="accountStatusText" class="btn-text" style="font-size: 13px; font-weight: bold; color: #bdc3c7;">接続中...</span>
+            </button>
             </div>
         </div>
     </div>
 
+    <!-- コンテンツエリア（新設：既存 .main-content を丸ごとラップするスクロール領域） -->
+    <div class="content-area">
     <div class="main-content">
         
         <div class="control-grid">
@@ -753,16 +954,19 @@
         </div>
 
     </div>
+    </div><!-- /.content-area -->
 
     <div class="status-bar">
         <span id="statusText">ステータス: NCBIから自動取得するか、生データをドロップしてください。</span>
         <span id="posText">Row: - | Pos: -</span>
     </div>
 
-    <div class="footer">
-        &copy; 2026 Bio-Edu Suite v34.2 | Developed for Bioinformatics & Wet-Lab Education
-    </div>
+<!-- ダークテーマ・フッター規格（マスター同期） -->
+<div class="footer">
+    &copy; 2026 Bio-Edu Suite v34.4 | Developed for Bioinformatics &amp; Wet-Lab Education
 </div>
+
+</div><!-- /.main-wrapper -->
 
 <!-- 確認ダイアログ -->
 <div class="modal-overlay" id="confirmModal">
@@ -862,15 +1066,6 @@
     function closeConfirm() {
         document.getElementById('confirmModal').style.display = 'none';
         document.getElementById('confirmOkBtn').onclick = null;
-    }
-
-    // --- アカウント・同期設定モーダル（第8項） ---
-    function openAccountSettings() {
-        document.getElementById('accountModal').style.display = 'flex';
-    }
-
-    function closeAccountSettings() {
-        document.getElementById('accountModal').style.display = 'none';
     }
 
     // ==========================================
@@ -2240,6 +2435,9 @@
 
 </script>
   
+  <!-- Firebase同期スクリプトの読み込みを追加 -->
+  <script type="module" src="auth_sync.js"></script>
+
 <!-- アカウント・同期設定（ログインパネル）モーダル -->
 <div class="modal-overlay" id="accountModal">
   <div class="modal-content" style="max-width: 380px;">
@@ -2288,11 +2486,25 @@
   </div>
 </div>
 
-<!-- Firebase認証（auth_sync.js）の読み込み -->
+<!-- 外箱（アカウント・同期設定モーダル）共通制御 v34.3 -->
+<script>
+    /* v34.3 外箱アップデート／追記専用ブロック（既存関数は無改変） */
+
+    // --- アカウント・同期設定モーダル制御 ---
+    function openAccountSettings() {
+        document.getElementById('accountModal').style.display = 'flex';
+    }
+
+    function closeAccountSettings() {
+        document.getElementById('accountModal').style.display = 'none';
+    }
+</script>
+
+<!-- Firebase 認証・クラウド同期（ガイドライン第7項） -->
 <script type="module">
-  import { loginWithGoogle, logoutUser } from './auth_sync.js';
-  window.handleGoogleLogin = loginWithGoogle;
-  window.handleLogout = logoutUser;
+    import { loginWithGoogle, logoutUser } from './auth_sync.js';
+    window.handleGoogleLogin = loginWithGoogle;
+    window.handleLogout = logoutUser;
 </script>
 
 </body>
