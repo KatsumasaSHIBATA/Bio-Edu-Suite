@@ -1428,7 +1428,7 @@
         // v34.3.7: 一時保存があれば復元してから描画する（入力欄が空のときのみ）
         try {
             const el = document.getElementById('inputText');
-            const saved = sessionStorage.getItem('bio_edu_app6_autosave');
+            const saved = sessionStorage.getItem('bio_edu_autosave_app6');
             if (el && saved && el.value.trim() === '') {
                 el.value = saved;
                 showToast('前回の入力内容を復元しました', 'info');
@@ -1448,9 +1448,9 @@
         try {
             const el = document.getElementById('inputText');
             if (el && el.value.trim() !== '') {
-                sessionStorage.setItem('bio_edu_app6_autosave', el.value);
+                sessionStorage.setItem('bio_edu_autosave_app6', el.value);
             } else {
-                sessionStorage.removeItem('bio_edu_app6_autosave');
+                sessionStorage.removeItem('bio_edu_autosave_app6');
             }
         } catch (e) {
             // 容量超過などで保存できなくても、離脱そのものは妨げない

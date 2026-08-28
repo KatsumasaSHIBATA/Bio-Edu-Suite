@@ -4468,6 +4468,66 @@
     }
 </script>
 
+<!-- 入力データの一時保存（sessionStorage） v34.3.8 -->
+<script>
+(function () {
+    /* ===================================================================
+       【v34.3.8】ページ遷移時の入力データ一時保存
+       解析パイプラインを行き来しても入力が失われないようにする。
+       ・sessionStorage はタブを閉じるまで有効。localStorage を使う既存の
+         バケツリレー／履歴機能には一切干渉しない。
+       ・復元は「その欄が空のときだけ」行う。これにより、アプリ間の
+         受け渡しデータや初期表示値が入っている場合はそちらを優先する。
+       ・復元後に input イベントを発火し、アプリ側の更新処理
+         （入力欄の活性化判定・文字数表示など）を通常入力時と同じ経路で走らせる。
+       =================================================================== */
+    const AUTOSAVE_KEY = 'bio_edu_autosave_app8';
+    const FIELDS = ['fastaInput'];
+
+    // 離脱時に退避
+    window.addEventListener('beforeunload', () => {
+        try {
+            const data = {};
+            let hasValue = false;
+            FIELDS.forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                data[id] = el.value;
+                if (String(el.value).trim() !== '') hasValue = true;
+            });
+            if (hasValue) sessionStorage.setItem(AUTOSAVE_KEY, JSON.stringify(data));
+            else sessionStorage.removeItem(AUTOSAVE_KEY);
+        } catch (e) {
+            // 容量超過などで保存できなくても離脱そのものは妨げない
+            console.warn('一時保存に失敗しました:', e);
+        }
+    });
+
+    // 起動時に書き戻す
+    window.addEventListener('DOMContentLoaded', () => {
+        try {
+            const saved = JSON.parse(sessionStorage.getItem(AUTOSAVE_KEY) || 'null');
+            if (!saved) return;
+            let restored = 0;
+            FIELDS.forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                if (typeof saved[id] !== 'string' || saved[id].trim() === '') return;
+                if (String(el.value).trim() !== '') return;   // 既存の値を優先
+                el.value = saved[id];
+                el.dispatchEvent(new Event('input', { bubbles: true }));
+                restored++;
+            });
+            if (restored > 0 && typeof showToast === 'function') {
+                showToast('前回の入力内容を復元しました', 'info');
+            }
+        } catch (e) {
+            console.warn('一時保存の復元に失敗しました:', e);
+        }
+    });
+})();
+</script>
+
 <!-- Firebase 認証・クラウド同期（ガイドライン第7項） -->
 <script type="module">
     import { loginWithGoogle, logoutUser } from './auth_sync.js';

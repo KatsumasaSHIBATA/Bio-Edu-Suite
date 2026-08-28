@@ -2422,12 +2422,12 @@
     window.addEventListener('beforeunload', () => {
         try {
             if (!sequences || sequences.length === 0) {
-                sessionStorage.removeItem('bio_edu_app5_autosave');
+                sessionStorage.removeItem('bio_edu_autosave_app5');
                 return;
             }
             const pFEl = document.getElementById('pF');
             const pREl = document.getElementById('pR');
-            sessionStorage.setItem('bio_edu_app5_autosave', JSON.stringify({
+            sessionStorage.setItem('bio_edu_autosave_app5', JSON.stringify({
                 savedAt: Date.now(),
                 pF: pFEl ? pFEl.value : '',
                 pR: pREl ? pREl.value : '',
@@ -2451,7 +2451,7 @@
     function restoreFromAutosave() {
         let saved = null;
         try {
-            saved = JSON.parse(sessionStorage.getItem('bio_edu_app5_autosave') || 'null');
+            saved = JSON.parse(sessionStorage.getItem('bio_edu_autosave_app5') || 'null');
         } catch (e) {
             return;
         }
