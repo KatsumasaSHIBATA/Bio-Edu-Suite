@@ -899,6 +899,12 @@
 
         /* --- 印刷時は 100dvh 固定・内部スクロールを解除し、全ページを出力させる --- */
         @media print {
+          /* v34.3.7: 外箱で追加した html { background-color: #1a252f } が印刷面に
+             紺色の枠として出てしまうため、印刷時は背景を完全に白へ戻す。
+             ※ background は background-color を含むショートハンドのため、
+                `background: none` を後に書くと白指定が透明へリセットされてしまう。
+                「まず none で画像等を消し、次に色を白で確定させる」順序が必須。 */
+          html, body { background: none !important; background-color: #ffffff !important; }
           html, body { height: auto; max-height: none; overflow: visible; display: block; }
           .main-wrapper { display: block; height: auto; max-height: none; overflow: visible; padding-left: 0; }
           .content-area { overflow: visible; height: auto; max-height: none; padding-bottom: 0; }
@@ -1419,7 +1425,37 @@
     // ウィンドウロード時に初期化
     window.addEventListener('load', () => {
         initTooltips();
+        // v34.3.7: 一時保存があれば復元してから描画する（入力欄が空のときのみ）
+        try {
+            const el = document.getElementById('inputText');
+            const saved = sessionStorage.getItem('bio_edu_app6_autosave');
+            if (el && saved && el.value.trim() === '') {
+                el.value = saved;
+                showToast('前回の入力内容を復元しました', 'info');
+            }
+        } catch (e) {
+            console.warn('一時保存の復元に失敗しました:', e);
+        }
         renderText();
+    });
+
+    /* ===================================================================
+       【v34.3.7】ページ遷移時のデータ一時保存（sessionStorage）
+       アプリ間を移動しても貼り付けたアライメント結果が消えないようにする。
+       sessionStorage はタブを閉じるまで有効で、既存の描画処理には干渉しない。
+       =================================================================== */
+    window.addEventListener('beforeunload', () => {
+        try {
+            const el = document.getElementById('inputText');
+            if (el && el.value.trim() !== '') {
+                sessionStorage.setItem('bio_edu_app6_autosave', el.value);
+            } else {
+                sessionStorage.removeItem('bio_edu_app6_autosave');
+            }
+        } catch (e) {
+            // 容量超過などで保存できなくても、離脱そのものは妨げない
+            console.warn('一時保存に失敗しました:', e);
+        }
     });
 
     // --- アプリケーション コアロジック (改変禁止領域) ---

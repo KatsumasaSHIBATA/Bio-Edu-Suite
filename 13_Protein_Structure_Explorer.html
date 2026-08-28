@@ -164,7 +164,7 @@
  .svg-danger { color: var(--danger); }
 
  /* 右側パネルとビューア */
- .right-panel { display: flex; flex-direction: column; gap: 24px; position: sticky; top: 100px; min-width: 0; }
+ .right-panel { display: flex; flex-direction: column; gap: 24px; min-width: 0; }   /* v34.3.7: position:sticky / top を撤去し、追従させず自然にスクロールさせる */
  
  .viewer-card { display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.1); min-height: 750px; height: auto; }
  #gldiv { width: 100%; flex: 1; min-height: 580px; background: #0b0b0b; position: relative; }
@@ -446,25 +446,15 @@
         @media (max-width: 768px) { .modal-content { width: 95%; margin: 10px; max-height: 95vh; } }
 
         /* ===================================================================
-           【v34.3 追補：content-area 化に伴う sticky 基準点の補正】
-           従来スクロールポートはビューポート側にあり、.header-container が
-           position:sticky; top:0 で同一スクロールポート内に重なっていたため、
-           左右分割パネルは top:100px でヘッダー高さ分を避けていた。
-           今回スクロールポートが .content-area へ移り、ヘッダーはその外側
-           （.main-wrapper の別フレックス項目）へ出たため、同じ 100px では
-           ヘッダー下にさらに 100px の空きが生まれ、左右パネルの上端がずれて
-           スクロール時にガタついていた。
-           スクロール領域内の基準（= .main-content の上パディング）へ読み替える。
-           ※既存の .right-panel 宣言は一切書き換えず、追記のみで上書きする。
+           【v34.3.7】右パネルの sticky 追従を廃止
+           .right-panel が追従して最下部の要素に被さるため、CSS側の
+           position:sticky / top 指定をすべて撤去した（上の .right-panel 定義も同様）。
+           ここにあった `.content-area .right-panel { top: ... }` の基準点補正は
+           追従自体が無くなったため不要となり削除した。
+           内容量の増減でスクロールバーが出入りしグリッド列幅が跳ねる
+           （＝横方向のガタつき）のを防ぐ指定のみを残す。
            =================================================================== */
-        .content-area .right-panel { top: 24px; }
-        /* 内容量の増減でスクロールバーが出入りし、グリッド列幅が跳ねる
-           （＝横方向のガタつき）のを防ぐため、スクロールバー領域を常に確保する */
         .content-area { scrollbar-gutter: stable; }
-
-        @media (max-width: 768px) {
-          .content-area .right-panel { top: 16px; }
-        }
 
         /* ===================================================================
            【第4項-1 Primary（青色系 / #3498db）＝「前進・主要アクション」】

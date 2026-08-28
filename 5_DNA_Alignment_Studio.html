@@ -1371,6 +1371,9 @@
                 console.error("預かりデータのパースエラー:", err);
             }
             sessionStorage.removeItem('bio_edu_bulk_data');
+        } else {
+            // v34.3.7: バケツリレー（bio_edu_bulk_data）が無い場合は一時保存から復元する
+            restoreFromAutosave();
         }
     });
 
@@ -2322,6 +2325,11 @@
         if(sequences.length === 0) return;
         let output = "CLUSTAL formatted alignment by DNA Alignment Studio v33.4 (Bio-Edu Suite)\n\n";
         let maxLen = Math.max(...sequences.map(s => s.data.length));
+        // v34.3.7: 識別子の区切りにタブを使うと名前の長さで桁がずれるため、
+        //          出力対象（選択中）の識別子の最大長 + 4 を固定幅としてスペース右埋めする
+        const outIds = sequences.filter(s => s.isSelected !== false)
+                                .map(s => (s.id && s.id.trim() !== "") ? s.id : s.name);
+        const padSize = (outIds.length ? Math.max(...outIds.map(x => x.length)) : 0) + 4;
         
         let baseCounts = new Array(sequences.length).fill(0);
         let hasSelected = false;
@@ -2339,10 +2347,10 @@
                 }
                 
                 let identifier = (s.id && s.id.trim() !== "") ? s.id : s.name;
-                output += `${identifier}\t${seqPart}\t${baseCounts[sIdx]}\n`;
+                output += `${identifier.padEnd(padSize, ' ')}${seqPart}\t${baseCounts[sIdx]}\n`;
             }
             
-            let consLine = "\t";
+            let consLine = ' '.repeat(padSize);   // v34.3.7: タブではなく識別子欄と同じ幅のスペースで桁を合わせる
             for (let j = 0; j < blockLen; j++) {
                 let col = i + j;
                 let bases = [];
@@ -2400,10 +2408,89 @@
         copyToClipboardFallback(output.trim(), "FASTA形式で一括コピーしました");
     }
 
+
+    /* ===================================================================
+       【v34.3.7】ページ遷移時のデータ一時保存（sessionStorage）
+       アプリ間を移動しても入力中の塩基配列とプライマーが消えないようにする。
+       ・sessionStorage はタブを閉じるまで有効。既存の localStorage 履歴
+         （saveState / historyStates）には一切干渉しない。
+       ・バケツリレー用の 'bio_edu_bulk_data' が存在する場合はそちらを優先し、
+         復元は行わない（DOMContentLoaded 側で分岐）。
+       =================================================================== */
+
+    // 離脱時に現在の作業内容を退避する
+    window.addEventListener('beforeunload', () => {
+        try {
+            if (!sequences || sequences.length === 0) {
+                sessionStorage.removeItem('bio_edu_app5_autosave');
+                return;
+            }
+            const pFEl = document.getElementById('pF');
+            const pREl = document.getElementById('pR');
+            sessionStorage.setItem('bio_edu_app5_autosave', JSON.stringify({
+                savedAt: Date.now(),
+                pF: pFEl ? pFEl.value : '',
+                pR: pREl ? pREl.value : '',
+                // data は配列のままだと肥大するため文字列化して保存する
+                sequences: sequences.map(s => ({
+                    id: s.id,
+                    name: s.name,
+                    data: Array.isArray(s.data) ? s.data.join('') : String(s.data || ''),
+                    isFPrimerFasta: !!s.isFPrimerFasta,
+                    isRPrimerFasta: !!s.isRPrimerFasta,
+                    isSelected: s.isSelected !== false
+                }))
+            }));
+        } catch (e) {
+            // 容量超過などで保存できなくても、離脱そのものは妨げない
+            console.warn('一時保存に失敗しました:', e);
+        }
+    });
+
+    // 起動時に退避データを書き戻す
+    function restoreFromAutosave() {
+        let saved = null;
+        try {
+            saved = JSON.parse(sessionStorage.getItem('bio_edu_app5_autosave') || 'null');
+        } catch (e) {
+            return;
+        }
+        if (!saved || !Array.isArray(saved.sequences) || saved.sequences.length === 0) return;
+        if (sequences.length > 0) return;   // 既に読み込み済みなら上書きしない
+
+        saved.sequences.forEach(item => {
+            sequences.push({
+                id: item.id,
+                name: item.name,
+                data: String(item.data || '').split(''),
+                isFPrimerFasta: !!item.isFPrimerFasta,
+                isRPrimerFasta: !!item.isRPrimerFasta,
+                isSelected: item.isSelected !== false
+            });
+        });
+
+        const pFEl = document.getElementById('pF');
+        const pREl = document.getElementById('pR');
+        if (pFEl && typeof saved.pF === 'string') pFEl.value = saved.pF;
+        if (pREl && typeof saved.pR === 'string') pREl.value = saved.pR;
+
+        // バケツリレー受け取り時と同じ復帰手順を踏む
+        renderEditorAsync();
+        unlockStep(2);
+        setRoute('A');
+        saveState();
+        showToast(`前回の作業データ（${sequences.length}件）を復元しました`, "info");
+    }
+
     function copyClustalAll() {
         if(sequences.length === 0) return;
         let output = "CLUSTAL formatted alignment by DNA Alignment Studio v33.4 (Bio-Edu Suite)\n\n";
         let maxLen = Math.max(...sequences.map(s => s.data.length));
+        // v34.3.7: 識別子の区切りにタブを使うと名前の長さで桁がずれるため、
+        //          出力対象（選択中）の識別子の最大長 + 4 を固定幅としてスペース右埋めする
+        const outIds = sequences.filter(s => s.isSelected !== false)
+                                .map(s => (s.id && s.id.trim() !== "") ? s.id : s.name);
+        const padSize = (outIds.length ? Math.max(...outIds.map(x => x.length)) : 0) + 4;
 
         let baseCounts = new Array(sequences.length).fill(0);
         let hasSelected = false;
@@ -2415,9 +2502,9 @@
                 hasSelected = true; let seqPart = "";
                 for (let j = 0; j < blockLen; j++) { let b = s.data[i + j] || '-'; seqPart += b; if (b !== '-') baseCounts[sIdx]++; }
                 let identifier = (s.id && s.id.trim() !== "") ? s.id : s.name;
-                output += `${identifier}\t${seqPart}\t${baseCounts[sIdx]}\n`;
+                output += `${identifier.padEnd(padSize, ' ')}${seqPart}\t${baseCounts[sIdx]}\n`;
             }
-            let consLine = "\t";
+            let consLine = ' '.repeat(padSize);   // v34.3.7: タブではなく識別子欄と同じ幅のスペースで桁を合わせる
             for (let j = 0; j < blockLen; j++) {
                 let col = i + j; let bases = [];
                 sequences.forEach(s => { if (!s.isFPrimerFasta && !s.isRPrimerFasta && s.data[col] !== undefined && s.data[col] !== '-' && s.isSelected !== false) bases.push(s.data[col]); });
