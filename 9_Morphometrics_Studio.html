@@ -568,6 +568,67 @@
            ※枠線を常時確保したままなので、active 切り替え時の横ズレも発生しない。
            ※アプリ⑤は `.nav-item` に枠線が無く既に 30px のため、この規則は適用しない。 */
         .sidebar .nav-menu .nav-item { padding-left: 16px; }
+
+        /* ===================================================================
+           【v34.3 最終補完：ヘッダー＆フッターの完全統一】
+           各アプリで分散・ブレていた寸法とフォント設定を強制上書きして統一する
+           =================================================================== */
+
+        /* --- ヘッダーの完全統一 --- */
+        .header-container .header {
+          padding: 12px 24px !important;
+          min-height: 64px !important;
+          box-sizing: border-box !important;
+          align-items: center !important;
+        }
+        .header-container .header h1 {
+          font-size: 20px !important;
+          margin: 0 !important;
+          line-height: 1.2 !important;
+        }
+        .header-container .header p {
+          font-size: 11px !important;
+          margin: 4px 0 0 0 !important;
+          line-height: 1.2 !important;
+          letter-spacing: 0.5px !important;
+        }
+
+        /* スマホ表示時のヘッダー補正 */
+        @media (max-width: 768px) {
+          .header-container .header {
+            padding: 10px 15px !important;
+            min-height: 56px !important;
+          }
+          .header-container .header h1 {
+            font-size: 16px !important;
+          }
+        }
+
+        /* --- フッターの完全統一 --- */
+        .footer {
+          width: 100% !important;
+          padding: 15px 20px calc(15px + env(safe-area-inset-bottom, 0px)) 20px !important;
+          background-color: #1a252f !important;
+          border-top: 1px solid #2c3e50 !important;
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Noto Sans JP' !important;
+          font-size: 11px !important;
+          color: #bdc3c7 !important;
+          letter-spacing: 1px !important;
+          line-height: 1.6 !important;
+          text-align: center !important;
+          margin-top: auto !important;
+          flex-shrink: 0 !important;
+          box-sizing: border-box !important;
+        }
+
+        /* --- モーダルのテーマカラーライン強制統一 ---
+           lab_packs.html は .modal-content の CSS に border-top の記述自体が無く、
+           他アプリでも詳細度差で負ける可能性があるため、ID 指定 + !important で確定させる。
+           ※ #confirmModal 側はインラインで border-top: none を指定しており（意図的に線なし）、
+             本規則は #accountModal のみを対象とするため影響しない。 */
+        #accountModal .modal-content {
+          border-top: 6px solid var(--phase-color) !important;
+        }
     </style>
 </head>
 <body class="app-mode">
@@ -1593,6 +1654,13 @@
         document.body.removeChild(textArea);
     }
 
+    /* v34.3.10: 解析ルートの表示名。旧称（ルート A・ルート C という呼称）を新名称へ統一する。
+       ※ route の値 'A' / 'C' は switchRoute() 内の分岐や表示制御に使われるため変更しない。
+          あくまで画面表示のときだけ名称へ読み替える。 */
+    function routeLabel(route) {
+        return { A: '画像/EFA ▶︎ PCA', C: 'ランドマーク/GPA ▶︎ PCA' }[route] || route;
+    }
+
     function switchRoute() {
         const route = document.querySelector('input[name="route"]:checked').value;
         document.getElementById('route-a-controls').style.display = (route === 'A') ? 'block' : 'none';
@@ -1608,7 +1676,7 @@
             exportContainer.style.display = 'flex';
         }
         
-        logStatus(`[SYSTEM] 解析ルート ${route} に切り替えました。`);
+        logStatus(`[SYSTEM] ${routeLabel(route)} に切り替えました。`);
         
         if(route === 'C') {
             resizeGPACanvas(); 
@@ -1766,7 +1834,7 @@
             
             analysisResult = { type: 'efa_pca', mode: currentFeatureMode, sampleCount: globalSamples.length, timestamp: new Date().toISOString() };
             document.getElementById('copy-json-btn').disabled = false; document.getElementById('copy-tsv-btn').disabled = false;
-            addLogEntry("Route A (EFA/PCA)", `調和数:${harmonics}, モード:${currentFeatureMode}`, `標準化およびPCA完了 (${globalSamples.length} samples)`);
+            addLogEntry("画像/EFA ▶︎ PCA", `調和数:${harmonics}, モード:${currentFeatureMode}`, `標準化およびPCA完了 (${globalSamples.length} samples)`);
         } else {
             logStatus(`[ERROR] PCAには2つ以上のサンプルが必要です。`, "error");
         }
@@ -2433,7 +2501,7 @@
             document.getElementById('copy-tsv-btn').disabled = false;
             
             logStatus(`[SUCCESS] GPA および PCA 完了 (${gpaDataList.length} samples, ${k} landmarks)`);
-            addLogEntry("Route C (GPA/PCA)", `ランドマーク数:${k}`, `完了 (${gpaDataList.length} samples)`);
+            addLogEntry("ランドマーク/GPA ▶︎ PCA", `ランドマーク数:${k}`, `完了 (${gpaDataList.length} samples)`);
         } catch(e) {
             console.error(e);
             logStatus("[ERROR] 計算エンジンの実行中にエラーが発生しました。", "error");
