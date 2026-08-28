@@ -648,7 +648,7 @@
       </div>
 
       <div class="level-header">
-        <h2><span class="level-badge">Level 1</span> 基礎と科学捜査（ミクロな視点）</h2>
+        <h2><span class="level-badge">Level 1</span> 基礎と医療・科学捜査（ミクロな視点）</h2>
       </div>
       <div class="pack-grid">
         
@@ -656,7 +656,7 @@
         <div class="card">
           <div class="card-header">
             <div class="card-title-area">
-              <h3 class="card-title">1-A. 食肉偽装の真実を暴けパック</h3>
+              <h3 class="card-title">1-A. 食肉偽装の真実を暴け</h3>
               <div class="card-tags">
                 <span class="tag badge-gene">遺伝子</span>
               </div>
@@ -698,48 +698,47 @@
           </div>
         </div>
 
-        <!-- 1-B. 環境DNA調査パック -->
+        <!-- 1-B. 鎌状赤血球症のHb構造異常と哺乳類の進化パック -->
         <div class="card">
           <div class="card-header">
             <div class="card-title-area">
-              <h3 class="card-title">1-B. 環境DNA (eDNA) 調査パック</h3>
+              <h3 class="card-title">1-B. 鎌状赤血球症のHb構造と哺乳類の進化</h3>
               <div class="card-tags">
-                <span class="tag badge-eco">生態</span>
-                <span class="tag badge-gene">遺伝子</span>
+                <span class="tag badge-gene">医療</span>
+                <span class="tag badge-morph">構造生物学</span>
+                <span class="tag badge-eco">進化</span>
               </div>
             </div>
           </div>
           <div class="card-body">
-            <div class="scenario-box"><strong>【Mission】</strong>「見えない生物を探す」。コップ一杯の川の水から、そこに潜む外来生物の存在を証明し、生態系の危機をデータとして可視化せよ！</div>
+            <div class="scenario-box"><strong>【Mission】</strong>DNAの塩基配列の突然変異は、ある時は致死的な病気を引き起こし、またある時は多様な種を生み出す進化の原動力となる。患者の血液データから病気を引き起こした「ミクロの犯人（突然変異）」を捜査せよ！さらに、NCBIの実データとAlphaFoldを駆使し、タンパク質の構造異常（ミクロ）と種の進化（マクロ）のダイナミズムを論理的に証明しろ！</div>
             
             <div class="db-info">
-              <strong>【収録生物種 (DB)】</strong> オオサンショウウオ（在来/外来）、ニホンイシガメ、アカミミガメ、ブラックバス、ブルーギル 等。
+              <strong>【収録生物種 (DB)】</strong> ヒト健常者（NM_000518）および鎌状赤血球症患者（M25113）のHbB遺伝子の塩基配列。PDB実測データ（2HBS等）、AlphaFold予測モデル（P68871）。ニワトリ（外群）、ウマ、ブタ、ウシ、ヒツジのミトコンドリアDNA（cytb）。
             </div>
 
             <div class="section-title">実験＆解析パイプライン</div>
             <ul class="step-list">
-              <li><span class="step-highlight">Wet:</span> 飼育水や環境水の遠心ペレットを用いたChelex抽出。<button class="rationale-btn" onclick="toggleRationale(event, 'data-method-chelex')" aria-label="なぜこの手法？">?</button></li>
-              <li><span class="step-highlight no-wrap">Dry:</span> アプリ①②でMiFishプライマーを用いた環境DNA特有の増幅条件を構築。</li>
-              <li><span class="step-highlight no-wrap">Dry:</span> アプリ⑦でデータベースと照合し、環境中のDNAシグナルから生息種を特定。</li>
+              <li><span class="step-highlight">Dry(ミクロ):</span> NCBIから取得した健常者と患者のHbBコード領域（CDS）をアプリ⑤でアライメントし、たった1塩基の突然変異を特定。アプリ⑫で翻訳し、アミノ酸の性質変化（親水性/疎水性）を記録する。</li>
+              <li><span class="step-highlight no-wrap">Dry(構造):</span> アプリ⑬を用いて、異常Hbのバリン露出による繊維化（ポリマー化）を3D空間充填モデルで観察。さらに酸素結合による重合解除のメカニズムを比較検証する。</li>
+              <li><span class="step-highlight no-wrap">Dry(マクロ):</span> 5種の生物のcytb遺伝子（1140塩基）をアプリ⑤で簡易MSA。アプリ⑧で距離行列を作成し、平均距離法（UPGMA法）で系統樹の枝を繋ぎ合わせて進化を可視化する。</li>
             </ul>
 
             <div class="primer-box">
-              <strong>【プライマー情報】</strong><br>
-              標的遺伝子: ミトコンドリアDNA 12S rRNA遺伝子 (MiFish-U)<br>
-              F: 5'-GTCGGTAAAACTCGTGCCAGC-3'<br>
-              R: 5'-CATAGTGGGGTATCTAATCCCAGTTTG-3'
-              <div class="reference-text">Miya <i>et al.</i> (2015) R Soc Open Sci.</div>
+              <strong>【解析対象遺伝子】</strong><br>
+              標的遺伝子①: ヒト HbBコード領域（CDS）<br>
+              標的遺伝子②: ミトコンドリアDNA cytb遺伝子（1140塩基）
             </div>
 
             <div class="bench-tip">
-              <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（サンプルの確実な調達）</strong>
-              野外の泥水は高価なフィルターが必要で、PCR阻害物質により失敗しがちです。教育現場では、ターゲットとなる外来生物（または身近な水生生物）を飼育した「水槽の水」を遠心分離して使うことで、低コストかつ確実な成功体験を積ませることができます。
+              <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（翻訳のズレとハイブリッドなデータ提供）</strong>
+              DNAの塩基配列上の突然変異（7番目のコドン）と、成熟タンパク質の実測データ（6番目のアミノ酸）で生じる「番号のズレ」にあえて直面させ、研究現場のリアルを体験させます。また、授業内で「進化の考察」まで確実に到達させるため、ヒトのHbB配列は自力でNCBIから抽出させて探究の興奮を担保しつつ、作業の反復となる5種のcytb配列は事前に一括配布する「ハイブリッド方式」を採用しています。
             </div>
 
             <div class="action-area">
-              <a href="./cartridges/Cartridge4_eDNA.json" download class="btn-download" data-tooltip="全6種の解析データベース（JSON）を取得">
+              <a href="./cartridges/Cartridge_Mammal_cytb.json" download class="btn-download" data-tooltip="哺乳類cytb解析カセットを取得">
                 <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                解析カセットを取得
+                哺乳類cytb解析カセットを取得
               </a>
             </div>
           </div>
@@ -1506,12 +1505,14 @@ db_data <span class="kd">=</span> []
     showToast("ログアウトしました。データは端末内に保存されます。", "info");
     closeAccountSettings();
   };
-</script>
 
-<script type="module">
-  import { loginWithGoogle, logoutUser } from './auth_sync.js';
-  window.handleGoogleLogin = loginWithGoogle;
-  window.handleLogout = logoutUser;
+  // プレビュー環境でのモジュール解決エラーを回避するため、動的インポートへ切り替え
+  import('./auth_sync.js').then(module => {
+    window.handleGoogleLogin = module.loginWithGoogle;
+    window.handleLogout = module.logoutUser;
+  }).catch(err => {
+    console.warn("auth_sync.jsモジュールの読み込みをスキップしました（プレビュー環境用フォールバックを使用します）:", err);
+  });
 </script>
 
 </body>
