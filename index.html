@@ -1272,7 +1272,7 @@ input, textarea {
         const hasEnv = envCat.trim() !== "";
         const hasMorph = sample.morphData && sample.morphData.trim() !== "";
         const hasDna = sample.dnaData && sample.dnaData.trim() !== "";
-        const hasImage = sample.image_data && sample.image_data.startsWith('data:image');
+        const hasImage = sample.image_data && sample.image_data.trim() !== "";
         
         const envBadge = hasEnv ? `<span class="badge ok">環境カテゴリあり</span>` : `<span class="badge none">環境カテゴリ未登録</span>`;
         const morphBadge = hasMorph ? `<span class="badge ok">形態データあり</span>` : `<span class="badge none">形態未登録</span>`;
