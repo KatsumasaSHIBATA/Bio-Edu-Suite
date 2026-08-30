@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+<!-- [Absolute-Zero] セクション1/4 開始: head・CSS -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1024">
 
@@ -801,6 +802,7 @@
                 ・多重整列（MSA）やBLAST検索など、次のステップの解析ソフト（DNA Alignment Studio等）へデータを引き継ぐために使用します。
             </div>
 
+            <!-- ★ ここに「未処理キュー」を横並びで表示するように修正（枠線・背景の削除、高さを同期） -->
             <div class="toolbar-row toolbar-stretch">
                 <span class="step-label step-label-flex">1. データ読込 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_ab1')">?</button></span>
                 
@@ -816,16 +818,14 @@
                         <input type="file" id="fileInput" accept=".ab1" onchange="handleFileSelect(event)" multiple>
                     </div>
 
-                    <!-- 新設: キューナビゲーションUI (背景・枠線を完全に透明化) -->
-                    <div id="queueNavContainer" style="display: none; flex-direction: row; align-items: center; background: transparent; border: none; padding: 0 15px; box-sizing: border-box; flex-shrink: 0; min-height: 60px;">
-                        <div class="queue-nav" style="display: flex; align-items: center; gap: 8px; background: transparent; padding: 0; border: none;">
-                            <button class="btn btn-secondary btn-sm" id="btnPrevQueue" onclick="prevQueue(); triggerHapticFeedback();" style="padding: 4px 10px;">◀</button>
-                            <span class="queue-counter" id="queueCounter" style="font-size: 13px; font-weight: bold; color: var(--secondary); font-family: 'Courier New', Consolas, monospace;">[ 1 / 1 ]</span>
-                            <button class="btn btn-secondary btn-sm" id="btnNextQueue" onclick="nextQueue(); triggerHapticFeedback();" style="padding: 4px 10px;">▶</button>
+                    <!-- キューナビゲーションUI (枠を消去し、ドロップゾーンの右側に自然に配置) -->
+                    <div id="queueNavContainer" style="display: none; flex: 1; align-items: center; justify-content: flex-start; gap: 15px; padding: 0 15px; box-sizing: border-box; min-width: 200px;">
+                        <button class="btn btn-secondary" id="btnPrevQueue" onclick="prevQueue()" style="padding: 6px 10px;">◀</button>
+                        <div style="font-size: 14px; font-weight: bold; color: var(--primary); text-align: center; white-space: nowrap;">
+                            [ <span id="queueIndexText">1</span> / <span id="queueTotalText">1</span> ]
                         </div>
-                        <div style="display: flex; flex-direction: column; justify-content: center; margin-left: 15px; height: 100%;">
-                            <span class="queue-name" id="queueCurrentName" style="font-size: 11px; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-muted);"></span>
-                        </div>
+                        <button class="btn btn-secondary" id="btnNextQueue" onclick="nextQueue()" style="padding: 6px 10px;">▶</button>
+                        <span id="queueNameText" style="font-size: 13px; color: var(--text-muted); font-weight: normal; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block;"></span>
                     </div>
                 </div>
             </div>
@@ -1000,8 +1000,8 @@
     let ab1Queue = [];
     let currentQueueIndex = 0;
 
-    const DB_NAME = 'BioEduDB';
-    const STORE_NAME = 'ab1Files';
+    const DB_NAME = 'BioEdu_IndexedDB';
+    const STORE_NAME = 'bulk_transfer_queue';
     const DB_VERSION = 1;
 
     function initDB() {
@@ -1011,7 +1011,7 @@
             request.onupgradeneeded = (e) => {
                 const db = e.target.result;
                 if (!db.objectStoreNames.contains(STORE_NAME)) {
-                    db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                    db.createObjectStore(STORE_NAME, { keyPath: 'queueId' });
                 }
             };
             request.onsuccess = (e) => resolve(e.target.result);
@@ -1023,17 +1023,17 @@
             const db = await initDB();
             const tx = db.transaction(STORE_NAME, 'readonly');
             const store = tx.objectStore(STORE_NAME);
-            const request = store.getAll();
+            const request = store.get('current_trace_queue');
             request.onsuccess = () => {
-                if (request.result && request.result.length > 0) {
-                    ab1Queue = request.result;
+                if (request.result && request.result.samples && request.result.samples.length > 0) {
+                    ab1Queue = request.result.samples;
                     currentQueueIndex = 0;
                     updateQueueUI();
                     loadQueueItem(currentQueueIndex);
                     
                     // 読み込み終わったらIndexedDBをクリアする（一括送信の消費）
                     const clearTx = db.transaction(STORE_NAME, 'readwrite');
-                    clearTx.objectStore(STORE_NAME).clear();
+                    clearTx.objectStore(STORE_NAME).delete('current_trace_queue');
                 }
             };
         } catch (error) {
@@ -1049,8 +1049,9 @@
         const container = document.getElementById('queueNavContainer');
         if (ab1Queue.length >= 2) {
             container.style.display = 'flex';
-            document.getElementById('queueCounter').innerText = `[ ${currentQueueIndex + 1} / ${ab1Queue.length} ]`;
-            document.getElementById('queueCurrentName').innerText = ab1Queue[currentQueueIndex].name;
+            document.getElementById('queueIndexText').innerText = currentQueueIndex + 1;
+            document.getElementById('queueTotalText').innerText = ab1Queue.length;
+            document.getElementById('queueNameText').innerText = ab1Queue[currentQueueIndex].fileName || ab1Queue[currentQueueIndex].name;
             
             document.getElementById('btnPrevQueue').disabled = (currentQueueIndex === 0);
             document.getElementById('btnNextQueue').disabled = (currentQueueIndex === ab1Queue.length - 1);
@@ -1079,7 +1080,7 @@
         const item = ab1Queue[index];
         if (!item || !item.data) return;
         
-        currentFileName = item.name;
+        currentFileName = item.fileName || item.name;
         document.getElementById('statusText').innerText = "ステータス: バイナリデータを解析中...";
         
         try {
@@ -1087,6 +1088,16 @@
             let buffer = item.data;
             if (buffer instanceof Uint8Array) {
                 buffer = buffer.buffer;
+            } else if (typeof buffer === 'string' && buffer.startsWith('data:')) {
+                // Base64からArrayBufferへの変換 (アプリ①でDataURL形式で保存している場合の対応)
+                const base64Data = buffer.split(',')[1];
+                const binaryString = window.atob(base64Data);
+                const len = binaryString.length;
+                const bytes = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                buffer = bytes.buffer;
             }
             ab1Data = parseAB1(buffer);
             document.getElementById('statusText').innerText = "ステータス: 準備完了。波形を確認して修正してください。";
@@ -1114,6 +1125,7 @@
         } catch (err) {
             showToast("ファイルの解析に失敗しました。正しい .ab1 ファイルか確認してください。", "error");
             document.getElementById('statusText').innerText = "ステータス: ファイルの解析に失敗しました。";
+            console.error(err);
         }
     }
 
@@ -1198,7 +1210,7 @@
             promises.push(new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    resolve({ name: files[i].name, data: e.target.result });
+                    resolve({ name: files[i].name, fileName: files[i].name, data: e.target.result });
                 };
                 reader.readAsArrayBuffer(files[i]);
             }));
