@@ -2123,10 +2123,11 @@
     }
 </script>
 
-<!-- 認証モジュールが未実装環境でエラーになるのを防ぐためのモック（今回は手動バケツリレーのため連携しない） -->
-<script>
-    window.handleGoogleLogin = () => { showToast("現在オフライン・ローカルモードで動作しています。", "info"); };
-    window.handleLogout = () => { };
+<<!-- Firebase 認証・クラウド同期（ガイドライン第7項） -->
+<script type="module">
+    import { loginWithGoogle, logoutUser } from './auth_sync.js';
+    window.handleGoogleLogin = loginWithGoogle;
+    window.handleLogout = logoutUser;
 </script>
 </body>
 </html>
