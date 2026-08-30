@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<!-- [Absolute-Zero] セクション1/4 開始: head・CSS -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1024">
 
@@ -142,19 +141,9 @@
         .drop-zone p { margin: 0; font-size: 12px; color: var(--text-muted); font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
         .drop-zone svg { flex-shrink: 0; }
 
-        /* 新設: キューナビゲーションUI用CSS */
-        .queue-nav { display: flex; align-items: center; gap: 10px; background: #fdfefe; padding: 6px 12px; border-radius: 4px; border: 1px solid var(--border-color); }
-        .queue-counter { font-size: 13px; font-weight: bold; color: var(--secondary); font-family: 'Courier New', Consolas, monospace; }
-        .queue-name { font-size: 12px; color: var(--text-muted); max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
         /* 現場のコツ (専用デザイン完全準拠) */
         .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px 15px; border-radius: 0 4px 4px 0; font-size: 12px; color: var(--text-main); line-height: 1.6; box-shadow: 0 2px 5px rgba(0,0,0,0.02); margin: 0; }
         .bench-tip strong { color: #2980b9; display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 13px; }
-
-        /* アシストパネル (ガイダンス用) */
-        .assist-panel { background: #fadbd8; border-left: 4px solid var(--danger); padding: 15px; margin-top: 15px; border-radius: 4px; }
-        .assist-title { font-weight: bold; color: #c0392b; display: flex; align-items: center; gap: 5px; font-size: 14px;}
-        .assist-reason { font-size: 13px; color: #7f8c8d; margin-top: 5px; }
 
         /* プロツールへの誘い (専用デザイン完全準拠) */
         .step-up-card { background: #f8f9fa; border: 1px solid #d1d5db; padding: 20px; border-radius: 8px; margin-top: 25px; color: #2c3e50; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
@@ -804,7 +793,7 @@
                 <strong>【根拠：なぜ波形（.ab1）を直接見るのか？】</strong>
                 ・シーケンサーはDNAの末端に付いた「4色の蛍光色素」をカメラで読み取り、波形(Trace)として出力します。<br>
                 ・機械が自動で波形から塩基（A,T,G,C）を判定しますが、波形が乱れた場所では間違えたり「N（判読不能）」と判定したりします。<br>
-                ・機械を100%信用せず、未処理データ（波形）を人間の目で確認して手動で修正(キュレーション)するのが、論文を書くための絶対条件です。
+                ・機械を100%信用せず、未処理塩基配列データ（波形）を人間の目で確認して手動で修正(キュレーション)するのが、論文を書くための絶対条件です。
             </div>
             <div id="rat_export" class="rationale-text popover-panel">
                 <strong>【根拠：なぜFASTA形式で保存するのか？】</strong>
@@ -812,22 +801,11 @@
                 ・多重整列（MSA）やBLAST検索など、次のステップの解析ソフト（DNA Alignment Studio等）へデータを引き継ぐために使用します。
             </div>
 
-            <!-- ガイダンス用アシストパネル (デフォルト非表示) -->
-            <div id="guidancePanel" class="assist-panel" style="display: none; border-left-color: var(--success); background: #eafaf1; margin-bottom: 10px;">
-                <div class="assist-title" style="color: var(--success);">
-                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                    処理済み塩基配列データの作成完了
-                </div>
-                <div class="assist-reason">
-                    高品質な塩基配列データを作成しました。<strong style="color: var(--primary);">ダッシュボード（アプリ①）に戻り、サンプルの編集画面の「処理済み 塩基配列データ」枠へペースト</strong>して記録を完了してください。
-                </div>
-            </div>
-
             <div class="toolbar-row toolbar-stretch">
                 <span class="step-label step-label-flex">1. データ読込 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_ab1')">?</button></span>
                 
-                <div class="drop-zone-wrapper">
-                    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" style="flex: 1;">
+                <div class="drop-zone-wrapper" style="align-items: stretch;">
+                    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" style="flex: 1; max-width: 450px;">
                         <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                             <polyline points="14 2 14 8 20 8"></polyline>
@@ -837,17 +815,18 @@
                         <p>ここをクリック、または 未処理塩基配列データ(.ab1) をドラッグ＆ドロップ</p>
                         <input type="file" id="fileInput" accept=".ab1" onchange="handleFileSelect(event)" multiple>
                     </div>
-                </div>
-            </div>
-            
-            <!-- 新設: キューナビゲーションUI -->
-            <div class="toolbar-row toolbar-stretch queue-nav-row" style="display: none;" id="queueNavContainer">
-                <span class="step-label">未処理キュー</span>
-                <div class="queue-nav">
-                    <button class="btn btn-secondary btn-sm" onclick="prevQueue(); triggerHapticFeedback();">◀ 前のデータ</button>
-                    <span class="queue-counter" id="queueCounter">[ 1 / 3 ]</span>
-                    <button class="btn btn-secondary btn-sm" onclick="nextQueue(); triggerHapticFeedback();">次のデータ ▶</button>
-                    <span class="queue-name" id="queueCurrentName">Sample_Name.ab1</span>
+
+                    <!-- 新設: キューナビゲーションUI (背景・枠線を完全に透明化) -->
+                    <div id="queueNavContainer" style="display: none; flex-direction: row; align-items: center; background: transparent; border: none; padding: 0 15px; box-sizing: border-box; flex-shrink: 0; min-height: 60px;">
+                        <div class="queue-nav" style="display: flex; align-items: center; gap: 8px; background: transparent; padding: 0; border: none;">
+                            <button class="btn btn-secondary btn-sm" id="btnPrevQueue" onclick="prevQueue(); triggerHapticFeedback();" style="padding: 4px 10px;">◀</button>
+                            <span class="queue-counter" id="queueCounter" style="font-size: 13px; font-weight: bold; color: var(--secondary); font-family: 'Courier New', Consolas, monospace;">[ 1 / 1 ]</span>
+                            <button class="btn btn-secondary btn-sm" id="btnNextQueue" onclick="nextQueue(); triggerHapticFeedback();" style="padding: 4px 10px;">▶</button>
+                        </div>
+                        <div style="display: flex; flex-direction: column; justify-content: center; margin-left: 15px; height: 100%;">
+                            <span class="queue-name" id="queueCurrentName" style="font-size: 11px; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-muted);"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -882,9 +861,20 @@
                 <div class="save-group">
                     <span class="step-label step-label-compact">4. 保存 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_export')">?</button></span>
                     <div class="smart-align-group">
-                        <button class="btn btn-success" id="btnExport" onclick="exportFasta()" disabled data-tooltip="波形から抽出した塩基配列をFASTA形式でファイルとして保存します。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg> FASTA保存</button>
-                        <button class="btn" id="btnCopyFasta" onclick="copyFasta()" disabled data-tooltip="波形から抽出した塩基配列をFASTA形式でクリップボードにコピーします。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6v3H9zM8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg> FASTAコピー</button>
+                        <button class="btn btn-success" id="btnExport" onclick="exportFasta()" disabled data-tooltip="波形データから抽出した塩基配列をFASTA形式でファイルとして保存します。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg> FASTA保存</button>
+                        <button class="btn" id="btnCopyFasta" onclick="copyFasta()" disabled data-tooltip="波形データから抽出した処理済み塩基配列データをFASTA形式でクリップボードにコピーします。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6v3H9zM8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg> FASTAコピー</button>
                     </div>
+                </div>
+            </div>
+            <!-- ★ コピー後の手動バケツリレーを促すアシストパネル -->
+            <div id="assistPanel" class="assist-panel" style="display: none;">
+                <div class="assist-title">
+                    <svg class="svg-info" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                    処理済み塩基配列データをクリップボードにコピーしました。
+                </div>
+                <div class="assist-reason">出所（source）を示すメタデータも自動で付与されています。</div>
+                <div class="assist-fix">
+                    次へのアクション：ダッシュボード（アプリ①）へ戻り、サンプルの編集画面の「処理済み 塩基配列データ (FASTA)」欄へペーストして記録を完了してください。
                 </div>
             </div>
         </div>
@@ -1006,6 +996,127 @@
 <!-- [Absolute-Zero] セクション3/4 完了。省略なしで続行 -->
 <!-- [Absolute-Zero] セクション4/4 開始: Script -->
 <script>
+    // --- IndexedDB & Queue State ---
+    let ab1Queue = [];
+    let currentQueueIndex = 0;
+
+    const DB_NAME = 'BioEduDB';
+    const STORE_NAME = 'ab1Files';
+    const DB_VERSION = 1;
+
+    function initDB() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(DB_NAME, DB_VERSION);
+            request.onerror = (e) => reject(e);
+            request.onupgradeneeded = (e) => {
+                const db = e.target.result;
+                if (!db.objectStoreNames.contains(STORE_NAME)) {
+                    db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                }
+            };
+            request.onsuccess = (e) => resolve(e.target.result);
+        });
+    }
+
+    async function checkIndexedDBQueue() {
+        try {
+            const db = await initDB();
+            const tx = db.transaction(STORE_NAME, 'readonly');
+            const store = tx.objectStore(STORE_NAME);
+            const request = store.getAll();
+            request.onsuccess = () => {
+                if (request.result && request.result.length > 0) {
+                    ab1Queue = request.result;
+                    currentQueueIndex = 0;
+                    updateQueueUI();
+                    loadQueueItem(currentQueueIndex);
+                    
+                    // 読み込み終わったらIndexedDBをクリアする（一括送信の消費）
+                    const clearTx = db.transaction(STORE_NAME, 'readwrite');
+                    clearTx.objectStore(STORE_NAME).clear();
+                }
+            };
+        } catch (error) {
+            console.error("IndexedDB error:", error);
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        checkIndexedDBQueue();
+    });
+
+    function updateQueueUI() {
+        const container = document.getElementById('queueNavContainer');
+        if (ab1Queue.length >= 2) {
+            container.style.display = 'flex';
+            document.getElementById('queueCounter').innerText = `[ ${currentQueueIndex + 1} / ${ab1Queue.length} ]`;
+            document.getElementById('queueCurrentName').innerText = ab1Queue[currentQueueIndex].name;
+            
+            document.getElementById('btnPrevQueue').disabled = (currentQueueIndex === 0);
+            document.getElementById('btnNextQueue').disabled = (currentQueueIndex === ab1Queue.length - 1);
+        } else {
+            container.style.display = 'none';
+        }
+    }
+
+    function prevQueue() {
+        if (currentQueueIndex > 0) {
+            currentQueueIndex--;
+            updateQueueUI();
+            loadQueueItem(currentQueueIndex);
+        }
+    }
+
+    function nextQueue() {
+        if (currentQueueIndex < ab1Queue.length - 1) {
+            currentQueueIndex++;
+            updateQueueUI();
+            loadQueueItem(currentQueueIndex);
+        }
+    }
+
+    function loadQueueItem(index) {
+        const item = ab1Queue[index];
+        if (!item || !item.data) return;
+        
+        currentFileName = item.name;
+        document.getElementById('statusText').innerText = "ステータス: バイナリデータを解析中...";
+        
+        try {
+            // dataがArrayBufferかUint8Arrayかで処理
+            let buffer = item.data;
+            if (buffer instanceof Uint8Array) {
+                buffer = buffer.buffer;
+            }
+            ab1Data = parseAB1(buffer);
+            document.getElementById('statusText').innerText = "ステータス: 準備完了。波形を確認して修正してください。";
+            document.getElementById('fileInfoText').innerText = `File: ${currentFileName}`;
+            
+            document.getElementById('scaleX').disabled = false;
+            document.getElementById('scaleY').disabled = false;
+            document.getElementById('searchInput').disabled = false;
+            document.getElementById('btnSearchToggle').disabled = false;
+            document.getElementById('btnQC').disabled = false;
+            document.getElementById('btnExport').disabled = false;
+            document.getElementById('btnCopyFasta').disabled = false;
+
+            selectedBaseIndex = -1;
+            dragStartIndex = -1;
+            dragEndIndex = -1;
+            
+            historyStack = [];
+            historyIndex = -1;
+            saveHistory();
+            
+            if(isSearchActive) clearSearch();
+
+            redrawAll();
+        } catch (err) {
+            showToast("ファイルの解析に失敗しました。正しい .ab1 ファイルか確認してください。", "error");
+            document.getElementById('statusText').innerText = "ステータス: ファイルの解析に失敗しました。";
+        }
+    }
+
     // --- グローバル・ドロワー制御 ---
     function toggleSidebar() {
         const sidebar = document.querySelector('.sidebar');
@@ -1064,96 +1175,6 @@
         document.querySelectorAll('.rationale-text').forEach(el => el.classList.remove('show', 'arrow-top', 'arrow-bottom'));
     }, true);
 
-    // --- IndexedDB と キュー管理 ---
-    let sampleQueue = [];
-    let currentQueueIndex = 0;
-
-    window.addEventListener('load', () => {
-        initTooltips();
-        loadQueueFromDB();
-    });
-
-    function base64ToArrayBuffer(base64) {
-        const binary_string = window.atob(base64);
-        const len = binary_string.length;
-        const bytes = new Uint8Array(len);
-        for (let i = 0; i < len; i++) {
-            bytes[i] = binary_string.charCodeAt(i);
-        }
-        return bytes.buffer;
-    }
-
-    function loadQueueFromDB() {
-        const request = indexedDB.open("BioEduQueueDB", 1);
-        request.onerror = function(event) {
-            console.log("IndexedDB could not be opened.");
-        };
-        request.onsuccess = function(event) {
-            const db = event.target.result;
-            if (!db.objectStoreNames.contains("samples")) return;
-            
-            const transaction = db.transaction(["samples"], "readonly");
-            const objectStore = transaction.objectStore("samples");
-            const getAllRequest = objectStore.getAll();
-
-            getAllRequest.onsuccess = function() {
-                const samples = getAllRequest.result;
-                const ab1Samples = samples.filter(s => s.ab1_data && s.ab1_data.trim() !== "");
-                
-                if (ab1Samples.length > 0) {
-                    ab1Samples.forEach(s => {
-                        // "data:application/octet-stream;base64,..." 等のプレフィックスを除去
-                        const base64Data = s.ab1_data.includes(',') ? s.ab1_data.split(',')[1] : s.ab1_data;
-                        sampleQueue.push({
-                            id: s.id,
-                            name: s.name,
-                            filename: s.ab1_filename || s.name + ".ab1",
-                            base64: base64Data
-                        });
-                    });
-                    
-                    showToast(`${ab1Samples.length}件の未処理データをキューに読み込みました`, "info");
-                    initQueueUI();
-                }
-            };
-        };
-    }
-
-    function initQueueUI() {
-        if(sampleQueue.length > 0) {
-            document.getElementById('queueNavContainer').style.display = 'flex';
-            loadFromQueue(0);
-        }
-    }
-
-    function loadFromQueue(index) {
-        if(index < 0 || index >= sampleQueue.length) return;
-        currentQueueIndex = index;
-        
-        document.getElementById('queueCounter').innerText = `[ ${index + 1} / ${sampleQueue.length} ]`;
-        document.getElementById('queueCurrentName').innerText = sampleQueue[index].filename;
-        
-        const item = sampleQueue[index];
-        if(item.buffer) {
-            parseAndRenderBuffer(item.buffer, item.filename);
-        } else if(item.base64) {
-            try {
-                const buffer = base64ToArrayBuffer(item.base64);
-                parseAndRenderBuffer(buffer, item.filename);
-            } catch(e) {
-                showToast("キューデータの展開に失敗しました。", "error");
-            }
-        }
-    }
-
-    function prevQueue() {
-        if(currentQueueIndex > 0) loadFromQueue(currentQueueIndex - 1);
-    }
-
-    function nextQueue() {
-        if(currentQueueIndex < sampleQueue.length - 1) loadFromQueue(currentQueueIndex + 1);
-    }
-
     // --- ファイルドラッグ＆ドロップ ---
     const dropZone = document.getElementById('dropZone');
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
@@ -1164,40 +1185,37 @@
     dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
     dropZone.addEventListener('drop', (e) => {
         dropZone.classList.remove('dragover');
-        if(e.dataTransfer.files.length > 0) processFiles(e.dataTransfer.files);
+        if(e.dataTransfer.files.length > 0) processMultipleFiles(e.dataTransfer.files);
     });
 
     function handleFileSelect(e) {
-        if(e.target.files.length > 0) processFiles(e.target.files);
+        if(e.target.files.length > 0) processMultipleFiles(e.target.files);
     }
 
-    function processFiles(files) {
-        let added = 0;
-        for(let i=0; i<files.length; i++) {
-            const file = files[i];
-            if(file.name.toLowerCase().endsWith('.ab1')) {
+    function processMultipleFiles(files) {
+        let promises = [];
+        for (let i = 0; i < files.length; i++) {
+            promises.push(new Promise((resolve) => {
                 const reader = new FileReader();
-                reader.onload = function(e) {
-                    const arrayBuffer = e.target.result;
-                    sampleQueue.push({
-                        id: "local_" + new Date().getTime() + "_" + i,
-                        name: file.name,
-                        filename: file.name,
-                        buffer: arrayBuffer
-                    });
-                    added++;
-                    // 全て読み込み終わったらUI更新し、追加された最初のデータを開く
-                    if(added === files.length || i === files.length -1) {
-                        showToast(`${added}件の未処理データをキューに追加しました`, "success");
-                        document.getElementById('queueNavContainer').style.display = 'flex';
-                        if(added === files.length) {
-                            loadFromQueue(sampleQueue.length - added);
-                        }
-                    }
+                reader.onload = (e) => {
+                    resolve({ name: files[i].name, data: e.target.result });
                 };
-                reader.readAsArrayBuffer(file);
-            }
+                reader.readAsArrayBuffer(files[i]);
+            }));
         }
+        
+        Promise.all(promises).then(results => {
+            if (results.length > 0) {
+                if (ab1Queue.length > 0) {
+                    ab1Queue = ab1Queue.concat(results);
+                } else {
+                    ab1Queue = results;
+                    currentQueueIndex = 0;
+                }
+                updateQueueUI();
+                loadQueueItem(currentQueueIndex);
+            }
+        });
     }
 
     // --- メインステート管理 ---
@@ -1219,44 +1237,6 @@
         'G': '#2c3e50',
         'C': '#2980b9' 
     };
-
-    function parseAndRenderBuffer(arrayBuffer, filename) {
-        currentFileName = filename;
-        document.getElementById('statusText').innerText = "ステータス: バイナリデータを解析中...";
-        
-        try {
-            ab1Data = parseAB1(arrayBuffer);
-            document.getElementById('statusText').innerText = "ステータス: 準備完了。波形を確認して修正してください。";
-            document.getElementById('fileInfoText').innerText = `File: ${currentFileName}`;
-            
-            document.getElementById('scaleX').disabled = false;
-            document.getElementById('scaleY').disabled = false;
-            document.getElementById('searchInput').disabled = false;
-            document.getElementById('btnSearchToggle').disabled = false;
-            document.getElementById('btnQC').disabled = false;
-            document.getElementById('btnExport').disabled = false;
-            document.getElementById('btnCopyFasta').disabled = false;
-
-            selectedBaseIndex = -1;
-            dragStartIndex = -1;
-            dragEndIndex = -1;
-            
-            historyStack = [];
-            historyIndex = -1;
-            saveHistory();
-            
-            if(isSearchActive) clearSearch();
-
-            // アシストパネルを非表示にリセット
-            const guidancePanel = document.getElementById('guidancePanel');
-            if(guidancePanel) guidancePanel.style.display = 'none';
-
-            redrawAll();
-        } catch (err) {
-            showToast("データの解析に失敗しました。正しい .ab1 データか確認してください。", "error");
-            document.getElementById('statusText').innerText = "ステータス: データの解析に失敗しました。";
-        }
-    }
 
     function saveHistory() {
         if (!ab1Data) return;
@@ -1896,26 +1876,10 @@
         try {
             document.execCommand('copy');
             showToast(successMessage, "success");
-            
-            // 行動を促すUIガイダンスの表示（手動バケツリレーの支援）
-            const panel = document.getElementById('guidancePanel');
-            if(panel) panel.style.display = 'block';
-            
         } catch (err) {
             showToast("コピーに失敗しました。", "error");
         }
         document.body.removeChild(textArea);
-    }
-
-    function getLimsMetadata(headerName) {
-        const sourceMeta = "source:App_4_SangerTrace";
-        const timeMeta = "time:" + new Date().toISOString();
-        let originalId = "Unknown";
-        if (sampleQueue.length > 0 && sampleQueue[currentQueueIndex]) {
-            originalId = sampleQueue[currentQueueIndex].id || "Unknown";
-        }
-        const idMeta = "OriginalID:" + originalId;
-        return `>${headerName} | ${sourceMeta} | ${timeMeta} | ${idMeta}`;
     }
 
     function exportFasta() {
@@ -1926,8 +1890,7 @@
         });
         
         let headerName = currentFileName.replace(/\.ab1$/i, '_curated');
-        let headerMeta = getLimsMetadata(headerName);
-        let output = `${headerMeta}\n${seqStr}\n`;
+        let output = `>${headerName}\n${seqStr}\n`;
         
         const today = new Date();
         const yyyy = today.getFullYear();
@@ -1942,9 +1905,6 @@
         
         document.getElementById('statusText').innerText = `ステータス: ファイルを保存しました。`;
         showToast("FASTAファイルを保存しました", "success");
-        
-        const panel = document.getElementById('guidancePanel');
-        if(panel) panel.style.display = 'block';
     }
 
     function copyFasta() {
@@ -1955,47 +1915,50 @@
         });
         
         let headerName = currentFileName.replace(/\.ab1$/i, '_curated');
-        let headerMeta = getLimsMetadata(headerName);
-        let output = `${headerMeta}\n${seqStr}\n`;
+        
+        // メタデータ刻印 (ガイドライン第7項④準拠)
+        const timestamp = new Date().toISOString();
+        let output = `>${headerName} | source:App_4_SangerTrace | time:${timestamp}\n${seqStr}\n`;
         
         document.getElementById('statusText').innerText = `ステータス: クリップボードにコピーしました。`;
-        copyToClipboardFallback(output.trim(), "FASTA形式でメタデータと共にコピーしました");
+        copyToClipboardFallback(output.trim(), "処理済み塩基配列データをFASTA形式でコピーしました");
+        
+        // 行動を促すUIガイダンスを表示
+        document.getElementById('assistPanel').style.display = 'block';
     }
 
-    function initTooltips() {
-        const tooltip = document.getElementById('globalTooltip');
-        document.body.addEventListener('mouseover', (e) => {
-            const target = e.target.closest('[data-tooltip]');
-            if (target && !target.classList.contains('rationale-btn')) {
-                const text = target.getAttribute('data-tooltip');
-                tooltip.innerHTML = text;
-                tooltip.style.display = 'block';
-                const rect = target.getBoundingClientRect();
-                const ttRect = tooltip.getBoundingClientRect();
-                let topPos = rect.top - ttRect.height - 8;
-                let leftPos = rect.left + (rect.width / 2);
-                let arrowClass = 'show-top'; 
-                if (topPos < 0) { topPos = rect.bottom + 8; arrowClass = 'show-bottom'; }
-                if (leftPos - ttRect.width / 2 < 5) leftPos = 5 + ttRect.width / 2;
-                else if (leftPos + ttRect.width / 2 > window.innerWidth - 5) leftPos = window.innerWidth - ttRect.width / 2 - 5;
-                tooltip.className = `custom-tooltip ${arrowClass}`;
-                tooltip.style.top = topPos + 'px';
-                tooltip.style.left = leftPos + 'px';
-                tooltip.style.transform = `translateX(-50%)`;
-                tooltip.style.opacity = '1';
-            }
-        });
+    const tooltip = document.getElementById('globalTooltip');
+    document.body.addEventListener('mouseover', (e) => {
+        const target = e.target.closest('[data-tooltip]');
+        if (target && !target.classList.contains('rationale-btn')) {
+            const text = target.getAttribute('data-tooltip');
+            tooltip.innerHTML = text;
+            tooltip.style.display = 'block';
+            const rect = target.getBoundingClientRect();
+            const ttRect = tooltip.getBoundingClientRect();
+            let topPos = rect.top - ttRect.height - 8;
+            let leftPos = rect.left + (rect.width / 2);
+            let arrowClass = 'show-top'; 
+            if (topPos < 0) { topPos = rect.bottom + 8; arrowClass = 'show-bottom'; }
+            if (leftPos - ttRect.width / 2 < 5) leftPos = 5 + ttRect.width / 2;
+            else if (leftPos + ttRect.width / 2 > window.innerWidth - 5) leftPos = window.innerWidth - ttRect.width / 2 - 5;
+            tooltip.className = `custom-tooltip ${arrowClass}`;
+            tooltip.style.top = topPos + 'px';
+            tooltip.style.left = leftPos + 'px';
+            tooltip.style.transform = `translateX(-50%)`;
+            tooltip.style.opacity = '1';
+        }
+    });
 
-        document.body.addEventListener('mouseout', (e) => {
-            const target = e.target.closest('[data-tooltip]');
-            if (target) {
-                tooltip.style.opacity = '0';
-                setTimeout(() => { if (tooltip.style.opacity === '0') tooltip.style.display = 'none'; }, 200);
-            }
-        });
+    document.body.addEventListener('mouseout', (e) => {
+        const target = e.target.closest('[data-tooltip]');
+        if (target) {
+            tooltip.style.opacity = '0';
+            setTimeout(() => { if (tooltip.style.opacity === '0') tooltip.style.display = 'none'; }, 200);
+        }
+    });
 
-        document.addEventListener('scroll', () => { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; }, true);
-    }
+    document.addEventListener('scroll', () => { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; }, true);
 </script>
 <!-- [Absolute-Zero] セクション4/4 完了。省略なしで続行 -->
 <!-- カスタム確認ダイアログ（データ初期化用等） -->
@@ -2148,10 +2111,10 @@
     }
 </script>
 
-<!-- Firebase 認証・クラウド同期（ガイドライン第7項） -->
+<!-- 認証モジュールが未実装環境でエラーになるのを防ぐためのモック（今回は手動バケツリレーのため連携しない） -->
 <script>
-    window.handleGoogleLogin = () => { showToast("ログイン機能はデモ版ではモックされています", "info"); };
-    window.handleLogout = () => { showToast("ログアウトしました", "info"); };
+    window.handleGoogleLogin = () => { showToast("現在オフライン・ローカルモードで動作しています。", "info"); };
+    window.handleLogout = () => { };
 </script>
 </body>
 </html>
