@@ -6,3 +6,4 @@ outerbox_v34.3.patch
 
 # macOS
 .DS_Store
+.aider*
