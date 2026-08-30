@@ -337,7 +337,7 @@ input, textarea {
       transform: rotate(45deg);
     }
 
-    /* フローティング・アクション・バー (一列並びスマートアライメント対応) */
+    /* フローティング・アクション・バー (最適化版) */
 .bulk-action-panel {
   position: fixed;
   bottom: 0;
@@ -352,8 +352,8 @@ input, textarea {
   gap: 12px;
   z-index: 1000;
   transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  width: 92%;
-  max-width: 800px;
+  width: 95%;
+  max-width: 960px; /* 横並びのため拡張 */
   border: 1px solid var(--border-color);
   border-bottom: none;
 }
@@ -362,7 +362,7 @@ input, textarea {
   transform: translate(-50%, 0); 
 }
 
-/* 選択中カウントテキスト（ダークグレー） */
+/* 選択中カウントテキスト */
 .bulk-action-info { 
   font-weight: bold; 
   color: var(--primary); 
@@ -374,10 +374,10 @@ input, textarea {
   font-size: 16px;
 }
 
+/* 一括アクションボタングリッド（スマートアライメントによる幅同期） */
 .bulk-action-buttons { 
   display: grid; 
-  /* 4つのボタンを800px内に一列に綺麗に収めるための最適化 */
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); 
   gap: 10px; 
 }
 .bulk-action-buttons .btn { 
@@ -385,11 +385,11 @@ input, textarea {
   display: flex; 
   align-items: center; 
   justify-content: center; 
-  font-size: 12px;
-  padding: 8px 10px;
+  white-space: normal;
+  text-align: center;
+  line-height: 1.3;
 }
 
-/* 4つ目のボタン「環境メタデータをコピー」（元の白・グレー枠線） */
 .bulk-action-buttons .btn-secondary {
   background-color: #fdfefe;
   color: var(--text-main);
@@ -474,7 +474,6 @@ input, textarea {
       .modal-footer { flex-direction: column; }
       .modal-footer .btn { width: 100%; }
       .bulk-action-panel { width: 100%; padding: 12px 16px; border-radius: 12px 12px 0 0;}
-      .bulk-action-buttons { grid-template-columns: repeat(2, 1fr); }
     }
     
 
@@ -591,7 +590,7 @@ input, textarea {
         .sidebar .hamburger-btn:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
 
         /* --- 続き：.nav-icon 側のセンターラインを 30px へ揃える ---
-           `.nav-item` には状態変化での横ズレ防止として `border-left: 4px solid transparent`
+           `.nav-item` にには状態変化での横ズレ防止として `border-left: 4px solid transparent`
            が常時入っているため、padding-left 20px では
              4(枠線) + 20(padding) + 10(アイコン幅20/2) = 34px
            となり、ハンバーガー（30px）と 4px ずれる。padding-left を 16px にして
@@ -816,10 +815,10 @@ input, textarea {
     
     <!-- ダークテーマ・フッター規格 v33.9版 -->
     <div class="footer">
-      &copy; 2026 Bio-Edu Suite v34.1 | Developed for Bioinformatics & Wet-Lab Education
+      &copy; 2026 Bio-Edu Suite v34.4 | Developed for Bioinformatics & Wet-Lab Education
     </div>
     
-    <!-- フローティング・アクション・バー -->
+    <!-- フローティング・アクション・バー (最適化ハイブリッド版) -->
     <div id="bulkActionPanel" class="bulk-action-panel">
       <div class="bulk-action-info">
         <span id="selectedCount">0</span>件のサンプルを選択中
@@ -827,15 +826,15 @@ input, textarea {
       <div class="bulk-action-buttons">
         <button id="btnBulkTrace" class="btn link-dna" onclick="dispatchBulk('trace'); triggerHapticFeedback();">
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-          ④ Trace Editor へ
+          ④ Sanger Trace Editor
         </button>
         <button id="btnBulkDna" class="btn link-dna" onclick="dispatchBulk('dna'); triggerHapticFeedback();">
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-          ⑤ Alignment Studio へ
+          ⑤ DNA Alignment Studio
         </button>
         <button id="btnBulkMorph" class="btn link-morph" onclick="dispatchBulk('morph'); triggerHapticFeedback();">
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-          ⑨ Morphometrics へ
+          ⑨ Morphometrics Studio
         </button>
         <button id="btnBulkCopyEnv" class="btn btn-secondary" onclick="copyEnvDataTSV(); triggerHapticFeedback();">
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
@@ -907,23 +906,24 @@ input, textarea {
 
         <hr style="border: 0; border-top: 1px solid #ecf0f1; margin: 20px 0;">
 
-        <!-- 新設：未処理塩基配列データ保存枠 -->
+        <!-- 2025年用語規格: バイナリデータのアップロード対応 -->
         <div class="form-group">
-          <label>未処理 塩基配列データ (.ab1)</label>
+          <label>未処理塩基配列データ (.ab1等)</label>
           <div class="drop-zone" id="ab1DropZone" onclick="document.getElementById('ab1Input').click(); triggerHapticFeedback();">
             <svg class="btn-icon" style="margin:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-            <p id="ab1DropText">ここをクリック、または 未処理塩基配列データ(.ab1) をドラッグ＆ドロップ</p>
-            <input type="file" id="ab1Input" accept=".ab1" style="display: none;" onchange="handleAb1File(event)">
+            <p id="ab1DropText">ここをクリック、または .ab1 ファイル をドラッグ＆ドロップ</p>
+            <input type="file" id="ab1Input" accept=".ab1,.scf" style="display: none;" onchange="handleAb1File(event)">
           </div>
-          <input type="hidden" id="ab1DataBase64">
-          <input type="hidden" id="ab1FileName">
-          <div class="help-text">Sangerシーケンサーから得られた未処理の波形データを保存し、アプリ④へ一括送信できます。</div>
+          <div class="help-text">重いバイナリデータはブラウザ内（IndexedDB）に安全に永続保存されます。<br>Sanger Trace Editor (④) に送って波形解析を行えます。</div>
+          <input type="hidden" id="ab1DataHidden">
+          <input type="hidden" id="ab1FileNameHidden">
         </div>
 
+        <!-- 2025年用語規格: FASTAテキストのペースト対応 -->
         <div class="form-group">
-          <label>処理済み 塩基配列データ (FASTA)</label>
-          <textarea id="dnaData" class="form-control paste-area" placeholder="FASTA形式で処理済みの塩基配列を入力、または貼り付け"></textarea>
-          <div class="help-text">アプリ④で生徒自身がキュレーション（ノイズカット）し、クリップボードにコピーして持ち帰ってきた塩基配列データを貼り付ける場所です。</div>
+          <label>処理済み塩基配列データ (FASTA等)</label>
+          <textarea id="dnaData" class="form-control paste-area" placeholder="FASTA形式などで塩基配列テキストを入力"></textarea>
+          <div class="help-text">Sanger Trace Editor等で処理した結果の塩基配列を貼り付けます。<br>DNA Alignment Studio (⑤) に送って系統解析を行えます。</div>
         </div>
       </div>
       <div class="modal-footer">
@@ -975,14 +975,12 @@ input, textarea {
         <!-- ② ログイン中 -->
         <div id="modalLoggedInView" style="display: none;">
           <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-            <!-- ★ id="syncStatusBadge" を追加 -->
             <span id="syncStatusBadge" style="font-size: 14px; font-weight: bold; color: var(--phase-color);">🟢 クラウド同期中</span>
           </div>
           
           <div style="background: #f8f9fa; border: 1px solid #e1e8ed; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
             <div id="userNameDisplay" style="font-weight: bold; font-size: 14px; color: var(--primary);"></div>
             <div id="userEmailDisplay" style="font-size: 11px; color: var(--text-muted); margin-top: 2px;"></div>
-            <!-- ★ オフライン時の状態メッセージ領域を追加 -->
             <div id="syncStatusNote" style="font-size: 11px; color: var(--danger); margin-top: 6px; display: none;">
               ※オフライン中です。データは端末内に一時保存され、再接続時に自動同期されます。
             </div>
@@ -1020,6 +1018,65 @@ input, textarea {
     const STORAGE_KEY = 'bio_edu_samples';
     let samples = [];
 
+    // ==========================================
+    // IndexedDB ユーティリティ (ハイブリッド構成用)
+    // ==========================================
+    const DB_NAME = 'BioEdu_IndexedDB';
+    const DB_VERSION = 1;
+    const STORE_SAMPLES = 'sample_binaries';
+    const STORE_BULK = 'bulk_transfer_queue';
+    let dbPromise = null;
+
+    function getDB() {
+      if (!dbPromise) {
+        dbPromise = new Promise((resolve, reject) => {
+          const request = indexedDB.open(DB_NAME, DB_VERSION);
+          request.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains(STORE_SAMPLES)) {
+              db.createObjectStore(STORE_SAMPLES, { keyPath: 'id' });
+            }
+            if (!db.objectStoreNames.contains(STORE_BULK)) {
+              db.createObjectStore(STORE_BULK, { keyPath: 'queueId' });
+            }
+          };
+          request.onsuccess = (e) => resolve(e.target.result);
+          request.onerror = (e) => reject(e.target.error);
+        });
+      }
+      return dbPromise;
+    }
+
+    async function saveToIndexedDB(storeName, data) {
+      const db = await getDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(storeName, 'readwrite');
+        tx.objectStore(storeName).put(data);
+        tx.oncomplete = () => resolve();
+        tx.onerror = (e) => reject(e.target.error);
+      });
+    }
+
+    async function getFromIndexedDB(storeName, key) {
+      const db = await getDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(storeName, 'readonly');
+        const req = tx.objectStore(storeName).get(key);
+        req.onsuccess = (e) => resolve(e.target.result);
+        req.onerror = (e) => reject(e.target.error);
+      });
+    }
+
+    async function deleteFromIndexedDB(storeName, key) {
+      const db = await getDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(storeName, 'readwrite');
+        tx.objectStore(storeName).delete(key);
+        tx.oncomplete = () => resolve();
+        tx.onerror = (e) => reject(e.target.error);
+      });
+    }
+
     window.onload = () => {
       initTooltips();
       window.name = 'bio_edu_dashboard';
@@ -1052,35 +1109,34 @@ input, textarea {
     
     // ご意見箱（Googleフォーム）への動的パラメータ付き遷移
     function openFeedbackForm() {
-        // スマホの場合はメニューを自動で閉じる
         if (window.innerWidth <= 768) {
           document.querySelector('.sidebar').classList.remove('open');
           const overlay = document.querySelector('.sidebar-overlay');
           if (overlay) overlay.classList.remove('open');
         }
-
         const baseUrl = "https://docs.google.com/forms/d/e/1FAIpQLSet9LJgsTO0aZ6pbdekLr4fBeeDPAxREk8xmzY1f-gTcDnFrQ/viewform";
         const entryId = "entry.1969218085";
-        
-        const appName = document.title; // ページタイトル（例: Investigation Dashboard | Bio-Edu Suite）
+        const appName = document.title;
         const prefilledUrl = `${baseUrl}?usp=pp_url&${entryId}=${encodeURIComponent(appName)}`;
-        
         window.open(prefilledUrl, '_blank');
     }
 
     // データ初期化（カスタム確認ダイアログ仕様へ変更）
     function confirmDataReset() {
-        // スマホの場合はメニューを自動で閉じる
         if (window.innerWidth <= 768) {
           document.querySelector('.sidebar').classList.remove('open');
           const overlay = document.querySelector('.sidebar-overlay');
           if (overlay) overlay.classList.remove('open');
         }
-
-        showConfirm("すべての入力データおよびローカル保存データを初期化しますか？この操作は取り消せません。", () => {
+        showConfirm("すべての入力データおよびローカル保存データを初期化しますか？この操作は取り消せません。", async () => {
             localStorage.clear();
             sessionStorage.clear();
-            location.reload();
+            // DBも初期化
+            const db = await getDB();
+            const tx = db.transaction([STORE_SAMPLES, STORE_BULK], 'readwrite');
+            tx.objectStore(STORE_SAMPLES).clear();
+            tx.objectStore(STORE_BULK).clear();
+            tx.oncomplete = () => location.reload();
         }, "初期化する");
     }
 
@@ -1093,103 +1149,162 @@ input, textarea {
     }
 
     function loadSamples() {
-  const data = localStorage.getItem(STORAGE_KEY);
-  if (data) {
-    samples = JSON.parse(data);
-  } else {
-    // AMMIモデルが正常に回る「直交したデータセット」に再構築（2系統 × 2環境）
-    // 系統(G): 野生型, 突然変異体
-    // 環境(E): A湖畔, B川上流
-    samples = [
-      {
-        id: generateBaseId() + "_WT_A",
-        name: "野生型",
-        envCategory: "A湖畔",
-        envNote: "水温: 24.5℃\npH: 7.2\n特記事項: 浅瀬の水草帯で採取。止水環境のため体高が高く丸みを帯びる。",
-        morphData: "5 5 4 5 5 6 6 5 6 6 7 6 6 6 7 7 6 7 6 6 7 6 5 6 5 5 4 5 5 4 3 4 3 2 3 2 1 2 1 1 0 1 0 0 1 0 1 2 1 2 3 2 3 4",
-        dnaData: ">WildType_A\nATGTTCATTAACCGATGATTATTCTCAACTAACCATAAAGATATCGGAACTCTATATCTA",
-        ab1_data: "",
-        ab1_filename: "",
-        date: new Date(Date.now() - 70000).toISOString(),
-        image_data: "images/WildType_A.jpeg" 
-      },
-      {
-        id: generateBaseId() + "_WT_B",
-        name: "野生型",
-        envCategory: "B川上流",
-        envNote: "水温: 15.2℃\npH: 6.8\n特記事項: 流れの速い岩場で採取。流水環境のため流線型の傾向が強い。",
-        morphData: "4 3 3 4 4 4 5 4 5 5 5 6 5 5 6 6 5 6 5 5 5 4 4 3 3 3 2 2 1 2 1 1 0 1 0 0 7 0 7 7 6 7 6 7 7 6 7 6 5 6 5 5 4 5",
-        dnaData: ">WildType_B\nATGTTCATTAACCGATGATTATTCTCAACTAACCATAAAGATATCGGAACTCTATATCTA",
-        ab1_data: "",
-        ab1_filename: "",
-        date: new Date(Date.now() - 60000).toISOString(),
-        image_data: "images/WildType_B.jpeg" 
-      },
-      {
-        id: generateBaseId() + "_MUT_A",
-        name: "突然変異体",
-        envCategory: "A湖畔",
-        envNote: "水温: 25.1℃\npH: 7.4\n特記事項: 最近目撃されるようになった変異個体。A湖畔のため丸みはあるが、全体的に大型でいびつ。",
-        morphData: "6 6 5 6 6 7 7 6 7 7 7 6 7 6 6 5 5 4 3 2 3 2 1 0 1 0 7 6 7 6 5 4 5 4 3 2 3 2 1 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6",
-        dnaData: ">Mutant_A\nATGTTCATCAACCGATGACTATTCTCAACAAACCACAAAGATATCGGAACCCTATATCTA",
-        ab1_data: "",
-        ab1_filename: "",
-        date: new Date(Date.now() - 50000).toISOString(),
-        image_data: "images/Mutant_A.jpeg" 
-      },
-      {
-        id: generateBaseId() + "_MUT_B",
-        name: "突然変異体",
-        envCategory: "B川上流",
-        envNote: "水温: 15.5℃\npH: 6.9\n特記事項: B川上流の変異個体。流線型ベースだが、同じく大型化している。",
-        morphData: "5 4 4 5 5 5 6 5 6 6 6 7 6 6 7 6 6 5 4 3 4 3 2 1 2 1 0 1 0 7 0 6 7 6 6 5 6 5 4 3 4 3 2 3 4 5 6 7 0 1 2 3 4 5",
-        dnaData: ">Mutant_B\nATGTTCATCAACCGATGACTATTCTCAACAAACCACAAAGATATCGGAACCCTATATCTA",
-        ab1_data: "",
-        ab1_filename: "",
-        date: new Date(Date.now() - 40000).toISOString(),
-        image_data: "images/Mutant_B.jpeg" 
-      },
-      // ▼ フル機能テスト用・比較用サンプル群 ▼
-      {
-        id: generateBaseId() + "_OUTGROUP_C",
-        name: "野生型（近縁種）",
-        envCategory: "C島マングローブ林",
-        envNote: "水温: 28.5℃\npH: 8.1\n特記事項: 地理的に隔離された島嶼個体群。外群（Outgroup）として利用。全体的に大型で堅牢な体つき。",
-        morphData: "8 9 9 10 9 8 9 9 10 8 9 10 9 8 9 9 10 9 8 9 9 8 9 10 9 8 9 9 10 8 9 10 9 8 9 9 10 9 8 9 9 8 9 10 9 8 9 9 10 8 9 10 9 8",
-        dnaData: ">Outgroup_C\nATGTTTATCAATCGCTGATTATTCTCAACTAACCATAAAGATATCGGAACTCTATATCTA",
-        ab1_data: "",
-        ab1_filename: "",
-        date: new Date(Date.now() - 30000).toISOString(),
-        image_data: "images/Outgroup_C.jpeg" 
-      },
-      {
-        id: generateBaseId() + "_WT_A2",
-        name: "野生型",
-        envCategory: "A湖畔",
-        envNote: "水温: 24.6℃\npH: 7.2\n特記事項: WT_Aと同所的に生息する別個体。集団遺伝学（対立遺伝子頻度）のデモ用。",
-        morphData: "5 6 4 5 5 5 6 6 6 6 7 6 7 6 7 6 6 7 6 6 7 6 6 6 5 5 5 5 5 4 3 4 3 2 4 2 1 2 1 1 0 1 0 1 1 0 1 2 1 2 3 3 3 4",
-        dnaData: ">WildType_A2\nATGTTCATTAACCGGTGATTATTCTCAACTAACCATAAAGATATCGGAACTCTATATCTA",
-        ab1_data: "",
-        ab1_filename: "",
-        date: new Date(Date.now() - 20000).toISOString(),
-        image_data: "images/WildType_A2.jpeg" 
-      },
-      {
-        id: generateBaseId() + "_MUT_NONSENSE",
-        name: "突然変異体（発育不全）",
-        envCategory: "B川下流",
-        envNote: "水温: 16.0℃\npH: 6.8\n特記事項: ナンセンス突然変異による発育不全が見られる矮小個体。翻訳早期終結のデモ用。",
-        morphData: "2 2 3 2 2 2 3 2 2 3 2 2 3 2 2 3 2 2 2 3 2 2 3 2 2 2 3 2 2 3 2 2 3 2 2 3 2 2 2 3 2 2 3 2 2 2 3 2 2 3 2 2 3 2",
-        dnaData: ">Mutant_Nonsense\nATGTTCTAGAACCGATGATTATTCTCAACTAACCATAAAGATATCGGAACTCTATATCTA",
-        ab1_data: "",
-        ab1_filename: "",
-        date: new Date(Date.now() - 10000).toISOString(),
-        image_data: "images/Mutant_Nonsense.jpeg" 
+      const data = localStorage.getItem(STORAGE_KEY);
+      if (data) {
+        samples = JSON.parse(data);
+        runImageSelfHealingPatch();
+      } else {
+        // AMMIモデルが正常に回る「直交したデータセット」に再構築（2系統 × 2環境）
+        samples = [
+          {
+            id: generateBaseId() + "_WT_A",
+            name: "野生型",
+            envCategory: "A湖畔",
+            envNote: "水温: 24.5℃\npH: 7.2\n特記事項: 浅瀬の水草帯で採取。止水環境のため体高が高く丸みを帯びる。",
+            morphData: "5 5 4 5 5 6 6 5 6 6 7 6 6 6 7 7 6 7 6 6 7 6 5 6 5 5 4 5 5 4 3 4 3 2 3 2 1 2 1 1 0 1 0 0 1 0 1 2 1 2 3 2 3 4",
+            dnaData: ">WildType_A\nATGTTCATTAACCGATGATTATTCTCAACTAACCATAAAGATATCGGAACTCTATATCTA",
+            date: new Date(Date.now() - 70000).toISOString(),
+            image_data: "images/WildType_A.jpeg",
+            hasRawSeq: false
+          },
+          {
+            id: generateBaseId() + "_WT_B",
+            name: "野生型",
+            envCategory: "B川上流",
+            envNote: "水温: 15.2℃\npH: 6.8\n特記事項: 流れの速い岩場で採取。流水環境のため流線型の傾向が強い。",
+            morphData: "4 3 3 4 4 4 5 4 5 5 5 6 5 5 6 6 5 6 5 5 5 4 4 3 3 3 2 2 1 2 1 1 0 1 0 0 7 0 7 7 6 7 6 7 7 6 7 6 5 6 5 5 4 5",
+            dnaData: ">WildType_B\nATGTTCATTAACCGATGATTATTCTCAACTAACCATAAAGATATCGGAACTCTATATCTA",
+            date: new Date(Date.now() - 60000).toISOString(),
+            image_data: "images/WildType_B.jpeg",
+            hasRawSeq: false
+          },
+          {
+            id: generateBaseId() + "_MUT_A",
+            name: "突然変異体",
+            envCategory: "A湖畔",
+            envNote: "水温: 25.1℃\npH: 7.4\n特記事項: 最近目撃されるようになった変異個体。A湖畔のため丸みはあるが、全体的に大型でいびつ。",
+            morphData: "6 6 5 6 6 7 7 6 7 7 7 6 7 6 6 5 5 4 3 2 3 2 1 0 1 0 7 6 7 6 5 4 5 4 3 2 3 2 1 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6",
+            dnaData: ">Mutant_A\nATGTTCATCAACCGATGACTATTCTCAACAAACCACAAAGATATCGGAACCCTATATCTA",
+            date: new Date(Date.now() - 50000).toISOString(),
+            image_data: "images/Mutant_A.jpeg",
+            hasRawSeq: false
+          },
+          {
+            id: generateBaseId() + "_MUT_B",
+            name: "突然変異体",
+            envCategory: "B川上流",
+            envNote: "水温: 15.5℃\npH: 6.9\n特記事項: B川上流の変異個体。流線型ベースだが、同じく大型化している。",
+            morphData: "5 4 4 5 5 5 6 5 6 6 6 7 6 6 7 6 6 5 4 3 4 3 2 1 2 1 0 1 0 7 0 6 7 6 6 5 6 5 4 3 4 3 2 3 4 5 6 7 0 1 2 3 4 5",
+            dnaData: ">Mutant_B\nATGTTCATCAACCGATGACTATTCTCAACAAACCACAAAGATATCGGAACCCTATATCTA",
+            date: new Date(Date.now() - 40000).toISOString(),
+            image_data: "images/Mutant_B.jpeg",
+            hasRawSeq: false
+          },
+          {
+            id: generateBaseId() + "_OUTGROUP_C",
+            name: "野生型（近縁種）",
+            envCategory: "C島マングローブ林",
+            envNote: "水温: 28.5℃\npH: 8.1\n特記事項: 地理的に隔離された島嶼個体群。外群（Outgroup）として利用。全体的に大型で堅牢な体つき。",
+            morphData: "8 9 9 10 9 8 9 9 10 8 9 10 9 8 9 9 10 9 8 9 9 8 9 10 9 8 9 9 10 8 9 10 9 8 9 9 10 9 8 9 9 8 9 10 9 8 9 9 10 8 9 10 9 8",
+            dnaData: ">Outgroup_C\nATGTTTATCAATCGCTGATTATTCTCAACTAACCATAAAGATATCGGAACTCTATATCTA",
+            date: new Date(Date.now() - 30000).toISOString(),
+            image_data: "images/Outgroup_C.jpeg",
+            hasRawSeq: false
+          },
+          {
+            id: generateBaseId() + "_WT_A2",
+            name: "野生型",
+            envCategory: "A湖畔",
+            envNote: "水温: 24.6℃\npH: 7.2\n特記事項: WT_Aと同所的に生息する別個体。集団遺伝学（対立遺伝子頻度）のデモ用。",
+            morphData: "5 6 4 5 5 5 6 6 6 6 7 6 7 6 7 6 6 7 6 6 7 6 6 6 5 5 5 5 5 4 3 4 3 2 4 2 1 2 1 1 0 1 0 1 1 0 1 2 1 2 3 3 3 4",
+            dnaData: ">WildType_A2\nATGTTCATTAACCGGTGATTATTCTCAACTAACCATAAAGATATCGGAACTCTATATCTA",
+            date: new Date(Date.now() - 20000).toISOString(),
+            image_data: "images/WildType_A2.jpeg",
+            hasRawSeq: false
+          },
+          {
+            id: generateBaseId() + "_MUT_NONSENSE",
+            name: "突然変異体（発育不全）",
+            envCategory: "B川下流",
+            envNote: "水温: 16.0℃\npH: 6.8\n特記事項: ナンセンス突然変異による発育不全が見られる矮小個体。翻訳早期終結のデモ用。",
+            morphData: "2 2 3 2 2 2 3 2 2 3 2 2 3 2 2 3 2 2 2 3 2 2 3 2 2 2 3 2 2 3 2 2 3 2 2 3 2 2 2 3 2 2 3 2 2 2 3 2 2 3 2 2 3 2",
+            dnaData: ">Mutant_Nonsense\nATGTTCTAGAACCGATGATTATTCTCAACTAACCATAAAGATATCGGAACTCTATATCTA",
+            date: new Date(Date.now() - 10000).toISOString(),
+            image_data: "images/Mutant_Nonsense.jpeg",
+            hasRawSeq: false
+          }
+        ];
+        saveToStorage();
+        runImageSelfHealingPatch();
       }
-    ];
-    saveToStorage();
-  }
-}
+    }
+
+    // 【パッチ】画像リンク切れ対策用・自動Base64化＆ダミー生成リカバリーロジック
+    function runImageSelfHealingPatch() {
+      let requiresSave = false;
+      let processedCount = 0;
+      const targetSamples = samples.filter(s => s.image_data && s.image_data.startsWith('images/'));
+      
+      if(targetSamples.length === 0) return;
+
+      targetSamples.forEach(sample => {
+        const img = new Image();
+        img.crossOrigin = 'Anonymous'; // 汚染キャンバス回避用
+        
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            sample.image_data = canvas.toDataURL('image/jpeg', 0.8);
+            requiresSave = true;
+          } catch (e) {
+            console.warn("Base64 auto-conversion failed (likely CORS issue):", e);
+            sample.image_data = generateDummyBase64(sample.name);
+            requiresSave = true;
+          }
+          checkFinish();
+        };
+        
+        img.onerror = () => {
+          // 画像が存在しない(404等)場合はアプリ⑨で表示できるようダミー画像を生成・保存
+          console.warn("Image not found, generating dummy placeholder for:", sample.name);
+          sample.image_data = generateDummyBase64(sample.name);
+          requiresSave = true;
+          checkFinish();
+        };
+        
+        img.src = sample.image_data;
+      });
+
+      function checkFinish() {
+        processedCount++;
+        if (processedCount === targetSamples.length && requiresSave) {
+          saveToStorage();
+          renderSamples(); // 非同期で更新
+        }
+      }
+    }
+
+    // プレースホルダー画像をCanvasで動的生成するヘルパー関数
+    function generateDummyBase64(text) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 400;
+      canvas.height = 300;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ecf0f1';
+      ctx.fillRect(0, 0, 400, 300);
+      ctx.fillStyle = '#7f8c8d';
+      ctx.font = 'bold 20px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text || 'No Image', 200, 140);
+      ctx.font = '12px sans-serif';
+      ctx.fillText('Auto-generated placeholder', 200, 170);
+      return canvas.toDataURL('image/jpeg', 0.8);
+    }
 
     function saveToStorage() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(samples));
@@ -1207,43 +1322,47 @@ input, textarea {
     }
 
     function setupDropZone() {
-      const imgDropZone = document.getElementById('imageDropZone');
-      imgDropZone.addEventListener('dragover', (e) => {
+      // 1. 画像用ドロップゾーン
+      const dropZone = document.getElementById('imageDropZone');
+      dropZone.addEventListener('dragover', (e) => {
         e.preventDefault();
-        imgDropZone.style.borderColor = 'var(--phase-color)';
-        imgDropZone.style.background = '#e8f8f5';
+        dropZone.style.borderColor = 'var(--phase-color)';
+        dropZone.style.background = '#e8f8f5';
       });
-      imgDropZone.addEventListener('dragleave', () => {
-        imgDropZone.style.borderColor = 'var(--border-color)';
-        imgDropZone.style.background = '#f8f9fa';
+      dropZone.addEventListener('dragleave', () => {
+        dropZone.style.borderColor = 'var(--border-color)';
+        dropZone.style.background = '#f8f9fa';
       });
-      imgDropZone.addEventListener('drop', (e) => {
+      dropZone.addEventListener('drop', (e) => {
         e.preventDefault();
-        imgDropZone.style.borderColor = 'var(--border-color)';
-        imgDropZone.style.background = '#f8f9fa';
+        dropZone.style.borderColor = 'var(--border-color)';
+        dropZone.style.background = '#f8f9fa';
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
           processImageFile(e.dataTransfer.files[0]);
         }
       });
 
-      const ab1DropZone = document.getElementById('ab1DropZone');
-      ab1DropZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        ab1DropZone.style.borderColor = 'var(--phase-color)';
-        ab1DropZone.style.background = '#e8f8f5';
-      });
-      ab1DropZone.addEventListener('dragleave', () => {
-        ab1DropZone.style.borderColor = 'var(--border-color)';
-        ab1DropZone.style.background = '#f8f9fa';
-      });
-      ab1DropZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        ab1DropZone.style.borderColor = 'var(--border-color)';
-        ab1DropZone.style.background = '#f8f9fa';
-        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-          processAb1File(e.dataTransfer.files[0]);
-        }
-      });
+      // 2. .ab1 ファイル用ドロップゾーン (IndexedDB用)
+      const ab1Zone = document.getElementById('ab1DropZone');
+      if (ab1Zone) {
+          ab1Zone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            ab1Zone.style.borderColor = 'var(--phase-color)';
+            ab1Zone.style.background = '#e8f8f5';
+          });
+          ab1Zone.addEventListener('dragleave', () => {
+            ab1Zone.style.borderColor = 'var(--border-color)';
+            ab1Zone.style.background = '#f8f9fa';
+          });
+          ab1Zone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            ab1Zone.style.borderColor = 'var(--border-color)';
+            ab1Zone.style.background = '#f8f9fa';
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+              processAb1File(e.dataTransfer.files[0]);
+            }
+          });
+      }
     }
 
     function handleImageFile(event) {
@@ -1257,7 +1376,6 @@ input, textarea {
         showToast("画像ファイルを選択してください", "error");
         return;
       }
-      
       document.getElementById('imageDropText').innerText = "最適化中...";
 
       const reader = new FileReader();
@@ -1267,34 +1385,23 @@ input, textarea {
           let width = img.width;
           let height = img.height;
           const max_side = 1200;
-          
           if (width > height) {
-            if (width > max_side) {
-              height = Math.round(height * (max_side / width));
-              width = max_side;
-            }
+            if (width > max_side) { height = Math.round(height * (max_side / width)); width = max_side; }
           } else {
-            if (height > max_side) {
-              width = Math.round(width * (max_side / height));
-              height = max_side;
-            }
+            if (height > max_side) { width = Math.round(width * (max_side / height)); height = max_side; }
           }
-          
           const canvas = document.createElement('canvas');
           canvas.width = width;
           canvas.height = height;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
           
-          // LIMS要件: 品質80% (0.8) の Base64 (JPEG) に変換
           const base64 = canvas.toDataURL('image/jpeg', 0.8);
           document.getElementById('imageDataBase64').value = base64;
           document.getElementById('imageDropText').innerText = file.name + " (最適化済)";
           
-          // プレビューの即時反映
           document.getElementById('modalImagePreview').src = base64;
           document.getElementById('imagePreviewContainer').style.display = 'block';
-
           showToast("画像を最適化して読み込みました", "success");
         };
         img.src = e.target.result;
@@ -1309,18 +1416,12 @@ input, textarea {
     }
 
     function processAb1File(file) {
-      if (!file.name.toLowerCase().endsWith('.ab1')) {
-        showToast(".ab1ファイルを選択してください", "error");
-        return;
-      }
-      
       document.getElementById('ab1DropText').innerText = "読み込み中...";
-
       const reader = new FileReader();
       reader.onload = function(e) {
-        document.getElementById('ab1DataBase64').value = e.target.result;
-        document.getElementById('ab1FileName').value = file.name;
-        document.getElementById('ab1DropText').innerText = file.name + " (セット完了)";
+        document.getElementById('ab1DataHidden').value = e.target.result; // Data URL形式で保持し、IndexedDBへ送る
+        document.getElementById('ab1FileNameHidden').value = file.name;
+        document.getElementById('ab1DropText').innerText = file.name + " (セット済)";
         showToast("未処理塩基配列データをセットしました", "success");
       };
       reader.readAsDataURL(file);
@@ -1350,17 +1451,16 @@ input, textarea {
         const hasMorph = sample.morphData && sample.morphData.trim() !== "";
         const hasDna = sample.dnaData && sample.dnaData.trim() !== "";
         const hasImage = sample.image_data && sample.image_data.trim() !== "";
-        const hasAb1 = sample.ab1_data && sample.ab1_data.trim() !== "";
+        const hasRawSeq = sample.hasRawSeq || false;
         
         const envBadge = hasEnv ? `<span class="badge ok">環境カテゴリあり</span>` : `<span class="badge none">環境カテゴリ未登録</span>`;
         const morphBadge = hasMorph ? `<span class="badge ok">形態データあり</span>` : `<span class="badge none">形態未登録</span>`;
-        const ab1Badge = hasAb1 ? `<span class="badge ok">未処理塩基配列あり</span>` : `<span class="badge none">未処理データ未登録</span>`;
-        const dnaBadge = hasDna ? `<span class="badge ok">処理済み塩基配列あり</span>` : `<span class="badge none">処理済みデータ未登録</span>`;
+        const dnaBadge = hasDna ? `<span class="badge ok">処理済み塩基配列あり</span>` : `<span class="badge none">処理済み塩基配列未登録</span>`;
+        const rawDnaBadge = hasRawSeq ? `<span class="badge ok">未処理塩基配列あり</span>` : `<span class="badge none">未処理塩基配列なし</span>`;
 
         const card = document.createElement('div');
         card.className = 'sample-card';
         
-        // ヘッダー内に「サンプル名・ID」＋「画像プレビュー」＋「削除ボタン」を配置
         card.innerHTML = `
           <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
             <div style="display: flex; align-items: center; gap: 12px; overflow: hidden; flex: 1;">
@@ -1376,11 +1476,10 @@ input, textarea {
             </div>
           </div>
           <div class="card-body" onclick="editSample('${sample.id}'); triggerHapticFeedback();">
-            <div class="status-badges">${envBadge}${morphBadge}${ab1Badge}${dnaBadge}</div>
+            <div class="status-badges">${envBadge}${morphBadge}${dnaBadge}${rawDnaBadge}</div>
             ${hasEnv ? `<div class="data-preview" data-tooltip="環境カテゴリ">${escapeHTML(envCat)}</div>` : ''}
             ${envNote ? `<div class="data-preview" data-tooltip="特記事項">${escapeHTML(envNote.substring(0, 30))}...</div>` : ''}
             ${hasMorph ? `<div class="data-preview" data-tooltip="形態データ">${escapeHTML(sample.morphData.substring(0, 30))}...</div>` : ''}
-            ${hasAb1 ? `<div class="data-preview" data-tooltip="未処理塩基配列(.ab1)">${escapeHTML(sample.ab1_filename)}</div>` : ''}
             ${hasDna ? `<div class="data-preview" data-tooltip="処理済み塩基配列">${escapeHTML(sample.dnaData.substring(0, 30))}...</div>` : ''}
           </div>
         `;
@@ -1409,10 +1508,9 @@ input, textarea {
         checkboxes.forEach(cb => {
           const sample = samples.find(s => s.id === cb.value);
           if (sample) {
-            // 画像または形態データのどちらかが存在すれば Morphometrics へ送れる
             if ((!sample.morphData || sample.morphData.trim() === "") && (!sample.image_data || sample.image_data.trim() === "")) canSendMorph = false;
             if (!sample.dnaData || sample.dnaData.trim() === "") canSendDna = false;
-            if (!sample.ab1_data || sample.ab1_data.trim() === "") canSendTrace = false;
+            if (!sample.hasRawSeq) canSendTrace = false;
             if (!sample.envCategory || sample.envCategory.trim() === "") canCopyEnv = false;
           }
         });
@@ -1422,10 +1520,10 @@ input, textarea {
         const btnTrace = document.getElementById('btnBulkTrace');
         const btnCopyEnv = document.getElementById('btnBulkCopyEnv');
 
-        if(btnMorph) btnMorph.classList.toggle('link-disabled', !canSendMorph);
-        if(btnDna) btnDna.classList.toggle('link-disabled', !canSendDna);
-        if(btnTrace) btnTrace.classList.toggle('link-disabled', !canSendTrace);
-        if(btnCopyEnv) btnCopyEnv.classList.toggle('link-disabled', !canCopyEnv);
+        btnMorph.classList.toggle('link-disabled', !canSendMorph);
+        btnDna.classList.toggle('link-disabled', !canSendDna);
+        btnTrace.classList.toggle('link-disabled', !canSendTrace);
+        btnCopyEnv.classList.toggle('link-disabled', !canCopyEnv);
 
         panel.classList.add('show');
       } else {
@@ -1433,7 +1531,8 @@ input, textarea {
       }
     }
 
-    function dispatchBulk(type) {
+    // ハイブリッド型 ルーティング処理 (IndexedDB & SessionStorage)
+    async function dispatchBulk(type) {
       const checkboxes = document.querySelectorAll('.sample-checkbox:checked');
       if (checkboxes.length === 0) return;
       
@@ -1450,58 +1549,72 @@ input, textarea {
         morphData: s.morphData || "",
         dnaData: s.dnaData || "",
         image_data: s.image_data || "",
-        ab1_data: s.ab1_data || "",
-        ab1_filename: s.ab1_filename || ""
+        hasRawSeq: s.hasRawSeq || false
       }));
 
-      // IndexedDBを使用した一括送信 (sessionStorage依存は完全廃止)
-      const request = indexedDB.open("BioEduQueueDB", 1);
-      
-      request.onupgradeneeded = function(event) {
-        const db = event.target.result;
-        if (!db.objectStoreNames.contains("samples")) {
-          db.createObjectStore("samples", { keyPath: "id" });
-        }
-      };
+      document.querySelectorAll('.sample-checkbox').forEach(cb => cb.checked = false);
+      renderSamples();
 
-      request.onsuccess = function(event) {
-        const db = event.target.result;
-        const transaction = db.transaction(["samples"], "readwrite");
-        const objectStore = transaction.objectStore("samples");
+      let targetUrl = '';
+      if (type === 'trace') {
+          // ============================================
+          // アプリ④行き (バイナリデータ等、IndexedDB経由)
+          // ============================================
+          document.getElementById('toast').innerText = "バイナリデータを抽出中...";
+          document.getElementById('toast').className = "show info";
+          
+          let bulkQueue = [];
+          for (const s of exportSamples) {
+              if (s.hasRawSeq) {
+                  try {
+                      const binData = await getFromIndexedDB(STORE_SAMPLES, s.id);
+                      if (binData && binData.data) {
+                          bulkQueue.push({
+                              id: s.id,
+                              name: s.name,
+                              fileName: binData.fileName || (s.id + '.ab1'),
+                              data: binData.data 
+                          });
+                      }
+                  } catch(e) { console.warn("Failed to load binary for", s.id); }
+              }
+          }
+          
+          // IndexedDBに連携用の一時プールを作成
+          await saveToIndexedDB(STORE_BULK, { queueId: 'current_trace_queue', timestamp: new Date().getTime(), samples: bulkQueue });
+          
+          // アプリ④が軽量データ（DNA等）も参照できるよう、全データをそのままsessionStorageへ送る（絞り込みによるバグ解消）
+          sessionStorage.setItem('bio_edu_bulk_data', JSON.stringify({
+            samples: exportSamples,
+            timestamp: new Date().getTime(),
+            source: "App_1_Dashboard"
+          }));
 
-        exportSamples.forEach(sample => {
-          objectStore.put(sample);
-        });
-
-        transaction.oncomplete = function() {
-          document.querySelectorAll('.sample-checkbox').forEach(cb => cb.checked = false);
-          renderSamples();
-
-          let targetUrl = '';
+          targetUrl = '4_Sanger_Trace_Editor.html';
+          showToast(`${bulkQueue.length}件の未処理データを Sanger Trace Editor に転送します`, "info");
+      } 
+      else {
+          // ============================================
+          // 従来の軽量ルート (sessionStorage 完全連携)
+          // ============================================
+          sessionStorage.setItem('bio_edu_bulk_data', JSON.stringify({
+            samples: exportSamples,
+            timestamp: new Date().getTime(),
+            source: "App_1_Dashboard"
+          }));
+          
           if (type === 'morph') {
             targetUrl = '9_Morphometrics_Studio.html';
-            showToast(`${selectedSamples.length}件のデータを Morphometrics Studio のキューに追加しました`, "info");
+            showToast(`${selectedSamples.length}件のデータを Morphometrics Studio に転送しました`, "info");
           } else if (type === 'dna') {
             targetUrl = '5_DNA_Alignment_Studio.html'; 
-            showToast(`${selectedSamples.length}件のデータを DNA Alignment Studio のキューに追加しました`, "info");
-          } else if (type === 'trace') {
-            targetUrl = '4_Sanger_Trace_Editor.html';
-            showToast(`${selectedSamples.length}件の未処理塩基配列データを Sanger Trace Editor のキューに追加しました`, "info");
+            showToast(`${selectedSamples.length}件のデータを DNA Alignment Studio に転送しました`, "info");
           }
+      }
 
-          if(targetUrl) {
-            setTimeout(() => { window.location.href = targetUrl; }, 500);
-          }
-        };
-
-        transaction.onerror = function() {
-          showToast("データの転送に失敗しました", "error");
-        };
-      };
-      
-      request.onerror = function(event) {
-        showToast("データベースを開けませんでした", "error");
-      };
+      if(targetUrl) {
+        setTimeout(() => { window.location.href = targetUrl; }, 800);
+      }
     }
 
     function copyEnvDataTSV() {
@@ -1513,7 +1626,6 @@ input, textarea {
       
       if (selectedSamples.length === 0) return;
 
-      // LIMSメタデータ刻印 (v32.2)
       let tsv = "# Source: Bio-Edu Suite App 1 (Dashboard)\n";
       tsv += "Sample_ID\t系統・個体群\t環境カテゴリ\n";
       selectedSamples.forEach(s => {
@@ -1543,9 +1655,9 @@ input, textarea {
       document.getElementById('modalImagePreview').src = "";
       document.getElementById('imagePreviewContainer').style.display = 'none';
       
-      document.getElementById('ab1DataBase64').value = "";
-      document.getElementById('ab1FileName').value = "";
-      document.getElementById('ab1DropText').innerText = "ここをクリック、または 未処理塩基配列データ(.ab1) をドラッグ＆ドロップ";
+      document.getElementById('ab1DataHidden').value = "";
+      document.getElementById('ab1FileNameHidden').value = "";
+      document.getElementById('ab1DropText').innerText = "ここをクリック、または .ab1 ファイル をドラッグ＆ドロップ";
       document.getElementById('ab1Input').value = "";
 
       document.getElementById('morphData').value = "";
@@ -1579,11 +1691,15 @@ input, textarea {
         document.getElementById('modalImagePreview').src = "";
         document.getElementById('imagePreviewContainer').style.display = 'none';
       }
-
-      document.getElementById('ab1DataBase64').value = sample.ab1_data || "";
-      document.getElementById('ab1FileName').value = sample.ab1_filename || "";
-      document.getElementById('ab1DropText').innerText = sample.ab1_filename ? `${sample.ab1_filename} (保存済み)` : "ここをクリック、または 未処理塩基配列データ(.ab1) をドラッグ＆ドロップ";
+      
+      document.getElementById('ab1DataHidden').value = "";
+      document.getElementById('ab1FileNameHidden').value = "";
       document.getElementById('ab1Input').value = "";
+      if (sample.hasRawSeq) {
+          document.getElementById('ab1DropText').innerText = "保存済みの未処理データあり (変更する場合は再ドロップ)";
+      } else {
+          document.getElementById('ab1DropText').innerText = "ここをクリック、または .ab1 ファイル をドラッグ＆ドロップ";
+      }
 
       document.getElementById('morphData').value = sample.morphData || "";
       document.getElementById('dnaData').value = sample.dnaData || "";
@@ -1597,10 +1713,11 @@ input, textarea {
       const envCategory = document.getElementById('envCategory').value.trim();
       const envNote = document.getElementById('envNote').value.trim();
       const image_data = document.getElementById('imageDataBase64').value;
-      const ab1_data = document.getElementById('ab1DataBase64').value;
-      const ab1_filename = document.getElementById('ab1FileName').value;
       const morph = document.getElementById('morphData').value.trim();
       const dna = document.getElementById('dnaData').value.trim();
+      
+      const ab1Data = document.getElementById('ab1DataHidden').value;
+      const ab1FileName = document.getElementById('ab1FileNameHidden').value;
 
       if (!name) { showToast("系統・個体群名を入力してください", "error"); return; }
 
@@ -1621,15 +1738,23 @@ input, textarea {
           samples[index].envCategory = envCategory;
           samples[index].envNote = envNote;
           samples[index].image_data = image_data;
-          samples[index].ab1_data = ab1_data;
-          samples[index].ab1_filename = ab1_filename;
           samples[index].morphData = morph;
           samples[index].dnaData = dna;
           samples[index].date = new Date().toISOString();
+          samples[index].hasRawSeq = ab1Data ? true : (samples[index].hasRawSeq || false);
           delete samples[index].envData; 
         }
       } else {
-        samples.push({ id: finalId, name: name, envCategory: envCategory, envNote: envNote, image_data: image_data, ab1_data: ab1_data, ab1_filename: ab1_filename, morphData: morph, dnaData: dna, date: new Date().toISOString() });
+        samples.push({ 
+          id: finalId, name: name, envCategory: envCategory, envNote: envNote, 
+          image_data: image_data, morphData: morph, dnaData: dna, 
+          hasRawSeq: ab1Data ? true : false, date: new Date().toISOString() 
+        });
+      }
+      
+      if (ab1Data) {
+         saveToIndexedDB(STORE_SAMPLES, { id: finalId, fileName: ab1FileName, data: ab1Data })
+            .catch(e => console.error("IndexedDB Save Error:", e));
       }
 
       saveToStorage(); renderSamples(); closeModal();
@@ -1656,6 +1781,7 @@ input, textarea {
       const label = target && target.name ? `「${target.name}」` : "このサンプル";
       showConfirm(`${label}を削除します。この操作は取り消せません。よろしいですか？`, () => {
         samples = samples.filter(s => s.id !== id);
+        deleteFromIndexedDB(STORE_SAMPLES, id).catch(e => console.error(e));
         saveToStorage(); renderSamples(); showToast("サンプルを削除しました", "success");
       });
     }
