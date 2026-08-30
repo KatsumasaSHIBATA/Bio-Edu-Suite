@@ -337,7 +337,7 @@ input, textarea {
       transform: rotate(45deg);
     }
 
-    /* フローティング・アクション・バー (白ベース復元版) */
+    /* フローティング・アクション・バー (一列並びスマートアライメント対応) */
 .bulk-action-panel {
   position: fixed;
   bottom: 0;
@@ -376,7 +376,8 @@ input, textarea {
 
 .bulk-action-buttons { 
   display: grid; 
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+  /* 4つのボタンを800px内に一列に綺麗に収めるための最適化 */
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
   gap: 10px; 
 }
 .bulk-action-buttons .btn { 
@@ -384,9 +385,11 @@ input, textarea {
   display: flex; 
   align-items: center; 
   justify-content: center; 
+  font-size: 12px;
+  padding: 8px 10px;
 }
 
-/* 3つ目のボタン「環境メタデータをコピー」（元の白・グレー枠線） */
+/* 4つ目のボタン「環境メタデータをコピー」（元の白・グレー枠線） */
 .bulk-action-buttons .btn-secondary {
   background-color: #fdfefe;
   color: var(--text-main);
@@ -471,7 +474,7 @@ input, textarea {
       .modal-footer { flex-direction: column; }
       .modal-footer .btn { width: 100%; }
       .bulk-action-panel { width: 100%; padding: 12px 16px; border-radius: 12px 12px 0 0;}
-      .bulk-action-buttons { grid-template-columns: 1fr; }
+      .bulk-action-buttons { grid-template-columns: repeat(2, 1fr); }
     }
     
 
@@ -795,8 +798,8 @@ input, textarea {
             <span id="accountStatusText" class="btn-text" style="font-size: 13px; font-weight: bold; color: #bdc3c7;">接続中...</span>
           </button>
         </div>
-      </div> <!-- ★追加：.header の閉じタグ -->
-    </div> <!-- ★追加：.header-container の閉じタグ -->
+      </div> 
+    </div> 
 
     <div class="content-area">
 
@@ -822,17 +825,21 @@ input, textarea {
         <span id="selectedCount">0</span>件のサンプルを選択中
       </div>
       <div class="bulk-action-buttons">
+        <button id="btnBulkTrace" class="btn link-dna" onclick="dispatchBulk('trace'); triggerHapticFeedback();">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          ④ Trace Editor へ
+        </button>
         <button id="btnBulkDna" class="btn link-dna" onclick="dispatchBulk('dna'); triggerHapticFeedback();">
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-          ⑤ DNA Alignment Studio へ
+          ⑤ Alignment Studio へ
         </button>
         <button id="btnBulkMorph" class="btn link-morph" onclick="dispatchBulk('morph'); triggerHapticFeedback();">
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-          ⑨ Morphometrics Studio へ
+          ⑨ Morphometrics へ
         </button>
         <button id="btnBulkCopyEnv" class="btn btn-secondary" onclick="copyEnvDataTSV(); triggerHapticFeedback();">
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-          環境メタデータをコピー (TSV)
+          環境メタデータをコピー
         </button>
       </div>
     </div>
@@ -900,10 +907,23 @@ input, textarea {
 
         <hr style="border: 0; border-top: 1px solid #ecf0f1; margin: 20px 0;">
 
+        <!-- 新設：未処理塩基配列データ保存枠 -->
         <div class="form-group">
-          <label>DNA 塩基配列データ</label>
-          <textarea id="dnaData" class="form-control paste-area" placeholder="FASTA形式で塩基配列を入力"></textarea>
-          <div class="help-text">後で DNAラボ (DNA Alignment Studio) に送って同定・系統解析を行えます。</div>
+          <label>未処理 塩基配列データ (.ab1)</label>
+          <div class="drop-zone" id="ab1DropZone" onclick="document.getElementById('ab1Input').click(); triggerHapticFeedback();">
+            <svg class="btn-icon" style="margin:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+            <p id="ab1DropText">ここをクリック、または 未処理塩基配列データ(.ab1) をドラッグ＆ドロップ</p>
+            <input type="file" id="ab1Input" accept=".ab1" style="display: none;" onchange="handleAb1File(event)">
+          </div>
+          <input type="hidden" id="ab1DataBase64">
+          <input type="hidden" id="ab1FileName">
+          <div class="help-text">Sangerシーケンサーから得られた未処理の波形データを保存し、アプリ④へ一括送信できます。</div>
+        </div>
+
+        <div class="form-group">
+          <label>処理済み 塩基配列データ (FASTA)</label>
+          <textarea id="dnaData" class="form-control paste-area" placeholder="FASTA形式で処理済みの塩基配列を入力、または貼り付け"></textarea>
+          <div class="help-text">アプリ④で生徒自身がキュレーション（ノイズカット）し、クリップボードにコピーして持ち帰ってきた塩基配列データを貼り付ける場所です。</div>
         </div>
       </div>
       <div class="modal-footer">
@@ -1088,6 +1108,8 @@ input, textarea {
         envNote: "水温: 24.5℃\npH: 7.2\n特記事項: 浅瀬の水草帯で採取。止水環境のため体高が高く丸みを帯びる。",
         morphData: "5 5 4 5 5 6 6 5 6 6 7 6 6 6 7 7 6 7 6 6 7 6 5 6 5 5 4 5 5 4 3 4 3 2 3 2 1 2 1 1 0 1 0 0 1 0 1 2 1 2 3 2 3 4",
         dnaData: ">WildType_A\nATGTTCATTAACCGATGATTATTCTCAACTAACCATAAAGATATCGGAACTCTATATCTA",
+        ab1_data: "",
+        ab1_filename: "",
         date: new Date(Date.now() - 70000).toISOString(),
         image_data: "images/WildType_A.jpeg" 
       },
@@ -1098,6 +1120,8 @@ input, textarea {
         envNote: "水温: 15.2℃\npH: 6.8\n特記事項: 流れの速い岩場で採取。流水環境のため流線型の傾向が強い。",
         morphData: "4 3 3 4 4 4 5 4 5 5 5 6 5 5 6 6 5 6 5 5 5 4 4 3 3 3 2 2 1 2 1 1 0 1 0 0 7 0 7 7 6 7 6 7 7 6 7 6 5 6 5 5 4 5",
         dnaData: ">WildType_B\nATGTTCATTAACCGATGATTATTCTCAACTAACCATAAAGATATCGGAACTCTATATCTA",
+        ab1_data: "",
+        ab1_filename: "",
         date: new Date(Date.now() - 60000).toISOString(),
         image_data: "images/WildType_B.jpeg" 
       },
@@ -1108,6 +1132,8 @@ input, textarea {
         envNote: "水温: 25.1℃\npH: 7.4\n特記事項: 最近目撃されるようになった変異個体。A湖畔のため丸みはあるが、全体的に大型でいびつ。",
         morphData: "6 6 5 6 6 7 7 6 7 7 7 6 7 6 6 5 5 4 3 2 3 2 1 0 1 0 7 6 7 6 5 4 5 4 3 2 3 2 1 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6",
         dnaData: ">Mutant_A\nATGTTCATCAACCGATGACTATTCTCAACAAACCACAAAGATATCGGAACCCTATATCTA",
+        ab1_data: "",
+        ab1_filename: "",
         date: new Date(Date.now() - 50000).toISOString(),
         image_data: "images/Mutant_A.jpeg" 
       },
@@ -1118,6 +1144,8 @@ input, textarea {
         envNote: "水温: 15.5℃\npH: 6.9\n特記事項: B川上流の変異個体。流線型ベースだが、同じく大型化している。",
         morphData: "5 4 4 5 5 5 6 5 6 6 6 7 6 6 7 6 6 5 4 3 4 3 2 1 2 1 0 1 0 7 0 6 7 6 6 5 6 5 4 3 4 3 2 3 4 5 6 7 0 1 2 3 4 5",
         dnaData: ">Mutant_B\nATGTTCATCAACCGATGACTATTCTCAACAAACCACAAAGATATCGGAACCCTATATCTA",
+        ab1_data: "",
+        ab1_filename: "",
         date: new Date(Date.now() - 40000).toISOString(),
         image_data: "images/Mutant_B.jpeg" 
       },
@@ -1129,6 +1157,8 @@ input, textarea {
         envNote: "水温: 28.5℃\npH: 8.1\n特記事項: 地理的に隔離された島嶼個体群。外群（Outgroup）として利用。全体的に大型で堅牢な体つき。",
         morphData: "8 9 9 10 9 8 9 9 10 8 9 10 9 8 9 9 10 9 8 9 9 8 9 10 9 8 9 9 10 8 9 10 9 8 9 9 10 9 8 9 9 8 9 10 9 8 9 9 10 8 9 10 9 8",
         dnaData: ">Outgroup_C\nATGTTTATCAATCGCTGATTATTCTCAACTAACCATAAAGATATCGGAACTCTATATCTA",
+        ab1_data: "",
+        ab1_filename: "",
         date: new Date(Date.now() - 30000).toISOString(),
         image_data: "images/Outgroup_C.jpeg" 
       },
@@ -1139,6 +1169,8 @@ input, textarea {
         envNote: "水温: 24.6℃\npH: 7.2\n特記事項: WT_Aと同所的に生息する別個体。集団遺伝学（対立遺伝子頻度）のデモ用。",
         morphData: "5 6 4 5 5 5 6 6 6 6 7 6 7 6 7 6 6 7 6 6 7 6 6 6 5 5 5 5 5 4 3 4 3 2 4 2 1 2 1 1 0 1 0 1 1 0 1 2 1 2 3 3 3 4",
         dnaData: ">WildType_A2\nATGTTCATTAACCGGTGATTATTCTCAACTAACCATAAAGATATCGGAACTCTATATCTA",
+        ab1_data: "",
+        ab1_filename: "",
         date: new Date(Date.now() - 20000).toISOString(),
         image_data: "images/WildType_A2.jpeg" 
       },
@@ -1149,6 +1181,8 @@ input, textarea {
         envNote: "水温: 16.0℃\npH: 6.8\n特記事項: ナンセンス突然変異による発育不全が見られる矮小個体。翻訳早期終結のデモ用。",
         morphData: "2 2 3 2 2 2 3 2 2 3 2 2 3 2 2 3 2 2 2 3 2 2 3 2 2 2 3 2 2 3 2 2 3 2 2 3 2 2 2 3 2 2 3 2 2 2 3 2 2 3 2 2 3 2",
         dnaData: ">Mutant_Nonsense\nATGTTCTAGAACCGATGATTATTCTCAACTAACCATAAAGATATCGGAACTCTATATCTA",
+        ab1_data: "",
+        ab1_filename: "",
         date: new Date(Date.now() - 10000).toISOString(),
         image_data: "images/Mutant_Nonsense.jpeg" 
       }
@@ -1173,22 +1207,41 @@ input, textarea {
     }
 
     function setupDropZone() {
-      const dropZone = document.getElementById('imageDropZone');
-      dropZone.addEventListener('dragover', (e) => {
+      const imgDropZone = document.getElementById('imageDropZone');
+      imgDropZone.addEventListener('dragover', (e) => {
         e.preventDefault();
-        dropZone.style.borderColor = 'var(--phase-color)';
-        dropZone.style.background = '#e8f8f5';
+        imgDropZone.style.borderColor = 'var(--phase-color)';
+        imgDropZone.style.background = '#e8f8f5';
       });
-      dropZone.addEventListener('dragleave', () => {
-        dropZone.style.borderColor = 'var(--border-color)';
-        dropZone.style.background = '#f8f9fa';
+      imgDropZone.addEventListener('dragleave', () => {
+        imgDropZone.style.borderColor = 'var(--border-color)';
+        imgDropZone.style.background = '#f8f9fa';
       });
-      dropZone.addEventListener('drop', (e) => {
+      imgDropZone.addEventListener('drop', (e) => {
         e.preventDefault();
-        dropZone.style.borderColor = 'var(--border-color)';
-        dropZone.style.background = '#f8f9fa';
+        imgDropZone.style.borderColor = 'var(--border-color)';
+        imgDropZone.style.background = '#f8f9fa';
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
           processImageFile(e.dataTransfer.files[0]);
+        }
+      });
+
+      const ab1DropZone = document.getElementById('ab1DropZone');
+      ab1DropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        ab1DropZone.style.borderColor = 'var(--phase-color)';
+        ab1DropZone.style.background = '#e8f8f5';
+      });
+      ab1DropZone.addEventListener('dragleave', () => {
+        ab1DropZone.style.borderColor = 'var(--border-color)';
+        ab1DropZone.style.background = '#f8f9fa';
+      });
+      ab1DropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        ab1DropZone.style.borderColor = 'var(--border-color)';
+        ab1DropZone.style.background = '#f8f9fa';
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+          processAb1File(e.dataTransfer.files[0]);
         }
       });
     }
@@ -1249,6 +1302,30 @@ input, textarea {
       reader.readAsDataURL(file);
     }
 
+    function handleAb1File(event) {
+      if (event.target.files && event.target.files[0]) {
+        processAb1File(event.target.files[0]);
+      }
+    }
+
+    function processAb1File(file) {
+      if (!file.name.toLowerCase().endsWith('.ab1')) {
+        showToast(".ab1ファイルを選択してください", "error");
+        return;
+      }
+      
+      document.getElementById('ab1DropText').innerText = "読み込み中...";
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('ab1DataBase64').value = e.target.result;
+        document.getElementById('ab1FileName').value = file.name;
+        document.getElementById('ab1DropText').innerText = file.name + " (セット完了)";
+        showToast("未処理塩基配列データをセットしました", "success");
+      };
+      reader.readAsDataURL(file);
+    }
+
     function renderSamples() {
       const grid = document.getElementById('sampleGrid');
       grid.innerHTML = '';
@@ -1273,11 +1350,12 @@ input, textarea {
         const hasMorph = sample.morphData && sample.morphData.trim() !== "";
         const hasDna = sample.dnaData && sample.dnaData.trim() !== "";
         const hasImage = sample.image_data && sample.image_data.trim() !== "";
+        const hasAb1 = sample.ab1_data && sample.ab1_data.trim() !== "";
         
         const envBadge = hasEnv ? `<span class="badge ok">環境カテゴリあり</span>` : `<span class="badge none">環境カテゴリ未登録</span>`;
         const morphBadge = hasMorph ? `<span class="badge ok">形態データあり</span>` : `<span class="badge none">形態未登録</span>`;
-        // 2025用語対応: Sequenceではなく塩基配列
-        const dnaBadge = hasDna ? `<span class="badge ok">塩基配列あり</span>` : `<span class="badge none">塩基配列未登録</span>`;
+        const ab1Badge = hasAb1 ? `<span class="badge ok">未処理塩基配列あり</span>` : `<span class="badge none">未処理データ未登録</span>`;
+        const dnaBadge = hasDna ? `<span class="badge ok">処理済み塩基配列あり</span>` : `<span class="badge none">処理済みデータ未登録</span>`;
 
         const card = document.createElement('div');
         card.className = 'sample-card';
@@ -1298,11 +1376,12 @@ input, textarea {
             </div>
           </div>
           <div class="card-body" onclick="editSample('${sample.id}'); triggerHapticFeedback();">
-            <div class="status-badges">${envBadge}${morphBadge}${dnaBadge}</div>
+            <div class="status-badges">${envBadge}${morphBadge}${ab1Badge}${dnaBadge}</div>
             ${hasEnv ? `<div class="data-preview" data-tooltip="環境カテゴリ">${escapeHTML(envCat)}</div>` : ''}
             ${envNote ? `<div class="data-preview" data-tooltip="特記事項">${escapeHTML(envNote.substring(0, 30))}...</div>` : ''}
             ${hasMorph ? `<div class="data-preview" data-tooltip="形態データ">${escapeHTML(sample.morphData.substring(0, 30))}...</div>` : ''}
-            ${hasDna ? `<div class="data-preview" data-tooltip="塩基配列">${escapeHTML(sample.dnaData.substring(0, 30))}...</div>` : ''}
+            ${hasAb1 ? `<div class="data-preview" data-tooltip="未処理塩基配列(.ab1)">${escapeHTML(sample.ab1_filename)}</div>` : ''}
+            ${hasDna ? `<div class="data-preview" data-tooltip="処理済み塩基配列">${escapeHTML(sample.dnaData.substring(0, 30))}...</div>` : ''}
           </div>
         `;
         grid.appendChild(card);
@@ -1324,6 +1403,7 @@ input, textarea {
         
         let canSendMorph = true;
         let canSendDna = true;
+        let canSendTrace = true;
         let canCopyEnv = true;
         
         checkboxes.forEach(cb => {
@@ -1332,17 +1412,20 @@ input, textarea {
             // 画像または形態データのどちらかが存在すれば Morphometrics へ送れる
             if ((!sample.morphData || sample.morphData.trim() === "") && (!sample.image_data || sample.image_data.trim() === "")) canSendMorph = false;
             if (!sample.dnaData || sample.dnaData.trim() === "") canSendDna = false;
+            if (!sample.ab1_data || sample.ab1_data.trim() === "") canSendTrace = false;
             if (!sample.envCategory || sample.envCategory.trim() === "") canCopyEnv = false;
           }
         });
 
         const btnMorph = document.getElementById('btnBulkMorph');
         const btnDna = document.getElementById('btnBulkDna');
+        const btnTrace = document.getElementById('btnBulkTrace');
         const btnCopyEnv = document.getElementById('btnBulkCopyEnv');
 
-        btnMorph.classList.toggle('link-disabled', !canSendMorph);
-        btnDna.classList.toggle('link-disabled', !canSendDna);
-        btnCopyEnv.classList.toggle('link-disabled', !canCopyEnv);
+        if(btnMorph) btnMorph.classList.toggle('link-disabled', !canSendMorph);
+        if(btnDna) btnDna.classList.toggle('link-disabled', !canSendDna);
+        if(btnTrace) btnTrace.classList.toggle('link-disabled', !canSendTrace);
+        if(btnCopyEnv) btnCopyEnv.classList.toggle('link-disabled', !canCopyEnv);
 
         panel.classList.add('show');
       } else {
@@ -1366,31 +1449,59 @@ input, textarea {
         envNote: s.envNote || s.envData || "",
         morphData: s.morphData || "",
         dnaData: s.dnaData || "",
-        image_data: s.image_data || ""
+        image_data: s.image_data || "",
+        ab1_data: s.ab1_data || "",
+        ab1_filename: s.ab1_filename || ""
       }));
 
-      // LIMSメタデータ刻印 (v32.2)
-      sessionStorage.setItem('bio_edu_bulk_data', JSON.stringify({
-        samples: exportSamples,
-        timestamp: new Date().getTime(),
-        source: "App_1_Dashboard"
-      }));
+      // IndexedDBを使用した一括送信 (sessionStorage依存は完全廃止)
+      const request = indexedDB.open("BioEduQueueDB", 1);
       
-      document.querySelectorAll('.sample-checkbox').forEach(cb => cb.checked = false);
-      renderSamples();
+      request.onupgradeneeded = function(event) {
+        const db = event.target.result;
+        if (!db.objectStoreNames.contains("samples")) {
+          db.createObjectStore("samples", { keyPath: "id" });
+        }
+      };
 
-      let targetUrl = '';
-      if (type === 'morph') {
-        targetUrl = '9_Morphometrics_Studio.html';
-        showToast(`${selectedSamples.length}件のデータを Morphometrics Studio に転送しました`, "info");
-      } else if (type === 'dna') {
-        targetUrl = '5_DNA_Alignment_Studio.html'; 
-        showToast(`${selectedSamples.length}件のデータを DNA Alignment Studio に転送しました`, "info");
-      }
+      request.onsuccess = function(event) {
+        const db = event.target.result;
+        const transaction = db.transaction(["samples"], "readwrite");
+        const objectStore = transaction.objectStore("samples");
 
-      if(targetUrl) {
-        setTimeout(() => { window.location.href = targetUrl; }, 500);
-      }
+        exportSamples.forEach(sample => {
+          objectStore.put(sample);
+        });
+
+        transaction.oncomplete = function() {
+          document.querySelectorAll('.sample-checkbox').forEach(cb => cb.checked = false);
+          renderSamples();
+
+          let targetUrl = '';
+          if (type === 'morph') {
+            targetUrl = '9_Morphometrics_Studio.html';
+            showToast(`${selectedSamples.length}件のデータを Morphometrics Studio のキューに追加しました`, "info");
+          } else if (type === 'dna') {
+            targetUrl = '5_DNA_Alignment_Studio.html'; 
+            showToast(`${selectedSamples.length}件のデータを DNA Alignment Studio のキューに追加しました`, "info");
+          } else if (type === 'trace') {
+            targetUrl = '4_Sanger_Trace_Editor.html';
+            showToast(`${selectedSamples.length}件の未処理塩基配列データを Sanger Trace Editor のキューに追加しました`, "info");
+          }
+
+          if(targetUrl) {
+            setTimeout(() => { window.location.href = targetUrl; }, 500);
+          }
+        };
+
+        transaction.onerror = function() {
+          showToast("データの転送に失敗しました", "error");
+        };
+      };
+      
+      request.onerror = function(event) {
+        showToast("データベースを開けませんでした", "error");
+      };
     }
 
     function copyEnvDataTSV() {
@@ -1425,11 +1536,18 @@ input, textarea {
       document.getElementById('sampleName').value = "";
       document.getElementById('envCategory').value = "";
       document.getElementById('envNote').value = "";
+      
       document.getElementById('imageDataBase64').value = "";
       document.getElementById('imageDropText').innerText = "ここをクリック、または 画像データ をドラッグ＆ドロップ";
       document.getElementById('imageInput').value = "";
       document.getElementById('modalImagePreview').src = "";
       document.getElementById('imagePreviewContainer').style.display = 'none';
+      
+      document.getElementById('ab1DataBase64').value = "";
+      document.getElementById('ab1FileName').value = "";
+      document.getElementById('ab1DropText').innerText = "ここをクリック、または 未処理塩基配列データ(.ab1) をドラッグ＆ドロップ";
+      document.getElementById('ab1Input').value = "";
+
       document.getElementById('morphData').value = "";
       document.getElementById('dnaData').value = "";
       document.getElementById('sampleModal').style.display = 'flex';
@@ -1449,6 +1567,7 @@ input, textarea {
       document.getElementById('sampleName').value = sample.name;
       document.getElementById('envCategory').value = sample.envCategory || "";
       document.getElementById('envNote').value = sample.envNote || sample.envData || "";
+      
       document.getElementById('imageDataBase64').value = sample.image_data || "";
       document.getElementById('imageDropText').innerText = sample.image_data ? "保存済みの画像データ (変更する場合は再ドロップ)" : "ここをクリック、または 画像データ をドラッグ＆ドロップ";
       document.getElementById('imageInput').value = "";
@@ -1460,6 +1579,11 @@ input, textarea {
         document.getElementById('modalImagePreview').src = "";
         document.getElementById('imagePreviewContainer').style.display = 'none';
       }
+
+      document.getElementById('ab1DataBase64').value = sample.ab1_data || "";
+      document.getElementById('ab1FileName').value = sample.ab1_filename || "";
+      document.getElementById('ab1DropText').innerText = sample.ab1_filename ? `${sample.ab1_filename} (保存済み)` : "ここをクリック、または 未処理塩基配列データ(.ab1) をドラッグ＆ドロップ";
+      document.getElementById('ab1Input').value = "";
 
       document.getElementById('morphData').value = sample.morphData || "";
       document.getElementById('dnaData').value = sample.dnaData || "";
@@ -1473,6 +1597,8 @@ input, textarea {
       const envCategory = document.getElementById('envCategory').value.trim();
       const envNote = document.getElementById('envNote').value.trim();
       const image_data = document.getElementById('imageDataBase64').value;
+      const ab1_data = document.getElementById('ab1DataBase64').value;
+      const ab1_filename = document.getElementById('ab1FileName').value;
       const morph = document.getElementById('morphData').value.trim();
       const dna = document.getElementById('dnaData').value.trim();
 
@@ -1495,13 +1621,15 @@ input, textarea {
           samples[index].envCategory = envCategory;
           samples[index].envNote = envNote;
           samples[index].image_data = image_data;
+          samples[index].ab1_data = ab1_data;
+          samples[index].ab1_filename = ab1_filename;
           samples[index].morphData = morph;
           samples[index].dnaData = dna;
           samples[index].date = new Date().toISOString();
           delete samples[index].envData; 
         }
       } else {
-        samples.push({ id: finalId, name: name, envCategory: envCategory, envNote: envNote, image_data: image_data, morphData: morph, dnaData: dna, date: new Date().toISOString() });
+        samples.push({ id: finalId, name: name, envCategory: envCategory, envNote: envNote, image_data: image_data, ab1_data: ab1_data, ab1_filename: ab1_filename, morphData: morph, dnaData: dna, date: new Date().toISOString() });
       }
 
       saveToStorage(); renderSamples(); closeModal();
