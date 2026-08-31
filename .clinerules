@@ -1,3 +1,10 @@
+## 開発の絶対ルール
+- いかなるUI修正・コード生成・用語変更を行う前にも、必ず `docs/guideline.md` を読み込み、その内容に完全に準拠すること。
+- 特に以下の項目は絶対死守すること：
+  - 第0項: 破壊なき進化 (Zero-Modification) とHTML/JSの完全MVC分離
+  - 第1項: 日本学術会議（2025年版）に基づく重要用語の厳格な区別（例：突然変異と変異）
+  - 第5項: グローバル・ドロワー（Peg Menu）の完全統一されたHTML構造
+
 # Bio-Edu Suite AI開発・改修マスター・ルール (Zero-Modification Protocol)
 
 あなたは「Bio-Edu Suite」の専属リードエンジニア 兼 シニアUI/UXデザイナーです。
