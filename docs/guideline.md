@@ -1,9 +1,15 @@
-# **🎨 Bio-Edu Suite 統合UI/UX・開発ガイドライン (v34.3\_2026-08-27:最新版)**
+# **🎨 Bio-Edu Suite 統合UI/UX・開発ガイドライン (v34.4_2026-08-31:最新版)**
 
 本ガイドラインは、Bio-Edu Suite内の全アプリケーションにおける視覚的な一貫性（UI）、操作感の統一（UX）、データ連携、および日本学術会議の公式資料「高等学校の生物教育における重要用語の選定について（2025年版）」に完全に準拠した教育的価値を担保するための「共通規格書（絶対の法律）」です。
 
 ## **【改訂・サルベージ履歴】**
 
+* **v34.4 (2026-08-31):** MPAのSPA風画面遷移（View Transitions API）の標準化、タブレット縦表示のドロワー完全隠蔽、フレキシブルグリッドの導入、タッチターゲットの厳格化、ラバーバンド効果の完全排除。
+  * **\[MPAのSPA風画面遷移（View Transitions API）\]**: `@view-transition { navigation: auto; }` および `::view-transition-old/new` によるシームレスなスライド・フェードアニメーションを共通規格として標準化。
+  * **\[タブレット縦表示のドロワー完全隠蔽\]**: スマホ用完全隠蔽（`-280px`）のブレイクポイントを `max-width: 1024px` へ引き上げ、タブレット縦表示（Portrait）およびスマホ表示時の共通仕様として再定義。PC用のホバー展開は1025px以上のみに限定。
+  * **\[フレキシブル・グリッドの導入\]**: 左右分割の固定比率（35:65）に加え、`grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));` 等のフレキシブル・グリッドを標準レイアウトとして定義し、狭い画面での自動縦スクロール移行を義務化。
+  * **\[タッチターゲットの厳格化\]**: Apple/Googleのヒューマンインタフェースガイドラインに準拠し、タップ可能な要素（ボタン等）は最小高さ44px（モバイルでは48px）を確保する厳格ルールを制定。
+  * **\[ラバーバンド効果の完全排除\]**: `html, body` に対する `overscroll-behavior: none;` の完全適用により、iOS Safari等のスクロールバウンス（ゴム紐現象）を完全に無効化。
 * **v34.3.3 (2026-08-28):** ハンバーガーボタンの配色と、ドロワー内アイコンの縦センターラインを規定。ホバー時は背景のみ変化させテキスト色は変えない。閉鎖時（幅60px）のハンバーガー・ナビ・最下部アクションの全アイコン中心を **30px（サイドバー中央）** に揃える。
 * **v34.3.2 (2026-08-28):** ハンバーガーアイコンの切り替え条件を訂正。**ホバーでは切り替えない**（未固定・ホバー時はいずれも「≡」を維持し、`.pinned` / `.open` のときのみ「×」へ切り替える）。これに伴い第5項-2 および v34.1／v34.3.1 の「ホバー時も×へ切り替える」規定を撤回する。
 * **v34.3.1 (2026-08-28):** グローバル・ドロワー内のデザインと開閉挙動の統一（第5項へ「ドロワー内 区切り線・ハンバーガー状態管理」の補完規格を新設）。
@@ -224,7 +230,7 @@ SVGはネイティブ絵文字と異なり色を持たないため、アイコ�
 1. **構造とフルードレイアウト**: 画面全体を `<div class="sidebar">` と `<div class="main-wrapper">` に二分する。PC環境では `main-wrapper` に `margin-left: 60px;` を設定しドロワー領域を確保する。ヘッダーは `max-width` 制限を撤廃し、画面両端にビシッと寄る100%幅（フルードレイアウト）とする。  
 2. **開閉アイコンとアニメーション**: ハンバーガーボタンは**ドロワー（.sidebar）の最上部の右端**に配置する。アイコンは標準的な「三本線（≡）」とし、すべての展開状態（ホバー時・ピン留め時・スマホ展開時）において「≡」を完全に隠蔽し、「×（閉じる）」アイコンのみを表示する。 **【v34.3.2 訂正】この「ホバー時も×へ切り替える」規定は撤回する。ホバー時は「≡」を維持し、ピン留め時（`.pinned`）とスマホ展開時（`.open`）のみ「×」へ切り替えること（詳細は本項末尾の【補完規格 v34.3.1】第4項を参照）。**  
 3. **付箋 (Sticky) UIとアプリ番号**: ナビアイテムの左側には必ずPhase SVGを配置し、右側のテキストには**必ずアプリ番号（①、②等）を明記**する。PC表示時は閉鎖時（幅60px）にスクロールバーを完全に隠蔽しアイコンのみが並び、展開時にテキストがフワッと表示される。  
-4. **スマホ表示時の完全隠蔽**: スマートフォン表示時（768px以下）は付箋UI（60px幅のチラ見せ）を禁止し、**ドロワーを完全に画面外（left: \-280px）へ隠す**こと。それに伴い、ハンバーガーボタンはヘッダーの左端（`.header-left` 内）に新設すること。  
+4. **スマホ表示時の完全隠蔽（【v34.4 改訂】タブレット縦表示・スマホ表示時の共通仕様へ引き上げ）**: スマートフォンおよびタブレット縦表示時（1024px以下: `max-width: 1024px`）は付箋UI（60px幅のチラ見せ）を禁止し、**ドロワーを完全に画面外（left: -280px）へ隠す**こと。ホバー展開はPC（1025px以上: `min-width: 1025px`）のみに限定する。これに伴い、1024px以下の環境ではヘッダーの左端（`.header-left` 内）のハンバーガーボタンで開閉するトグル挙動へ統合すること。  
 5. **最下部のアクションとネイティブConfirmの禁止**: ドロワー最下部には「💬 ご意見・フィードバック」と「🗑️ データを初期化」を配置する。初期化時の確認にはブラウザ標準の `confirm()` を使用せず、必ずカスタムモーダルを使用すること。
 
 /\* \--------------------------------------------------- 共通ヘッダー＆レイアウト補正 CSS \--------------------------------------------------- \*/
@@ -329,23 +335,23 @@ body { display: flex; margin: 0; overflow: hidden; background-color: var(--bg-co
 
 .sidebar:hover .icon-close, .sidebar.pinned .icon-close, .sidebar.open .icon-close { display: block; color: var(--text-muted); }
 
-/\* PC表示: ホバー時・ピン留め時の展開 \*/
+/* PC表示（1025px以上）: ホバー時・ピン留め時の展開 */
 
-@media (min-width: 769px) {
+@media (min-width: 1025px) {
 
     .sidebar:hover, .sidebar.pinned { width: 280px; }
 
 }
 
-/\* スマホ表示: 完全に隠蔽し、ヘッダー側にボタンを出す \*/
+/* タブレット縦表示・スマホ表示（1024px以下）: 完全に隠蔽し、ヘッダー側にボタンを出す */
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
 
-    .sidebar { left: \-280px; width: 280px; }
+    .sidebar { left: -280px; width: 280px; }
 
     .sidebar.open { left: 0; }
 
-    .main-wrapper { margin-left: 0; }
+    .main-wrapper { margin-left: 0; padding-left: 0; }
 
     .sidebar-header { display: none; }
 
@@ -427,19 +433,19 @@ body { display: flex; margin: 0; overflow: hidden; background-color: var(--bg-co
 
 .footer { width: 100%; background: \#1a252f; padding: 12px 20px; text-align: center; font-size: 11px; color: \#7f8c8d; letter-spacing: 1px; margin-top: auto; border-top: 1px solid \#2c3e50; flex-shrink: 0; }
 
-/\* \--------------------------------------------------- JS実装規格: ドロワー制御 \--------------------------------------------------- \*/ 
+/* --------------------------------------------------- JS実装規格: ドロワー制御 --------------------------------------------------- */ 
 
 function toggleSidebarPin() { 
 
-    const sidebar \= document.querySelector('.sidebar');
+    const sidebar = document.querySelector('.sidebar');
 
-    const overlay \= document.querySelector('.sidebar-overlay');
+    const overlay = document.querySelector('.sidebar-overlay');
 
-    const isMobile \= window.innerWidth \<= 768;
+    const isMobile = window.innerWidth <= 1024; // v34.4: タブレット縦表示(1024px以下)も含めてモバイル判定
 
     
 
-    if (\!isMobile) {
+    if (!isMobile) {
 
         sidebar.classList.toggle('pinned');
 
@@ -588,6 +594,26 @@ function confirmDataReset() {
 /\* ナビ：透明枠線4pxを常時確保し padding-left 16px でセンターを 30px に \*/
 
 .sidebar .nav-menu .nav-item { border-left: 4px solid transparent; padding-left: 16px; }
+
+### **【補完規格 v34.4】タブレット縦表示・スマホ表示時のドロワー完全隠蔽とブレイクポイント引き上げ (1024px)**
+
+1. **ブレイクポイントの引き上げ**: スマホ表示用の完全隠蔽（`-280px`）のブレイクポイントを従来の `768px` から `1024px`（`max-width: 1024px`）へ引き上げ、**iPad等のタブレット縦表示（Portrait）およびスマホ表示時**の共通仕様として再定義する。
+2. **ホバー展開の制限**: PC用のホバー展開・付箋チラ見せ（60px幅）は **PC環境（1025px以上: `@media (min-width: 1025px)`）のみに限定**し、タッチデバイスやタブレット縦表示での誤爆展開を防止する。
+3. **トグル開閉への統合**: 1024px以下の環境では、ドロワーを画面外（`left: -280px`）へ完全隠蔽し、ヘッダー左端のハンバーガーボタン（`.mobile-hamburger`）から `.sidebar.open` および `.sidebar-overlay.open` によるトグル開閉を行う。
+
+/* v34.4 タブレット縦表示・スマホ表示（1024px以下）共通CSS */
+@media (max-width: 1024px) {
+    .sidebar { left: -280px; width: 280px; }
+    .sidebar.open { left: 0; }
+    .main-wrapper { margin-left: 0; padding-left: 0; }
+    .sidebar-header { display: none; }
+    .mobile-hamburger { display: flex; align-items: center; justify-content: center; }
+}
+
+@media (min-width: 1025px) {
+    .sidebar:hover, .sidebar.pinned { width: 280px; }
+    .mobile-hamburger { display: none; }
+}
 
 ### **【マスターテンプレート】外箱HTML構造（全アプリ共通）**
 
@@ -1340,6 +1366,11 @@ UI要素間のマージンやパディングは、視覚的リズムを整える
 * **要素内のゆとり** (padding): 8px 16px (ボタン等) または 16px (カード等)  
 * **細かい隙間**: 4px (例外的な微調整用) または 8px
 
+**④ フレキシブル・グリッド標準レイアウト（v34.4 追記・義務化）**
+
+* **レスポンシブ・フレキシブル化**: 左右分割の固定比率（35:65）に加え、`display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px;` 等のフレキシブル・グリッドを標準レイアウトとして追記・採用する。
+* **縦スクロール移行の自動化**: 固定幅による画面見切れや横スクロールの発生を防ぐため、画面幅が狭いデバイス（タブレット縦表示やスマホ）では自動的に 1カラムの縦スクロール型（積み重ねレイアウト）へ安全に移行する設計を義務化する。
+
 ## **11\. タイポグラフィと形状（Morphology）・状態（ステート）規格**
 
 **① タイポグラフィ（フォント指定の厳格化）**
@@ -1367,7 +1398,26 @@ UI要素間のマージンやパディングは、視覚的リズムを整える
   outline: none; border-color: var(--phase-color); box-shadow: 0 0 0 2px rgba(26, 188, 156, 0.2);  
 
 * **エラー状態（.input-error）**: 入力値が不正な場合のハイライトを規定。  
-  border-color: var(--danger); box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2); background-color: \#fdf2f2;  
+  border-color: var(--danger); box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2); background-color: #fdf2f2;  
+
+**④ タッチターゲット要件の厳格化（v34.4 追記・義務化）**
+
+* **ヒューマンインタフェースガイドライン準拠**: タッチデバイスでの誤操作やタップミスを防止するため、Apple Human Interface Guidelines および Google Material Design に準拠し、「タップ可能な全要素（`.btn`, `.sidebar-action-btn`, `.nav-item`, `.hamburger-btn`, セレクトボックス, 入力フォーム等）」は**最小高さ 44px（モバイル環境では 48px）を必ず確保する**設計を厳格に義務化する。
+  ```css
+  /* タッチターゲット寸法の厳格化 (v34.4) */
+  .btn, .sidebar-action-btn, .nav-item, .hamburger-btn, select, input[type="button"], input[type="submit"] {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      box-sizing: border-box;
+  }
+
+  @media (max-width: 1024px) {
+      .btn, .sidebar-action-btn, .nav-item, .hamburger-btn, select {
+          min-height: 48px;
+      }
+  }
+  ```
 
 ## **12\. Z-index 階層管理規格**
 
@@ -1448,7 +1498,7 @@ function checkAutoScroll() {
 
 ## **15\. PWA・ネイティブアプリ化（質感・触覚）規格【v33.5 新設】**
 
-**【完全版】ネイティブ体験を構築するメタタグ＆CSS規格 (v34.3 改訂)** ブラウザ特有の「白飛び・ゴム紐バウンス・不要なテキスト選択・フッターの押し出しバグ」を完全に防ぐため、全アプリの `<head>` と `<style>` に以下のコードを強制適用する。
+**【完全版】ネイティブ体験を構築するメタタグ＆CSS規格 (v34.4 改訂)** ブラウザ特有の「白飛び・ゴム紐バウンス・不要なテキスト選択・フッターの押し出しバグ」を完全に防ぎ、MPAのままSPA風の滑らかな画面遷移を実現するため、全アプリの `<head>` と `<style>` に以下のコードを強制適用する。
 
 ① `<head>` 内のメタタグ
 
@@ -1475,6 +1525,12 @@ html { background-color: \#1a252f; }
 body { background-color: var(--bg-color); animation: pageFadeIn 0.15s ease-out forwards; }
 
 @keyframes pageFadeIn { from { opacity: 0.85; } to { opacity: 1; } }
+
+/\* ラバーバンド効果の完全排除（バウンス抑制の徹底） \*/
+
+html, body {
+  overscroll-behavior: none;
+}
 
 /\* タップハイライト無効化・ダブルタップズーム防止・100dvh完全固定 \*/
 
@@ -1506,6 +1562,30 @@ input, textarea { user-select: text; \-webkit-user-select: text; }
 
   padding-bottom: calc(120px \+ env(safe-area-inset-bottom, 0px)); 
 
+}
+
+/\* --------------------------------------------------- MPA用SPA風シームレス画面遷移 (View Transitions API / v34.4 義務化) --------------------------------------------------- \*/
+
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root) {
+  animation: 90ms cubic-bezier(0.4, 0, 1, 1) both fade-out;
+}
+
+::view-transition-new(root) {
+  animation: 210ms cubic-bezier(0, 0, 0.2, 1) 90ms both fade-in;
+}
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /\* メインラッパーのフッター押し出しバグ修正 \*/

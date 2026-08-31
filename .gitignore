@@ -10,3 +10,6 @@ outerbox_v34.3.patch
 # Aider files
 .aider*
 cache.db
+
+# Environment variables
+.env
