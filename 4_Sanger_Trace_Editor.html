@@ -3,7 +3,7 @@
 <head>
 <!-- [Absolute-Zero] セクション1/4 開始: head・CSS -->
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=1024">
+    <meta name="viewport" content="width=1024, viewport-fit=cover">
 
     <!-- 正規のPWA読み込み（ガイドライン第15項①） -->
     <link rel="manifest" href="manifest.json">
@@ -624,7 +624,7 @@
     </style>
 <!-- [Absolute-Zero] セクション1/4 完了。省略なしで続行 -->
 </head>
-<body class="app-mode">
+<body class="app-mode no-select-ui">
 
 <!-- 📱 スマホアクセス警告＆PC強制レイアウト (JS判定版) -->
 <div id="mobile-warning-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(44, 62, 80, 0.95); z-index: 999999; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; padding: 30px; box-sizing: border-box; backdrop-filter: blur(5px);">
@@ -864,17 +864,6 @@
                         <button class="btn btn-success" id="btnExport" onclick="exportFasta()" disabled data-tooltip="波形データから抽出した塩基配列をFASTA形式でファイルとして保存します。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg> FASTA保存</button>
                         <button class="btn" id="btnCopyFasta" onclick="copyFasta()" disabled data-tooltip="波形データから抽出した処理済み塩基配列データをFASTA形式でクリップボードにコピーします。"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 3h6v3H9zM8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg> FASTAコピー</button>
                     </div>
-                </div>
-            </div>
-            <!-- ★ コピー後の手動バケツリレーを促すアシストパネル -->
-            <div id="assistPanel" class="assist-panel" style="display: none;">
-                <div class="assist-title">
-                    <svg class="svg-info" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-                    処理済み塩基配列データをクリップボードにコピーしました。
-                </div>
-                <div class="assist-reason">出所（source）を示すメタデータも自動で付与されています。</div>
-                <div class="assist-fix">
-                    次へのアクション：ダッシュボード（アプリ①）へ戻り、サンプルの編集画面の「処理済み 塩基配列データ (FASTA)」欄へペーストして記録を完了してください。
                 </div>
             </div>
         </div>
@@ -1932,11 +1921,8 @@
         const timestamp = new Date().toISOString();
         let output = `>${headerName} | source:App_4_SangerTrace | time:${timestamp}\n${seqStr}\n`;
         
-        document.getElementById('statusText').innerText = `ステータス: クリップボードにコピーしました。`;
-        copyToClipboardFallback(output.trim(), "処理済み塩基配列データをFASTA形式でコピーしました");
-        
-        // 行動を促すUIガイダンスを表示
-        document.getElementById('assistPanel').style.display = 'block';
+        document.getElementById('statusText').innerText = `ステータス: メタデータ付与完了。Investigation Dashboard への編集画面へペーストしてください。`;
+        copyToClipboardFallback(output.trim(), "配列をコピーしました。Investigation Dashboard へペーストして記録してください");
     }
 
     const tooltip = document.getElementById('globalTooltip');
@@ -2123,7 +2109,7 @@
     }
 </script>
 
-<<!-- Firebase 認証・クラウド同期（ガイドライン第7項） -->
+<!-- Firebase 認証・クラウド同期（ガイドライン第7項） -->
 <script type="module">
     import { loginWithGoogle, logoutUser } from './auth_sync.js';
     window.handleGoogleLogin = loginWithGoogle;
