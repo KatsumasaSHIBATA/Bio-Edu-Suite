@@ -1425,10 +1425,17 @@ UI要素間のマージンやパディングは、視覚的リズムを整える
 * **ヒューマンインタフェースガイドライン準拠**: タッチデバイスでの誤操作やタップミスを防止するため、Apple Human Interface Guidelines および Google Material Design に準拠し、「タップ可能な全要素（`.btn`, `.sidebar-action-btn`, `.nav-item`, `.hamburger-btn`, セレクトボックス, 入力フォーム等）」は**最小高さ 44px（モバイル環境では 48px）を必ず確保する**設計を厳格に義務化する。
   ```css
   /* タッチターゲット寸法の厳格化 (v34.4) */
-  .btn, .sidebar-action-btn, .nav-item, .hamburger-btn, select, input[type="button"], input[type="submit"] {
+  .btn, .hamburger-btn, select, input[type="button"], input[type="submit"] {
       min-height: 44px;
       display: inline-flex;
       align-items: center;
+      box-sizing: border-box;
+  }
+  .nav-item, .sidebar-action-btn {
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      width: 100%;
       box-sizing: border-box;
   }
 

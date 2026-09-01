@@ -332,7 +332,7 @@
           width: 100%;
         }
 
-        @media (min-width: 769px) {
+        @media (min-width: 1025px) {
           .sidebar:hover, .sidebar.pinned { width: 280px; }
           body.has-pinned-sidebar .main-wrapper { padding-left: 280px; }
         }
@@ -666,7 +666,8 @@
         ::view-transition-new(root) { animation: 210ms cubic-bezier(0, 0, 0.2, 1) 90ms both fade-in; }
         @keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
         @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-        .btn, .sidebar-action-btn, .nav-item, .hamburger-btn, select, input[type="button"], input[type="submit"] { min-height: 44px; display: inline-flex; align-items: center; box-sizing: border-box; }
+        .btn, .hamburger-btn, select, input[type="button"], input[type="submit"] { min-height: 44px; display: inline-flex; align-items: center; box-sizing: border-box; }
+        .nav-item, .sidebar-action-btn { min-height: 44px; display: flex; align-items: center; width: 100%; box-sizing: border-box; }
         @media (max-width: 1024px) { .btn, .sidebar-action-btn, .nav-item, .hamburger-btn, select { min-height: 48px; } }
     /* ===================================================================
        【第10項 CSS規格】ネイティブアプリライクUI/UX・端末制御スタイル
@@ -768,7 +769,7 @@
 
   <div class="nav-menu">
     <div class="nav-header p1"><span class="nav-header-text">Phase 1: 収集・ハブ</span></div>
-    <a href="index.html" class="nav-item p1">
+    <a href="index.html" class="nav-item p1" onclick="try{localStorage.removeItem('bio_suite_last_app');}catch(e){}">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
       <span class="nav-text">Investigation Dashboard</span>
     </a>
@@ -1979,7 +1980,7 @@
     function toggleSidebarPin() {
         const sidebar = document.querySelector('.sidebar');
         const overlay = document.querySelector('.sidebar-overlay');
-        const isMobile = window.innerWidth <= 768;
+        const isMobile = window.innerWidth <= 1024; // v34.4: タブレット縦表示(1024px以下)も含めてモバイル判定
 
         if (!isMobile) {
             sidebar.classList.toggle('pinned');
@@ -1993,7 +1994,7 @@
     // --- ご意見箱（Googleフォーム）への動的パラメータ付き遷移 ---
     function openFeedbackForm() {
         // スマホの場合はメニューを自動で閉じる
-        if (window.innerWidth <= 768) {
+        if (window.innerWidth <= 1024) {
             document.querySelector('.sidebar').classList.remove('open');
             const overlay = document.querySelector('.sidebar-overlay');
             if (overlay) overlay.classList.remove('open');
@@ -2011,7 +2012,7 @@
     // --- データ初期化（ネイティブ confirm() は使用禁止） ---
     function confirmDataReset() {
         // スマホの場合はメニューを自動で閉じる
-        if (window.innerWidth <= 768) {
+        if (window.innerWidth <= 1024) {
             document.querySelector('.sidebar').classList.remove('open');
             const overlay = document.querySelector('.sidebar-overlay');
             if (overlay) overlay.classList.remove('open');

@@ -4,6 +4,9 @@
 # 改修の統合差分（監査用の作業成果物）
 outerbox_v34.3.patch
 
+# 一時作業スクリプト
+scripts/archive/
+
 # macOS
 .DS_Store
 

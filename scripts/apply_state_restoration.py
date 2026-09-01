@@ -39,7 +39,12 @@ DASHBOARD_ROUTING_SNIPPET = """  <!-- PWA起動時ルーティング（State Res
     (function() {
       try {
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('reset') === 'true') {
+        if (urlParams.get('reset') === 'true' || urlParams.get('from') === 'nav') {
+          localStorage.removeItem('bio_suite_last_app');
+          return;
+        }
+        // 同一サイト内からの内部ナビゲーション（リンク・メニュー遷移）時はダッシュボードを表示
+        if (document.referrer && (document.referrer.includes(window.location.host) || document.referrer.includes(window.location.hostname))) {
           localStorage.removeItem('bio_suite_last_app');
           return;
         }
@@ -51,8 +56,7 @@ DASHBOARD_ROUTING_SNIPPET = """  <!-- PWA起動時ルーティング（State Res
         console.warn('State routing unavailable:', e);
       }
     })();
-  </script>
-"""
+  </script>"""
 
 def patch_app_file(filepath):
     print(f"[*] Processing App: {filepath}...")
