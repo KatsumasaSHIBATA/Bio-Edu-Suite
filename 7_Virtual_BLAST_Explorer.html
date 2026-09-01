@@ -601,6 +601,45 @@
         @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
         .btn, .sidebar-action-btn, .nav-item, .hamburger-btn, select, input[type="button"], input[type="submit"] { min-height: 44px; display: inline-flex; align-items: center; box-sizing: border-box; }
         @media (max-width: 1024px) { .btn, .sidebar-action-btn, .nav-item, .hamburger-btn, select { min-height: 48px; } }
+    /* ===================================================================
+       【第10項 CSS規格】ネイティブアプリライクUI/UX・端末制御スタイル
+       =================================================================== */
+    html, body {
+      overscroll-behavior-x: none;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    input, textarea, [contenteditable="true"] {
+      -webkit-user-select: text;
+      user-select: text;
+    }
+
+    /* スクロールバーのネイティブ化（極細・半透明） */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    /* タッチ端末でのSticky Hover対策と:activeフィードバック */
+    @media (hover: none) {
+      button:active, .btn:active, .tab-btn:active, .control-btn:active, .sidebar-action-btn:active, .action-btn:active {
+        transform: scale(0.97);
+        opacity: 0.9;
+      }
+    }
+
 </style>
 </head>
 <body class="app-mode">
@@ -821,9 +860,9 @@
             </div>
 
             <div class="scoring-panel">
-                <span class="score-item"><svg class="btn-icon svg-info" style="color:var(--success)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 6L9 17l-5-5"/></svg> Match: <input type="number" id="valMatch" class="score-input" value="1" step="1"></span>
-                <span class="score-item"><svg class="btn-icon svg-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Mismatch: <input type="number" id="valMismatch" class="score-input" value="-2" step="1" max="0"></span>
-                <span class="score-item"><svg class="btn-icon svg-info" style="color:var(--text-muted)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="5" y1="12" x2="19" y2="12"/></svg> Gap: <input type="number" id="valGap" class="score-input" value="-5" step="1" max="0"></span>
+                <span class="score-item"><svg class="btn-icon svg-info" style="color:var(--success)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 6L9 17l-5-5"/></svg> Match: <input type="number" id="valMatch" class="score-input" value="1" step="1" inputmode="numeric"></span>
+                <span class="score-item"><svg class="btn-icon svg-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Mismatch: <input type="number" id="valMismatch" class="score-input" value="-2" step="1" max="0" inputmode="numeric"></span>
+                <span class="score-item"><svg class="btn-icon svg-info" style="color:var(--text-muted)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="5" y1="12" x2="19" y2="12"/></svg> Gap: <input type="number" id="valGap" class="score-input" value="-5" step="1" max="0" inputmode="numeric"></span>
             </div>
 
             <div style="border-top: 1px dashed var(--border-color); margin: 5px 0;"></div>
@@ -890,7 +929,7 @@
                     <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: stretch;">
                         <div class="toolbar-row" style="flex-wrap: nowrap; align-items: center; gap: 8px; flex: 1; min-width: 250px; background: white; padding: 6px 10px; border-radius: 4px; border: 1px solid var(--border-color); margin: 0;">
                             <span class="step-label" style="font-size: 12px; color: var(--primary); white-space: nowrap; padding-top: 0; min-width: auto; margin-right: 2px;">NCBI</span>
-                            <input type="text" id="ncbiAccession" class="primer-input" style="flex:1; min-width: 100px; padding: 4px 8px; border: none; box-shadow: none; background: transparent; border-bottom: 1px solid var(--border-color); border-radius: 0; font-family: monospace;" placeholder="Accession No.を入力" onkeypress="if(event.keyCode===13) importFromNCBI()">
+                            <input type="text" id="ncbiAccession" class="primer-input" style="flex:1; min-width: 100px; padding: 4px 8px; border: none; box-shadow: none; background: transparent; border-bottom: 1px solid var(--border-color); border-radius: 0; font-family: monospace;" placeholder="Accession No.を入力" onkeypress="if(event.keyCode===13) importFromNCBI()" enterkeyhint="search">
                             <button class="btn btn-primary" style="padding: 8px 12px; font-size: 11px;" onclick="importFromNCBI()" data-tooltip="NCBIからFASTA形式で塩基配列データを取得し、ローカルデータベースに追加します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> 追加</button>
                         </div>
                         <div class="drop-zone" id="dbAddDropZone" onclick="document.getElementById('dbAddInputFile').click()" data-tooltip="FASTAファイルを読み込み、現在のDBに追加します" style="margin: 0; flex: 1; padding: 8px; min-width: 250px;">
@@ -1976,6 +2015,19 @@
     import { loginWithGoogle, logoutUser } from './auth_sync.js';
     window.handleGoogleLogin = loginWithGoogle;
     window.handleLogout = logoutUser;
+
+    /* ===================================================================
+       【第10項 JS規格】長押し・右クリックメニューの封印 (input/textarea/contenteditable除外)
+       =================================================================== */
+    (function() {
+        document.addEventListener('contextmenu', function(e) {
+            if (e.target.closest('input, textarea, [contenteditable="true"], [contenteditable=""]')) {
+                return;
+            }
+            e.preventDefault();
+        }, { passive: false });
+    })();
+
 </script>
 </body>
 </html>

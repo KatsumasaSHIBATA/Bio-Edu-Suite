@@ -639,6 +639,45 @@
         @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
         .btn, .sidebar-action-btn, .nav-item, .hamburger-btn, select, input[type="button"], input[type="submit"] { min-height: 44px; display: inline-flex; align-items: center; box-sizing: border-box; }
         @media (max-width: 1024px) { .btn, .sidebar-action-btn, .nav-item, .hamburger-btn, select { min-height: 48px; } }
+    /* ===================================================================
+       【第10項 CSS規格】ネイティブアプリライクUI/UX・端末制御スタイル
+       =================================================================== */
+    html, body {
+      overscroll-behavior-x: none;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    input, textarea, [contenteditable="true"] {
+      -webkit-user-select: text;
+      user-select: text;
+    }
+
+    /* スクロールバーのネイティブ化（極細・半透明） */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    /* タッチ端末でのSticky Hover対策と:activeフィードバック */
+    @media (hover: none) {
+      button:active, .btn:active, .tab-btn:active, .control-btn:active, .sidebar-action-btn:active, .action-btn:active {
+        transform: scale(0.97);
+        opacity: 0.9;
+      }
+    }
+
 </style>
 </head>
 <body class="app-mode">
@@ -884,7 +923,7 @@
                                 <span id="threshVal" style="font-size: 10px; font-family: monospace; width: 22px; text-align: right;">128</span>
                             </div>
                             <div style="display: flex; gap: 5px; flex-wrap: wrap;">
-                                <input type="text" id="imgSampleName" placeholder="Sample ID を入力" style="flex: 1; min-width: 120px;">
+                                <input type="text" id="imgSampleName" placeholder="Sample ID を入力" style="flex: 1; min-width: 120px;" enterkeyhint="done">
                                 <button class="btn btn-primary" onclick="extractAndAppend()" data-tooltip="画像から輪郭を抽出しチェーンコードを生成します">
                                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                                     抽出
@@ -917,7 +956,7 @@
                 
                 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 5px; flex-wrap: wrap; gap: 5px;">
                     <label style="font-size:11px; font-weight:bold; color:#2c3e50;">調和数:</label>
-                    <input type="number" id="harmonics-input" value="20" min="1" max="40" style="width: 60px; text-align:center;">
+                    <input type="number" id="harmonics-input" value="20" min="1" max="40" style="width: 60px; text-align:center;" inputmode="decimal">
                 </div>
                 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 15px; flex-wrap: wrap; gap: 5px;">
                     <label style="font-size:11px; font-weight:bold; color:#2c3e50;">PCA対象成分:</label>
@@ -3022,6 +3061,19 @@
     import { loginWithGoogle, logoutUser } from './auth_sync.js';
     window.handleGoogleLogin = loginWithGoogle;
     window.handleLogout = logoutUser;
+
+    /* ===================================================================
+       【第10項 JS規格】長押し・右クリックメニューの封印 (input/textarea/contenteditable除外)
+       =================================================================== */
+    (function() {
+        document.addEventListener('contextmenu', function(e) {
+            if (e.target.closest('input, textarea, [contenteditable="true"], [contenteditable=""]')) {
+                return;
+            }
+            e.preventDefault();
+        }, { passive: false });
+    })();
+
 </script>
 </body>
 </html>

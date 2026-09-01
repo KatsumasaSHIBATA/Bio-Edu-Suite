@@ -668,6 +668,45 @@
         @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
         .btn, .sidebar-action-btn, .nav-item, .hamburger-btn, select, input[type="button"], input[type="submit"] { min-height: 44px; display: inline-flex; align-items: center; box-sizing: border-box; }
         @media (max-width: 1024px) { .btn, .sidebar-action-btn, .nav-item, .hamburger-btn, select { min-height: 48px; } }
+    /* ===================================================================
+       【第10項 CSS規格】ネイティブアプリライクUI/UX・端末制御スタイル
+       =================================================================== */
+    html, body {
+      overscroll-behavior-x: none;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    input, textarea, [contenteditable="true"] {
+      -webkit-user-select: text;
+      user-select: text;
+    }
+
+    /* スクロールバーのネイティブ化（極細・半透明） */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    /* タッチ端末でのSticky Hover対策と:activeフィードバック */
+    @media (hover: none) {
+      button:active, .btn:active, .tab-btn:active, .control-btn:active, .sidebar-action-btn:active, .action-btn:active {
+        transform: scale(0.97);
+        opacity: 0.9;
+      }
+    }
+
 </style>
 </head>
 <body class="app-mode">
@@ -2144,6 +2183,19 @@
     import { loginWithGoogle, logoutUser } from './auth_sync.js';
     window.handleGoogleLogin = loginWithGoogle;
     window.handleLogout = logoutUser;
+
+    /* ===================================================================
+       【第10項 JS規格】長押し・右クリックメニューの封印 (input/textarea/contenteditable除外)
+       =================================================================== */
+    (function() {
+        document.addEventListener('contextmenu', function(e) {
+            if (e.target.closest('input, textarea, [contenteditable="true"], [contenteditable=""]')) {
+                return;
+            }
+            e.preventDefault();
+        }, { passive: false });
+    })();
+
 </script>
 </body>
 </html>

@@ -648,6 +648,45 @@
         @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
         .btn, .sidebar-action-btn, .nav-item, .hamburger-btn, select, input[type="button"], input[type="submit"] { min-height: 44px; display: inline-flex; align-items: center; box-sizing: border-box; }
         @media (max-width: 1024px) { .btn, .sidebar-action-btn, .nav-item, .hamburger-btn, select { min-height: 48px; } }
+    /* ===================================================================
+       【第10項 CSS規格】ネイティブアプリライクUI/UX・端末制御スタイル
+       =================================================================== */
+    html, body {
+      overscroll-behavior-x: none;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    input, textarea, [contenteditable="true"] {
+      -webkit-user-select: text;
+      user-select: text;
+    }
+
+    /* スクロールバーのネイティブ化（極細・半透明） */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    /* タッチ端末でのSticky Hover対策と:activeフィードバック */
+    @media (hover: none) {
+      button:active, .btn:active, .tab-btn:active, .control-btn:active, .sidebar-action-btn:active, .action-btn:active {
+        transform: scale(0.97);
+        opacity: 0.9;
+      }
+    }
+
 </style>
 </head>
 <body class="app-mode">
@@ -821,7 +860,7 @@
  <div class="input-group-col">
  <span class="step-label">1. PDB / AlphaFold <button class="rationale-btn" onclick="toggleRationale(event, 'rat_pdb')" data-tooltip="オンライン取得とは？">?</button></span>
  <div class="input-group-row">
- <input type="text" id="pdbId" class="primer-input flex-1" placeholder="PDB ID または UniProt ID" onkeypress="if(event.keyCode===13) loadOnlinePDB()">
+ <input type="text" id="pdbId" class="primer-input flex-1" placeholder="PDB ID または UniProt ID" onkeypress="if(event.keyCode===13) loadOnlinePDB()" enterkeyhint="search">
  <button class="btn btn-primary min-w-80" onclick="loadOnlinePDB()" data-tooltip="PDB ID（4文字）または UniProt ID（AlphaFold用）を入力してオンライン取得します">
  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
  取得
@@ -876,7 +915,7 @@
  <div class="input-group-col">
  <span class="step-label">1. 残基指定:</span>
  <div class="input-group-row">
- <input type="text" id="residueList" class="primer-input flex-1" placeholder="アミノ酸番号 (カンマ区切り)" onkeypress="if(event.keyCode===13) highlightFromInput()">
+ <input type="text" id="residueList" class="primer-input flex-1" placeholder="アミノ酸番号 (カンマ区切り)" onkeypress="if(event.keyCode===13) highlightFromInput()" enterkeyhint="go">
  <button class="btn btn-secondary min-w-80" onclick="highlightFromInput()" data-tooltip="入力したアミノ酸番号を赤色で強調表示します">
  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
  追加
@@ -2127,6 +2166,19 @@
     import { loginWithGoogle, logoutUser } from './auth_sync.js';
     window.handleGoogleLogin = loginWithGoogle;
     window.handleLogout = logoutUser;
+
+    /* ===================================================================
+       【第10項 JS規格】長押し・右クリックメニューの封印 (input/textarea/contenteditable除外)
+       =================================================================== */
+    (function() {
+        document.addEventListener('contextmenu', function(e) {
+            if (e.target.closest('input, textarea, [contenteditable="true"], [contenteditable=""]')) {
+                return;
+            }
+            e.preventDefault();
+        }, { passive: false });
+    })();
+
 </script>
 </body>
 </html>

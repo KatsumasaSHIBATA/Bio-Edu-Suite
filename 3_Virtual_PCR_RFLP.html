@@ -714,6 +714,45 @@
         @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
         .btn, .sidebar-action-btn, .nav-item, .hamburger-btn, select, input[type="button"], input[type="submit"] { min-height: 44px; display: inline-flex; align-items: center; box-sizing: border-box; }
         @media (max-width: 1024px) { .btn, .sidebar-action-btn, .nav-item, .hamburger-btn, select { min-height: 48px; } }
+    /* ===================================================================
+       【第10項 CSS規格】ネイティブアプリライクUI/UX・端末制御スタイル
+       =================================================================== */
+    html, body {
+      overscroll-behavior-x: none;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    input, textarea, [contenteditable="true"] {
+      -webkit-user-select: text;
+      user-select: text;
+    }
+
+    /* スクロールバーのネイティブ化（極細・半透明） */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    /* タッチ端末でのSticky Hover対策と:activeフィードバック */
+    @media (hover: none) {
+      button:active, .btn:active, .tab-btn:active, .control-btn:active, .sidebar-action-btn:active, .action-btn:active {
+        transform: scale(0.97);
+        opacity: 0.9;
+      }
+    }
+
 </style>
 </head>
 <body class="app-mode">
@@ -891,7 +930,7 @@
  <div class="form-group">
  <label>オンラインから取得 (NCBI)</label>
  <div class="input-row">
- <input type="text" id="ncbiId" class="mono-input" placeholder="Accession No. を入力" onkeypress="if(event.keyCode===13) fetchNCBI()" data-tooltip="NCBIデータベースから指定したIDの塩基配列を取得します">
+ <input type="text" id="ncbiId" class="mono-input" placeholder="Accession No. を入力" onkeypress="if(event.keyCode===13) fetchNCBI()" data-tooltip="NCBIデータベースから指定したIDの塩基配列を取得します" enterkeyhint="search">
  <button class="btn-primary" onclick="fetchNCBI()" data-tooltip="NCBIデータベースからデータを取得します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18z"/></svg> 取得 <span id="apiLoader" class="loader"></span></button>
  </div>
  </div>
@@ -917,11 +956,11 @@
  </div>
  <div class="input-group">
  <label>Primer F (5' ➡ 3'):</label>
- <input type="text" id="primerF" value="" class="mono-input" placeholder="5'側のプライマー塩基配列を入力">
+ <input type="text" id="primerF" value="" class="mono-input" placeholder="5'側のプライマー塩基配列を入力" enterkeyhint="go">
  </div>
  <div class="input-group">
  <label>Primer R (5' ➡ 3'):</label>
- <input type="text" id="primerR" value="" class="mono-input" placeholder="3'側のプライマー塩基配列を入力">
+ <input type="text" id="primerR" value="" class="mono-input" placeholder="3'側のプライマー塩基配列を入力" enterkeyhint="go">
  </div>
  <div style="background: #f8f9f9; padding: 8px 12px; border-radius: 4px; border: 1px solid #dcdde1; display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
  <span style="font-size:12px; font-weight:bold; color:#34495e;">許容率:</span>
@@ -1090,7 +1129,7 @@
  <span style="font-size: 10px; font-weight: normal; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px;" id="enzymeCount">0 種</span>
  </div>
  <div style="padding: 10px; background: #eaeded; border-bottom: 1px solid #bdc3c7;">
- <input type="text" id="enzymeSearch" style="padding: 8px 10px; font-family: monospace; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 13px; background: #fff; outline: none; width: 100%; box-sizing: border-box;" placeholder="酵素名または認識塩基配列で検索" oninput="filterEnzymes()">
+ <input type="text" id="enzymeSearch" style="padding: 8px 10px; font-family: monospace; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 13px; background: #fff; outline: none; width: 100%; box-sizing: border-box;" placeholder="酵素名または認識塩基配列で検索" oninput="filterEnzymes()" enterkeyhint="search">
  <div style="margin-top: 8px; display: flex; align-items: center;">
  <label style="font-size: 11px; font-weight: bold; color: #2c3e50; cursor: pointer; display: flex; align-items: center; gap: 5px;">
  <input type="checkbox" id="filterShortCut" onchange="filterEnzymes()"> 4〜5塩基認識で絞り込む
@@ -2071,6 +2110,19 @@
     import { loginWithGoogle, logoutUser } from './auth_sync.js';
     window.handleGoogleLogin = loginWithGoogle;
     window.handleLogout = logoutUser;
+
+    /* ===================================================================
+       【第10項 JS規格】長押し・右クリックメニューの封印 (input/textarea/contenteditable除外)
+       =================================================================== */
+    (function() {
+        document.addEventListener('contextmenu', function(e) {
+            if (e.target.closest('input, textarea, [contenteditable="true"], [contenteditable=""]')) {
+                return;
+            }
+            e.preventDefault();
+        }, { passive: false });
+    })();
+
 </script>
 </body>
 </html>

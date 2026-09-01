@@ -653,6 +653,45 @@
         @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
         .btn, .sidebar-action-btn, .nav-item, .hamburger-btn, select, input[type="button"], input[type="submit"] { min-height: 44px; display: inline-flex; align-items: center; box-sizing: border-box; }
         @media (max-width: 1024px) { .btn, .sidebar-action-btn, .nav-item, .hamburger-btn, select { min-height: 48px; } }
+    /* ===================================================================
+       【第10項 CSS規格】ネイティブアプリライクUI/UX・端末制御スタイル
+       =================================================================== */
+    html, body {
+      overscroll-behavior-x: none;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    input, textarea, [contenteditable="true"] {
+      -webkit-user-select: text;
+      user-select: text;
+    }
+
+    /* スクロールバーのネイティブ化（極細・半透明） */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    /* タッチ端末でのSticky Hover対策と:activeフィードバック */
+    @media (hover: none) {
+      button:active, .btn:active, .tab-btn:active, .control-btn:active, .sidebar-action-btn:active, .action-btn:active {
+        transform: scale(0.97);
+        opacity: 0.9;
+      }
+    }
+
 </style>
 </head>
 <body class="app-mode no-select-ui">
@@ -854,7 +893,7 @@
                         <span class="step-label" style="display: flex; align-items: center; margin-top: 15px;">1. データ読込</span>
                         <div style="display: flex; flex-direction: row; flex-wrap: nowrap; gap: 10px; flex: 1; align-items: flex-start;">
                             <div style="display: flex; flex-direction: row; gap: 8px; flex: 0 0 auto; align-items: center; margin-top: 8px; white-space: nowrap;">
-                                <input type="text" id="ncbiId" class="primer-input" style="width: 140px;" placeholder="Accession No." onkeypress="if(event.keyCode===13) { fetchNCBI(); triggerHapticFeedback(); }">
+                                <input type="text" id="ncbiId" class="primer-input" style="width: 140px;" placeholder="Accession No." onkeypress="if(event.keyCode===13) { fetchNCBI(); triggerHapticFeedback(); }" enterkeyhint="search">
                                 <button class="btn btn-primary" onclick="fetchNCBI(); triggerHapticFeedback();" data-tooltip="NCBIから塩基配列データを取得します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18z"/></svg> 取得 <span id="apiLoader" class="loader" style="display:none;"></span></button>
                             </div>
                             <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click(); triggerHapticFeedback();" style="margin: 0; min-width: 180px; padding: 16px;">
@@ -866,8 +905,8 @@
                     
                     <div class="toolbar-row" id="step2Row" style="transition: opacity 0.3s;">
                         <span class="step-label">2. 両端特定 <button class="rationale-btn" onclick="toggleRationale(event, 'rat_step2'); triggerHapticFeedback();" style="margin-left:0;">?</button></span>
-                        <div class="primer-label"><span class="color-box-f"></span> Primer F: <input type="text" id="pF" class="primer-input" style="width: 200px;" placeholder="5'側のプライマー塩基配列"></div>
-                        <div class="primer-label"><span class="color-box-r"></span> Primer R: <input type="text" id="pR" class="primer-input" style="width: 200px;" placeholder="3'側のプライマー塩基配列"></div>
+                        <div class="primer-label"><span class="color-box-f"></span> Primer F: <input type="text" id="pF" class="primer-input" style="width: 200px;" placeholder="5'側のプライマー塩基配列" enterkeyhint="go"></div>
+                        <div class="primer-label"><span class="color-box-r"></span> Primer R: <input type="text" id="pR" class="primer-input" style="width: 200px;" placeholder="3'側のプライマー塩基配列" enterkeyhint="go"></div>
                         <div class="slider-container">許容率: 
                             <input type="range" id="mismatchSlider" min="0" max="50" value="20" oninput="updateMismatchVal(this.value)">
                             <span id="mismatchVal" style="width: 25px; color: #e74c3c;">20%</span>
@@ -951,7 +990,7 @@
                             モチーフ検索
                             <button class="rationale-btn" onclick="toggleRationale(event, 'rat_motif'); triggerHapticFeedback();" style="margin-left:0;">?</button>
                         </span>
-                        <input type="text" id="searchInput" class="primer-input" style="width: 140px; text-transform: uppercase;" placeholder="塩基配列を入力" oninput="toggleHighlightBtn()" onkeypress="if(event.keyCode===13 && !document.getElementById('btnToggleHighlight').disabled) { toggleHighlightAction(); triggerHapticFeedback(); }">
+                        <input type="text" id="searchInput" class="primer-input" style="width: 140px; text-transform: uppercase;" placeholder="塩基配列を入力" oninput="toggleHighlightBtn()" onkeypress="if(event.keyCode===13 && !document.getElementById('btnToggleHighlight').disabled) { toggleHighlightAction(); triggerHapticFeedback(); }" enterkeyhint="search">
                         <button class="btn btn-secondary" id="btnToggleHighlight" style="padding: 6px 12px; font-size: 11px; min-width: 90px;" onclick="toggleHighlightAction(); triggerHapticFeedback();" disabled data-tooltip="入力した塩基配列を検索してハイライトします"> ハイライト</button>
                     </div>
                     <span style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">※制限酵素部位などを検索できます。ギャップ(-)は無視されます。</span>
@@ -2733,6 +2772,19 @@
     import { loginWithGoogle, logoutUser } from './auth_sync.js';
     window.handleGoogleLogin = loginWithGoogle;
     window.handleLogout = logoutUser;
+
+    /* ===================================================================
+       【第10項 JS規格】長押し・右クリックメニューの封印 (input/textarea/contenteditable除外)
+       =================================================================== */
+    (function() {
+        document.addEventListener('contextmenu', function(e) {
+            if (e.target.closest('input, textarea, [contenteditable="true"], [contenteditable=""]')) {
+                return;
+            }
+            e.preventDefault();
+        }, { passive: false });
+    })();
+
 </script>
 
 </body>

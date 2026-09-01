@@ -797,6 +797,45 @@
         @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
         .btn, .sidebar-action-btn, .nav-item, .hamburger-btn, select, input[type="button"], input[type="submit"] { min-height: 44px; display: inline-flex; align-items: center; box-sizing: border-box; }
         @media (max-width: 1024px) { .btn, .sidebar-action-btn, .nav-item, .hamburger-btn, select { min-height: 48px; } }
+    /* ===================================================================
+       【第10項 CSS規格】ネイティブアプリライクUI/UX・端末制御スタイル
+       =================================================================== */
+    html, body {
+      overscroll-behavior-x: none;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    input, textarea, [contenteditable="true"] {
+      -webkit-user-select: text;
+      user-select: text;
+    }
+
+    /* スクロールバーのネイティブ化（極細・半透明） */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    /* タッチ端末でのSticky Hover対策と:activeフィードバック */
+    @media (hover: none) {
+      button:active, .btn:active, .tab-btn:active, .control-btn:active, .sidebar-action-btn:active, .action-btn:active {
+        transform: scale(0.97);
+        opacity: 0.9;
+      }
+    }
+
 </style>
 </head>
 <body class="app-mode">
@@ -968,7 +1007,7 @@
  ・PCRにおける「伸長時間(EXTEND)」を決めるための最重要パラメーターです。酵素が1kb(1000塩基対)を合成するのに何秒かかるかを計算し、長さに見合った時間を設定しないと、途中で切れた不完全なDNAになってしまいます。
  </div>
  <div style="display:flex; align-items:center; gap:5px;">
- <input type="number" id="targetLength" value="1000" style="width: 70px;" oninput="updateAssistPanel()"> bp
+ <input type="number" id="targetLength" value="1000" style="width: 70px;" oninput="updateAssistPanel()" inputmode="decimal"> bp
  </div>
  <div class="input-help">酵素速度と掛け合わせて伸長時間が決定。(1kb = 1000bp)</div>
  </div>
@@ -981,11 +1020,11 @@
  </div>
  <div style="display:flex; gap:5px; margin-bottom:4px; align-items:center;">
  <span style="font-size:11px; width:115px; flex-shrink:0; font-weight:bold; color:#2c3e50;">Primer F (5' ➡ 3'):</span>
- <input type="text" id="primerF" value="" placeholder="5'側のプライマー配列を入力" style="font-family: 'Courier New', Courier, monospace;" oninput="calculateTm()">
+ <input type="text" id="primerF" value="" placeholder="5'側のプライマー配列を入力" style="font-family: 'Courier New', Courier, monospace;" oninput="calculateTm()" enterkeyhint="go">
  </div>
  <div style="display:flex; gap:5px; align-items:center;">
  <span style="font-size:11px; width:115px; flex-shrink:0; font-weight:bold; color:#2c3e50;">Primer R (5' ➡ 3'):</span>
- <input type="text" id="primerR" value="" placeholder="3'側のプライマー配列を入力" style="font-family: 'Courier New', Courier, monospace;" oninput="calculateTm()">
+ <input type="text" id="primerR" value="" placeholder="3'側のプライマー配列を入力" style="font-family: 'Courier New', Courier, monospace;" oninput="calculateTm()" enterkeyhint="go">
  </div>
  <div id="annealHintText" class="dynamic-hint">
  KOD Oneは、アニーリング基準値(Tm平均)と同じ温度に設定します。
@@ -1789,7 +1828,7 @@
  
  let html = '';
  rData.items.forEach(item => {
- html += `<span>${item.label}</span><input type="number" step="0.1" class="reagent-input" value="${Number(item.default).toFixed(1)}" oninput="handleVolInput(this)" onchange="handleVolChange(this)">`;
+ html += `<span>${item.label}</span><input type="number" step="0.1" class="reagent-input" value="${Number(item.default).toFixed(1)}" oninput="handleVolInput(this)" onchange="handleVolChange(this)" inputmode="decimal">`;
  });
  html += `<span class="reagent-total">合計液量:</span><div class="reagent-total" id="rTotal">-- µL</div>`;
  gridEl.innerHTML = html;
@@ -2802,6 +2841,19 @@
     import { loginWithGoogle, logoutUser } from './auth_sync.js';
     window.handleGoogleLogin = loginWithGoogle;
     window.handleLogout = logoutUser;
+
+    /* ===================================================================
+       【第10項 JS規格】長押し・右クリックメニューの封印 (input/textarea/contenteditable除外)
+       =================================================================== */
+    (function() {
+        document.addEventListener('contextmenu', function(e) {
+            if (e.target.closest('input, textarea, [contenteditable="true"], [contenteditable=""]')) {
+                return;
+            }
+            e.preventDefault();
+        }, { passive: false });
+    })();
+
 </script>
 </body>
 </html>
