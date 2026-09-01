@@ -1027,6 +1027,17 @@ Bio-Edu Suiteは「生徒にデータ構造と思考プロセスを体験させ�
   window.handleLogout \= logoutUser;  
 \</script\>
 
+
+### 【第7項改定】ネイティブ化必須要件：オートセーブ＆ハイドレーション仕様
+1. **Page Visibility API による瞬間ドラフト保存**:
+   - ユーザーの離脱・画面切替時（`visibilitychange` イベント発火時、`document.visibilityState === 'hidden'`）に、全入力ステート（スライダー、テキスト、セレクト等）を `sessionStorage`（キー: `bio_edu_draft_<app_name>`）へ瞬間シリアライズする。
+2. **起動時のハイドレーション（UI復元）**:
+   - ページ読み込み時（`DOMContentLoaded`）にドラフトデータを検知し、初期UIを直前の状態へ自動復元して `input`/`change` イベントをトリガーする。
+3. **BFCache（Back/Forward Cache）の完全有効化**:
+   - BFCacheを阻害するレガシーな `unload` / `beforeunload` リスナーをコードベースから排除し、ネイティブアプリ同様の瞬間復帰を担保する。
+4. **手動バケツリレー原則の堅持**:
+   - 本仕様は単一アプリ内でのローカルステート復元に限定され、アプリ間でのブラックボックスな自動データ連携は引き続き厳禁とする。
+
 ## **8\. モーダル・ファイル出力・アプリ間連携のUI/UX改訂規定**
 
 * **モーダル幅の完全統一**: \#enzymeModal 等の各モーダルに設定されていた width: 300px \!important などの強制指定・固定値を廃止し、width: 400px（\!importantなし）に統一する。  
