@@ -1590,5 +1590,15 @@ db_data <span class="kd">=</span> []
         }
     })();
 </script>
+<script>
+
+    // 最終アクセスアプリの記憶（State Restoration）
+    try {
+      localStorage.setItem('bio_suite_last_app', window.location.pathname);
+    } catch (e) {
+      console.warn('State restoration unavailable:', e);
+    }
+
+</script>
 </body>
 </html>

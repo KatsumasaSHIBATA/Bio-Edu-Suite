@@ -670,6 +670,24 @@ input, textarea {
         .btn, .sidebar-action-btn, .nav-item, .hamburger-btn, select, input[type="button"], input[type="submit"] { min-height: 44px; display: inline-flex; align-items: center; box-sizing: border-box; }
         @media (max-width: 1024px) { .btn, .sidebar-action-btn, .nav-item, .hamburger-btn, select { min-height: 48px; } }
 </style>
+  <!-- PWA起動時ルーティング（State Restoration - ガイドライン第7.3項） -->
+  <script>
+    (function() {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('reset') === 'true') {
+          localStorage.removeItem('bio_suite_last_app');
+          return;
+        }
+        const lastApp = localStorage.getItem('bio_suite_last_app');
+        if (lastApp && lastApp !== window.location.pathname && (lastApp.endsWith('.html') || lastApp.includes('.html')) && !lastApp.endsWith('index.html')) {
+          window.location.replace(lastApp);
+        }
+      } catch (e) {
+        console.warn('State routing unavailable:', e);
+      }
+    })();
+  </script>
 </head>
 <body class="dashboard-mode no-select-ui">
   
