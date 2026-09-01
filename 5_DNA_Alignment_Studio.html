@@ -16,6 +16,11 @@
     <link rel="apple-touch-icon" href="icon-192.png">
     <title>⑤ DNA Alignment Studio | Bio-Edu Suite</title>
     <style>
+
+        /* 不要なテキスト選択の完全封印と例外許可 */
+        body.no-select-ui { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+        input, textarea, [contenteditable="true"] { user-select: text; -webkit-user-select: text; }
+
         /* テーマカラー規格（ガイドライン第3項） */
         :root {
             --primary: #2c3e50;        
