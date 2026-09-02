@@ -704,6 +704,33 @@
     border: none !important;
 }
 
+/* Morphometrics Studio: ルート切り替えカードの重なり・縦伸び防止パッチ */
+
+/* 1. カード自体の絶対配置（position: absolute等）を解除し、自然な高さにする */
+.algo-selector label {
+    position: relative !important;
+    height: auto !important;
+    bottom: auto !important;
+    top: auto !important;
+    min-height: 0 !important;
+}
+
+/* 2. iPad・タブレット表示時（1024px以下）のみの安全な回避策 */
+@media (max-width: 1024px) {
+    /* 左パネルが極端に細く潰れるのを防ぐ */
+    .main-content > .card:first-child, .left-panel, .pipeline-panel, .config-pane {
+        min-width: 320px !important;
+    }
+    
+    /* 狭い画面ではカードを縦に並べて重なりを回避（空白が残るのは許容） */
+    .algo-selector {
+        display: flex !important;
+        flex-direction: column !important;
+        height: auto !important;
+        position: relative !important;
+    }
+}
+
 </style>
 </head>
 <body class="app-mode no-select-ui">
