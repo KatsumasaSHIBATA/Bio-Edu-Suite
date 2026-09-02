@@ -682,6 +682,30 @@
 
 
 /* Bio-Edu Suite iPad UI Fix v34.4 */
+/* タブレット・狭小幅での1カラム縦スクロール化 */
+@media (max-width: 1024px) {
+    .main-container, .workbench-container, .columns-wrapper, .main-content {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 24px !important;
+    }
+    .left-panel, .pipeline-panel, .config-pane, .main-content > .card {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        flex: none !important;
+    }
+    .right-panel, .visualizer-panel, .result-pane {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: none !important;
+    }
+    .algo-selector {
+        grid-template-columns: 1fr !important;
+    }
+}
+
 /* アプリ⑨ iPad表示時のUI重なり崩れ防止パッチ */
 #route-a-controls, #route-c-controls {
     display: flex;

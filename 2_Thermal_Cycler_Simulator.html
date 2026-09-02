@@ -840,16 +840,18 @@
 
 
 /* Bio-Edu Suite iPad UI Fix v34.4 */
-.keypad button, .key-ent, .key-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    line-height: 1.1;
-    padding: 4px 2px;
-    box-sizing: border-box;
-    font-size: clamp(10px, 1.2vw, 13px);
-    word-break: break-all;
+/* テンキー・キートップ専用の文字収縮・見切れ防止パッチ */
+.key-ent, [data-key="enter"], button.key:last-child, .keypad button, .key-btn, button[onclick*="'ENT'"], .hardware-panel .hw-btn {
+    min-height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    line-height: 1.0 !important;
+    padding: 2px 0 !important;
+    font-size: 11px !important;
+    overflow: visible !important;
 }
 
 </style>
