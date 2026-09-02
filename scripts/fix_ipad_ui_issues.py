@@ -36,51 +36,63 @@ FILES_TO_PATCH = {
 """,
     "9_Morphometrics_Studio.html": f"""
 {MARKER}
-/* タブレット・狭小幅での1カラム縦スクロール化 */
-@media (max-width: 1024px) {{
-    .main-container, .workbench-container, .columns-wrapper, .main-content {{
-        display: flex !important;
-        flex-direction: column !important;
-        width: 100% !important;
-        gap: 24px !important;
-    }}
-    .left-panel, .pipeline-panel, .config-pane, .main-content > .card {{
-        width: 100% !important;
-        max-width: 100% !important;
-        min-width: 0 !important;
-        flex: none !important;
-    }}
-    .right-panel, .visualizer-panel, .result-pane {{
-        width: 100% !important;
-        max-width: 100% !important;
-        flex: none !important;
-    }}
-    .algo-selector {{
-        grid-template-columns: 1fr !important;
-    }}
+/* 左パネル幅の死守（2カラムレイアウト維持・潰れ防止） */
+.main-content > .card:first-child, .left-panel, .pipeline-panel, .config-pane {{
+    flex: 0 0 340px !important;
+    min-width: 340px !important;
+    max-width: 400px !important;
 }}
 
-/* アプリ⑨ iPad表示時のUI重なり崩れ防止パッチ */
-#route-a-controls, #route-c-controls {{
+.main-content > .card:last-child, .right-panel, .visualizer-panel, .result-pane {{
+    flex: 1 1 500px !important;
+    min-width: 450px !important;
+}}
+
+/* アプリ⑨ UI重なり・浮遊バグ解消および自然なブロックフロー化 */
+.main-content > .card:first-child .card-body,
+#route-a-controls, 
+#route-c-controls {{
     display: flex;
     flex-direction: column;
     gap: 12px;
     width: 100%;
+    position: relative !important;
 }}
-#route-a-controls > div, #route-c-controls > div {{
+
+#route-a-controls > *, 
+#route-c-controls > *,
+.algo-selector,
+#active-sample-info {{
     position: relative !important;
     float: none !important;
     clear: both !important;
     width: 100% !important;
     box-sizing: border-box !important;
+    height: auto !important;
 }}
-#route-a-controls .drop-zone, #route-c-controls .drop-zone {{
+
+.algo-selector {{
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 5px !important;
+}}
+
+.algo-selector label {{
+    position: relative !important;
+    min-height: 38px !important;
+}}
+
+#route-a-controls .drop-zone, 
+#route-c-controls .drop-zone {{
     max-width: 100% !important;
+    position: relative !important;
 }}
+
 #chain-code-input {{
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
+    position: relative !important;
 }}
 """
 }
@@ -117,4 +129,5 @@ if __name__ == "__main__":
     for filename, css_patch in FILES_TO_PATCH.items():
         patch_file(filename, css_patch)
     print("Patching process completed.")
+
 
