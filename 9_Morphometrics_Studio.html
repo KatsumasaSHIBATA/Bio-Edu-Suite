@@ -679,6 +679,32 @@
       }
     }
 
+
+
+/* Bio-Edu Suite iPad UI Fix v34.4 */
+/* アプリ⑨ iPad表示時のUI重なり崩れ防止パッチ */
+#route-a-controls, #route-c-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+#route-a-controls > div, #route-c-controls > div {
+    position: relative !important;
+    float: none !important;
+    clear: both !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+#route-a-controls .drop-zone, #route-c-controls .drop-zone {
+    max-width: 100% !important;
+}
+#chain-code-input {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
 </style>
 </head>
 <body class="app-mode no-select-ui">
