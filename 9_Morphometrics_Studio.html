@@ -681,86 +681,27 @@
 
 
 
-/* Bio-Edu Suite iPad UI Fix v34.4 */
-/* 左パネル幅の死守（2カラムレイアウト維持・潰れ防止） */
-.main-content > .card:first-child, .left-panel, .pipeline-panel, .config-pane {
+/* 左パネルの最小幅確保と、要素の安全な折り返し（iPad幅での潰れ対策） */
+.left-panel, .pipeline-panel, .config-pane {
+    /* 画面が狭くても左パネルが極端に潰れるのを防ぐ */
     flex: 0 0 340px !important;
     min-width: 340px !important;
     max-width: 400px !important;
 }
 
-.main-content > .card:last-child, .right-panel, .visualizer-panel, .result-pane {
-    flex: 1 1 500px !important;
-    min-width: 450px !important;
+/* ボタングループやタブが溢れた場合、重ならずに自然に折り返すようにする */
+.route-selector, .pipeline-switch, .btn-group {
+    flex-wrap: wrap !important;
 }
 
-/* アプリ⑨ UI重なり・浮遊バグ解消および自然なブロックフロー化 */
-.main-content > .card:first-child .card-body,
-#route-a-controls, 
-#route-c-controls {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    width: 100%;
-    position: relative !important;
-}
-
-#route-a-controls > *, 
-#route-c-controls > *,
-.algo-selector,
-#active-sample-info {
-    position: relative !important;
-    float: none !important;
-    clear: both !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-    height: auto !important;
-}
-
-.algo-selector {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 5px !important;
-}
-
-.algo-selector label {
-    position: relative !important;
-    min-height: 38px !important;
-}
-
-#route-a-controls .drop-zone, 
-#route-c-controls .drop-zone {
-    max-width: 100% !important;
-    position: relative !important;
-}
-
-#chain-code-input {
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-    position: relative !important;
-}
-
-/* Morphometrics Studio: ルート切り替えUIの重なり・巨大化防止パッチ */
-.algo-selector {
-    display: flex !important;
-    flex-direction: column !important; /* 横並びで潰れる場合は縦積みにする */
-    position: relative !important;
-    height: auto !important;
+/* JSによって非表示化（display: none）された要素が絶対にスペースを取らないようにする保護 */
+[style*="display: none"] {
+    display: none !important;
     min-height: 0 !important;
-    overflow: visible !important;
-    gap: 8px !important;
-}
-
-.algo-selector label {
-    position: relative !important;
-    height: auto !important;
-    flex: none !important;
-    /* 絶対配置を解除して自然な配置に戻す */
-    bottom: auto !important;
-    left: auto !important;
-    right: auto !important;
-    top: auto !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
 }
 
 </style>
