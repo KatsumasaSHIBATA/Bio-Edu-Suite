@@ -512,7 +512,7 @@
 
         /* ===================================================================
            【第8項 確認ダイアログ内アイコンの中央寄せ固定】
-           ⑪ Statistical Genetics Lab のみ Tailwind CDN を読み込んでおり、その
+           ⑫ Statistical Genetics Lab のみ Tailwind CDN を読み込んでおり、その
            Preflight が `img, svg, video, ... { display: block }` を当てるため、
            .modal-content の text-align:center が効かず [i] アイコンが左端へ
            寄っていた。全ファイルで index.html と同一の中央表示になるよう、
@@ -927,7 +927,7 @@
 
         <div id="inputHintDefault" class="bench-tip">
           <strong><svg class="svg-hint" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（比較モード）</strong>
-          2つの塩基配列（野生型と突然変異体）を同時入力すると、自動で比較モードになり、翻訳時に突然変異箇所を検出してアプリ⑬へ同期します。
+          2つの塩基配列（野生型と突然変異体）を同時入力すると、自動で比較モードになり、翻訳時に突然変異箇所を検出してアプリ⑭へ同期します。
         </div>
         
         <div id="inputHintCompare" class="dynamic-hint" style="display:none;">
@@ -1448,7 +1448,7 @@
       alertBox.style.display = 'block';
       alertBox.className = 'dynamic-hint'; // Danger系 (赤)
       // 用語統一: 突然変異残基番号、突然変異データ、突然変異を同期 に修正
-      alertBox.innerHTML = `アミノ酸配列の変化を ${mutPositions.length} 箇所検出しました。<br>突然変異残基番号: ${mutPositions.join(', ')}<br><br>この突然変異データは自動的にシステムに保存されました。<br>続いてアプリ⑬を開き、「突然変異を同期」ボタンを押して影響を確認してください。`;
+      alertBox.innerHTML = `アミノ酸配列の変化を ${mutPositions.length} 箇所検出しました。<br>突然変異残基番号: ${mutPositions.join(', ')}<br><br>この突然変異データは自動的にシステムに保存されました。<br>続いてアプリ⑭を開き、「突然変異を同期」ボタンを押して影響を確認してください。`;
     } else if (currentMRNAs.length > 1) {
       alertBox.style.display = 'block';
       alertBox.className = 'dynamic-info'; // Success系 (緑)
