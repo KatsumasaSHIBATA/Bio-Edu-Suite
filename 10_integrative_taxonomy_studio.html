@@ -803,6 +803,61 @@ body {
 }
 /* === 濃紺同化パッチ 終了 === */
 
+
+/* 【ガイドライン第8項・第11項準拠】データ初期化確認モーダル ボタンUI規格 */
+#confirmModal .modal-footer {
+    border-top: none !important;
+    background: #ffffff !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 0 20px 30px !important;
+}
+#confirmModal .modal-footer .btn {
+    min-width: 120px !important;
+    min-height: 44px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 8px 16px !important;
+    font-size: 13px !important;
+    font-weight: bold !important;
+    border-radius: 4px !important;
+    box-shadow: none !important;
+    cursor: pointer !important;
+    transition: 0.2s ease !important;
+    box-sizing: border-box !important;
+}
+#confirmModal .modal-footer .btn-secondary {
+    background-color: #fdfefe !important;
+    color: #2c3e50 !important;
+    border: 1px solid #bdc3c7 !important;
+}
+#confirmModal .modal-footer .btn-secondary:hover {
+    background-color: #f2f4f4 !important;
+    filter: brightness(0.98) !important;
+}
+#confirmModal .modal-footer #confirmOkBtn,
+#confirmModal .modal-footer .btn-danger {
+    background-color: var(--danger, #e74c3c) !important;
+    color: #ffffff !important;
+    border: 1px solid var(--danger, #e74c3c) !important;
+}
+#confirmModal .modal-footer #confirmOkBtn:hover,
+#confirmModal .modal-footer .btn-danger:hover {
+    filter: brightness(1.08) !important;
+    box-shadow: 0 2px 6px rgba(231, 76, 60, 0.3) !important;
+}
+#confirmModal .modal-footer .btn:active {
+    transform: scale(0.98) !important;
+}
+@media (max-width: 1024px) {
+    #confirmModal .modal-footer .btn {
+        min-height: 48px !important;
+    }
+}
+
 </style>
 </head>
 <body class="app-mode no-select-ui">
@@ -2006,9 +2061,9 @@ body {
       <h3 id="confirmTitle" style="margin: 0 0 10px 0; font-size: 16px; color: var(--primary);">確認</h3>
       <div id="confirmMessage" style="font-size: 13px; line-height: 1.6; color: var(--text-main);"></div>
     </div>
-    <div class="modal-footer" style="border-top: none; background: white; justify-content: center; gap: 12px; padding-bottom: 30px;">
+        <div class="modal-footer" style="border-top: none; background: white; justify-content: center; gap: 12px; padding-bottom: 30px;">
       <button class="btn btn-secondary" onclick="closeConfirm(); triggerHapticFeedback();">キャンセル</button>
-      <button class="btn" id="confirmOkBtn" style="background: var(--danger); color: white;">実行する</button>
+      <button class="btn btn-danger" id="confirmOkBtn" style="background: var(--danger); color: white;">初期化する</button>
     </div>
   </div>
 </div>
@@ -2093,24 +2148,9 @@ body {
     // --- ご意見箱（Googleフォーム）への動的パラメータ付き遷移 ---
     // Googleフォーム アプリ内モーダル開閉関数 (濃紺コンテキスト維持)
 function openFeedbackForm() {
-    if (window.innerWidth <= 1024) {
-        const sidebar = document.querySelector('.sidebar');
-        if (sidebar) sidebar.classList.remove('open');
-        const overlay = document.querySelector('.sidebar-overlay');
-        if (overlay) overlay.classList.remove('open');
-    }
-    const modal = document.getElementById('feedbackModal');
-    const iframe = document.getElementById('feedbackIframe');
-    const appName = document.title || 'Bio-Edu Suite';
-    const baseUrl = "https://docs.google.com/forms/d/e/1FAIpQLSc_EXAMPLE_FORM_ID/viewform"; // 必要に応じて実際のForm IDに置換
-    if (modal && iframe) {
-        if (iframe.src === 'about:blank' || !iframe.src) {
-            iframe.src = `${baseUrl}?embedded=true&entry.12345678=${encodeURIComponent(appName)}`;
-        }
-        modal.style.display = 'flex';
-    } else {
-        window.open(`${baseUrl}?entry.12345678=${encodeURIComponent(appName)}`, '_blank');
-    }
+    const baseUrl = "https://docs.google.com/forms/d/e/1FAIpQLSet9LJgsTO0aZ6pbdekLr4fBeeDPAxREk8xmzY1f-gTcDnFrQ/viewform";
+    const appName = document.title;
+    window.open(`${baseUrl}?usp=pp_url&entry.1969218085=${encodeURIComponent(appName)}`, '_blank');
 }
 function closeFeedbackForm() {
     const modal = document.getElementById('feedbackModal');
