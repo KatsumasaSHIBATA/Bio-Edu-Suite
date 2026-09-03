@@ -15,6 +15,7 @@
     <meta name="apple-mobile-web-app-title" content="BioEdu">
     <link rel="apple-touch-icon" href="icon-192.png">
     <title>⑧ Phylogenetic Tree Builder | Bio-Edu Suite</title>
+    <script src="lib/bio_math_engine.js"></script>
     <style>
         /* テーマカラー規格（ガイドライン第3項） */
         :root {
@@ -1403,9 +1404,8 @@
                     <option value="">外群指定(自動)</option>
                 </select>
             </span>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 260px;">
-                <button class="btn btn-sm" id="btnSaveImg" onclick="saveTreeImage()" disabled data-tooltip="構築された系統樹を画像として保存します" style="width: 100%;"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PNG保存</button>
-                <button class="btn btn-sm btn-newick" id="btnCopyNewick" onclick="copyNewick()" disabled data-tooltip="現在の系統樹をNewick形式でクリップボードにコピーします" style="width: 100%;"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg> Newickコピー</button>
+            <div>
+                <button class="btn btn-sm" id="btnSaveImg" onclick="saveTreeImage()" disabled data-tooltip="構築された系統樹を画像として保存します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PNG保存</button>
             </div>
         </div>
         <div class="card-body" style="background:var(--bg-color); padding:16px;">
@@ -1415,6 +1415,21 @@
             
             <div class="canvas-container" id="scrollContainer" style="position: relative;">
                 <canvas id="treeCanvas" width="700" height="400"></canvas>
+            </div>
+
+            <!-- バケツリレー用 エクスポートボタングループ -->
+            <div class="export-btn-group" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px;">
+              <!-- アプリ⑩ 行き（既存のNewickコピーを改称・統一） -->
+              <button id="btnCopyForApp10" class="btn btn-secondary" onclick="copyNewickTree(); triggerHapticFeedback();" disabled data-tooltip="⑩ Integrative Taxonomy Studio用に出力">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                📋 ⑩Newickコピー
+              </button>
+
+              <!-- アプリ⑪ 行き（新設） -->
+              <button id="btnCopyForApp11" class="btn btn-secondary" onclick="copyMutationDataForApp11(); triggerHapticFeedback();" disabled data-tooltip="⑪ Comparative Variant Analyzer用に出力">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                📋 ⑪突然変異コピー
+              </button>
             </div>
 
             <div id="autoDiagPanel" style="display:none;"></div>
@@ -1863,6 +1878,7 @@
 
     let originalSeqs = []; 
     let originalNames = [], clusters = [], distanceMatrix = [], stepCount = 0, nextNodeId = 0;
+    let initialDistanceMatrix = [];
     let selectedPair = null; 
     let initialMatrixCSV = ""; 
     let diagnosticMsg = "";
@@ -1922,6 +1938,7 @@
         
         const btnCopyNewick = document.getElementById('btnCopyNewick');
         if (btnCopyNewick) btnCopyNewick.disabled = true;
+        updatePhyloExportButtonsState(false);
         
         const canvas = document.getElementById('treeCanvas');
         const ctx = canvas.getContext('2d');
@@ -2024,6 +2041,7 @@
         const fastaText = document.getElementById('fastaInput').value;
         
         try {
+            updatePhyloExportButtonsState(false);
             const result = PhyloEngine.parseAndCalculateMatrix(fastaText);
             if (!result.success) {
                 if (result.error === 'LENGTH_MISMATCH') {
@@ -2046,6 +2064,9 @@
             originalSeqs = result.seqs;
             originalNames = result.names;
             distanceMatrix = result.distanceMatrix;
+            initialDistanceMatrix = result.distanceMatrix ? result.distanceMatrix.map(row => [...row]) : [];
+            window.currentSampleNames = originalNames;
+            window.currentDistanceMatrix = initialDistanceMatrix;
             
             let totalChars = 0;
             let gapChars = 0;
@@ -2087,6 +2108,7 @@
             document.getElementById('btnSaveImg').disabled = false;
             const btnCopyNewick = document.getElementById('btnCopyNewick');
             if (btnCopyNewick) btnCopyNewick.disabled = true;
+            updatePhyloExportButtonsState(false);
             
             if(algo === "NJ") {
                 document.getElementById('matrixTitle').innerText = "2. 現在の NJ Q行列 (枝の長さ補正後)";
@@ -2153,6 +2175,9 @@
                 restoreParentLinks(rootNode);
                 clusters = [rootNode];
                 originalNames = result.names;
+                initialDistanceMatrix = result.distanceMatrix ? result.distanceMatrix.map(row => [...row]) : [];
+                window.currentSampleNames = originalNames;
+                window.currentDistanceMatrix = initialDistanceMatrix;
                 
                 let outgroupSelect = document.getElementById('outgroupSelect');
                 outgroupSelect.innerHTML = '<option value="">外群指定(自動)</option>';
@@ -2179,7 +2204,9 @@
                 if (bsVal > 0) {
                     document.getElementById('statusLog').innerHTML = `ブートストラップ解析(${bsVal}回)をWeb Workerで実行中... (0/${bsVal} 回完了)`;
                     document.getElementById('btnSaveImg').disabled = true;
-                    document.getElementById('btnCopyNewick').disabled = true;
+                    const btnCopyNewick = document.getElementById('btnCopyNewick');
+                    if (btnCopyNewick) btnCopyNewick.disabled = true;
+                    updatePhyloExportButtonsState(false);
                     
                     const bsWorker = new Worker('lib/phylo_worker.js');
                     bsWorker.postMessage({ type: 'CALC_BOOTSTRAP', seqs: result.seqs, algo: 'MP', iterations: bsVal });
@@ -2193,7 +2220,9 @@
                             document.getElementById('statusLog').innerHTML = `<b>系統樹完成！</b> 最大節約法 (MP法) とブートストラップ解析が完了しました。<br><span style="color:#f1c40f;">※分岐点に表示されている数値（%）がブートストラップ値（分岐の信頼性）です。</span>`;
                             
                             document.getElementById('btnSaveImg').disabled = false;
-                            document.getElementById('btnCopyNewick').disabled = false;
+                            const btnCopyNewick = document.getElementById('btnCopyNewick');
+                            if (btnCopyNewick) btnCopyNewick.disabled = false;
+                            updatePhyloExportButtonsState(true);
 
                             updateExplanation();
                             drawTree();
@@ -2211,7 +2240,9 @@
                     document.getElementById('statusLog').innerHTML = `<b>系統樹完成！</b> 最大節約法 (MP法) による全探索が完了し、最も進化の無駄が少ない（最節約的な）樹形が得られました。`;
                     
                     document.getElementById('btnSaveImg').disabled = false;
-                    document.getElementById('btnCopyNewick').disabled = false;
+                    const btnCopyNewick = document.getElementById('btnCopyNewick');
+                    if (btnCopyNewick) btnCopyNewick.disabled = false;
+                    updatePhyloExportButtonsState(true);
 
                     updateExplanation();
                     drawTree();
@@ -2321,6 +2352,9 @@
                 restoreParentLinks(rootNode);
                 clusters = [rootNode];
                 originalNames = result.names;
+                initialDistanceMatrix = result.distanceMatrix ? result.distanceMatrix.map(row => [...row]) : [];
+                window.currentSampleNames = originalNames;
+                window.currentDistanceMatrix = initialDistanceMatrix;
                 
                 let outgroupSelect = document.getElementById('outgroupSelect');
                 outgroupSelect.innerHTML = '<option value="">外群指定(自動)</option>';
@@ -2350,7 +2384,9 @@
                 if (bsVal > 0) {
                     document.getElementById('statusLog').innerHTML = `ブートストラップ解析(${bsVal}回)をWeb Workerで実行中... (0/${bsVal} 回完了)`;
                     document.getElementById('btnSaveImg').disabled = true;
-                    document.getElementById('btnCopyNewick').disabled = true;
+                    const btnCopyNewick = document.getElementById('btnCopyNewick');
+                    if (btnCopyNewick) btnCopyNewick.disabled = true;
+                    updatePhyloExportButtonsState(false);
                     
                     const bsWorker = new Worker('lib/phylo_worker.js');
                     bsWorker.postMessage({ type: 'CALC_BOOTSTRAP', seqs: result.seqs, algo: 'ML', iterations: bsVal });
@@ -2364,7 +2400,9 @@
                             document.getElementById('statusLog').innerHTML = `<b>系統樹完成！</b> 最尤法 (ML法) とブートストラップ解析が完了しました。<br><span style="color:#f1c40f;">※分岐点に表示されている数値（%）がブートストラップ値（分岐の信頼性）です。</span>`;
                             
                             document.getElementById('btnSaveImg').disabled = false;
-                            document.getElementById('btnCopyNewick').disabled = false;
+                            const btnCopyNewick = document.getElementById('btnCopyNewick');
+                            if (btnCopyNewick) btnCopyNewick.disabled = false;
+                            updatePhyloExportButtonsState(true);
 
                             updateExplanation();
                             drawTree();
@@ -2382,7 +2420,9 @@
                     document.getElementById('statusLog').innerHTML = `<b>系統樹完成！</b> 最尤法 (ML法) による全探索が完了し、最も尤もらしい（尤度が高い）樹形が得られました。`;
                     
                     document.getElementById('btnSaveImg').disabled = false;
-                    document.getElementById('btnCopyNewick').disabled = false;
+                    const btnCopyNewick = document.getElementById('btnCopyNewick');
+                    if (btnCopyNewick) btnCopyNewick.disabled = false;
+                    updatePhyloExportButtonsState(true);
 
                     updateExplanation();
                     drawTree();
@@ -2556,6 +2596,71 @@
             showToast("コピーに失敗しました", "error");
         });
     }
+
+    function copyNewickTree() {
+        copyNewick();
+    }
+    window.copyNewickTree = copyNewickTree;
+
+    // 解析ステータス連動（一括活性化）ロジック (ガイドライン第9項②準拠)
+    function updatePhyloExportButtonsState(hasValidData) {
+        const btn10 = document.getElementById('btnCopyForApp10');
+        const btn11 = document.getElementById('btnCopyForApp11');
+        const btnLegacy = document.getElementById('btnCopyNewick');
+        if (btn10) btn10.disabled = !hasValidData;
+        if (btn11) btn11.disabled = !hasValidData;
+        if (btnLegacy) btnLegacy.disabled = !hasValidData;
+    }
+    window.updatePhyloExportButtonsState = updatePhyloExportButtonsState;
+
+    // メタデータ刻印付きTSVコピー関数 (ガイドライン第1項・第7項④準拠)
+    window.copyMutationDataForApp11 = function() {
+        // 既存の距離マトリクスまたはサンプルデータの確認
+        // ※アプリ⑧で管理されているサンプル名リストと距離行列変数を取得
+        const sampleNames = window.currentSampleNames || (typeof originalNames !== 'undefined' && originalNames.length > 0 ? originalNames : (typeof currentSamples !== 'undefined' ? currentSamples.map(s => s.name || s.id) : null));
+        const distMat = window.currentDistanceMatrix || (typeof initialDistanceMatrix !== 'undefined' && initialDistanceMatrix.length > 0 ? initialDistanceMatrix : (typeof distanceMatrix !== 'undefined' && distanceMatrix.length > 0 ? distanceMatrix : null));
+
+        if (!sampleNames || sampleNames.length < 2 || !distMat) {
+            showToast("系統樹を構築してからコピーしてください", "warning");
+            return;
+        }
+
+        const timestamp = new Date().toISOString();
+        let lines = [`# source: App_8_Phylogenetic_Tree_Builder | type: mutation | timestamp: ${timestamp}`];
+
+        // 距離行列から各サンプルの2次元遺伝的特徴量（突然変異座標）を算出
+        // bio_math_engine.js の nipalsPCA があれば適用、なければ代表距離2軸を使用
+        let scores = [];
+        if (typeof nipalsPCA === 'function' && distMat.length >= 2 && distMat[0].length >= 2) {
+            try {
+                const pcaRes = nipalsPCA(distMat, 2);
+                scores = pcaRes.scores;
+            } catch (e) {
+                console.warn("PCA calculation fallback:", e);
+            }
+        }
+
+        sampleNames.forEach((name, i) => {
+            let x = 0, y = 0;
+            if (scores.length > i && scores[i].length >= 2) {
+                x = scores[i][0].toFixed(4);
+                y = scores[i][1].toFixed(4);
+            } else {
+                // フォールバック: 他サンプルとの距離の集計値
+                x = (distMat[i][0] || 0).toFixed(4);
+                y = (distMat[i][1] !== undefined ? distMat[i][1] : (distMat[i][0] || 0)).toFixed(4);
+            }
+            lines.push(`${name}\t${x}\t${y}`);
+        });
+
+        const tsvText = lines.join('\n');
+        navigator.clipboard.writeText(tsvText).then(() => {
+            showToast("⑪用 突然変異データをクリップボードにコピーしました", "success");
+        }).catch(err => {
+            console.error("Clipboard copy failed:", err);
+            showToast("データのコピーに失敗しました", "error");
+        });
+    };
 
     // ====== 最節約法 (MP法) ステップ・シミュレーション用ロジック ======
     let allInformativeSites = []; 
@@ -4089,6 +4194,10 @@
             let bsVal = parseInt(document.querySelector('input[name="bootstrap"]:checked').value);
             if (bsVal > 0) {
                 document.getElementById('statusLog').innerHTML = `ブートストラップ解析(${bsVal}回)をWeb Workerで実行中... (0/${bsVal} 回完了)`;
+                document.getElementById('btnSaveImg').disabled = true;
+                const btnCopyNewick = document.getElementById('btnCopyNewick');
+                if (btnCopyNewick) btnCopyNewick.disabled = true;
+                updatePhyloExportButtonsState(false);
                 
                 const worker = new Worker('lib/phylo_worker.js');
                 worker.postMessage({ type: 'CALC_BOOTSTRAP', seqs: originalSeqs, algo: algo, iterations: bsVal });
@@ -4106,7 +4215,10 @@
                         let finalRoot = clusters.find(c => c.active);
                         if (outgroupName) finalRoot = getRoutedTree(finalRoot, outgroupName);
                         addLogEntry(algo, bsVal, finalRoot);
-                        document.getElementById('btnCopyNewick').disabled = false;
+                        document.getElementById('btnSaveImg').disabled = false;
+                        const btnCopyNewick = document.getElementById('btnCopyNewick');
+                        if (btnCopyNewick) btnCopyNewick.disabled = false;
+                        updatePhyloExportButtonsState(true);
                     } else if (e.data.type === 'ERROR') {
                         showToast(e.data.message, "error");
                         document.getElementById('statusLog').innerHTML = `[エラー] ブートストラップ解析に失敗しました。`;
@@ -4120,7 +4232,10 @@
                 let finalRoot = clusters.find(c => c.active);
                 if (outgroupName) finalRoot = getRoutedTree(finalRoot, outgroupName);
                 addLogEntry(algo, 0, finalRoot);
-                document.getElementById('btnCopyNewick').disabled = false;
+                document.getElementById('btnSaveImg').disabled = false;
+                const btnCopyNewick = document.getElementById('btnCopyNewick');
+                if (btnCopyNewick) btnCopyNewick.disabled = false;
+                updatePhyloExportButtonsState(true);
             }
         } else {
             renderMatrix(); 
@@ -4553,6 +4668,7 @@
         }
 
         showConfirm("すべての入力データおよびローカル保存データを初期化しますか？この操作は取り消せません。", () => {
+            updatePhyloExportButtonsState(false);
             localStorage.clear();
             sessionStorage.clear();
             location.reload();
@@ -4704,6 +4820,15 @@
         }
     })();
 
+
+    // 入力変更時および初期ロード時のエクスポートボタン状態初期化（ガイドライン第9項②準拠）
+    document.getElementById('fastaInput')?.addEventListener('input', () => {
+        updatePhyloExportButtonsState(false);
+    });
+    window.addEventListener('load', () => {
+        updatePhyloExportButtonsState(false);
+    });
+    updatePhyloExportButtonsState(false);
 
     // 最終アクセスアプリの記憶（State Restoration）
     try {
