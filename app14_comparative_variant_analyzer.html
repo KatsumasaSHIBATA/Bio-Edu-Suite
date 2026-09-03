@@ -108,7 +108,7 @@
         /* Shared Card Styles */
         .card { background: var(--card-bg); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; width: 100%; }
         .card-header { background: var(--secondary); color: white; padding: 12px 18px; font-size: 15px; font-weight: bold; display: flex; align-items: center; gap: 8px; border-radius: 4px 4px 0 0; border-top: 4px solid var(--phase-color); }
-        .card-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+        .card-body { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
 
         /* Educational UI Modules */
         .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px 15px; border-radius: 0 4px 4px 0; font-size: 12px; color: var(--text-main); line-height: 1.6; margin: 15px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
@@ -182,7 +182,7 @@
         .form-select:disabled { background: #f8f9fa; cursor: not-allowed; opacity: 0.7; }
 
         /* Viewer Layout */
-        .viewer-container { display: flex; gap: 24px; min-height: 500px; }
+        .viewer-container { display: flex; gap: 24px; min-height: auto; }
         .viewer-pane { flex: 1; min-width: 300px; }
         
         .link { fill: none; stroke: #bdc3c7; stroke-width: 2px; transition: stroke 0.2s, stroke-width 0.2s; }
@@ -426,9 +426,10 @@
 
         /* --- 第8項 システム必須モーダル（既存 .modal-* 定義に干渉しないようID限定で完結させる） --- */
         #confirmModal, #accountModal {
-          position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: auto; height: auto;
-          background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center;
-          z-index: 1100; backdrop-filter: blur(2px); opacity: 1; visibility: visible; transition: none;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: auto; height: auto;
+            background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center;
+            z-index: 1100; backdrop-filter: blur(2px);
+            opacity: 1 !important; visibility: visible !important; transition: none;
         }
         #confirmModal > .modal-content, #accountModal > .modal-content {
           background: white; border-radius: 8px; width: 400px; max-width: 95vw; max-height: 90vh;
@@ -915,19 +916,13 @@
             <div style="display: flex; flex-wrap: wrap; gap: 24px;">
                 <!-- 左列: 突然変異データ -->
                 <div style="flex: 1; min-width: 250px;">
-                    <label class="input-label" style="display: flex; justify-content: space-between; align-items: center;">
                         <span>1. 突然変異データ (Mutation: 遺伝的特徴量)</span>
-                        <button class="rationale-btn" onclick="toggleRationale(event, 'rat_mutation')">?</button>
-                    </label>
                     <textarea id="mutation-data" class="paste-area" style="min-height: 120px;" placeholder="例:&#10;0.5, 1.2&#10;0.6, 1.1..."></textarea>
                 </div>
                 
                 <!-- 右列: 変異データ -->
                 <div style="flex: 1; min-width: 250px;">
-                    <label class="input-label" style="display: flex; justify-content: space-between; align-items: center;">
                         <span>2. 変異データ (Variation: 形態的特徴量)</span>
-                        <button class="rationale-btn" onclick="toggleRationale(event, 'rat_variation')">?</button>
-                    </label>
                     <textarea id="variation-data" class="paste-area" style="min-height: 120px;" placeholder="例:&#10;12.5, 3.2&#10;13.1, 3.4..."></textarea>
                 </div>
             </div>
@@ -946,10 +941,10 @@
         <!-- 左パネル: 突然変異 (Mutation) -->
         <div class="card viewer-pane">
             <div class="card-header">
-                Ⅱ. 突然変異プロット (Mutation Space)
+                Ⅱ. 突然変異プロット (Mutation Space) <button class="rationale-btn" onclick="toggleRationale(event, 'rat_mutation')">?</button>
             </div>
             <div class="card-body" style="display: flex; flex-direction: column;">
-                <div style="flex: 1; height: 300px; position: relative;">
+                <div style="height: 260px; position: relative;">
                     <canvas id="mutationChart"></canvas>
                 </div>
             </div>
@@ -958,10 +953,10 @@
         <!-- 右パネル: 変異 (Variation) -->
         <div class="card viewer-pane">
             <div class="card-header">
-                Ⅲ. 変異プロット (Variation Space)
+                Ⅲ. 変異プロット (Variation Space) <button class="rationale-btn" onclick="toggleRationale(event, 'rat_variation')">?</button>
             </div>
             <div class="card-body" style="display: flex; flex-direction: column;">
-                <div style="flex: 1; height: 300px; position: relative;">
+                <div style="height: 260px; position: relative;">
                     <canvas id="variationChart"></canvas>
                 </div>
             </div>
@@ -971,7 +966,7 @@
     <!-- 下段カード（全幅）: Ⅳ. 統合相関解析 (Mantel Test) -->
     <div class="card" style="width: 100%;">
         <div class="card-header">
-            Ⅳ. 統合相関解析 (Mantel Test)
+            Ⅳ. 統合相関解析 (Mantel Test) <button class="rationale-btn" onclick="toggleRationale(event, 'rat_mantel')">?</button>
         </div>
         <div class="card-body">
             <div id="mantel-placeholder" style="text-align: center; padding: 40px; color: var(--text-muted);">
@@ -1200,13 +1195,37 @@
         window.open(prefilledUrl, '_blank');
     }
 
-    function confirmDataReset() {
+    window.openAccountSettings = function() {
+        const modal = document.getElementById('accountModal');
+        if (modal) modal.style.display = 'flex';
+    };
+    window.closeAccountSettings = function() {
+        const modal = document.getElementById('accountModal');
+        if (modal) modal.style.display = 'none';
+    };
+    window.closeConfirm = function() {
+        const modal = document.getElementById('confirmModal');
+        if (modal) modal.style.display = 'none';
+    };
+    window.showConfirm = function(message, onOk, okLabel = "実行する") {
+        const msgEl = document.getElementById('confirmMessage');
+        const btnEl = document.getElementById('confirmOkBtn');
+        const modal = document.getElementById('confirmModal');
+        if (msgEl) msgEl.innerText = message;
+        if (btnEl) {
+            btnEl.innerText = okLabel;
+            btnEl.onclick = () => { window.closeConfirm(); onOk(); };
+        }
+        if (modal) modal.style.display = 'flex';
+    };
+    window.confirmDataReset = function() {
         if (window.innerWidth <= 1024) {
-            document.querySelector('.sidebar').classList.remove('open');
+            const sidebar = document.querySelector('.sidebar');
             const overlay = document.querySelector('.sidebar-overlay');
+            if (sidebar) sidebar.classList.remove('open');
             if (overlay) overlay.classList.remove('open');
         }
-        showConfirm("入力されたすべてのデータを初期化しますか？", () => {
+        window.showConfirm("入力されたすべてのデータを初期化しますか？", () => {
             const mData = document.getElementById('mutation-data');
             const vData = document.getElementById('variation-data');
             const rArea = document.getElementById('result-area');
@@ -1217,29 +1236,7 @@
             if (window.variationChartInstance) window.variationChartInstance.destroy();
             if (window.mantelChartInstance) window.mantelChartInstance.destroy();
         }, "初期化する");
-    }
-
-    function showConfirm(message, onOk, okLabel = "実行する") {
-        document.getElementById('confirmMessage').innerText = message;
-        const btn = document.getElementById('confirmOkBtn');
-        btn.innerText = okLabel;
-        btn.onclick = () => { closeConfirm(); onOk(); };
-        document.getElementById('confirmModal').style.display = 'flex';
-    }
-
-    function closeConfirm() {
-        document.getElementById('confirmModal').style.display = 'none';
-        document.getElementById('confirmOkBtn').onclick = null;
-    }
-
-    // --- アカウント・同期設定モーダル制御 ---
-    function openAccountSettings() {
-        document.getElementById('accountModal').style.display = 'flex';
-    }
-
-    function closeAccountSettings() {
-        document.getElementById('accountModal').style.display = 'none';
-    }
+    };
 </script>
 
 <!-- 入力データの一時保存（sessionStorage） v34.3.8 -->
@@ -1391,13 +1388,89 @@
     })();
 
 </script>
-<div id="rat_mutation" class="rationale-text popover-panel">
-    <strong>【根拠：突然変異】</strong><br>
-    「突然変異（mutation）」とは、DNAの塩基配列が変化する“プロセス”そのものを指します。ここでは、各個体の遺伝的距離や塩基配列の主成分スコアなど、遺伝的な特徴量を入力します。
+
+<!-- カスタム確認ダイアログ（データ初期化用等） -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-content" style="max-width: 400px; border-top: none; text-align: center;">
+    <div class="modal-body" style="padding: 30px 20px 10px;">
+      <svg class="svg-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 42px; height: 42px; margin-bottom: 12px; opacity: 0.9;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+      <h3 id="confirmTitle" style="margin: 0 0 10px 0; font-size: 16px; color: var(--primary);">確認</h3>
+      <div id="confirmMessage" style="font-size: 13px; line-height: 1.6; color: var(--text-main);"></div>
+    </div>
+    <div class="modal-footer" style="border-top: none; background: white; justify-content: center; gap: 12px; padding-bottom: 30px;">
+      <button class="btn btn-secondary" onclick="closeConfirm(); triggerHapticFeedback();">キャンセル</button>
+      <button class="btn" id="confirmOkBtn" style="background: var(--danger); color: white;">実行する</button>
+    </div>
+  </div>
 </div>
-<div id="rat_variation" class="rationale-text popover-panel">
-    <strong>【根拠：変異】</strong><br>
-    「変異（variation）」とは、突然変異や環境要因の結果として生じた形質・多様性の“状態”を指します。ここでは、形態測定データなど、目に見える特徴の計測値を入力します。
+
+<!-- アカウント・同期設定（ログインパネル）モーダル -->
+<div class="modal-overlay" id="accountModal">
+  <div class="modal-content" style="max-width: 380px;">
+    <div class="modal-header">
+      <h3 style="margin: 0; font-size: 16px;">アカウント・同期設定</h3>
+      <button class="modal-close" onclick="closeAccountSettings(); triggerHapticFeedback();" data-tooltip="閉じる">
+        <svg class="btn-icon" style="margin:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="padding: 20px;">
+
+      <!-- ① 未ログイン時（ゲスト）ビュー -->
+      <div id="modalLoggedOutView">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+          <span style="font-size: 14px; font-weight: bold; color: var(--text-muted);">⚪️ ゲストモード</span>
+        </div>
+        <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 16px 0; line-height: 1.6;">
+          現在は端末内のみにデータが保存されています。Googleアカウントでログインすると、自宅のPCや他の端末とデータを自動同期できます。
+        </p>
+        <button class="btn btn-primary" style="width: 100%;" onclick="window.handleGoogleLogin(); triggerHapticFeedback();">
+          Googleアカウントでログイン
+        </button>
+      </div>
+
+      <!-- ② ログイン中ビュー -->
+      <div id="modalLoggedInView" style="display: none;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+          <span id="syncStatusBadge" style="font-size: 14px; font-weight: bold; color: var(--phase-color);">🟢 クラウド同期中</span>
+        </div>
+
+        <div style="background: #f8f9fa; border: 1px solid #e1e8ed; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
+          <div id="userNameDisplay" style="font-weight: bold; font-size: 14px; color: var(--primary);"></div>
+          <div id="userEmailDisplay" style="font-size: 11px; color: var(--text-muted); margin-top: 2px;"></div>
+          <!-- オフライン時の状態メッセージ領域 -->
+          <div id="syncStatusNote" style="font-size: 11px; color: var(--danger); margin-top: 6px; display: none;">
+            ※オフライン中です。データは端末内に一時保存され、再接続時に自動同期されます。
+          </div>
+        </div>
+
+        <button class="btn btn-secondary" style="width: 100%; color: var(--danger); border-color: #f5b7b1;" onclick="window.handleLogout(); triggerHapticFeedback();">
+          ログアウト
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 突然変異 ポップオーバー -->
+<div id="rat_mutation" class="rationale-text">
+    <strong>【根拠：突然変異 (mutation)】</strong>
+    ・塩基配列（遺伝情報）が変化するプロセスそのものを指します。
+    ・本解析では、DNA配列やSNP等の遺伝的差異から個体間の遺伝的距離を算出します。
+</div>
+
+<!-- 変異 ポップオーバー -->
+<div id="rat_variation" class="rationale-text">
+    <strong>【根拠：変異 (variation)】</strong>
+    ・突然変異などの結果として生じた、集団内における形質や形態の違い・多様性の状態を指します。
+    ・本解析では、形態測定値や表現型データから個体間の形態的距離を算出します。
+</div>
+
+<!-- 統合相関解析 ポップオーバー -->
+<div id="rat_mantel" class="rationale-text">
+    <strong>【根拠：統合相関解析 (Mantel Test)】</strong>
+    ・「遺伝的距離マトリクス」と「形態的距離マトリクス」の間の相関係数（Mantel r）を評価します。
+    ・遺伝的な変化と形態的な変化が連動しているか（適応放散の検証など）を統計的に証明します。
 </div>
 
 <script src="js/app14_ui.js"></script>
