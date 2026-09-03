@@ -72,8 +72,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     datasets: [{
                         label: '突然変異 (Genetic)',
                         data: mutScatterData,
-                        backgroundColor: 'rgba(142, 68, 173, 0.6)',
-                        borderColor: '#8e44ad',
+                        backgroundColor: 'rgba(26, 188, 156, 0.8)',
+                        borderColor: '#1abc9c',
                         pointRadius: 5
                     }]
                 },
@@ -97,8 +97,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     datasets: [{
                         label: '変異 (Morphological)',
                         data: varScatterData,
-                        backgroundColor: 'rgba(39, 174, 96, 0.6)',
-                        borderColor: '#27ae60',
+                        backgroundColor: 'rgba(230, 126, 34, 0.8)',
+                        borderColor: '#e67e22',
                         pointRadius: 5
                     }]
                 },
@@ -123,6 +123,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // 結果の表示
             mantelRDisplay.textContent = r.toFixed(4);
+            document.getElementById("mantel-placeholder").style.display = "none";
             resultArea.style.display = "block";
 
             // 3. 散布図の描画 (Chart.js)
@@ -138,7 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     datasets: [{
                         label: '個体間ペア距離',
                         data: scatterData,
-                        backgroundColor: 'rgba(142, 68, 173, 0.6)',
+                        backgroundColor: 'rgba(142, 68, 173, 0.8)',
                         borderColor: '#8e44ad',
                         borderWidth: 1,
                         pointRadius: 5,
@@ -173,7 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // 4. 解析完了時に画面下部へスムーススクロール
             setTimeout(() => {
-                resultArea.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                resultArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }, 100);
 
         } catch (error) {
