@@ -1114,6 +1114,9 @@ body {
             </div>
             <div class="card-body" style="display: flex; flex-direction: column;">
                 <div style="height: 260px; position: relative;">
+                    <div id="mutation-placeholder" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #ffffff; color: var(--text-muted); font-size: 13px; z-index: 5;">
+                        データ待機中
+                    </div>
                     <canvas id="mutationChart"></canvas>
                 </div>
             </div>
@@ -1126,6 +1129,9 @@ body {
             </div>
             <div class="card-body" style="display: flex; flex-direction: column;">
                 <div style="height: 260px; position: relative;">
+                    <div id="variation-placeholder" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #ffffff; color: var(--text-muted); font-size: 13px; z-index: 5;">
+                        データ待機中
+                    </div>
                     <canvas id="variationChart"></canvas>
                 </div>
             </div>
@@ -1392,12 +1398,23 @@ function closeFeedbackForm() {
             const mData = document.getElementById('mutation-data');
             const vData = document.getElementById('variation-data');
             const rArea = document.getElementById('result-area');
+            const mPlaceholder = document.getElementById('mutation-placeholder');
+            const vPlaceholder = document.getElementById('variation-placeholder');
+            const mantelPlaceholder = document.getElementById('mantel-placeholder');
+
             if (mData) mData.value = '';
             if (vData) vData.value = '';
             if (rArea) rArea.style.display = 'none';
+            if (mantelPlaceholder) mantelPlaceholder.style.display = 'block';
+            if (mPlaceholder) mPlaceholder.style.display = 'flex';
+            if (vPlaceholder) vPlaceholder.style.display = 'flex';
+
             if (window.mutationChartInstance) window.mutationChartInstance.destroy();
             if (window.variationChartInstance) window.variationChartInstance.destroy();
             if (window.mantelChartInstance) window.mantelChartInstance.destroy();
+
+            const runBtn = document.getElementById('run-analysis-btn');
+            if (runBtn) runBtn.disabled = true;
         }, "初期化する");
     };
 </script>
@@ -1679,6 +1696,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 初期化チェック
     checkApp11Inputs();
+});
+
+// 解析実行時のプロット・プレースホルダー非表示化連動
+document.addEventListener('DOMContentLoaded', () => {
+    function hidePlaceholdersOnSuccess() {
+        const mPlaceholder = document.getElementById('mutation-placeholder');
+        const vPlaceholder = document.getElementById('variation-placeholder');
+        if (mPlaceholder) mPlaceholder.style.display = 'none';
+        if (vPlaceholder) vPlaceholder.style.display = 'none';
+    }
+
+    const runBtn = document.getElementById('run-analysis-btn');
+    if (runBtn) {
+        runBtn.addEventListener('click', () => {
+            const mData = document.getElementById('mutation-data');
+            const vData = document.getElementById('variation-data');
+            if (mData && vData && mData.value.trim() && vData.value.trim()) {
+                setTimeout(hidePlaceholdersOnSuccess, 50);
+            }
+        });
+    }
+
+    // result-area の表示状態を監視して確実にプレースホルダーを隠蔽
+    const resultArea = document.getElementById('result-area');
+    if (resultArea) {
+        const observer = new MutationObserver(() => {
+            if (resultArea.style.display !== 'none') {
+                hidePlaceholdersOnSuccess();
+            }
+        });
+        observer.observe(resultArea, { attributes: true, attributeFilter: ['style'] });
+    }
 });
 </script>
 
