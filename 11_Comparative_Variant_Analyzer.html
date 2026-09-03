@@ -1085,13 +1085,13 @@ body {
             <div style="display: flex; flex-wrap: wrap; gap: 24px;">
                 <!-- 左列: 突然変異データ -->
                 <div style="flex: 1; min-width: 250px;">
-                        <span>1. 突然変異データ (Mutation: 遺伝的特徴量)</span>
+                        <span>1. 突然変異データ (遺伝的座標TSV形式)</span>
                     <textarea id="mutation-data" class="paste-area" style="min-height: 120px;" placeholder="例:&#10;0.5, 1.2&#10;0.6, 1.1..."></textarea>
                 </div>
                 
                 <!-- 右列: 変異データ -->
                 <div style="flex: 1; min-width: 250px;">
-                        <span>2. 変異データ (Variation: 形態的特徴量)</span>
+                        <span>2. 変異データ (形態的特座標TSV形式)</span>
                     <textarea id="variation-data" class="paste-area" style="min-height: 120px;" placeholder="例:&#10;12.5, 3.2&#10;13.1, 3.4..."></textarea>
                 </div>
             </div>
@@ -1139,7 +1139,7 @@ body {
         </div>
         <div class="card-body">
             <div id="mantel-placeholder" style="text-align: center; padding: 40px; color: var(--text-muted);">
-                上部の「解析を実行」ボタンを押すと、ここに統合相関解析（Mantel Test）の結果が表示されます。
+                データ待機中
             </div>
             <div id="result-area" style="display: none;">
                 <div style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; padding: 15px; text-align: center; margin-bottom: 15px; font-size: 16px; font-weight: bold; color: var(--primary);">
