@@ -798,6 +798,10 @@ input, textarea {
       </a>
       
       <div class="nav-header p4"><span class="nav-header-text">Phase 4: 統合検証ルーム</span></div>
+      <a href="app14_comparative_variant_analyzer.html" class="nav-item p4">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3v18M8 21h8M4 7h16"/><path d="M4 7l-2 5h4z"/><path d="M20 7l-2 5h4z"/></svg>
+        <span class="nav-text">⑭ Comparative Variant Analyzer</span>
+      </a>
       <a href="10_integrative_taxonomy_studio.html" class="nav-item p4">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3v18M8 21h8M4 7h16"/><path d="M4 7l-2 5h4z"/><path d="M20 7l-2 5h4z"/></svg>
         <span class="nav-text">⑩ Taxonomy Explorer (統合版)</span>
@@ -874,6 +878,26 @@ input, textarea {
     </div> 
 
     <div class="content-area">
+
+      <!-- 👨‍🏫 教師用コントローラー -->
+      <div id="teacher-dashboard-panel" class="card" style="display: none; margin-bottom: 24px; border-left: 4px solid var(--phase-color);">
+        <div class="card-header" style="background: var(--card-bg); color: var(--primary); border-bottom: 1px solid var(--border-color);">
+          👨‍🏫 教師用コントローラー：Lab Packs 初期生データの配布
+        </div>
+        <div class="card-body" style="padding: 16px;">
+          <p style="font-size: 12px; color: var(--text-muted); margin-top: 0;">
+            生徒が「DNA解析（アプリ⑤⑧）」や「形態解析（アプリ⑨）」を自ら行うための<strong>未処理の生データ（塩基配列・形態特徴）</strong>をダッシュボードの野帳に一括配布します。
+          </p>
+          <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <button class="btn btn-secondary" onclick="injectLabPackData('adaptive'); triggerHapticFeedback();">
+              🧬 適応放散シナリオ (12個体) を展開
+            </button>
+            <button class="btn btn-secondary" onclick="injectLabPackData('random'); triggerHapticFeedback();">
+              🎲 ランダム変異シナリオ (12個体) を展開
+            </button>
+          </div>
+        </div>
+      </div>
 
       <div class="action-header">
         <h3 style="margin: 0; color: var(--primary);">登録済みサンプル</h3>
@@ -1063,6 +1087,21 @@ input, textarea {
             ログアウト
           </button>
         </div>
+
+        <!-- 教師モード切り替えスイッチ -->
+        <div id="teacherModeSwitchContainer" style="margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--border-color); display: flex; align-items: center; justify-content: space-between;">
+          <span style="font-size: 13px; font-weight: bold; color: var(--text-main);">👨‍🏫 教師モード (授業用データ展開)</span>
+          <label style="position: relative; display: inline-block; width: 40px; height: 20px;">
+            <input type="checkbox" id="teacherModeToggle" onchange="toggleTeacherMode(this.checked); triggerHapticFeedback();" style="opacity: 0; width: 0; height: 0;">
+            <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #bdc3c7; transition: .4s; border-radius: 20px;">
+              <span style="position: absolute; content: ''; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%;"></span>
+            </span>
+          </label>
+        </div>
+        <style>
+          #teacherModeToggle:checked + span { background-color: var(--phase-color); }
+          #teacherModeToggle:checked + span span { transform: translateX(20px); }
+        </style>
 
       </div>
     </div>
@@ -1957,6 +1996,46 @@ input, textarea {
       toast.className = className;
       setTimeout(() => { toast.classList.remove("show"); }, 3000);
     }
+
+    window.toggleTeacherMode = function(isActive) {
+        const panel = document.getElementById('teacher-dashboard-panel');
+        if (panel) panel.style.display = isActive ? 'flex' : 'none';
+        if (typeof showToast === 'function') {
+            showToast(isActive ? '教師モードを有効化しました' : '教師モードを無効化しました', 'info');
+        }
+    };
+
+    window.injectLabPackData = function(scenario) {
+        const prefix = scenario === 'adaptive' ? 'Adaptive' : 'Random';
+        let injectedCount = 0;
+        
+        // 生徒がアプリ5,8,9へ持ち込むための「素材（生データ）」を12個体分生成する
+        for (let i = 1; i <= 12; i++) {
+            const id = `${generateBaseId()}_${prefix}_${String(i).padStart(2, '0')}`;
+            
+            // 解析用の生のFASTA配列（ダミーの塩基配列）
+            let seq = `>${prefix}_Sample${i}\nATGTTCATCAACCGATGACTATTCTCAACAAACCACAAAGATATCGGAACCCTATATCTA`; 
+            // 形態測定アプリへ送るための形態データ（※実運用時はチェーンコード等を入れる）
+            let morph = `${5 + (i%3)} ${4 + (i%2)} ${6} 5 4 3 4 5 6 7`; 
+            
+            samples.push({
+                id: id,
+                name: `${prefix} 個体群 ${i}`,
+                envCategory: `Env_${i % 3 + 1}`,
+                envNote: `Lab Pack (${scenario}) により自動配布された初期生データ`,
+                image_data: "", 
+                morphData: morph,
+                dnaData: seq,
+                hasRawSeq: false,
+                date: new Date().toISOString()
+            });
+            injectedCount++;
+        }
+        
+        saveToStorage();
+        renderSamples();
+        showToast(`${injectedCount}件の初期生データを野帳に配布しました。生徒に解析を指示してください。`, 'success');
+    };
 
     function escapeHTML(str) {
       return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag]));
