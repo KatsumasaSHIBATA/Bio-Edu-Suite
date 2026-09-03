@@ -15,16 +15,7 @@
     <meta name="apple-mobile-web-app-title" content="BioEdu">
     <link rel="apple-touch-icon" href="icon-192.png">
     <title>⑪ Comparative Variant Analyzer | Bio-Edu Suite</title>
-        <script src="lib/bio_math_engine.js">
-// アプリ11 初期ガードレール補正
-document.addEventListener("DOMContentLoaded", () => {
-    const runBtn = document.getElementById("runVariantAnalysisBtn") || document.getElementById("runAnalysisBtn") || document.querySelector(".btn-run-analysis");
-    if (runBtn) {
-        runBtn.disabled = true;
-    }
-});
-
-</script>
+        <script src="lib/bio_math_engine.js"></script>
     <style>
         :root {
             --phase-color: #8e44ad;
@@ -850,6 +841,42 @@ body {
     }
 }
 
+
+/* 【ガイドライン準拠】アプリ⑪ 解析実行ボタン（未解析時: 白・無効）規格 */
+#run-analysis-btn {
+    background-color: #3498db !important;
+    color: #ffffff !important;
+    border: 1px solid #2980b9 !important;
+    border-radius: 4px !important;
+    padding: 8px 16px !important;
+    font-size: 13px !important;
+    font-weight: bold !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    box-shadow: none !important;
+    transition: all 0.2s ease !important;
+    width: fit-content !important;
+    min-height: 44px !important;
+    box-sizing: border-box !important;
+}
+#run-analysis-btn:hover:not(:disabled) {
+    background-color: #2980b9 !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+#run-analysis-btn:disabled {
+    background-color: #ffffff !important;
+    color: #bdc3c7 !important;
+    border: 1px solid #d5dbdb !important;
+    cursor: not-allowed !important;
+    opacity: 0.8 !important;
+    box-shadow: none !important;
+    filter: none !important;
+    transform: none !important;
+}
+
 </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -1070,7 +1097,7 @@ body {
             </div>
             
             <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
-                <button id="run-analysis-btn" class="btn btn-primary" onclick="triggerHapticFeedback();">
+                <button id="run-analysis-btn" class="btn btn-primary" onclick="triggerHapticFeedback();" disabled>
                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-right: 6px;"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                     解析を実行
                 </button>
@@ -1624,6 +1651,36 @@ function closeFeedbackForm() {
     <iframe id="feedbackIframe" src="about:blank" loading="lazy"></iframe>
   </div>
 </div>
+
+
+<script>
+// アプリ⑪ 解析実行ボタンのリアルタイム監視ガードレール
+document.addEventListener('DOMContentLoaded', () => {
+    const runBtn = document.getElementById('run-analysis-btn');
+
+    function checkApp11Inputs() {
+        if (!runBtn) return;
+        const mutInput = document.getElementById('mutation-data');
+        const varInput = document.getElementById('variation-data');
+
+        const hasMut = mutInput && mutInput.value.trim().length > 0;
+        const hasVar = varInput && varInput.value.trim().length > 0;
+
+        runBtn.disabled = !(hasMut && hasVar);
+    }
+
+    ['mutation-data', 'variation-data'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', checkApp11Inputs);
+            el.addEventListener('change', checkApp11Inputs);
+        }
+    });
+
+    // 初期化チェック
+    checkApp11Inputs();
+});
+</script>
 
 </body>
 </html>

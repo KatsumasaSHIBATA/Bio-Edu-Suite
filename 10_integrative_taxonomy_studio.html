@@ -15,23 +15,7 @@
     <meta name="apple-mobile-web-app-title" content="BioEdu">
     <link rel="apple-touch-icon" href="icon-192.png">
     <title>⑩ Integrative Taxonomy Studio | Bio-Edu Suite</title>
-    <script src="https://d3js.org/d3.v7.min.js">
-// アプリ10 初期ガードレール補正
-document.addEventListener("DOMContentLoaded", () => {
-    const runBtn = document.getElementById("runTaxonomyBtn") || document.getElementById("runAnalysisBtn") || document.querySelector(".btn-run-analysis");
-    if (runBtn) {
-        runBtn.disabled = true;
-    }
-    // タングルグラム・モーフィング切替ボタンを強制無効化しない
-    const toggleBtns = document.querySelectorAll(".view-toggle-btn, .tab-btn");
-    toggleBtns.forEach(btn => {
-        if (!btn.classList.contains("analysis-trigger")) {
-            btn.disabled = false;
-        }
-    });
-});
-
-</script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="lib/bio_math_engine.js"></script>
     <style>
         :root {
@@ -858,6 +842,42 @@ body {
     }
 }
 
+
+/* 【ガイドライン準拠】アプリ⑩ 解析実行ボタン（未解析時: 白・無効）規格 */
+#run-analysis-btn-10 {
+    background-color: #3498db !important;
+    color: #ffffff !important;
+    border: 1px solid #2980b9 !important;
+    border-radius: 4px !important;
+    padding: 8px 16px !important;
+    font-size: 13px !important;
+    font-weight: bold !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    box-shadow: none !important;
+    transition: all 0.2s ease !important;
+    width: fit-content !important;
+    min-height: 44px !important;
+    box-sizing: border-box !important;
+}
+#run-analysis-btn-10:hover:not(:disabled) {
+    background-color: #2980b9 !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+#run-analysis-btn-10:disabled {
+    background-color: #ffffff !important;
+    color: #bdc3c7 !important;
+    border: 1px solid #d5dbdb !important;
+    cursor: not-allowed !important;
+    opacity: 0.8 !important;
+    box-shadow: none !important;
+    filter: none !important;
+    transform: none !important;
+}
+
 </style>
 </head>
 <body class="app-mode no-select-ui">
@@ -1117,7 +1137,7 @@ body {
             </div>
             
             <div style="display: flex; gap: 16px; margin-top: 8px; justify-content: flex-end;">
-                <button class="btn-primary" onclick="runIntegration()">
+                <button id="run-analysis-btn-10" class="btn btn-primary" onclick="runIntegration()" disabled>
                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                     解析を実行
                 </button>
@@ -1133,7 +1153,7 @@ body {
     </div>
 
     <!-- 1画面モーフィングUI -->
-    <div class="viewer-container" id="viewer-area" style="opacity: 0.5; pointer-events: none; transition: 0.3s;">
+    <div class="viewer-container" id="viewer-area" style="transition: 0.3s;">
         <!-- Ⅱ. タングルグラム (分子系統樹 vs 形態系統樹) -->
         <div class="card viewer-pane">
             <div class="card-header">
@@ -2360,6 +2380,37 @@ function closeFeedbackForm() {
     <iframe id="feedbackIframe" src="about:blank" loading="lazy"></iframe>
   </div>
 </div>
+
+
+<script>
+// アプリ⑩ 解析実行ボタンのリアルタイム監視ガードレール
+document.addEventListener('DOMContentLoaded', () => {
+    const runBtn = document.getElementById('run-analysis-btn-10');
+    
+    function checkApp10Inputs() {
+        if (!runBtn) return;
+        const molInput = document.getElementById('newick-mol-input');
+        const morphInput = document.getElementById('hybrid-morph-input');
+        const jsonInput = document.getElementById('json-input');
+
+        const hasMol = molInput && molInput.value.trim().length > 0;
+        const hasMorph = (morphInput && morphInput.value.trim().length > 0) || (jsonInput && jsonInput.value.trim().length > 0);
+
+        runBtn.disabled = !(hasMol && hasMorph);
+    }
+
+    ['newick-mol-input', 'hybrid-morph-input', 'json-input'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', checkApp10Inputs);
+            el.addEventListener('change', checkApp10Inputs);
+        }
+    });
+
+    // 初期化チェック
+    checkApp10Inputs();
+});
+</script>
 
 </body>
 </html>
