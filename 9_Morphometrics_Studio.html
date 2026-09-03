@@ -870,6 +870,23 @@ body {
     }
 }
 
+
+/* アプリ⑨ ボタン微調整（幅同期・中央寄せ） */
+.morpho-export-group, #morphoExportGroup, .export-btn-group {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+}
+.morpho-export-group .btn, #morphoExportGroup .btn, .export-btn-group .btn-secondary {
+    min-width: 140px !important;
+    text-align: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+}
+
 </style>
 </head>
 <body class="app-mode no-select-ui">

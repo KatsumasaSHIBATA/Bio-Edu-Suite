@@ -1233,6 +1233,23 @@ body {
     }
 }
 
+
+/* アプリ⑧ ボタン微調整（幅同期・右寄せ・PNG移動後） */
+.export-btn-group, #exportButtonGroup, .tree-export-actions {
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+    margin-left: auto !important;
+}
+.export-btn-group .btn, .export-btn-group .btn-secondary, #exportButtonGroup .btn {
+    min-width: 140px !important;
+    text-align: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+}
+
 </style>
     <script src="lib/phylo_engine.js"></script>
 </head>
@@ -1537,9 +1554,7 @@ body {
                     <option value="">外群指定(自動)</option>
                 </select>
             </span>
-            <div>
-                <button class="btn btn-sm" id="btnSaveImg" onclick="saveTreeImage()" disabled data-tooltip="構築された系統樹を画像として保存します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PNG保存</button>
-            </div>
+            
         </div>
         <div class="card-body" style="background:var(--bg-color); padding:16px;">
             <div class="status-box" id="statusLog">
@@ -1563,6 +1578,8 @@ body {
                 <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
                 TSVコピー
               </button>
+              <!-- アプリ⑧ 画像保存 -->
+              <button class="btn btn-secondary" id="btnSaveImg" onclick="saveTreeImage()" disabled data-tooltip="構築された系統樹を画像として保存します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PNG保存</button>
             </div>
 
             <div id="autoDiagPanel" style="display:none;"></div>
