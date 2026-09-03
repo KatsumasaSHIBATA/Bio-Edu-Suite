@@ -1103,15 +1103,25 @@
                 </div>
             </div>
             
-            <div id="export-buttons-container" style="margin-top: 10px; display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap;">
-                <button class="btn btn-secondary" id="copy-tsv-btn" onclick="copyToMorphoTSV()" disabled data-tooltip="統計解析(Phase 5)向けのTSV形式でコピーします">
-                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-                    ⑪向け形態TSVをコピー
-                </button>
-                <button class="btn btn-success" id="copy-json-btn" onclick="copyToIntegrativeJSON()" disabled data-tooltip="統合分類(Phase 4)向けのJSON形式でコピーします">
-                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-                    ⑩向け統合JSONをコピー
-                </button>
+            <!-- バケツリレー用 3連エクスポートボタングループ -->
+            <div id="export-buttons-container" class="export-btn-group" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px;">
+              <!-- アプリ⑩ 行き -->
+              <button id="btnCopyForApp10" class="btn btn-secondary" onclick="copyDataForApp10(); triggerHapticFeedback();" disabled data-tooltip="⑩ Integrative Taxonomy Studio用に出力">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                📋 ⑩JSONコピー
+              </button>
+
+              <!-- アプリ⑪ 行き -->
+              <button id="btnCopyForApp11" class="btn btn-secondary" onclick="copyVariationDataForApp11(); triggerHapticFeedback();" disabled data-tooltip="⑪ Comparative Variant Analyzer用に出力">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                📋 ⑪PCAコピー
+              </button>
+
+              <!-- アプリ⑫ 行き（旧11番から改称） -->
+              <button id="btnCopyForApp12" class="btn btn-secondary" onclick="copyMorphDataTSV(); triggerHapticFeedback();" disabled data-tooltip="⑫ Statistical Genetics Lab用に出力">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                📋 ⑫TSVコピー
+              </button>
             </div>
         </div>
     </div>
@@ -1554,6 +1564,7 @@
     }
 
     window.onload = () => {
+        updateExportButtonsState(false);
         // ドロップゾーンの初期化
         setupDropZoneForText('dropZoneA', 'chain-code-input', 'fileInputA');
         setupDropZoneForImage('dropZoneImgA', 'imgUpload', loadImageForTrace);
@@ -1693,24 +1704,24 @@
         initTPSCanvas(); 
     };
 
-    function copyToMorphoTSV() {
-        if (!globalPCA || globalSamples.length === 0) return;
-        let tsvLines = [
-            "# Source: App_9_Morphometrics_Studio",
-            `# Timestamp: ${new Date().toISOString()}`,
-            "Sample_ID\tSample_Name\tPC1_Score\tPC2_Score"
-        ];
-        globalSamples.forEach((sample, i) => {
-            let originalSample = window.transferredSamples ? window.transferredSamples.find(s => s.id === sample.name || s.name === sample.name) : null;
-            let sampleId = originalSample ? originalSample.id : `SAMP_${new Date().getTime()}_${i}`;
-            let sampleName = originalSample ? originalSample.name : sample.name;
-            tsvLines.push(`${sampleId}\t${sampleName}\t${globalPCA.pc1[i].toFixed(6)}\t${globalPCA.pc2[i].toFixed(6)}`);
-        });
-        fallbackCopyTextToClipboard(tsvLines.join("\n"), "⑪向け形態TSVをクリップボードにコピーしました！");
+    // エクスポートボタンの活性化状態を更新する制御関数
+    function updateExportButtonsState(hasValidData) {
+        const btn10 = document.getElementById('btnCopyForApp10');
+        const btn11 = document.getElementById('btnCopyForApp11');
+        const btn12 = document.getElementById('btnCopyForApp12');
+        
+        if (btn10) btn10.disabled = !hasValidData;
+        if (btn11) btn11.disabled = !hasValidData;
+        if (btn12) btn12.disabled = !hasValidData;
     }
+    window.updateExportButtonsState = updateExportButtonsState;
 
-    function copyToIntegrativeJSON() {
-        if (!globalPCA || globalSamples.length === 0 || !analysisResult) return;
+    // アプリ⑩ Integrative Taxonomy Studio 向け統合JSONエクスポート
+    function copyDataForApp10() {
+        if (!globalPCA || globalSamples.length === 0 || !analysisResult) {
+            showToast("PCA解析を実行してからコピーしてください", "warning");
+            return;
+        }
 
         let exportData = {
             metadata: {
@@ -1744,8 +1755,110 @@
             exportData.samples.push(sampleData);
         });
 
-        fallbackCopyTextToClipboard(JSON.stringify(exportData, null, 2), "⑩向け統合JSONをクリップボードにコピーしました！");
+        const jsonText = JSON.stringify(exportData, null, 2);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(jsonText).then(() => {
+                showToast("⑩ Integrative Taxonomy Studio用 統合JSONをクリップボードにコピーしました！", "success");
+            }).catch(err => {
+                console.error("Clipboard copy failed:", err);
+                fallbackCopyTextToClipboard(jsonText, "⑩ Integrative Taxonomy Studio用 統合JSONをクリップボードにコピーしました！");
+            });
+        } else {
+            fallbackCopyTextToClipboard(jsonText, "⑩ Integrative Taxonomy Studio用 統合JSONをクリップボードにコピーしました！");
+        }
     }
+    window.copyDataForApp10 = copyDataForApp10;
+    window.copyToIntegrativeJSON = copyDataForApp10;
+
+    window.copyVariationDataForApp11 = function() {
+        // 既存のPCA結果データ（アプリ⑨のデータ構造: globalPCA, globalSamples 等を参照）
+        // ※アプリ⑨内で管理されているサンプル一覧・スコア変数を取得
+        let targetData = null;
+        if (typeof currentPcaScores !== 'undefined' && currentPcaScores && currentPcaScores.length > 0) {
+            targetData = currentPcaScores;
+        } else if (typeof globalPCA !== 'undefined' && globalPCA && globalPCA.pc1 && globalPCA.pc1.length > 0 && typeof globalSamples !== 'undefined' && globalSamples && globalSamples.length > 0) {
+            targetData = globalSamples.map((sample, i) => {
+                let originalSample = window.transferredSamples ? window.transferredSamples.find(s => s.id === sample.name || s.name === sample.name) : null;
+                let id = originalSample ? originalSample.id : (sample.name || sample.id || `Sample_${i + 1}`);
+                return {
+                    id: id,
+                    name: sample.name || id,
+                    pc1: globalPCA.pc1[i],
+                    pc2: globalPCA.pc2[i],
+                    pca: [globalPCA.pc1[i], globalPCA.pc2[i]]
+                };
+            });
+        } else if (typeof samples !== 'undefined' && samples && samples.length > 0 && (samples[0].pca || samples[0].pc1 !== undefined)) {
+            targetData = samples;
+        }
+
+        if (!targetData || targetData.length === 0) {
+            showToast("PCA解析を実行してからコピーしてください", "warning");
+            return;
+        }
+
+        const timestamp = new Date().toISOString();
+        let lines = [`# source: App_9_Morphometrics_Studio | type: variation | timestamp: ${timestamp}`];
+
+        // アプリ⑨内のデータ配列から ID と PC1, PC2 を抽出してTSV化
+        targetData.forEach((item, i) => {
+            const rawId = item.name || item.id || `Sample_${i + 1}`;
+            const id = (!isNaN(rawId) && !isNaN(parseFloat(rawId))) ? `Sample_${rawId}` : rawId;
+            const pc1 = item.pc1 !== undefined ? Number(item.pc1).toFixed(4) : (item.pca ? Number(item.pca[0]).toFixed(4) : "0.0000");
+            const pc2 = item.pc2 !== undefined ? Number(item.pc2).toFixed(4) : (item.pca ? Number(item.pca[1]).toFixed(4) : "0.0000");
+            lines.push(`${id}\t${pc1}\t${pc2}`);
+        });
+
+        const tsvText = lines.join('\n');
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(tsvText).then(() => {
+                showToast("⑪用 変異データ (PCA得点) をクリップボードにコピーしました", "success");
+            }).catch(err => {
+                console.error("Clipboard copy failed:", err);
+                if (typeof fallbackCopyTextToClipboard === 'function') {
+                    fallbackCopyTextToClipboard(tsvText, "⑪用 変異データ (PCA得点) をクリップボードにコピーしました");
+                } else {
+                    showToast("データのコピーに失敗しました", "error");
+                }
+            });
+        } else if (typeof fallbackCopyTextToClipboard === 'function') {
+            fallbackCopyTextToClipboard(tsvText, "⑪用 変異データ (PCA得点) をクリップボードにコピーしました");
+        } else {
+            showToast("データのコピーに失敗しました", "error");
+        }
+    };
+
+    // アプリ⑫ Statistical Genetics Lab 向け形態TSVエクスポート
+    function copyMorphDataTSV() {
+        if (!globalPCA || globalSamples.length === 0) {
+            showToast("PCA解析を実行してからコピーしてください", "warning");
+            return;
+        }
+        let tsvLines = [
+            "# Source: App_9_Morphometrics_Studio",
+            `# Timestamp: ${new Date().toISOString()}`,
+            "Sample_ID\tSample_Name\tPC1_Score\tPC2_Score"
+        ];
+        globalSamples.forEach((sample, i) => {
+            let originalSample = window.transferredSamples ? window.transferredSamples.find(s => s.id === sample.name || s.name === sample.name) : null;
+            let sampleId = originalSample ? originalSample.id : `SAMP_${new Date().getTime()}_${i}`;
+            let sampleName = originalSample ? originalSample.name : sample.name;
+            tsvLines.push(`${sampleId}\t${sampleName}\t${globalPCA.pc1[i].toFixed(6)}\t${globalPCA.pc2[i].toFixed(6)}`);
+        });
+        const tsvText = tsvLines.join('\n');
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(tsvText).then(() => {
+                showToast("⑫ Statistical Genetics Lab用 形態TSVをクリップボードにコピーしました！", "success");
+            }).catch(err => {
+                console.error("Clipboard copy failed:", err);
+                fallbackCopyTextToClipboard(tsvText, "⑫ Statistical Genetics Lab用 形態TSVをクリップボードにコピーしました！");
+            });
+        } else {
+            fallbackCopyTextToClipboard(tsvText, "⑫ Statistical Genetics Lab用 形態TSVをクリップボードにコピーしました！");
+        }
+    }
+    window.copyMorphDataTSV = copyMorphDataTSV;
+    window.copyToMorphoTSV = copyMorphDataTSV;
 
     function fallbackCopyTextToClipboard(text, successMsg) {
         const textArea = document.createElement("textarea");
@@ -1777,8 +1890,12 @@
         
         const exportContainer = document.getElementById('export-buttons-container');
         if (exportContainer) {
-            document.getElementById('copy-tsv-btn').style.display = (route === 'A' || route === 'C') ? 'inline-flex' : 'none';
-            document.getElementById('copy-json-btn').style.display = (route === 'A' || route === 'C') ? 'inline-flex' : 'none';
+            const btnApp10 = document.getElementById('btnCopyForApp10');
+            const btnApp11 = document.getElementById('btnCopyForApp11');
+            const btnApp12 = document.getElementById('btnCopyForApp12');
+            if (btnApp10) btnApp10.style.display = (route === 'A' || route === 'C') ? 'inline-flex' : 'none';
+            if (btnApp11) btnApp11.style.display = (route === 'A' || route === 'C') ? 'inline-flex' : 'none';
+            if (btnApp12) btnApp12.style.display = (route === 'A' || route === 'C') ? 'inline-flex' : 'none';
             exportContainer.style.display = 'flex';
         }
         
@@ -1889,6 +2006,7 @@
     let currentFeatureMode = 'all';
 
     function runStrictMathEFA() {
+        updateExportButtonsState(false);
         const rawText = document.getElementById('chain-code-input').value.trim();
         const harmonics = parseInt(document.getElementById('harmonics-input').value, 10);
         currentFeatureMode = document.getElementById('pca-feature-mode').value;
@@ -1939,10 +2057,11 @@
             resetSliders();
             
             analysisResult = { type: 'efa_pca', mode: currentFeatureMode, sampleCount: globalSamples.length, timestamp: new Date().toISOString() };
-            document.getElementById('copy-json-btn').disabled = false; document.getElementById('copy-tsv-btn').disabled = false;
+            updateExportButtonsState(true);
             addLogEntry("画像/EFA ▶︎ PCA", `調和数:${harmonics}, モード:${currentFeatureMode}`, `標準化およびPCA完了 (${globalSamples.length} samples)`);
         } else {
             logStatus(`[ERROR] PCAには2つ以上のサンプルが必要です。`, "error");
+            updateExportButtonsState(false);
         }
     }
 
@@ -2568,6 +2687,7 @@
     document.getElementById('gpaCanvasWrapper')?.addEventListener('contextmenu', e => e.preventDefault());
 
     function runGPAAndPCA() {
+        updateExportButtonsState(false);
         if(gpaDataList.length < 2) { logStatus("[ERROR] GPAを実行するには少なくとも2つ以上のサンプルが必要です。", "error"); return; }
         let k = gpaDataList[0].landmarks.length;
         if(k < 3) { logStatus("[ERROR] 少なくとも3点以上のランドマークが必要です。", "error"); return; }
@@ -2603,14 +2723,14 @@
             
             analysisResult = { type: 'gpa_pca', mode: 'aligned_coordinates', sampleCount: gpaDataList.length, timestamp: new Date().toISOString() };
             
-            document.getElementById('copy-json-btn').disabled = false;
-            document.getElementById('copy-tsv-btn').disabled = false;
+            updateExportButtonsState(true);
             
             logStatus(`[SUCCESS] GPA および PCA 完了 (${gpaDataList.length} samples, ${k} landmarks)`);
             addLogEntry("ランドマーク/GPA ▶︎ PCA", `ランドマーク数:${k}`, `完了 (${gpaDataList.length} samples)`);
         } catch(e) {
             console.error(e);
             logStatus("[ERROR] 計算エンジンの実行中にエラーが発生しました。", "error");
+            updateExportButtonsState(false);
         }
     }
 
@@ -3014,6 +3134,7 @@
         }
 
         showConfirm("すべての入力データおよびローカル保存データを初期化しますか？この操作は取り消せません。", () => {
+            updateExportButtonsState(false);
             localStorage.clear();
             sessionStorage.clear();
             location.reload();
