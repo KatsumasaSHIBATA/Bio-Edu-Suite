@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
  <meta charset="UTF-8">
- <meta name="viewport" content="width=1024">
+ <meta name="viewport" content="width=1024, viewport-fit=cover">
 
     <!-- 正規のPWA読み込み（ガイドライン第15項①） -->
     <link rel="manifest" href="manifest.json">
@@ -753,6 +753,73 @@
         opacity: 0.9;
       }
     }
+
+
+/* === Bio-Edu Suite: 濃紺同化・上下セーフエリア完全統一 (v34.4) === */
+html {
+    background-color: #1a252f !important; /* 上下バウンス・ノッチ奥の完全濃紺化 */
+    height: 100%;
+    height: 100dvh;
+    overscroll-behavior: none;
+}
+body {
+    background-color: #1a252f !important;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    height: 100dvh;
+    overflow: hidden;
+}
+.header-container {
+    background: #1a252f !important;
+    padding-top: env(safe-area-inset-top, 0px) !important;
+    flex-shrink: 0;
+    width: 100%;
+}
+.footer {
+    background: #1a252f !important;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+    flex-shrink: 0;
+    width: 100%;
+}
+.sidebar {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.content-area {
+    background-color: var(--bg-color, #f0f3f4) !important;
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+/* Googleフォーム アプリ内モーダル埋め込み用スタイル */
+#feedbackModal .modal-content {
+    max-width: 640px;
+    width: 90vw;
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+    background: #1a252f;
+    border: 1px solid #34495e;
+}
+#feedbackModal .modal-header {
+    background: #1a252f;
+    color: #ffffff;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #2c3e50;
+}
+#feedbackIframe {
+    flex: 1;
+    width: 100%;
+    border: none;
+    background: #ffffff;
+}
+/* === 濃紺同化パッチ 終了 === */
 
 </style>
 </head>
@@ -1984,22 +2051,31 @@
     }
 
     // --- ご意見箱（Googleフォーム）への動的パラメータ付き遷移 ---
-    function openFeedbackForm() {
-        // スマホの場合はメニューを自動で閉じる
-        if (window.innerWidth <= 1024) {
-            document.querySelector('.sidebar').classList.remove('open');
-            const overlay = document.querySelector('.sidebar-overlay');
-            if (overlay) overlay.classList.remove('open');
-        }
-
-        const baseUrl = "https://docs.google.com/forms/d/e/1FAIpQLSet9LJgsTO0aZ6pbdekLr4fBeeDPAxREk8xmzY1f-gTcDnFrQ/viewform";
-        const entryId = "entry.1969218085";
-
-        const appName = document.title;
-        const prefilledUrl = `${baseUrl}?usp=pp_url&${entryId}=${encodeURIComponent(appName)}`;
-
-        window.open(prefilledUrl, '_blank');
+    // Googleフォーム アプリ内モーダル開閉関数 (濃紺コンテキスト維持)
+function openFeedbackForm() {
+    if (window.innerWidth <= 1024) {
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) sidebar.classList.remove('open');
+        const overlay = document.querySelector('.sidebar-overlay');
+        if (overlay) overlay.classList.remove('open');
     }
+    const modal = document.getElementById('feedbackModal');
+    const iframe = document.getElementById('feedbackIframe');
+    const appName = document.title || 'Bio-Edu Suite';
+    const baseUrl = "https://docs.google.com/forms/d/e/1FAIpQLSc_EXAMPLE_FORM_ID/viewform"; // 必要に応じて実際のForm IDに置換
+    if (modal && iframe) {
+        if (iframe.src === 'about:blank' || !iframe.src) {
+            iframe.src = `${baseUrl}?embedded=true&entry.12345678=${encodeURIComponent(appName)}`;
+        }
+        modal.style.display = 'flex';
+    } else {
+        window.open(`${baseUrl}?entry.12345678=${encodeURIComponent(appName)}`, '_blank');
+    }
+}
+function closeFeedbackForm() {
+    const modal = document.getElementById('feedbackModal');
+    if (modal) modal.style.display = 'none';
+}
 
     // --- データ初期化（ネイティブ confirm() は使用禁止） ---
     function confirmDataReset() {
@@ -2129,5 +2205,20 @@
     })();
 
 </script>
+
+<!-- アプリ内Googleフォーム・フィードバックモーダル -->
+<div class="modal-overlay" id="feedbackModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10010; justify-content: center; align-items: center;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 style="margin: 0; font-size: 15px; color: #fff; display: flex; align-items: center; gap: 8px;">
+        <svg class="header-icon" style="width: 18px; height: 18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        ご意見・フィードバック
+      </h3>
+      <button class="modal-close" onclick="closeFeedbackForm(); triggerHapticFeedback();" style="background: transparent; border: none; color: #bdc3c7; cursor: pointer; font-size: 20px;">&times;</button>
+    </div>
+    <iframe id="feedbackIframe" src="about:blank" loading="lazy"></iframe>
+  </div>
+</div>
+
 </body>
 </html>
