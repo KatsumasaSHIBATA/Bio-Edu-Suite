@@ -1,0 +1,116 @@
+diff --git a/11_Comparative_Variant_Analyzer.html b/11_Comparative_Variant_Analyzer.html
+index 50605cb..9231624 100644
+--- a/11_Comparative_Variant_Analyzer.html
++++ b/11_Comparative_Variant_Analyzer.html
+@@ -15,16 +15,7 @@
+     <meta name="apple-mobile-web-app-title" content="BioEdu">
+     <link rel="apple-touch-icon" href="icon-192.png">
+     <title>⑪ Comparative Variant Analyzer | Bio-Edu Suite</title>
+-        <script src="lib/bio_math_engine.js">
+-// アプリ11 初期ガードレール補正
+-document.addEventListener("DOMContentLoaded", () => {
+-    const runBtn = document.getElementById("runVariantAnalysisBtn") || document.getElementById("runAnalysisBtn") || document.querySelector(".btn-run-analysis");
+-    if (runBtn) {
+-        runBtn.disabled = true;
+-    }
+-});
+-
+-</script>
++        <script src="lib/bio_math_engine.js"></script>
+     <style>
+         :root {
+             --phase-color: #8e44ad;
+@@ -850,8 +841,84 @@ body {
+     }
+ }
+ 
++
++/* 【ガイドライン準拠】アプリ⑪ 解析実行ボタン（未解析時: 白・無効）規格 */
++.btn-run-analysis, #runVariantAnalysisBtn, #runAnalysisBtn {
++    background-color: var(--phase-color, #8e44ad);
++    color: #ffffff;
++    border: 1px solid transparent;
++    border-radius: 4px;
++    padding: 10px 16px;
++    font-size: 13px;
++    font-weight: bold;
++    cursor: pointer;
++    transition: all 0.2s ease;
++    box-sizing: border-box;
++}
++.btn-run-analysis:hover:not(:disabled), #runVariantAnalysisBtn:hover:not(:disabled), #runAnalysisBtn:hover:not(:disabled) {
++    filter: brightness(1.08);
++    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
++}
++/* 未解析時: 白っぽく押せないスタイル */
++.btn-run-analysis:disabled, #runVariantAnalysisBtn:disabled, #runAnalysisBtn:disabled {
++    background-color: #ffffff !important;
++    color: #bdc3c7 !important;
++    border: 1px solid #d5dbdb !important;
++    cursor: not-allowed !important;
++    opacity: 0.8 !important;
++    box-shadow: none !important;
++    filter: none !important;
++    transform: none !important;
++}
++
++
++/* Recovery App 11 run btn */
++#run-analysis-btn {
++    background-color: var(--phase-color, #8e44ad) !important;
++    color: #ffffff !important;
++    border: 1px solid transparent !important;
++    padding: 10px 16px !important;
++}
++#run-analysis-btn:disabled {
++    background-color: #ffffff !important;
++    color: #bdc3c7 !important;
++    border: 1px solid #d5dbdb !important;
++    cursor: not-allowed !important;
++    opacity: 0.8 !important;
++    box-shadow: none !important;
++    filter: none !important;
++    transform: none !important;
++}
++
+ </style>
+     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
++
++<script>
++// Recovery App 11 observer
++document.addEventListener('DOMContentLoaded', () => {
++    const runBtn = document.getElementById('run-analysis-btn');
++    window.checkApp11ReadyState = function() {
++        if (!runBtn) return;
++        const mutInput = document.getElementById('mutation-data');
++        const varInput = document.getElementById('variation-data');
++        
++        const hasMut = mutInput && mutInput.value.trim().length > 0;
++        const hasVar = varInput && varInput.value.trim().length > 0;
++        
++        runBtn.disabled = !(hasMut && hasVar);
++    };
++
++    ['mutation-data', 'variation-data'].forEach(id => {
++        const el = document.getElementById(id);
++        if (el) {
++            el.addEventListener('input', window.checkApp11ReadyState);
++            el.addEventListener('change', window.checkApp11ReadyState);
++        }
++    });
++
++    setTimeout(window.checkApp11ReadyState, 100);
++});
++</script>
+ </head>
+ <body class="app-mode no-select-ui">
+ <div id="toast"></div>
+@@ -1070,7 +1137,7 @@ body {
+             </div>
+             
+             <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+-                <button id="run-analysis-btn" class="btn btn-primary" onclick="triggerHapticFeedback();">
++                <button id="run-analysis-btn" class="btn btn-primary" onclick="triggerHapticFeedback();" disabled>
+                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-right: 6px;"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                     解析を実行
+                 </button>

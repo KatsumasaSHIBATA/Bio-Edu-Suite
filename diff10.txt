@@ -1,0 +1,142 @@
+diff --git a/10_integrative_taxonomy_studio.html b/10_integrative_taxonomy_studio.html
+index a3822c6..6a94697 100644
+--- a/10_integrative_taxonomy_studio.html
++++ b/10_integrative_taxonomy_studio.html
+@@ -15,23 +15,7 @@
+     <meta name="apple-mobile-web-app-title" content="BioEdu">
+     <link rel="apple-touch-icon" href="icon-192.png">
+     <title>⑩ Integrative Taxonomy Studio | Bio-Edu Suite</title>
+-    <script src="https://d3js.org/d3.v7.min.js">
+-// アプリ10 初期ガードレール補正
+-document.addEventListener("DOMContentLoaded", () => {
+-    const runBtn = document.getElementById("runTaxonomyBtn") || document.getElementById("runAnalysisBtn") || document.querySelector(".btn-run-analysis");
+-    if (runBtn) {
+-        runBtn.disabled = true;
+-    }
+-    // タングルグラム・モーフィング切替ボタンを強制無効化しない
+-    const toggleBtns = document.querySelectorAll(".view-toggle-btn, .tab-btn");
+-    toggleBtns.forEach(btn => {
+-        if (!btn.classList.contains("analysis-trigger")) {
+-            btn.disabled = false;
+-        }
+-    });
+-});
+-
+-</script>
++    <script src="https://d3js.org/d3.v7.min.js"></script>
+     <script src="lib/bio_math_engine.js"></script>
+     <style>
+         :root {
+@@ -858,7 +842,94 @@ body {
+     }
+ }
+ 
++
++/* 【ガイドライン準拠】アプリ⑩ 解析実行ボタン（未解析時: 白・無効）およびパネル白化解除 */
++.btn-run-analysis, #runTaxonomyBtn, #runAnalysisBtn {
++    background-color: var(--phase-color, #8e44ad);
++    color: #ffffff;
++    border: 1px solid transparent;
++    border-radius: 4px;
++    padding: 10px 16px;
++    font-size: 13px;
++    font-weight: bold;
++    cursor: pointer;
++    transition: all 0.2s ease;
++    box-sizing: border-box;
++}
++.btn-run-analysis:hover:not(:disabled), #runTaxonomyBtn:hover:not(:disabled), #runAnalysisBtn:hover:not(:disabled) {
++    filter: brightness(1.08);
++    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
++}
++/* 未解析時: 白っぽく押せないスタイル */
++.btn-run-analysis:disabled, #runTaxonomyBtn:disabled, #runAnalysisBtn:disabled {
++    background-color: #ffffff !important;
++    color: #bdc3c7 !important;
++    border: 1px solid #d5dbdb !important;
++    cursor: not-allowed !important;
++    opacity: 0.8 !important;
++    box-shadow: none !important;
++    filter: none !important;
++    transform: none !important;
++}
++
++/* タングルグラム・モーフィング表示パネルの白化解除（常時クリア表示） */
++#tanglegramPanel, #morphingPanel, .tanglegram-container, .morphing-container, .chart-panel {
++    opacity: 1 !important;
++    filter: none !important;
++    pointer-events: auto !important;
++}
++.panel-disabled-overlay, .inactive-overlay, .panel-mask {
++    display: none !important;
++}
++
++
++/* Recovery App 10 run btn */
++#run-analysis-btn-10 {
++    background-color: var(--phase-color, #8e44ad) !important;
++    color: #ffffff !important;
++    border: 1px solid transparent !important;
++    padding: 10px 16px !important;
++}
++#run-analysis-btn-10:disabled {
++    background-color: #ffffff !important;
++    color: #bdc3c7 !important;
++    border: 1px solid #d5dbdb !important;
++    cursor: not-allowed !important;
++    opacity: 0.8 !important;
++    box-shadow: none !important;
++    filter: none !important;
++    transform: none !important;
++}
++
+ </style>
++
++<script>
++// Recovery App 10 observer
++document.addEventListener('DOMContentLoaded', () => {
++    const runBtn = document.getElementById('run-analysis-btn-10');
++    window.checkApp10ReadyState = function() {
++        if (!runBtn) return;
++        const molInput = document.getElementById('newick-mol-input');
++        const morphInput = document.getElementById('hybrid-morph-input');
++        const jsonInput = document.getElementById('json-input');
++        
++        const hasMol = molInput && molInput.value.trim().length > 0;
++        const hasMorph = (morphInput && morphInput.value.trim().length > 0) || (jsonInput && jsonInput.value.trim().length > 0);
++        
++        runBtn.disabled = !(hasMol && hasMorph);
++    };
++
++    ['newick-mol-input', 'hybrid-morph-input', 'json-input'].forEach(id => {
++        const el = document.getElementById(id);
++        if (el) {
++            el.addEventListener('input', window.checkApp10ReadyState);
++            el.addEventListener('change', window.checkApp10ReadyState);
++        }
++    });
++
++    setTimeout(window.checkApp10ReadyState, 100);
++});
++</script>
+ </head>
+ <body class="app-mode no-select-ui">
+ <div id="toast"></div>
+@@ -1117,7 +1188,7 @@ body {
+             </div>
+             
+             <div style="display: flex; gap: 16px; margin-top: 8px; justify-content: flex-end;">
+-                <button class="btn-primary" onclick="runIntegration()">
++                <button id="run-analysis-btn-10" class="btn-primary" onclick="runIntegration()" disabled>
+                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                     解析を実行
+                 </button>
+@@ -1133,7 +1204,7 @@ body {
+     </div>
+ 
+     <!-- 1画面モーフィングUI -->
+-    <div class="viewer-container" id="viewer-area" style="opacity: 0.5; pointer-events: none; transition: 0.3s;">
++    <div class="viewer-container" id="viewer-area" style="transition: 0.3s;">
+         <!-- Ⅱ. タングルグラム (分子系統樹 vs 形態系統樹) -->
+         <div class="card viewer-pane">
+             <div class="card-header">
