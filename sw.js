@@ -18,9 +18,9 @@ const PRECACHE_ASSETS = [
   './8_Phylogenetic_Tree_Builder.html',
   './9_Morphometrics_Studio.html',
   './10_integrative_taxonomy_studio.html',
-  './11_Statistical_Genetics_Lab.html',
-  './12_Central_Dogma_Simulator.html',
-  './13_Protein_Structure_Explorer.html',
+  './12_Statistical_Genetics_Lab.html',
+  './13_Central_Dogma_Simulator.html',
+  './14_Protein_Structure_Explorer.html',
   './lab_packs.html'
 ];
 

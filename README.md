@@ -49,14 +49,16 @@ DNA配列の増幅（PCR）から、系統樹作成、形態測定（EFA）、�
 ### PHASE 4: 統合検証ルーム
 - **⑩ Integrative Taxonomy Studio (Taxonomy Explorer)** (`10_integrative_taxonomy_studio.html`)
   分子系統樹と形態データを統合（タングルグラム）し、進化の軌跡をたどる形態空間モーフィングを体験します。
+- **⑪ Comparative Variant Analyzer** (`11_Comparative_Variant_Analyzer.html`)
+  複数サンプルの変異を比較解析します。
 
 ### PHASE 5: 統計遺伝学
-- **⑪ Statistical Genetics Lab** (`11_Statistical_Genetics_Lab.html`)
+- **⑫ Statistical Genetics Lab** (`12_Statistical_Genetics_Lab.html`)
   環境データと形態データを結合し、AMMIバイプロットや反応規範、分散分析(ANOVA)を通じて、遺伝×環境相互作用(GxE)を解析します。
 
 ### PHASE 6: 構造生物学
-- **⑫ Central Dogma Simulator** (`12_Central_Dogma_Simulator.html`) - 転写・翻訳シミュレータ
-- **⑬ Protein Structure Explorer** (`13_Protein_Structure_Explorer.html`) - 1D-3D連動型タンパク質構造ビューア
+- **⑬ Central Dogma Simulator** (`13_Central_Dogma_Simulator.html`) - 転写・翻訳シミュレータ
+- **⑭ Protein Structure Explorer** (`14_Protein_Structure_Explorer.html`) - 1D-3D連動型タンパク質構造ビューア
 
 ---
 
