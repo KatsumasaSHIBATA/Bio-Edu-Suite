@@ -15,7 +15,23 @@
     <meta name="apple-mobile-web-app-title" content="BioEdu">
     <link rel="apple-touch-icon" href="icon-192.png">
     <title>⑩ Integrative Taxonomy Studio | Bio-Edu Suite</title>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js">
+// アプリ10 初期ガードレール補正
+document.addEventListener("DOMContentLoaded", () => {
+    const runBtn = document.getElementById("runTaxonomyBtn") || document.getElementById("runAnalysisBtn") || document.querySelector(".btn-run-analysis");
+    if (runBtn) {
+        runBtn.disabled = true;
+    }
+    // タングルグラム・モーフィング切替ボタンを強制無効化しない
+    const toggleBtns = document.querySelectorAll(".view-toggle-btn, .tab-btn");
+    toggleBtns.forEach(btn => {
+        if (!btn.classList.contains("analysis-trigger")) {
+            btn.disabled = false;
+        }
+    });
+});
+
+</script>
     <script src="lib/bio_math_engine.js"></script>
     <style>
         :root {
@@ -708,6 +724,18 @@
       }
     }
 
+
+/* アプリ10 解析実行ボタン（未解析時無効化・白） */
+#runTaxonomyBtn:disabled, #runAnalysisBtn:disabled, .btn-run-analysis:disabled {
+    background-color: #ffffff !important;
+    color: #bdc3c7 !important;
+    border: 1px solid #bdc3c7 !important;
+    opacity: 0.7 !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+    filter: none !important;
+}
+
 </style>
 </head>
 <body class="app-mode no-select-ui">
@@ -969,7 +997,7 @@
             <div style="display: flex; gap: 16px; margin-top: 8px; justify-content: flex-end;">
                 <button class="btn-primary" onclick="runIntegration()">
                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                    統合解析を実行
+                    解析を実行
                 </button>
             </div>
             

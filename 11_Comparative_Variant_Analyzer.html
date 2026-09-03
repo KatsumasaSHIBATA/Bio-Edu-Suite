@@ -15,7 +15,16 @@
     <meta name="apple-mobile-web-app-title" content="BioEdu">
     <link rel="apple-touch-icon" href="icon-192.png">
     <title>⑪ Comparative Variant Analyzer | Bio-Edu Suite</title>
-        <script src="lib/bio_math_engine.js"></script>
+        <script src="lib/bio_math_engine.js">
+// アプリ11 初期ガードレール補正
+document.addEventListener("DOMContentLoaded", () => {
+    const runBtn = document.getElementById("runVariantAnalysisBtn") || document.getElementById("runAnalysisBtn") || document.querySelector(".btn-run-analysis");
+    if (runBtn) {
+        runBtn.disabled = true;
+    }
+});
+
+</script>
     <style>
         :root {
             --phase-color: #8e44ad;
@@ -707,6 +716,17 @@
         opacity: 0.9;
       }
     }
+
+
+/* アプリ11 解析実行ボタン（未解析時無効化・白） */
+#runVariantAnalysisBtn:disabled, #runAnalysisBtn:disabled, .btn-run-analysis:disabled {
+    background-color: #ffffff !important;
+    color: #bdc3c7 !important;
+    border: 1px solid #bdc3c7 !important;
+    opacity: 0.7 !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+}
 
 </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

@@ -731,6 +731,23 @@
     }
 }
 
+
+/* アプリ9 バケツリレーボタングループ（幅同期・右寄せ） */
+.morpho-export-group, #morphoExportGroup, .export-btn-group {
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+    margin-left: auto !important;
+}
+.morpho-export-group .btn, #morphoExportGroup .btn, .export-btn-group .btn-secondary {
+    min-width: 110px !important; /* 一番文字数の長い「JSONコピー」基準 */
+    text-align: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+}
+
 </style>
 </head>
 <body class="app-mode no-select-ui">
