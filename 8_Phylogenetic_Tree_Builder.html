@@ -4903,126 +4903,190 @@ function closeFeedbackForm() {
     }
 </script>
 
-<!-- 入力データの一時保存（sessionStorage） v34.3.8 -->
+<!-- 入力データ・系統樹ステート完全一時保存（sessionStorage） v35.2 -->
 <script>
 (function () {
     /* ===================================================================
-       【v34.3.8】ページ遷移時の入力データ一時保存
-       解析パイプラインを行き来しても入力が失われないようにする。
-       ・sessionStorage はタブを閉じるまで有効。localStorage を使う既存の
-         バケツリレー／履歴機能には一切干渉しない。
-       ・復元は「その欄が空のときだけ」行う。これにより、アプリ間の
-         受け渡しデータや初期表示値が入っている場合はそちらを優先する。
-       ・復元後に input イベントを発火し、アプリ側の更新処理
-         （入力欄の活性化判定・文字数表示など）を通常入力時と同じ経路で走らせる。
+       【セッション永続化仕様】アプリ⑧ 系統樹ステート・ログ・UI完全復元 (v35.3)
+       lexicalスコープ変数の直接上書きと、ロード後のイベント順序適正化
        =================================================================== */
-    const AUTOSAVE_KEY = 'bio_edu_autosave_app8';
-    const FIELDS = ['fastaInput'];
+    const AUTOSAVE_KEY = 'bio_edu_autosave_app8_full';
 
-    // 離脱時に退避
-    document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState !== 'hidden') return;
-        try {
-            const data = {};
-            let hasValue = false;
-            FIELDS.forEach(id => {
-                const el = document.getElementById(id);
-                if (!el) return;
-                data[id] = el.value;
-                if (String(el.value).trim() !== '') hasValue = true;
-            });
-            if (hasValue) sessionStorage.setItem(AUTOSAVE_KEY, JSON.stringify(data));
-            else sessionStorage.removeItem(AUTOSAVE_KEY);
-        } catch (e) {
-            // 容量超過などで保存できなくても離脱そのものは妨げない
-            console.warn('一時保存に失敗しました:', e);
-        }
-    });
+    function serializeTree(node) {
+        if (!node) return null;
+        return {
+            id: node.id,
+            name: node.name || "",
+            edge: node.edge || 0,
+            size: node.size || 1,
+            maxDepth: node.maxDepth || 0,
+            active: !!node.active,
+            minLeafIndex: node.minLeafIndex !== undefined ? node.minLeafIndex : 0,
+            bootstrap: node.bootstrap,
+            left: serializeTree(node.left),
+            right: serializeTree(node.right)
+        };
+    }
 
-    // 起動時に書き戻す
-    window.addEventListener('DOMContentLoaded', () => {
+    function savePhyloSession() {
         try {
-            const saved = JSON.parse(sessionStorage.getItem(AUTOSAVE_KEY) || 'null');
-            if (!saved) return;
-            let restored = 0;
-            FIELDS.forEach(id => {
-                const el = document.getElementById(id);
-                if (!el) return;
-                if (typeof saved[id] !== 'string' || saved[id].trim() === '') return;
-                if (String(el.value).trim() !== '') return;   // 既存の値を優先
-                el.value = saved[id];
-                el.dispatchEvent(new Event('input', { bubbles: true }));
-                restored++;
-            });
-            if (restored > 0 && typeof showToast === 'function') {
-                showToast('前回の入力内容を復元しました', 'info');
+            const fastaEl = document.getElementById('fastaInput');
+            const fastaVal = fastaEl ? fastaEl.value : "";
+            
+            if (!fastaVal.trim() && (typeof clusters === 'undefined' || !clusters || clusters.length === 0)) {
+                sessionStorage.removeItem(AUTOSAVE_KEY);
+                return;
             }
+
+            const state = {
+                savedAt: Date.now(),
+                fasta: fastaVal,
+                algo: document.getElementById('algoSelect') ? document.getElementById('algoSelect').value : 'UPGMA',
+                bootstrapVal: document.querySelector('input[name="bootstrap"]:checked') ? document.querySelector('input[name="bootstrap"]:checked').value : '0',
+                outgroupVal: document.getElementById('outgroupSelect') ? document.getElementById('outgroupSelect').value : '',
+                originalNames: typeof originalNames !== 'undefined' ? originalNames : [],
+                clusters: (typeof clusters !== 'undefined' && clusters && clusters.length > 0) ? clusters.map(serializeTree) : [],
+                distanceMatrix: typeof distanceMatrix !== 'undefined' ? distanceMatrix : [],
+                initialDistanceMatrix: typeof initialDistanceMatrix !== 'undefined' ? initialDistanceMatrix : [],
+                currentSampleNames: window.currentSampleNames || null,
+                currentDistanceMatrix: window.currentDistanceMatrix || null,
+                analysisLogs: typeof analysisLogs !== 'undefined' ? analysisLogs : [],
+                stepCount: typeof stepCount !== 'undefined' ? stepCount : 0,
+                matrixHtml: document.getElementById('matrixContainer') ? document.getElementById('matrixContainer').innerHTML : '',
+                statusLogHtml: document.getElementById('statusLog') ? document.getElementById('statusLog').innerHTML : '',
+                matrixTitle: document.getElementById('matrixTitle') ? document.getElementById('matrixTitle').innerText : '',
+                hasTree: !!(typeof clusters !== 'undefined' && clusters && clusters.some(c => c.active))
+            };
+
+            sessionStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state));
         } catch (e) {
-            console.warn('一時保存の復元に失敗しました:', e);
+            console.warn('[AutoSave] App8 state save failed:', e);
         }
-    });
-})();
+    }
 
-    /* ===================================================================
-       【第7項改定】ネイティブ化必須要件：オートセーブ＆ハイドレーション仕様
-       Page Visibility API による瞬間ドラフト保存とステート復元
-       =================================================================== */
-    (function() {
-        const DRAFT_KEY = 'bio_edu_draft_' + (window.location.pathname.split('/').pop() || 'index.html');
+    function restorePhyloSession() {
+        try {
+            const raw = sessionStorage.getItem(AUTOSAVE_KEY);
+            if (!raw) return;
+            const state = JSON.parse(raw);
+            if (!state) return;
 
-        function serializeUIState() {
-            try {
-                const inputs = document.querySelectorAll('input, textarea, select');
-                const draft = {};
-                inputs.forEach(el => {
-                    if (el.id && !el.closest('#confirmModal') && !el.closest('#accountModal')) {
-                        if (el.type === 'checkbox' || el.type === 'radio') {
-                            draft[el.id] = el.checked;
-                        } else if (el.type !== 'file' && el.type !== 'password') {
-                            draft[el.id] = el.value;
-                        }
-                    }
+            // 1. FASTA入力欄の復元
+            const fastaEl = document.getElementById('fastaInput');
+            if (fastaEl && (!fastaEl.value || fastaEl.value.trim() === '')) {
+                fastaEl.value = state.fasta || "";
+            }
+
+            // 2. アルゴリズムとブートストラップ選択の復元
+            if (state.algo && document.getElementById('algoSelect')) {
+                document.getElementById('algoSelect').value = state.algo;
+            }
+            if (state.bootstrapVal) {
+                const radio = document.querySelector(`input[name="bootstrap"][value="${state.bootstrapVal}"]`);
+                if (radio) radio.checked = true;
+            }
+
+            // 3. 系統樹内部オブジェクト群の復元（lexicalスコープ変数の直接上書き）
+            if (state.clusters && state.clusters.length > 0 && typeof clusters !== 'undefined') {
+                clusters = state.clusters;
+                clusters.forEach(c => {
+                    if (typeof restoreParentLinks === 'function') restoreParentLinks(c);
                 });
-                sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-            } catch (e) {
-                console.warn('UIステートのシリアライズに失敗しました:', e);
             }
-        }
+            if (state.originalNames && typeof originalNames !== 'undefined') originalNames = state.originalNames;
+            if (state.distanceMatrix && typeof distanceMatrix !== 'undefined') distanceMatrix = state.distanceMatrix;
+            if (state.initialDistanceMatrix && typeof initialDistanceMatrix !== 'undefined') initialDistanceMatrix = state.initialDistanceMatrix;
+            if (state.currentSampleNames) window.currentSampleNames = state.currentSampleNames;
+            if (state.currentDistanceMatrix) window.currentDistanceMatrix = state.currentDistanceMatrix;
+            if (state.stepCount && typeof stepCount !== 'undefined') stepCount = state.stepCount;
 
-        function hydrateUIState() {
-            try {
-                const draftStr = sessionStorage.getItem(DRAFT_KEY);
-                if (!draftStr) return;
-                const draft = JSON.parse(draftStr);
-                for (const id in draft) {
-                    const el = document.getElementById(id);
-                    if (el && !el.closest('#confirmModal') && !el.closest('#accountModal')) {
-                        if (el.type === 'checkbox' || el.type === 'radio') {
-                            el.checked = draft[id];
-                        } else if (el.type !== 'file' && el.type !== 'password') {
-                            el.value = draft[id];
-                        }
-                        el.dispatchEvent(new Event('input', { bubbles: true }));
-                        el.dispatchEvent(new Event('change', { bubbles: true }));
-                    }
+            // 4. 外群選択セレクトボックスの復元
+            const outgroupSelect = document.getElementById('outgroupSelect');
+            if (outgroupSelect && state.originalNames && state.originalNames.length > 0) {
+                outgroupSelect.innerHTML = '<option value="">外群指定(自動)</option>';
+                state.originalNames.forEach(n => {
+                    const opt = document.createElement('option');
+                    opt.value = n;
+                    opt.className = "scientific-name";
+                    opt.text = `外群: ${typeof formatScientificName === 'function' ? formatScientificName(n) : n}`;
+                    outgroupSelect.appendChild(opt);
+                });
+                outgroupSelect.disabled = false;
+                if (state.outgroupVal) outgroupSelect.value = state.outgroupVal;
+            }
+
+            // 5. 行列表示・ステータスバー・タイトルの復元
+            if (state.matrixHtml && document.getElementById('matrixContainer')) {
+                document.getElementById('matrixContainer').innerHTML = state.matrixHtml;
+            }
+            if (state.statusLogHtml && document.getElementById('statusLog')) {
+                document.getElementById('statusLog').innerHTML = state.statusLogHtml;
+            }
+            if (state.matrixTitle && document.getElementById('matrixTitle')) {
+                document.getElementById('matrixTitle').innerText = state.matrixTitle;
+            }
+
+            // 6. 解析ログ（履歴）テーブルの復元
+            if (state.analysisLogs && state.analysisLogs.length > 0 && typeof analysisLogs !== 'undefined') {
+                analysisLogs = state.analysisLogs;
+                const tbody = document.getElementById('logTableBody');
+                if (tbody) {
+                    tbody.innerHTML = '';
+                    state.analysisLogs.forEach(log => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td style="white-space: nowrap;">${log.id}</td>
+                            <td style="white-space: nowrap;">${log.algo}</td>
+                            <td style="white-space: nowrap;">${log.bs}</td>
+                            <td>${log.clades ? log.clades.replace(/ \| /g, '<br>') : '-'}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
                 }
-            } catch (e) {
-                console.warn('UIステートのハイドレーションに失敗しました:', e);
+                const btnDownloadLog = document.getElementById('btnDownloadLog');
+                if (btnDownloadLog) btnDownloadLog.disabled = false;
             }
-        }
 
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden') {
-                serializeUIState();
+            // 7. 系統樹描画とエクスポートボタンの再活性化
+            if (state.hasTree && typeof clusters !== 'undefined' && clusters.some(c => c.active)) {
+                if (typeof drawTree === 'function') drawTree();
+                if (typeof updateExplanation === 'function') updateExplanation();
+
+                const btnSaveImg = document.getElementById('btnSaveImg');
+                const btnExportCSV = document.getElementById('btnExportCSV');
+                if (btnSaveImg) btnSaveImg.disabled = false;
+                if (btnExportCSV) btnExportCSV.disabled = false;
+
+                if (typeof updatePhyloExportButtonsState === 'function') {
+                    updatePhyloExportButtonsState(true);
+                }
+                if (typeof showToast === 'function') {
+                    showToast('前回の系統樹と解析結果を復元しました', 'info');
+                }
             }
-        });
-
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', hydrateUIState);
-        } else {
-            hydrateUIState();
+        } catch (e) {
+            console.warn('[AutoSave] App8 restore failed:', e);
         }
-    })();
+    }
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') savePhyloSession();
+    });
+    window.addEventListener('pagehide', savePhyloSession);
+
+    // 既存の window.onload より確実に後に実行して上書きするため、loadイベントのさらに遅延実行を適用
+    window.addEventListener('load', () => {
+        setTimeout(restorePhyloSession, 150);
+    });
+
+    const origConfirm = window.confirmDataReset;
+    if (typeof origConfirm === 'function') {
+        window.confirmDataReset = function() {
+            sessionStorage.removeItem(AUTOSAVE_KEY);
+            origConfirm();
+        };
+    }
+})();
 
 
     // 入力変更時および初期ロード時のエクスポートボタン状態初期化（ガイドライン第9項②準拠）
