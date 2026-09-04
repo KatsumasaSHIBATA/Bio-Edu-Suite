@@ -2374,16 +2374,31 @@ function closeFeedbackForm() {
     sequenceGrid.addEventListener('mousedown', function(e) {
         currentMouseX = e.clientX; 
         if(e.target.classList.contains('base')) {
-            isDragging = true; dragMode = 'individual';
             let row = parseInt(e.target.parentElement.dataset.row);
             let col = parseInt(e.target.dataset.col);
-            dragStartRow = row; dragStartCol = col; dragEndCol = col;
-            selectCell(row, col); updateDragSelection(); startAutoScroll();
+            if (e.shiftKey && dragMode === 'individual' && dragStartRow === row && dragStartCol !== -1) {
+                dragEndCol = col;
+                isDragging = true;
+                selectCell(row, col);
+                updateDragSelection();
+                startAutoScroll();
+            } else {
+                isDragging = true; dragMode = 'individual';
+                dragStartRow = row; dragStartCol = col; dragEndCol = col;
+                selectCell(row, col); updateDragSelection(); startAutoScroll();
+            }
         } else if (e.target.classList.contains('pos-marker')) {
-            isDragging = true; dragMode = 'column';
             let col = parseInt(e.target.dataset.hcol);
-            dragStartRow = -1; dragStartCol = col; dragEndCol = col;
-            updateDragSelection(); startAutoScroll();
+            if (e.shiftKey && dragMode === 'column' && dragStartCol !== -1) {
+                dragEndCol = col;
+                isDragging = true;
+                updateDragSelection();
+                startAutoScroll();
+            } else {
+                isDragging = true; dragMode = 'column';
+                dragStartRow = -1; dragStartCol = col; dragEndCol = col;
+                updateDragSelection(); startAutoScroll();
+            }
         }
     });
 
