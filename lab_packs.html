@@ -305,31 +305,6 @@
 
     #appendix-data { display: none; }
 
-    .section-divider { margin: 60px 0 40px; border: none; border-top: 2px dashed var(--border-color); }
-    .tl-header { text-align: center; margin-bottom: 30px; }
-    .tl-header h2 { margin: 0; color: var(--primary); font-size: 20px; font-weight: 700; }
-    .tl-header p { margin: 5px 0 0 0; color: var(--text-muted); font-size: 13px; }
-
-    .tl-container { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; width: 100%; margin: 0 auto; align-items: start; }
-    .tl-card { background: var(--card-bg); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--border-color); border-top: 4px solid var(--phase-color); min-width: 0; }
-    .tl-card-header { padding: 15px 20px; background: var(--secondary); color: white; font-size: 15px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
-    .tl-card-body { padding: 25px 20px; display: flex; flex-direction: column; gap: 15px; }
-    .tl-card-body p { font-size: 13px; line-height: 1.6; margin: 0; color: var(--text-main); }
-    
-    .code-container { position: relative; background: #1e293b; border-radius: 8px; overflow: hidden; margin-top: 5px; border: 1px solid #0f172a; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); min-width: 0; width: 100%; max-width: 100%; box-sizing: border-box;}
-    .code-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: #334155; border-bottom: 1px solid #0f172a; color: #cbd5e1; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.5px;}
-    .code-header-left { display: flex; align-items: center; }
-    .code-header-right { display: flex; align-items: center; gap: 12px; }
-    .code-action-btn { background: transparent; color: #94a3b8; border: none; cursor: pointer; padding: 4px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s; outline: none; }
-    .code-action-btn:hover { color: #f8fafc; background: rgba(255, 255, 255, 0.1); transform: scale(1.05); }
-    .code-action-btn:active { transform: scale(0.95); }
-    .code-action-btn svg { width: 18px; height: 18px; stroke-width: 2px; }
-    pre { color: #f8f8f2; padding: 16px 20px; overflow-x: auto; font-family: 'Consolas', 'Monaco', monospace; font-size: 12px; line-height: 1.5; margin: 0; max-height: 400px; }
-    .kd { color: #ff79c6; } 
-    .s { color: #f1fa8c; } 
-    .c { color: #6272a4; } 
-    .nf { color: #50fa7b; } 
-
     #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--success); color: white; padding: 12px 24px; border-radius: 30px; font-weight: bold; font-size: 13px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 100000; pointer-events: none; text-align: center; max-width: 90vw; box-sizing: border-box; word-break: auto-phrase; }    
     #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }    
     #toast.error { background: var(--danger); }    
@@ -365,7 +340,6 @@
       .pack-grid { grid-template-columns: 1fr; }
       .action-area { flex-direction: column; }
       .btn-download { width: 100%; }
-      .tl-container { grid-template-columns: minmax(0, 1fr); padding: 0; }
     }
 
         /* ===================================================================
@@ -1120,213 +1094,6 @@ body {
         </div>
       </div>
 
-      <hr class="section-divider">
-      
-      <div class="tl-header">
-        <h2>オリジナルのカセットデータの作り方</h2>
-        <p>自分だけのデータベース（JSON）を生成するノウハウ</p>
-      </div>
-
-      <div class="tl-container">
-        <!-- 1. 自動作成スクリプト -->
-        <div class="tl-card">
-          <div class="tl-card-header">
-            学名リストから全自動生成 (Google Colab)
-          </div>
-          <div class="tl-card-body">
-            <p>
-              最も強力で簡単な方法です。調べたい生物の「学名リスト」を渡すだけで、PythonがNCBI（米国立生物工学情報センター）にアクセスし、<b>正しいミトコンドリアゲノムを探し出し、目的の遺伝子（COI等）だけを正確に切り出して</b>JSONを作成します。
-            </p>
-            
-            <div class="section-title"><span>[手順]</span> 実行手順</div>
-            <p>
-              ① ブラウザで <a href="https://colab.research.google.com/" target="_blank" style="color:#2980b9; font-weight:bold; text-decoration: none;">Google Colaboratory</a> を開き、「ノートブックを新規作成」します。<br>
-              ② 以下のコードをコードセルに貼り付け、再生ボタン（▶）を押して実行します。<br>
-              ③ 左側のフォルダから、完成した <code>MyCustomDB.json</code> をダウンロードし、アプリ⑦に読み込ませます。
-            </p>
-
-            <div class="code-container">
-              <div class="code-header">
-                <div class="code-header-left">Python</div>
-                <div class="code-header-right">
-                  <button class="code-action-btn" onclick="downloadCode('python-script', 'MyCustomDB_Generator.py')" aria-label="ダウンロード" data-tooltip="コードをダウンロード">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
-                  </button>
-                  <button class="code-action-btn" onclick="copyCode(this, 'python-script')" aria-label="コピー" data-tooltip="コードをコピー">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" /></svg>
-                  </button>
-                </div>
-              </div>
-              <pre id="python-script"><span class="c">!pip install biopython</span>
-
-<span class="kd">import</span> time
-<span class="kd">import</span> json
-<span class="kd">from</span> Bio <span class="kd">import</span> Entrez, SeqIO
-
-<span class="c"># ==========================================</span>
-<span class="c"># ⚙️ 設定エリア</span>
-<span class="c"># ==========================================</span>
-<span class="c"># ⚠️ ご自身のメールアドレスを必ず入力してください（NCBIサーバーへのアクセスに必須）</span>
-Entrez.email <span class="kd">=</span> <span class="s">"your_email@example.com"</span>
-
-<span class="c"># 💾 出力するJSONファイル名</span>
-OUTPUT_FILENAME <span class="kd">=</span> <span class="s">"MyCustomDB.json"</span>
-
-<span class="c"># 📋 登録したい生物のリスト [ ("表示名(和名)", "学名"), ... ]</span>
-TARGET_SPECIES <span class="kd">=</span> [
-    (<span class="s">"マダイ(本物)"</span>, <span class="s">"Pagrus major"</span>),
-    (<span class="s">"ティラピア(偽装用)"</span>, <span class="s">"Oreochromis niloticus"</span>),
-    (<span class="s">"アニサキス"</span>, <span class="s">"Anisakis simplex"</span>)
-]
-<span class="c"># ==========================================</span>
-
-<span class="kd">def</span> <span class="nf">find_best_accession</span>(scientific_name):
-    <span class="c">"""学名から正しいミトコンドリアゲノム(RefSeq優先)を自動検索"""</span>
-    <span class="nb">print</span>(<span class="s">f"\n🔍 検索中: {scientific_name}"</span>)
-    query <span class="kd">=</span> <span class="s">f'"{scientific_name}"[Organism] AND mitochondrion[filter] AND RefSeq[filter]'</span>
-    <span class="kd">try</span>:
-        handle <span class="kd">=</span> Entrez.esearch(db<span class="kd">=</span><span class="s">"nucleotide"</span>, term<span class="kd">=</span>query, retmax<span class="kd">=</span><span class="mi">1</span>)
-        record <span class="kd">=</span> Entrez.read(handle)
-        handle.close()
-        
-        <span class="c"># RefSeqがない場合はcomplete genomeで再検索</span>
-        <span class="kd">if not</span> record[<span class="s">"IdList"</span>]:
-            query_fb <span class="kd">=</span> <span class="s">f'"{scientific_name}"[Organism] AND mitochondrion[filter] AND complete genome[title]'</span>
-            handle <span class="kd">=</span> Entrez.esearch(db<span class="kd">=</span><span class="s">"nucleotide"</span>, term<span class="kd">=</span>query_fb, retmax<span class="kd">=</span><span class="mi">1</span>)
-            record <span class="kd">=</span> Entrez.read(handle)
-            handle.close()
-            
-        <span class="c"># それもない場合はCOI部分配列を直接検索</span>
-        <span class="kd">if not</span> record[<span class="s">"IdList"</span>]:
-            query_coi <span class="kd">=</span> <span class="s">f'"{scientific_name}"[Organism] AND (cytochrome c oxidase subunit I[Title] OR COX1[Title] OR COI[Title]) AND 400:2000[Sequence Length]'</span>
-            handle <span class="kd">=</span> Entrez.esearch(db<span class="kd">=</span><span class="s">"nucleotide"</span>, term<span class="kd">=</span>query_coi, retmax<span class="kd">=</span><span class="mi">1</span>)
-            record <span class="kd">=</span> Entrez.read(handle)
-            handle.close()
-            
-        <span class="kd">if</span> record[<span class="s">"IdList"</span>]:
-            uid <span class="kd">=</span> record[<span class="s">"IdList"</span>][<span class="mi">0</span>]
-            summary_handle <span class="kd">=</span> Entrez.esummary(db<span class="kd">=</span><span class="s">"nucleotide"</span>, id<span class="kd">=</span>uid)
-            summary <span class="kd">=</span> Entrez.read(summary_handle)
-            summary_handle.close()
-            <span class="nb">print</span>(<span class="s">f"  🎯 ID発見: {summary[0]['Caption']}"</span>)
-            <span class="kd">return</span> summary[<span class="mi">0</span>][<span class="s">"Caption"</span>]
-        <span class="kd">return None</span>
-    <span class="kd">except</span> <span class="ne">Exception</span> <span class="kd">as</span> e:
-        <span class="nb">print</span>(<span class="s">f"  ⚠️ 検索エラー: {e}"</span>)
-        <span class="kd">return None</span>
-
-<span class="kd">def</span> <span class="nf">fetch_and_extract_coi</span>(japanese_name, scientific_name, acc_id):
-    <span class="c">"""GenBankからCOI遺伝子だけをアノテーションに従って切り出す"""</span>
-    <span class="kd">try</span>:
-        fetch_handle <span class="kd">=</span> Entrez.efetch(db<span class="kd">=</span><span class="s">"nucleotide"</span>, id<span class="kd">=</span>acc_id, rettype<span class="kd">=</span><span class="s">"gb"</span>, retmode<span class="kd">=</span><span class="s">"text"</span>)
-        record <span class="kd">=</span> SeqIO.read(fetch_handle, <span class="s">"genbank"</span>)
-        fetch_handle.close()
-
-        coi_seq <span class="kd">=</span> <span class="s">""</span>
-        <span class="kd">for</span> feature <span class="kd">in</span> record.features:
-            <span class="kd">if</span> feature.type <span class="kd">==</span> <span class="s">"CDS"</span>:
-                g_name <span class="kd">=</span> feature.qualifiers.get(<span class="s">"gene"</span>, [<span class="s">""</span>])[<span class="mi">0</span>].upper()
-                p_name <span class="kd">=</span> feature.qualifiers.get(<span class="s">"product"</span>, [<span class="s">""</span>])[<span class="mi">0</span>].upper()
-                
-                <span class="kd">if</span> <span class="s">"COX1"</span> <span class="kd">in</span> g_name <span class="kd">or</span> <span class="s">"COI"</span> <span class="kd">in</span> g_name <span class="kd">or</span> <span class="s">"CYTOCHROME C OXIDASE SUBUNIT 1"</span> <span class="kd">in</span> p_name:
-                    coi_seq <span class="kd">=</span> <span class="nb">str</span>(feature.extract(record.seq))
-                    <span class="kd">break</span>
-        
-        <span class="c"># 部分的な塩基配列そのものがCOIだった場合の保険</span>
-        <span class="kd">if not</span> coi_seq <span class="kd">and len</span>(record.seq) <span class="kd">&lt;</span> <span class="mi">2000</span>:
-            coi_seq <span class="kd">=</span> <span class="nb">str</span>(record.seq)
-
-        <span class="kd">if</span> coi_seq:
-            <span class="nb">print</span>(<span class="s">f"  ✅ 抽出成功 (長さ: {len(coi_seq)} bp)"</span>)
-            <span class="kd">return</span> {
-                <span class="s">"name"</span>: japanese_name,
-                <span class="s">"scientific_name"</span>: scientific_name,
-                <span class="s">"gene"</span>: <span class="s">"COI"</span>,
-                <span class="s">"accession"</span>: record.id,
-                <span class="s">"description"</span>: record.description,
-                <span class="s">"sequence"</span>: coi_seq
-            }
-        <span class="kd">return None</span>
-    <span class="kd">except</span> <span class="ne">Exception</span> <span class="kd">as</span> e:
-        <span class="kd">return None</span>
-
-<span class="c"># 実行ブロック</span>
-db_data <span class="kd">=</span> []
-<span class="nb">print</span>(<span class="s">"🚀 データベース自動構築を開始します..."</span>)
-<span class="kd">for</span> j_name, s_name <span class="kd">in</span> TARGET_SPECIES:
-    acc_id <span class="kd">=</span> find_best_accession(s_name)
-    time.sleep(<span class="mi">1</span>) <span class="c"># サーバー負荷軽減</span>
-    <span class="kd">if</span> acc_id:
-        data <span class="kd">=</span> fetch_and_extract_coi(j_name, s_name, acc_id)
-        <span class="kd">if</span> data:
-            db_data.append(data)
-    time.sleep(<span class="mi">1</span>)
-
-<span class="kd">with</span> <span class="nb">open</span>(OUTPUT_FILENAME, <span class="s">"w"</span>, encoding<span class="kd">=</span><span class="s">"utf-8"</span>) <span class="kd">as</span> f:
-    json.dump(db_data, f, ensure_ascii<span class="kd">=</span><span class="kc">False</span>, indent<span class="kd">=</span><span class="mi">2</span>)
-<span class="nb">print</span>(<span class="s">f"\n🎉 完了！ {OUTPUT_FILENAME} を保存しました。"</span>)
-</pre>
-            </div>
-            
-            <div class="bench-tip">
-              <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（なぜこのスクリプトが必要なのか？）</strong>
-              間違ったAccession IDを指定したり、巨大なゲノム全体（数万の塩基配列）をそのままアプリに読み込ませると、解析に時間がかかったり、ノイズが多くなったりします。このスクリプトはNCBIに<b>「ミトコンドリアの公式な塩基配列（RefSeq）」のみを検索させ、さらに「地図情報（アノテーション）」を利用して必要な遺伝子だけをハサミで切り出す</b>ため、純度100%のクリーンなデータを作成できます。
-            </div>
-          </div>
-        </div>
-
-        <!-- 2. JSONの仕組み（手掌握） -->
-        <div class="tl-card">
-          <div class="tl-card-header">
-            構造の解説と手動作成（数種類の場合）
-          </div>
-          <div class="tl-card-body">
-            <p>
-              数種類だけであれば、手作業で作ることも可能です。アプリ⑦が読み込めるデータベースカートリッジは、<b>JSON（ジェイソン）形式</b>というテキストデータです。<br>
-              1つの生物種につき、以下の6つの情報を持ったブロックを作成し、<code>[ ]</code> で囲みます。
-            </p>
-
-            <div class="section-title"><span>[手順]</span> 作成手順</div>
-            <p>
-              ① パソコンの「メモ帳（Windows）」または「テキストエディット（Mac）」を開きます。<br>
-              ② 上記のフォーマットを貼り付け、生物種を増やす場合は <code>}, {</code> のようにカンマで繋ぎます。<br>
-              ③ ファイルを保存する際、ファイル名の末尾を <code>.json</code> にします（例：<code>MyDatabase.json</code>）。
-            </p>
-            
-            <div class="code-container">
-              <div class="code-header">
-                <div class="code-header-left">JSON</div>
-                <div class="code-header-right">
-                  <button class="code-action-btn" onclick="downloadCode('json-format', 'MyDatabase_Template.json')" aria-label="ダウンロード" data-tooltip="コードをダウンロード">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
-                  </button>
-                  <button class="code-action-btn" onclick="copyCode(this, 'json-format')" aria-label="コピー" data-tooltip="コードをコピー">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" /></svg>
-                  </button>
-                </div>
-              </div>
-              <pre id="json-format"><span class="s">[</span>
-  {
-    <span class="s">"name"</span>: <span class="s">"ニホンザル"</span>,
-    <span class="s">"scientific_name"</span>: <span class="s">"Macaca fuscata"</span>,
-    <span class="s">"gene"</span>: <span class="s">"COI"</span>,
-    <span class="s">"accession"</span>: <span class="s">"JF444308.1"</span>,
-    <span class="s">"description"</span>: <span class="s">"Macaca fuscata cytochrome oxidase subunit 1"</span>,
-    <span class="s">"sequence"</span>: <span class="s">"ACCCTGTATTTACTATTTGGTGCATGAGCTGGAATCATA..."</span>
-  }
-<span class="s">]</span></pre>
-            </div>
-
-            <div class="bench-tip">
-              <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（文字コードの罠と必須項目）</strong>
-              ・<b>文字コード：</b> Windowsのメモ帳で保存する際、文字コード（エンコード）が「ANSI」や「Shift-JIS」になっていると日本語が文字化けします。保存ダイアログ下部で、必ず「UTF-8」にして保存してください。<br>
-              ・<b>必須項目：</b> 確実に入力が必要なのは <code>name</code>（画面に表示される名前）と <code>sequence</code>（ATGCの塩基配列）の2つだけです。残りは空欄（<code>""</code>）でもアプリは作動します。
-            </div>
-          </div>
-        </div>
-
-      </div>
-
       <div id="appendix-data">
         <div id="data-method-chelex" class="rationale-text">
           <strong>【根拠：煮沸Chelex法】</strong>
@@ -1360,7 +1127,7 @@ db_data <span class="kd">=</span> []
             References & Algorithms
           </summary>
           <div style="padding: 10px 0 0 15px; font-size: 11px; color: var(--text-muted); line-height: 1.6;">
-            <p style="margin-bottom: 8px;">本アプリケーションの実験プロトコル、プライマー設計、および自動化スクリプトは、以下の学術論文（原著）に基づき実装されています。</p>
+            <p style="margin-bottom: 8px;">本アプリケーションの実験プロトコルおよびプライマー設計は、以下の学術論文（原著）に基づき実装されています。</p>
             <ul style="padding-left: 20px; margin: 0; display: flex; flex-direction: column; gap: 6px;">
               <li><strong>Universal Vertebrate Cytochrome b Primers:</strong> Kocher, T. D., Thomas, W. K., Meyer, A., Edwards, S. V., Pääbo, S., Villablanca, F. X., & Wilson, A. C. (1989). Dynamics of mitochondrial DNA evolution in animals: amplification and sequencing with conserved primers. <i>Proceedings of the National Academy of Sciences</i>, 86(16), 6196–6200.</li>
               <li><strong>Fish DNA Barcoding Primers:</strong> Ward, R. D., Zemlak, T. S., Innes, B. H., Last, P. R., & Hebert, P. D. (2005). DNA barcoding Australia's fish species. <i>Philosophical Transactions of the Royal Society B: Biological Sciences</i>, 360(1462), 1847–1857.</li>
@@ -1370,8 +1137,6 @@ db_data <span class="kd">=</span> []
               <li><strong>Anisakidae ITS rDNA & Sibling Species Identification:</strong> Zhu, X., Gasser, R. B., Podolska, M., & Chilton, N. B. (1998). Characterisation of anisakid nematodes with zoonotic potential by nuclear ribosomal DNA sequences. <i>International Journal for Parasitology</i>, 28(12), 1911–1921.</li>
               <li><strong>Chelex 100 DNA Extraction Method:</strong> Walsh, P. S., Metzger, D. A., & Higuchi, R. (1991). Chelex 100 as a medium for simple extraction of DNA for PCR-based typing from forensic material. <i>BioTechniques</i>, 10(4), 506–513.</li>
               <li><strong>HotSHOT DNA Extraction Method:</strong> Truett, G. E., Heeger, P., Mynatt, R. L., Truett, A. A., Walker, J. A., & Warman, M. L. (2000). Preparation of PCR-quality mouse genomic DNA with hot sodium hydroxide and tris (HotSHOT). <i>BioTechniques</i>, 29(1), 52–54.</li>
-              <li><strong>Biopython Library:</strong> Cock, P. J., Antao, T., Chang, J. T., Chapman, B. A., Cox, C. J., Dalke, A., ... & de Hoon, M. J. (2009). Biopython: freely available Python tools for computational molecular biology and bioinformatics. <i>Bioinformatics</i>, 25(11), 1422–1423.</li>
-              <li><strong>NCBI E-utilities API:</strong> Sayers, E. W., Agarwala, R., Bolton, E. E., Brister, J. R., Canese, K., Clark, K., ... & Ostell, J. (2019). Database resources of the national center for biotechnology information. <i>Nucleic Acids Research</i>, 47(D1), D23–D28.</li>
             </ul>
           </div>
         </details>
@@ -1617,58 +1382,6 @@ function closeFeedbackForm() {
     void toast.offsetWidth; 
     toast.className = className;
     setTimeout(() => { toast.classList.remove("show"); }, 3000);
-  }
-
-  function copyCode(btn, elementId) {
-    const codeElement = document.getElementById(elementId);
-    let textToCopy = codeElement.innerText; 
-
-    navigator.clipboard.writeText(textToCopy).then(() => {
-        const originalHTML = btn.innerHTML;
-        btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>`;
-        btn.style.color = 'var(--success)';
-        showToast('クリップボードにコードをコピーしました', 'success');
-        
-        setTimeout(() => {
-            btn.innerHTML = originalHTML;
-            btn.style.color = '';
-        }, 2500);
-    }).catch(err => {
-        console.error('コピーに失敗しました', err);
-        const textArea = document.createElement("textarea");
-        textArea.value = textToCopy;
-        document.body.appendChild(textArea);
-        textArea.select();
-        try {
-            document.execCommand('copy');
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>`;
-            btn.style.color = 'var(--success)';
-            showToast('クリップボードにコードをコピーしました', 'success');
-            setTimeout(() => {
-                btn.innerHTML = originalHTML;
-                btn.style.color = '';
-            }, 2500);
-        } catch (err) {
-            showToast('コピーに失敗しました', 'error');
-        }
-        document.body.removeChild(textArea);
-    });
-  }
-
-  function downloadCode(elementId, filename) {
-    const codeElement = document.getElementById(elementId);
-    const textToDownload = codeElement.innerText;
-    const blob = new Blob([textToDownload], { type: 'text/plain', endings: 'native' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    showToast(`「${filename}」をダウンロードしました`, 'success');
   }
 
   document.addEventListener('DOMContentLoaded', initTooltips);
