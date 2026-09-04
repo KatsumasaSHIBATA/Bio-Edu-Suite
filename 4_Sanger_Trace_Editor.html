@@ -2359,6 +2359,133 @@ function closeFeedbackForm() {
     } catch (e) {
       console.warn('State restoration unavailable:', e);
     }
+    /* ===================================================================
+       【セッション永続化仕様】画面遷移時の波形データ自動退避＆復元 (アプリ⑤準拠)
+       タブを閉じるか初期化ボタンを押さない限り、他アプリへ行っても波形を維持する
+       =================================================================== */
+    (function() {
+        const AUTOSAVE_KEY = 'bio_edu_autosave_app4';
+
+        // 離脱時：波形データ（Int16Arrayをプレーン配列化）とUI状態を退避
+        function saveApp4Session() {
+            try {
+                if (!ab1Data || !currentFileName) {
+                    sessionStorage.removeItem(AUTOSAVE_KEY);
+                    return;
+                }
+
+                const serializedTraces = {};
+                if (ab1Data.traces) {
+                    ['A', 'T', 'G', 'C'].forEach(base => {
+                        if (ab1Data.traces[base]) {
+                            serializedTraces[base] = Array.from(ab1Data.traces[base]);
+                        }
+                    });
+                }
+
+                const payload = {
+                    savedAt: Date.now(),
+                    currentFileName: currentFileName,
+                    scaleX: document.getElementById('scaleX') ? document.getElementById('scaleX').value : "1.0",
+                    scaleY: document.getElementById('scaleY') ? document.getElementById('scaleY').value : "1.5",
+                    searchInput: document.getElementById('searchInput') ? document.getElementById('searchInput').value : "",
+                    ab1Data: {
+                        bases: ab1Data.bases,
+                        traces: serializedTraces,
+                        maxVal: ab1Data.maxVal,
+                        traceLength: ab1Data.traceLength
+                    }
+                };
+
+                sessionStorage.setItem(AUTOSAVE_KEY, JSON.stringify(payload));
+            } catch (e) {
+                console.warn('[AutoSave] App4 save failed:', e);
+            }
+        }
+
+        // 起動時：退避データを復元して再描画
+        function restoreApp4Session() {
+            try {
+                const raw = sessionStorage.getItem(AUTOSAVE_KEY);
+                if (!raw) return;
+                const saved = JSON.parse(raw);
+                if (!saved || !saved.ab1Data || ab1Data) return; // 新規ロード済みなら上書きしない
+
+                currentFileName = saved.currentFileName;
+
+                const restoredTraces = {};
+                if (saved.ab1Data.traces) {
+                    ['A', 'T', 'G', 'C'].forEach(base => {
+                        if (saved.ab1Data.traces[base]) {
+                            restoredTraces[base] = new Int16Array(saved.ab1Data.traces[base]);
+                        }
+                    });
+                }
+
+                ab1Data = {
+                    bases: saved.ab1Data.bases,
+                    traces: restoredTraces,
+                    maxVal: saved.ab1Data.maxVal,
+                    traceLength: saved.ab1Data.traceLength
+                };
+
+                // スライダー・入力欄の復元
+                const scaleXEl = document.getElementById('scaleX');
+                const scaleYEl = document.getElementById('scaleY');
+                const searchInput = document.getElementById('searchInput');
+
+                if (scaleXEl) { scaleXEl.value = saved.scaleX; scaleXEl.disabled = false; }
+                if (scaleYEl) { scaleYEl.value = saved.scaleY; scaleYEl.disabled = false; }
+                if (searchInput) { searchInput.value = saved.searchInput || ""; searchInput.disabled = false; }
+
+                // ボタン類の活性化
+                ['btnQC', 'btnExport', 'btnCopyFasta'].forEach(id => {
+                    const btn = document.getElementById(id);
+                    if (btn) btn.disabled = false;
+                });
+                toggleSearchBtn();
+
+                // ステータスバー表示更新
+                const statusText = document.getElementById('statusText');
+                const fileInfoText = document.getElementById('fileInfoText');
+                if (statusText) statusText.innerText = "ステータス: 前回の作業状態を復元しました。波形を確認して修正してください。";
+                if (fileInfoText) fileInfoText.innerText = `File: ${currentFileName}`;
+
+                // 履歴の初期化
+                historyStack = [JSON.stringify(ab1Data.bases)];
+                historyIndex = 0;
+                selectedBaseIndex = -1;
+                dragStartIndex = -1;
+                dragEndIndex = -1;
+
+                // 再描画
+                redrawAll();
+                showToast("前回の波形データを復元しました", "info");
+            } catch (e) {
+                console.warn('[AutoSave] App4 restore failed:', e);
+            }
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') saveApp4Session();
+        });
+        window.addEventListener('pagehide', saveApp4Session);
+
+        window.addEventListener('DOMContentLoaded', () => {
+            // IndexedDBの一括受信チェックが終わった直後に復元を試みる
+            setTimeout(restoreApp4Session, 80);
+        });
+
+        // 初期化モーダル実行時にセッション保存も破棄
+        const origConfirm = window.confirmDataReset;
+        if (typeof origConfirm === 'function') {
+            window.confirmDataReset = function() {
+                sessionStorage.removeItem(AUTOSAVE_KEY);
+                origConfirm();
+            };
+        }
+    })();
+
 </script>
 
 <!-- Firebase 認証・クラウド同期（ガイドライン第7項） -->
