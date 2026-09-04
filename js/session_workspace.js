@@ -1,10 +1,10 @@
-/* js/session_workspace.js - Bio-Edu Suite Session Workspace Runtime (v35.1) */
+/* js/session_workspace.js - Bio-Edu Suite Session Workspace Runtime (v35.2) */
 (function() {
     const PATH = window.location.pathname;
     const APP_FILE = PATH.split('/').pop() || 'index.html';
     const KEY_PREFIX = 'bio_edu_ws_' + APP_FILE;
 
-    // --- 1. 共通ストレージAPI ---
+    // --- 1. 共通セッションストレージAPI ---
     window.BioEduWorkspace = {
         save: function(key, data) {
             try {
@@ -23,19 +23,18 @@
         },
         clear: function() {
             Object.keys(sessionStorage).forEach(k => {
-                if (k.startsWith(KEY_PREFIX) || k.startsWith('bio_edu_ws_')) {
+                if (k.startsWith('bio_edu_ws_')) {
                     sessionStorage.removeItem(k);
                 }
             });
         }
     };
 
-    // --- 2. アプリ④ Sanger Trace Editor 専用の波形・キュレーション・キュー自動退避＆復元 ---
+    // --- 2. アプリ④ Sanger Trace Editor 専用の波形・キュレーション完全永続化 ---
     if (APP_FILE.includes('4_Sanger_Trace_Editor')) {
         function saveApp4Workspace() {
             try {
                 if (window.ab1Data && window.currentFileName) {
-                    // バイナリ生波形配列(Int16Array)をプレーン配列に変換して退避
                     const serializedTraces = {};
                     if (window.ab1Data.traces) {
                         ['A', 'T', 'G', 'C'].forEach(base => {
@@ -56,25 +55,23 @@
                             maxVal: window.ab1Data.maxVal,
                             traceLength: window.ab1Data.traceLength
                         },
-                        currentQueueIndex: typeof window.currentQueueIndex !== 'undefined' ? window.currentQueueIndex : 0,
-                        hasQueue: Array.isArray(window.ab1Queue) && window.ab1Queue.length > 0
+                        currentQueueIndex: typeof window.currentQueueIndex !== 'undefined' ? window.currentQueueIndex : 0
                     };
 
                     window.BioEduWorkspace.save('app4_state', payload);
                 }
             } catch (e) {
-                console.warn('[Workspace] App4 state save failed:', e);
+                console.warn('[Workspace] App4 save failed:', e);
+            }
+        }
         function restoreApp4Workspace() {
             try {
                 const saved = window.BioEduWorkspace.load('app4_state');
                 if (!saved || !saved.ab1Data) return;
-
-                // 既に新しいファイルがロード済みの場合は上書きしない
-                if (window.ab1Data) return;
+                if (window.ab1Data) return; // 既に新規ファイル読込済みの場合はスキップ
 
                 window.currentFileName = saved.currentFileName;
                 
-                // Int16Array に復元
                 const restoredTraces = {};
                 if (saved.ab1Data.traces) {
                     ['A', 'T', 'G', 'C'].forEach(base => {
@@ -91,7 +88,6 @@
                     traceLength: saved.ab1Data.traceLength
                 };
 
-                // UIコントロールの活性化と復元
                 const scaleXEl = document.getElementById('scaleX');
                 const scaleYEl = document.getElementById('scaleY');
                 if (scaleXEl) { scaleXEl.value = saved.scaleX; scaleXEl.disabled = false; }
@@ -112,7 +108,6 @@
                 if (statusText) statusText.innerText = "ステータス: 前回の作業状態を復元しました。波形を確認して修正してください。";
                 if (fileInfoText) fileInfoText.innerText = `File: ${window.currentFileName}`;
 
-                // 履歴スタックの初期化と再描画
                 window.historyStack = [JSON.stringify(window.ab1Data.bases)];
                 window.historyIndex = 0;
                 window.selectedBaseIndex = -1;
@@ -122,7 +117,6 @@
                 if (typeof window.redrawAll === 'function') {
                     window.redrawAll();
                 }
-
                 if (typeof window.showToast === 'function') {
                     window.showToast("前回の波形データを復元しました", "info");
                 }
@@ -131,7 +125,6 @@
             }
         }
 
-        // 離脱時退避とロード時復元
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'hidden') saveApp4Workspace();
         });
@@ -142,7 +135,49 @@
         });
     }
 
-    // --- 3. 全アプリ共通：標準フォーム要素の保護 ---
+
+
+    // --- 3. アプリ⑦ Virtual BLAST Explorer 専用のローカルDB自動永続化 ---
+    if (APP_FILE.includes('7_Virtual_BLAST_Explorer')) {
+        function saveApp7Workspace() {
+            try {
+                if (Array.isArray(window.localDB) && window.localDB.length > 0) {
+                    window.BioEduWorkspace.save('app7_local_db', {
+                        db: window.localDB,
+                        infoText: document.getElementById('currentLoadedDataInfo') ? document.getElementById('currentLoadedDataInfo').innerText : ""
+                    });
+                }
+            } catch (e) {
+                console.warn('[Workspace] App7 save failed:', e);
+            }
+        }
+
+        function restoreApp7Workspace() {
+            try {
+                const saved = window.BioEduWorkspace.load('app7_local_db');
+                if (!saved || !Array.isArray(saved.db) || saved.db.length === 0) return;
+                if (Array.isArray(window.localDB) && window.localDB.length > 0) return;
+
+                window.localDB = saved.db;
+                if (typeof window.updateDBCount === 'function') window.updateDBCount();
+                const infoEl = document.getElementById('currentLoadedDataInfo');
+                if (infoEl && saved.infoText) infoEl.innerText = saved.infoText;
+            } catch (e) {
+                console.warn('[Workspace] App7 restore failed:', e);
+            }
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') saveApp7Workspace();
+        });
+        window.addEventListener('pagehide', saveApp7Workspace);
+
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(restoreApp7Workspace, 100);
+        });
+    }
+
+    // --- 4. 全アプリ共通：標準フォーム要素（textarea / input）の自律保護 ---
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
             const inputs = document.querySelectorAll('textarea, input[type="text"], input[type="number"], select');
@@ -168,10 +203,8 @@
                 }
             });
         }
-    });
 
-    // --- 4. データ初期化モーダルとの連動（明示的リセット時のみ破棄） ---
-    window.addEventListener('DOMContentLoaded', () => {
+        // 初期化ボタンが押された時のみセッションストレージを完全破棄
         const confirmOkBtn = document.getElementById('confirmOkBtn');
         if (confirmOkBtn) {
             confirmOkBtn.addEventListener('click', () => {
@@ -180,6 +213,3 @@
         }
     });
 })();
-
-            }
-        }
