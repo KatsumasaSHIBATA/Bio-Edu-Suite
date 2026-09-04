@@ -19,7 +19,10 @@ FINCH_DATA = {
         "name": "オオガラパゴスフィンチ",
         "island": "ヘノベサ島",
         "haplotype": "鈍端型 (Blunt B: Pro112, Val211)",
-        "note": "頑丈で極太の嘴を持つ大型地上フィンチ。大型の硬い種子を破砕する。ダーウィン図版 No.1。",
+        "note": "【生態・形態】頑丈で極太の嘴を持つ大型地上フィンチ。大型の硬い種子を破砕して採食する。\n【図版原典】Darwin (1845) Journal of Researches 2nd ed., p.379, Fig.1\n【遺伝子型】ALX1 鈍端型ハプロタイプ (Blunt B: Pro112, Val211)\n【NCBI参照情報】BioProject: PRJNA263122 | Scaffold: JH739921 | CDS長: 987 bp\n【原著論文】Lamichhaney et al. (2015) Nature 518:371-375 (doi:10.1038/nature14181)",
+        "darwin_plate": "Darwin (1845) Journal of Researches 2nd ed., p.379, Fig.1",
+        "ncbi_info": "BioProject: PRJNA263122 | Scaffold: JH739921 | CDS長: 987 bp",
+        "paper": "Lamichhaney et al. (2015) Nature 518:371-375 (doi:10.1038/nature14181)",
         "image": "images/finch_1_magnirostris.jpg",
         "seq": (
             "ATGATTATGGATTTTCTGAGCGAGAAGTTTGCCCTGAAGAGCCAGCCGAGCAAGAACAGT"
@@ -48,7 +51,10 @@ FINCH_DATA = {
         "name": "ガラパゴスフィンチ",
         "island": "ダフネ・マヨル島",
         "haplotype": "鈍端型 (Blunt B: Pro112, Val211)",
-        "note": "中型の嘴を持つ中型地上フィンチ。環境変動に伴う嘴の自然選択が追跡されたモデル。ダーウィン図版 No.2。",
+        "note": "【生態・形態】中型の嘴を持つ中型地上フィンチ。環境変動（干ばつ）に伴う自然選択が半世紀にわたり追跡された歴史的モデル生物。\n【図版原典】Darwin (1845) Journal of Researches 2nd ed., p.379, Fig.2\n【遺伝子型】ALX1 鈍端型ハプロタイプ (Blunt B: Pro112, Val211)\n【NCBI参照情報】BioProject: PRJNA263122 | Reference Genome: GeoFor1 | Protein: XP_005421635\n【原著論文】Lamichhaney et al. (2015) Nature 518:371-375 (doi:10.1038/nature14181)",
+        "darwin_plate": "Darwin (1845) Journal of Researches 2nd ed., p.379, Fig.2",
+        "ncbi_info": "BioProject: PRJNA263122 | Reference Genome: GeoFor1 | Protein: XP_005421635",
+        "paper": "Lamichhaney et al. (2015) Nature 518:371-375 (doi:10.1038/nature14181)",
         "image": "images/finch_2_fortis.jpg",
         "seq": (
             "ATGATTATGGATTTTCTGAGCGAGAAGTTTGCCCTGAAGAGCCAGCCGAGCAAGAACAGT"
@@ -77,7 +83,10 @@ FINCH_DATA = {
         "name": "コダーウィンフィンチ (小樹上フィンチ)",
         "island": "サンタ・クルス島",
         "haplotype": "鋭端型 (Pointed P: Leu112, Ile211)",
-        "note": "小型の昆虫食樹上フィンチ。ダーウィン図版 No.3（旧名 Geospiza parvula）。",
+        "note": "【生態・形態】小型の嘴を持つ樹上フィンチ。樹皮下の昆虫を捕食する。旧学名 Geospiza parvula。\n【図版原典】Darwin (1845) Journal of Researches 2nd ed., p.379, Fig.3\n【遺伝子型】ALX1 鋭端型ハプロタイプ (Pointed P: Leu112, Ile211)\n【NCBI参照情報】BioProject: PRJNA263122 | Scaffold: JH739921 | CDS長: 987 bp\n【原著論文】Lamichhaney et al. (2015) Nature 518:371-375 (doi:10.1038/nature14181)",
+        "darwin_plate": "Darwin (1845) Journal of Researches 2nd ed., p.379, Fig.3",
+        "ncbi_info": "BioProject: PRJNA263122 | Scaffold: JH739921 | CDS長: 987 bp",
+        "paper": "Lamichhaney et al. (2015) Nature 518:371-375 (doi:10.1038/nature14181)",
         "image": "images/finch_3_parvulus.jpg",
         "seq": (
             "ATGATTATGGATTTTCTGAGCGAGAAGTTTGCCCTGAAGAGCCAGCCGAGCAAGAACAGT"
@@ -105,8 +114,11 @@ FINCH_DATA = {
         "historical_name": "Certhidea olivacea (Gould, 1837)",
         "name": "ムシクイフィンチ",
         "island": "サンチャゴ島",
-        "haplotype": "鋭端型 (Pointed P: Leu112, Ile211)",
-        "note": "極細の嘴で昆虫を捕食する最も基底的なフィンチ。ダーウィン図版 No.4。",
+        "haplotype": "鋭端型 (Pointed P: Leu112, Ile211 / 祖先型)",
+        "note": "【生態・形態】極細の嘴を持つムシクイフィンチ。細枝の隙間から昆虫を捕食する、全フィンチ類の中で最も初期に分岐した基底種。\n【図版原典】Darwin (1845) Journal of Researches 2nd ed., p.379, Fig.4\n【遺伝子型】ALX1 鋭端型ハプロタイプ (Pointed P: Leu112, Ile211 / 祖先型)\n【NCBI参照情報】BioProject: PRJNA263122 | Scaffold: JH739921 | CDS長: 987 bp\n【原著論文】Lamichhaney et al. (2015) Nature 518:371-375 (doi:10.1038/nature14181)",
+        "darwin_plate": "Darwin (1845) Journal of Researches 2nd ed., p.379, Fig.4",
+        "ncbi_info": "BioProject: PRJNA263122 | Scaffold: JH739921 | CDS長: 987 bp",
+        "paper": "Lamichhaney et al. (2015) Nature 518:371-375 (doi:10.1038/nature14181)",
         "image": "images/finch_4_olivacea.jpg",
         "seq": (
             "ATGATTATGGATTTTCTGAGCGAGAAGTTTGCCCTGAAGAGCCAGCCGAGCAAGAACAGT"
@@ -226,7 +238,12 @@ def main():
     fasta_path = os.path.join(fasta_dir, "darwin_finches_alx1_cds.fasta")
     with open(fasta_path, "w", encoding="utf-8") as f:
         for sample_id, d in FINCH_DATA.items():
-            f.write(f">{sample_id} [Plate No.{d['plate_no']}] {d['species']} (Hist: {d['historical_name']}) ALX1 CDS\n")
+            header = (
+                f">{sample_id} [Darwin (1845) p.379 Plate No.{d['plate_no']}] "
+                f"{d['species']} (Hist: {d['historical_name']}) ALX1 CDS (987 bp) | "
+                f"{d['haplotype']} | {d['ncbi_info']} | {d['paper']}\n"
+            )
+            f.write(header)
             for i in range(0, len(d['seq']), 60):
                 f.write(d['seq'][i:i+60] + "\n")
 
@@ -241,6 +258,10 @@ def main():
         presets[sample_id] = {
             "id": sample_id,
             "fileName": f"{sample_id}.ab1",
+            "species": d["species"],
+            "darwinPlate": d["darwin_plate"],
+            "ncbiInfo": d["ncbi_info"],
+            "paper": d["paper"],
             "data": f"data:application/octet-stream;base64,{b64_str}"
         }
 

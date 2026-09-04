@@ -75,7 +75,11 @@ def main():
         sys.exit(1)
 
     # 2. Replace loadSamples and default samples
-    target_start = "    function loadSamples() {"
+    target_start = "    // ダーウィン(1845)図版4種"
+    if target_start not in content:
+        target_start = "    function getDefaultFinchSamples() {"
+    if target_start not in content:
+        target_start = "    function loadSamples() {"
     target_end = "    // 【パッチ】画像リンク切れ対策用・自動Base64化＆ダミー生成リカバリーロジック"
 
     start_idx = content.find(target_start)
@@ -88,15 +92,21 @@ def main():
     samples_js = []
     offsets = [10000, 20000, 30000, 40000]
     for idx, (sid, d) in enumerate(FINCH_DATA.items()):
-        fasta_text = f">{sid} [Plate No.{d['plate_no']}] {d['species']} (Hist: {d['historical_name']}) ALX1 CDS\\n{d['seq']}"
-        note_text = f"採集地: {d['island']}\\n歴史的図版: Plate No.{d['plate_no']} ({d['historical_name']})\\nハプロタイプ: {d['haplotype']}\\n特記事項: {d['note']} [Source: App_1_LIMS]"
+        fasta_header = (
+            f">{sid} [Darwin (1845) p.379 Plate No.{d['plate_no']}] "
+            f"{d['species']} (Hist: {d['historical_name']}) ALX1 CDS (987 bp) | "
+            f"{d['haplotype']} | {d['ncbi_info']} | {d['paper']}"
+        )
+        fasta_text = f"{fasta_header}\\n{d['seq']}"
+        escaped_note = d['note'].replace('\n', '\\n')
+        env_note = f"{escaped_note}\\n[Source: App_1_LIMS]"
         name_str = f"[Plate No.{d['plate_no']}] {d['species']} ({d['name']})"
         
         sample_dict_str = f"""        {{
           id: "{sid}",
           name: "{name_str}",
           envCategory: "{d['island']}",
-          envNote: "{note_text}",
+          envNote: "{env_note}",
           morphData: "",
           dnaData: "{fasta_text}",
           date: new Date(Date.now() - {offsets[idx]}).toISOString(),
@@ -107,7 +117,7 @@ def main():
 
     samples_joined = ",\n".join(samples_js)
 
-    new_load_samples = f"""    // ダーウィン(1845)図版4種の実在ALX1 CDS配列（987 bp）デフォルトデータセット
+    new_load_samples = f"""    // ダーウィン(1845)図版4種の実在ALX1 CDS配列（987 bp）デフォルトデータセット（学術リッチメタデータ付き）
     function getDefaultFinchSamples() {{
       return [
 {samples_joined}
@@ -119,7 +129,14 @@ def main():
       if (data) {{
         try {{
           samples = JSON.parse(data);
-          const isOld = samples.some(s => s.id && (s.id.includes('_WT_') || s.id.includes('_MUT_') || s.id.includes('_OUTGROUP_')));
+          const isOld = samples.some(s => 
+            !s.id || 
+            s.id.includes('_WT_') || 
+            s.id.includes('_MUT_') || 
+            s.id.includes('_OUTGROUP_') || 
+            !s.envNote || 
+            !s.envNote.includes('【原著論文】')
+          );
           if (isOld || samples.length === 0) {{
             samples = getDefaultFinchSamples();
             saveToStorage();
@@ -135,11 +152,10 @@ def main():
         runImageSelfHealingPatch();
       }}
     }}
-
 """
 
-    content = content[:start_idx] + new_load_samples + content[end_idx:]
-    print("Updated loadSamples with Darwin's Finches 1845 Plate dataset.")
+    content = content[:start_idx] + new_load_samples + "\n" + content[end_idx:]
+    print("Updated loadSamples with Darwin's Finches 1845 Plate rich academic metadata.")
 
     # 3. Safeguard runImageSelfHealingPatch
     patch_old = """          } catch (e) {
