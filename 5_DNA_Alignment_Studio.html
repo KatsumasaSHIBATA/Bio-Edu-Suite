@@ -1150,7 +1150,7 @@ body {
                             <button class="rationale-btn" onclick="toggleRationale(event, 'rat_motif'); triggerHapticFeedback();" style="margin-left:0;">?</button>
                         </span>
                         <input type="text" id="searchInput" class="primer-input" style="width: 140px; text-transform: uppercase;" placeholder="塩基配列を入力" oninput="toggleHighlightBtn()" onkeypress="if(event.keyCode===13 && !document.getElementById('btnToggleHighlight').disabled) { toggleHighlightAction(); triggerHapticFeedback(); }" enterkeyhint="search">
-                        <button class="btn btn-secondary" id="btnToggleHighlight" style="padding: 6px 12px; font-size: 11px; min-width: 90px;" onclick="toggleHighlightAction(); triggerHapticFeedback();" disabled data-tooltip="入力した塩基配列を検索してハイライトします"> ハイライト</button>
+                        <button class="btn btn-primary" id="btnToggleHighlight" style="padding: 6px 12px; font-size: 11px; min-width: 90px;" onclick="toggleHighlightAction(); triggerHapticFeedback();" disabled data-tooltip="入力した塩基配列を検索してハイライトします">ハイライト</button>
                     </div>
                     <span style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">※制限酵素部位などを検索できます。ギャップ(-)は無視されます。</span>
                 </div>
@@ -2292,10 +2292,12 @@ function closeFeedbackForm() {
         if(foundAny) {
             showToast(`「${inputStr}」をハイライトしました`);
             isHighlightActive = true;
+            document.getElementById('searchInput').disabled = true; // ハイライト解除まで入力不可にロック
             const btn = document.getElementById('btnToggleHighlight');
             if(btn) {
-                btn.innerHTML = `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg> クリア`;
-                btn.className = "btn";
+                btn.className = "btn btn-secondary";
+                btn.disabled = false;
+                btn.innerHTML = `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> クリア`;
                 btn.setAttribute('data-tooltip', 'ハイライトを解除します');
             }
         } else {
@@ -2304,12 +2306,14 @@ function closeFeedbackForm() {
     }
 
     function clearSearch() { 
-        document.getElementById('searchInput').value = ''; 
+        const searchInput = document.getElementById('searchInput');
+        searchInput.value = ''; 
+        searchInput.disabled = false; // ロック解除
         isHighlightActive = false;
         const btn = document.getElementById('btnToggleHighlight');
         if(btn) {
+            btn.className = "btn btn-primary";
             btn.innerHTML = `ハイライト`;
-            btn.className = "btn btn-secondary";
             btn.setAttribute('data-tooltip', '入力した塩基配列を検索してハイライトします');
         }
         toggleHighlightBtn(); reapplySearch(); renderEditorSync(); 
@@ -2317,16 +2321,19 @@ function closeFeedbackForm() {
 
     function toggleHighlightBtn() {
         const val = document.getElementById('searchInput').value.trim();
-        const isDisabled = (val.length === 0);
         const btn = document.getElementById('btnToggleHighlight');
-        if (btn) btn.disabled = isDisabled;
-        if (isDisabled && isHighlightActive) {
+        if (!btn) return;
+        if (isHighlightActive) {
+            btn.disabled = false;
+        } else {
+            btn.disabled = (val.length === 0);
+        }
+        if (val.length === 0 && isHighlightActive) {
             isHighlightActive = false;
-            if(btn) {
-                btn.innerHTML = `ハイライト`;
-                btn.className = "btn btn-secondary";
-                btn.setAttribute('data-tooltip', '入力した塩基配列を検索してハイライトします');
-            }
+            document.getElementById('searchInput').disabled = false;
+            btn.className = "btn btn-primary";
+            btn.innerHTML = `ハイライト`;
+            btn.setAttribute('data-tooltip', '入力した塩基配列を検索してハイライトします');
             reapplySearch(); renderEditorSync();
         }
     }

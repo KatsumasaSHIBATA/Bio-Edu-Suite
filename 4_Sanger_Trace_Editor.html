@@ -1056,10 +1056,10 @@ body {
                     <span class="editor-toolbar-label">
                         <svg class="btn-icon icon-spaced" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                         モチーフ検索
-                        <button class="rationale-btn spaced" onclick="toggleRationale(event, 'rat_motif')">?</button>
+                        <button class="rationale-btn spaced" onclick="toggleRationale(event, 'rat_motif'); triggerHapticFeedback();">?</button>
                     </span>
-                    <input type="text" id="searchInput" class="primer-input flex-fill" placeholder="塩基配列を入力" onkeypress="if(event.keyCode===13 && !this.disabled) searchSequence()" disabled enterkeyhint="search">
-                    <button class="btn btn-primary btn-sm" id="btnSearchToggle" onclick="toggleSearch()" disabled data-tooltip="入力した塩基配列を検索し、強調表示します。">ハイライト</button>
+                    <input type="text" id="searchInput" class="primer-input flex-fill" style="text-transform: uppercase;" placeholder="塩基配列を入力" oninput="toggleSearchBtn()" onkeypress="if(event.keyCode===13 && !document.getElementById('btnSearchToggle').disabled) { toggleSearch(); triggerHapticFeedback(); }" disabled enterkeyhint="search">
+                    <button class="btn btn-primary btn-sm" id="btnSearchToggle" onclick="toggleSearch(); triggerHapticFeedback();" disabled data-tooltip="入力した塩基配列を検索してハイライトします">ハイライト</button>
                 </div>
                 <span class="editor-toolbar-hint">※プライマー等を検索し、黄色くハイライトします。</span>
             </div>
@@ -1271,7 +1271,7 @@ body {
             document.getElementById('scaleX').disabled = false;
             document.getElementById('scaleY').disabled = false;
             document.getElementById('searchInput').disabled = false;
-            document.getElementById('btnSearchToggle').disabled = false;
+            toggleSearchBtn();
             document.getElementById('btnQC').disabled = false;
             document.getElementById('btnExport').disabled = false;
             document.getElementById('btnCopyFasta').disabled = false;
@@ -1973,6 +1973,17 @@ body {
         }
     }
 
+    function toggleSearchBtn() {
+        const val = document.getElementById('searchInput').value.trim();
+        const btn = document.getElementById('btnSearchToggle');
+        if (!btn) return;
+        if (isSearchActive) {
+            btn.disabled = false;
+        } else {
+            btn.disabled = !ab1Data || (val.length === 0);
+        }
+    }
+
     function searchSequence() {
         if(!ab1Data) return;
         let query = document.getElementById('searchInput').value.toUpperCase().replace(/[^ATGCUNYRWSMKBVDH]/g, '');
@@ -2000,12 +2011,12 @@ body {
             document.getElementById('statusText').innerText = `ステータス: 塩基配列を強調表示しました。`;
             
             isSearchActive = true;
-            document.getElementById('searchInput').disabled = true;
+            document.getElementById('searchInput').disabled = true; // ハイライト解除まで入力不可にロック
             const btn = document.getElementById('btnSearchToggle');
-            btn.classList.remove('btn-primary');
-            btn.innerHTML = `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg> クリア`;
-            btn.setAttribute('data-tooltip', '強調表示を解除します。');
-
+            btn.className = "btn btn-secondary btn-sm";
+            btn.disabled = false;
+            btn.innerHTML = `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> クリア`;
+            btn.setAttribute('data-tooltip', 'ハイライトを解除します');
         } else {
             showToast("指定された塩基配列が見つかりません。", "warning");
         }
@@ -2013,8 +2024,9 @@ body {
     }
     
     function clearSearch() {
-        document.getElementById('searchInput').value = '';
-        document.getElementById('searchInput').disabled = false;
+        const searchInput = document.getElementById('searchInput');
+        searchInput.value = '';
+        searchInput.disabled = !ab1Data; // ロック解除
         if(!ab1Data) return;
         ab1Data.bases.forEach(b => b.isHighlight = false);
         redrawAll();
@@ -2022,9 +2034,10 @@ body {
         
         isSearchActive = false;
         const btn = document.getElementById('btnSearchToggle');
-        btn.classList.add('btn-primary');
+        btn.className = "btn btn-primary btn-sm";
         btn.innerHTML = `ハイライト`;
-        btn.setAttribute('data-tooltip', '入力した塩基配列を検索し、強調表示します。');
+        btn.setAttribute('data-tooltip', '入力した塩基配列を検索してハイライトします');
+        toggleSearchBtn(); // 未入力状態のためボタンを非活性化
     }
 
     function showToast(msg, type = "") {
