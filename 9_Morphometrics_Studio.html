@@ -3315,63 +3315,206 @@ function closeFeedbackForm() {
     }
 
     /* ===================================================================
-       【第7項改定】ネイティブ化必須要件：オートセーブ＆ハイドレーション仕様
-       Page Visibility API による瞬間ドラフト保存とステート復元
+       【セッション永続化仕様】アプリ⑨ 形態解析ステート・ランドマーク・UI完全復元 (v35.3)
+       ランドマーク座標、EFA/GPA係数、PCA結果、TPSグリッドの完全保持
        =================================================================== */
-    (function() {
-        const DRAFT_KEY = 'bio_edu_draft_' + (window.location.pathname.split('/').pop() || 'index.html');
+    (function () {
+        const AUTOSAVE_KEY = 'bio_edu_autosave_app9_full';
 
-        function serializeUIState() {
+        function saveApp9Session() {
             try {
-                const inputs = document.querySelectorAll('input, textarea, select');
-                const draft = {};
-                inputs.forEach(el => {
-                    if (el.id && !el.closest('#confirmModal') && !el.closest('#accountModal')) {
-                        if (el.type === 'checkbox' || el.type === 'radio') {
-                            draft[el.id] = el.checked;
-                        } else if (el.type !== 'file' && el.type !== 'password') {
-                            draft[el.id] = el.value;
-                        }
-                    }
-                });
-                sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+                const routeEl = document.querySelector('input[name="route"]:checked');
+                const route = routeEl ? routeEl.value : 'A';
+                const chainCodeVal = document.getElementById('chain-code-input') ? document.getElementById('chain-code-input').value : '';
+                
+                const hasRouteA = chainCodeVal.trim().length > 0 || (typeof globalSamples !== 'undefined' && globalSamples && globalSamples.length > 0);
+                const hasRouteC = typeof gpaDataList !== 'undefined' && gpaDataList && gpaDataList.some(d => d.landmarks && d.landmarks.length > 0);
+                
+                if (!hasRouteA && !hasRouteC) {
+                    sessionStorage.removeItem(AUTOSAVE_KEY);
+                    return;
+                }
+
+                // gpaDataList の直列化（画像srcと座標リストを抽出）
+                const serializedGPA = (typeof gpaDataList !== 'undefined' && gpaDataList) ? gpaDataList.map(d => ({
+                    id: d.id,
+                    landmarks: d.landmarks || [],
+                    imgSrc: d.img ? (d.img.currentSrc || d.img.src || null) : null
+                })) : [];
+
+                const state = {
+                    savedAt: Date.now(),
+                    route: route,
+                    // Route A
+                    chainCode: chainCodeVal,
+                    harmonics: document.getElementById('harmonics-input') ? document.getElementById('harmonics-input').value : '20',
+                    pcaFeatureMode: document.getElementById('pca-feature-mode') ? document.getElementById('pca-feature-mode').value : 'sym',
+                    currentFeatureMode: typeof currentFeatureMode !== 'undefined' ? currentFeatureMode : 'all',
+                    globalMeanCoeffs: typeof globalMeanCoeffs !== 'undefined' ? globalMeanCoeffs : [],
+                    pc1SliderA: document.getElementById('pc1-slider') ? document.getElementById('pc1-slider').value : '0',
+                    pc2SliderA: document.getElementById('pc2-slider') ? document.getElementById('pc2-slider').value : '0',
+                    
+                    // Route C
+                    gpaDataList: serializedGPA,
+                    gpaCurrentIdx: typeof gpaCurrentIdx !== 'undefined' ? gpaCurrentIdx : -1,
+                    globalGPAResult: typeof globalGPAResult !== 'undefined' ? globalGPAResult : null,
+                    targetPc1C: typeof targetPc1C !== 'undefined' ? targetPc1C : 0,
+                    targetPc2C: typeof targetPc2C !== 'undefined' ? targetPc2C : 0,
+                    currentPc1C: typeof currentPc1C !== 'undefined' ? currentPc1C : 0,
+                    currentPc2C: typeof currentPc2C !== 'undefined' ? currentPc2C : 0,
+                    
+                    // 共通
+                    globalSamples: typeof globalSamples !== 'undefined' ? globalSamples : [],
+                    globalPCA: typeof globalPCA !== 'undefined' ? globalPCA : null,
+                    analysisResult: typeof analysisResult !== 'undefined' ? analysisResult : null,
+                    analysisLogs: typeof analysisLogs !== 'undefined' ? analysisLogs : [],
+                    vizStatus: document.getElementById('viz-status') ? document.getElementById('viz-status').innerText : '',
+                    activeSampleInfo: document.getElementById('active-sample-info') ? document.getElementById('active-sample-info').innerHTML : '',
+                    hasValidExport: !!(typeof globalPCA !== 'undefined' && globalPCA && typeof globalSamples !== 'undefined' && globalSamples && globalSamples.length > 0)
+                };
+
+                sessionStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state));
             } catch (e) {
-                console.warn('UIステートのシリアライズに失敗しました:', e);
+                console.warn('[AutoSave] App9 save failed:', e);
             }
         }
-
-        function hydrateUIState() {
+        function restoreApp9Session() {
             try {
-                const draftStr = sessionStorage.getItem(DRAFT_KEY);
-                if (!draftStr) return;
-                const draft = JSON.parse(draftStr);
-                for (const id in draft) {
-                    const el = document.getElementById(id);
-                    if (el && !el.closest('#confirmModal') && !el.closest('#accountModal')) {
-                        if (el.type === 'checkbox' || el.type === 'radio') {
-                            el.checked = draft[id];
-                        } else if (el.type !== 'file' && el.type !== 'password') {
-                            el.value = draft[id];
-                        }
-                        el.dispatchEvent(new Event('input', { bubbles: true }));
-                        el.dispatchEvent(new Event('change', { bubbles: true }));
+                const raw = sessionStorage.getItem(AUTOSAVE_KEY);
+                if (!raw) return;
+                const state = JSON.parse(raw);
+                if (!state) return;
+
+                // 1. ルート選択の復元
+                if (state.route) {
+                    const radio = document.querySelector(`input[name="route"][value="${state.route}"]`);
+                    if (radio) {
+                        radio.checked = true;
+                        if (typeof switchRoute === 'function') switchRoute();
                     }
                 }
+
+                // 2. Route A の復元
+                if (state.chainCode && document.getElementById('chain-code-input')) {
+                    document.getElementById('chain-code-input').value = state.chainCode;
+                }
+                if (state.harmonics && document.getElementById('harmonics-input')) {
+                    document.getElementById('harmonics-input').value = state.harmonics;
+                }
+                if (state.pcaFeatureMode && document.getElementById('pca-feature-mode')) {
+                    document.getElementById('pca-feature-mode').value = state.pcaFeatureMode;
+                }
+                if (state.currentFeatureMode && typeof currentFeatureMode !== 'undefined') {
+                    currentFeatureMode = state.currentFeatureMode;
+                }
+                if (state.globalMeanCoeffs && state.globalMeanCoeffs.length > 0 && typeof globalMeanCoeffs !== 'undefined') {
+                    globalMeanCoeffs = state.globalMeanCoeffs;
+                }
+
+                // 3. Route C の復元（ランドマーク座標・画像オブジェクト）
+                if (state.gpaDataList && state.gpaDataList.length > 0 && typeof gpaDataList !== 'undefined') {
+                    gpaDataList = state.gpaDataList.map(d => {
+                        let imgObj = null;
+                        if (d.imgSrc) {
+                            imgObj = new Image();
+                            imgObj.src = d.imgSrc;
+                        }
+                        return {
+                            id: d.id,
+                            landmarks: d.landmarks || [],
+                            img: imgObj
+                        };
+                    });
+                    if (typeof gpaCurrentIdx !== 'undefined') {
+                        gpaCurrentIdx = state.gpaCurrentIdx !== undefined ? state.gpaCurrentIdx : 0;
+                    }
+                    if (typeof updateGPASelector === 'function') updateGPASelector();
+                    const sel = document.getElementById('gpaSampleSelector');
+                    if (sel && gpaCurrentIdx >= 0) sel.selectedIndex = gpaCurrentIdx + 1;
+                    if (typeof drawGPACanvas === 'function') drawGPACanvas();
+                }
+
+                if (state.globalGPAResult && typeof globalGPAResult !== 'undefined') globalGPAResult = state.globalGPAResult;
+                if (state.targetPc1C !== undefined && typeof targetPc1C !== 'undefined') targetPc1C = state.targetPc1C;
+                if (state.targetPc2C !== undefined && typeof targetPc2C !== 'undefined') targetPc2C = state.targetPc2C;
+                if (state.currentPc1C !== undefined && typeof currentPc1C !== 'undefined') currentPc1C = state.currentPc1C;
+                if (state.currentPc2C !== undefined && typeof currentPc2C !== 'undefined') currentPc2C = state.currentPc2C;
+
+                // 4. 共通ステート・PCA・ログの復元
+                if (state.globalSamples && state.globalSamples.length > 0 && typeof globalSamples !== 'undefined') globalSamples = state.globalSamples;
+                if (state.globalPCA && typeof globalPCA !== 'undefined') globalPCA = state.globalPCA;
+                if (state.analysisResult && typeof analysisResult !== 'undefined') analysisResult = state.analysisResult;
+                if (state.vizStatus && document.getElementById('viz-status')) document.getElementById('viz-status').innerText = state.vizStatus;
+                if (state.activeSampleInfo && document.getElementById('active-sample-info')) document.getElementById('active-sample-info').innerHTML = state.activeSampleInfo;
+
+                if (state.analysisLogs && state.analysisLogs.length > 0 && typeof analysisLogs !== 'undefined') {
+                    analysisLogs = state.analysisLogs;
+                    const tbody = document.getElementById('logTableBody');
+                    if (tbody) {
+                        tbody.innerHTML = '';
+                        analysisLogs.forEach(log => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td>${log.id}</td>
+                                <td style="font-weight:bold;">${log.route}</td>
+                                <td style="color:#7f8c8d;">${log.param}</td>
+                                <td>${log.resultText}</td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    }
+                }
+
+                // 5. ビジュアライゼーションとボタン活性化
+                if (state.hasValidExport && typeof globalPCA !== 'undefined' && globalPCA && typeof globalSamples !== 'undefined' && globalSamples && globalSamples.length > 0) {
+                    if (state.route === 'A') {
+                        if (typeof drawPCA === 'function') drawPCA(globalPCA, globalSamples, 'pca-svg-container');
+                        const pcSliders = document.getElementById('pc-sliders');
+                        if (pcSliders) pcSliders.style.display = 'block';
+                        if (state.pc1SliderA !== undefined && document.getElementById('pc1-slider')) {
+                            document.getElementById('pc1-slider').value = state.pc1SliderA;
+                        }
+                        if (state.pc2SliderA !== undefined && document.getElementById('pc2-slider')) {
+                            document.getElementById('pc2-slider').value = state.pc2SliderA;
+                        }
+                        if (typeof updateShapeFromSliders === 'function') updateShapeFromSliders();
+                    } else if (state.route === 'C') {
+                        if (globalGPAResult && typeof drawGPAPreview === 'function') drawGPAPreview(globalGPAResult);
+                        if (typeof drawPCA === 'function') drawPCA(globalPCA, globalSamples, 'pca-svg-container-c');
+                        const pcSlidersC = document.getElementById('pc-sliders-c');
+                        if (pcSlidersC) pcSlidersC.style.display = 'flex';
+                        if (document.getElementById('pc1-slider-c')) document.getElementById('pc1-slider-c').value = targetPc1C;
+                        if (document.getElementById('pc2-slider-c')) document.getElementById('pc2-slider-c').value = targetPc2C;
+                        if (document.getElementById('pc1-val-c')) document.getElementById('pc1-val-c').innerText = (targetPc1C > 0 ? "+" : "") + targetPc1C.toFixed(1) + "σ";
+                        if (document.getElementById('pc2-val-c')) document.getElementById('pc2-val-c').innerText = (targetPc2C > 0 ? "+" : "") + targetPc2C.toFixed(1) + "σ";
+                        if (typeof tpsForceRecomputeBaseScale !== 'undefined') tpsForceRecomputeBaseScale = true;
+                        if (typeof renderTPSForPC === 'function') renderTPSForPC(currentPc1C, currentPc2C);
+                    }
+
+                    if (typeof updateExportButtonsState === 'function') updateExportButtonsState(true);
+                    if (typeof showToast === 'function') showToast('前回の形態解析データを復元しました', 'info');
+                }
             } catch (e) {
-                console.warn('UIステートのハイドレーションに失敗しました:', e);
+                console.warn('[AutoSave] App9 restore failed:', e);
             }
         }
 
         document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden') {
-                serializeUIState();
-            }
+            if (document.visibilityState === 'hidden') saveApp9Session();
+        });
+        window.addEventListener('pagehide', saveApp9Session);
+
+        // window.onload の初期無効化処理より確実に後に実行して上書きする
+        window.addEventListener('load', () => {
+            setTimeout(restoreApp9Session, 150);
         });
 
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', hydrateUIState);
-        } else {
-            hydrateUIState();
+        const origConfirm = window.confirmDataReset;
+        if (typeof origConfirm === 'function') {
+            window.confirmDataReset = function() {
+                sessionStorage.removeItem(AUTOSAVE_KEY);
+                origConfirm();
+            };
         }
     })();
 
