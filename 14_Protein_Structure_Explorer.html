@@ -218,7 +218,18 @@
  .bench-tip strong { color: #2980b9; display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 13px; }
 
  /* 全画面表示 */
- .viewer-card.fullscreen-mode { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 1000 !important; margin: 0 !important; border-radius: 0 !important; border-top: none !important; overflow-y: auto !important; }
+ .viewer-card.fullscreen-mode { 
+  position: fixed !important; 
+  top: 0 !important; 
+  left: 0 !important; 
+  width: 100vw !important; 
+  height: 100vh !important; 
+  z-index: 20000 !important; 
+  margin: 0 !important; 
+  border-radius: 0 !important; 
+  border-top: none !important; 
+  overflow-y: auto !important; 
+}
  .viewer-card.fullscreen-mode .viewer-controls { padding-bottom: 24px; }
 
  /* ガイドライン第10項: レスポンシブ */
@@ -810,6 +821,36 @@ body {
     }
 }
 
+/* スプリット表示用スタイル */
+#gldiv.split-mode {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    position: relative;
+}
+.split-viewport {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 580px;
+}
+.split-badge {
+    position: absolute;
+    top: 10px;
+    left: 12px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.75);
+    font-family: 'Segoe UI', monospace, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+    z-index: 10;
+    pointer-events: none;
+    user-select: none;
+    padding: 0;
+    border: none;
+}
 </style>
 </head>
 <body class="app-mode no-select-ui">
@@ -987,7 +1028,7 @@ body {
  <div class="input-group-col">
  <span class="step-label">1. PDB / AlphaFold <button class="rationale-btn" onclick="toggleRationale(event, 'rat_pdb')" data-tooltip="オンライン取得とは？">?</button></span>
  <div class="input-group-row">
- <input type="text" id="pdbId" class="primer-input flex-1" placeholder="PDB ID または UniProt ID" onkeypress="if(event.keyCode===13) loadOnlinePDB()" enterkeyhint="search">
+ <input type="text" id="pdbId" class="primer-input flex-1" placeholder="PDB ID (例: 1A3N または 1A3N, 2HBS)" onkeypress="if(event.keyCode===13) loadOnlinePDB()" enterkeyhint="search">
  <button class="btn btn-primary min-w-80" onclick="loadOnlinePDB()" data-tooltip="PDB ID（4文字）または UniProt ID（AlphaFold用）を入力してオンライン取得します">
  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
  取得
@@ -1227,6 +1268,7 @@ body {
 
 <script>
  let viewer = null;
+ let viewers = [];
  let isSpinning = false;
  let initialView = null;
  
@@ -1291,6 +1333,7 @@ body {
 
  document.addEventListener("DOMContentLoaded", function() {
  viewer = $3Dmol.createViewer("gldiv", { defaultcolors: $3Dmol.rasmolElementColors });
+ viewers = [viewer];
  initSequenceDrag(); 
  initDragAndDrop(); 
  initTooltips(); // ガイドライン第6項④
@@ -1403,58 +1446,86 @@ body {
  }
 
  function loadOnlinePDB() {
- let id = document.getElementById('pdbId').value.trim().toUpperCase();
- if(!id) return;
- viewer.clear();
- clearHighlights();
+ let rawInput = document.getElementById('pdbId').value.trim().toUpperCase();
+ if(!rawInput) return;
+ let ids = rawInput.split(/[\s,]+/).filter(id => id.length > 0).slice(0, 2);
+ if(ids.length === 0) return;
  
- // 文字数が4文字の場合はPDB、それ以上（例: P68871）はAlphaFoldと判断
- if (id.length === 4) {
- currentLoadedAfId = "";
- setStatus(`読込中: PDB [${id}] ...`);
- $3Dmol.download("pdb:" + id.toLowerCase(), viewer, {multimodel: false, frames: true}, function() {
- finishLoad(`PDB: ${id}`, 'chain', false);
- });
+ const gldiv = document.getElementById('gldiv');
+ 
+ if(ids.length === 2) {
+     gldiv.classList.add('split-mode');
+     gldiv.innerHTML = '';
+     viewers = [];
+     ids.forEach((id, index) => {
+         let subDiv = document.createElement('div');
+         subDiv.id = `gldiv-${index}`;
+         subDiv.className = 'split-viewport';
+         let badge = document.createElement('div');
+         badge.className = 'split-badge';
+         badge.innerText = id;
+         subDiv.appendChild(badge);
+         gldiv.appendChild(subDiv);
+         let v = $3Dmol.createViewer(`gldiv-${index}`, { defaultcolors: $3Dmol.rasmolElementColors });
+         viewers.push(v);
+     });
+     viewer = viewers[0]; // 主ビューワ
+     document.getElementById('dataInfo').innerText = "比較モード";
+     viewers.forEach((v, idx) => {
+         fetchAndDraw(ids[idx], v, idx === 0);
+     });
  } else {
- currentLoadedAfId = id;
- setStatus(`読込中: AlphaFold [${id}] ...`);
- 
- // EBI AlphaFold API経由で正確なCIF URLを取得する
- const apiUrl = `https://alphafold.ebi.ac.uk/api/prediction/${id}`;
- 
- fetch(apiUrl)
- .then(response => {
- if (!response.ok) throw new Error("AlphaFoldにIDが存在しないか、アクセスできません。");
- return response.json();
- })
- .then(data => {
- if (data && data.length > 0 && data[0].cifUrl) {
- return fetch(data[0].cifUrl);
- } else {
- throw new Error("AlphaFoldデータのURLが見つかりませんでした。");
+     gldiv.classList.remove('split-mode');
+     gldiv.innerHTML = '';
+     let badge = document.createElement('div');
+     badge.className = 'split-badge';
+     badge.innerText = ids[0];
+     gldiv.appendChild(badge);
+     viewer = $3Dmol.createViewer("gldiv", { defaultcolors: $3Dmol.rasmolElementColors });
+     viewers = [viewer];
+     document.getElementById('dataInfo').innerText = "単一表示モード";
+     fetchAndDraw(ids[0], viewer, true);
  }
- })
- .then(response => {
- if (!response.ok) throw new Error("CIFファイルのダウンロードに失敗しました。");
- return response.text();
- })
- .then(text => {
- viewer.addModel(text, "cif");
- // AlphaFoldデータはpLDDTカラーをデフォルトにする
- finishLoad(`AlphaFold: ${id}`, 'plddt', true);
- })
- .catch(error => {
- console.error("AlphaFold load error:", error);
- setStatus(`エラー: AlphaFoldデータが見つかりません [${id}]`);
- 
- const inputField = document.getElementById('pdbId');
- inputField.classList.add('input-error');
- showToast(`AlphaFoldデータの取得に失敗しました: ${id}`, "error");
- setTimeout(() => {
- inputField.classList.remove('input-error');
- }, 3000);
- });
  }
+
+ function fetchAndDraw(id, targetViewer, isMain) {
+     targetViewer.clear();
+     if(isMain) clearHighlights();
+     
+     if (id.length === 4) {
+         if(isMain) currentLoadedAfId = "";
+         if(isMain) setStatus(`読込中: PDB [${id}] ...`);
+         $3Dmol.download("pdb:" + id.toLowerCase(), targetViewer, {multimodel: false, frames: true}, function() {
+             if(isMain) finishLoad(`PDB: ${id}`, 'chain', false);
+             else { targetViewer.zoomTo(); targetViewer.render(); }
+         });
+     } else {
+         if(isMain) currentLoadedAfId = id;
+         if(isMain) setStatus(`読込中: AlphaFold [${id}] ...`);
+         const apiUrl = `https://alphafold.ebi.ac.uk/api/prediction/${id}`;
+         fetch(apiUrl)
+         .then(res => { if(!res.ok) throw new Error(); return res.json(); })
+         .then(data => { if(data && data[0] && data[0].cifUrl) return fetch(data[0].cifUrl); throw new Error(); })
+         .then(res => { if(!res.ok) throw new Error(); return res.text(); })
+         .then(text => {
+             targetViewer.addModel(text, "cif");
+             if(isMain) finishLoad(`AlphaFold: ${id}`, 'plddt', true);
+             else { 
+                 targetViewer.setStyle({}, {cartoon: {colorfunc: atom => atom.b > 90 ? '#0053d6' : atom.b > 70 ? '#65cbfa' : atom.b > 50 ? '#ffd111' : '#ff7d45'}});
+                 targetViewer.zoomTo(); 
+                 targetViewer.render(); 
+             }
+         })
+         .catch(err => {
+             if(isMain) {
+                 setStatus(`エラー: 取得失敗 [${id}]`);
+                 const inputField = document.getElementById('pdbId');
+                 inputField.classList.add('input-error');
+                 showToast(`取得失敗: ${id}`, "error");
+                 setTimeout(() => inputField.classList.remove('input-error'), 3000);
+             }
+         });
+     }
  }
 
  function initDragAndDrop() {
@@ -1528,7 +1599,11 @@ body {
  updateVisuals(); 
  viewer.zoomTo();
  initialView = viewer.getView();
- setStatus(name);
+ if (viewers.length === 2) {
+     document.getElementById('dataInfo').innerText = "比較モード";
+ } else {
+     document.getElementById('dataInfo').innerText = "単一表示モード";
+ }
  extractSequenceAndChains();
 
  viewer.setClickable({}, true, function(atom) {
@@ -1543,6 +1618,7 @@ body {
  function updateVisuals() {
  let currentClip = document.getElementById('clipSlider').value;
 
+ viewers.forEach(viewer => {
  viewer.removeAllSurfaces();
  viewer.removeAllLabels();
 
@@ -1684,6 +1760,7 @@ body {
  el.classList.add('selected');
  }
  });
+ }); // end viewers.forEach
 
  updateClearButton();
  updateClipping(currentClip);
@@ -1718,13 +1795,14 @@ body {
  }
 
  function updateClipping(value) {
- if (!viewer) return;
+ if (!viewers || viewers.length === 0) return;
  let percent = parseInt(value); // 100: 手前(カットなし), 0: 奥(全部カット)
  
+ viewers.forEach(v => {
  if (percent === 100) {
- viewer.setSlab(-10000, 10000); 
+ v.setSlab(-10000, 10000); 
  } else {
- let view = viewer.getView();
+ let view = v.getView();
  let camZ = 150; 
  if (view && view.z !== undefined) camZ = Math.abs(view.z);
  else if (view && view[2] !== undefined) camZ = Math.abs(view[2]);
@@ -1732,9 +1810,10 @@ body {
  let R = 60; 
  let near = camZ - R + (R * 2) * ((100 - percent) / 100);
  
- viewer.setSlab(near, 10000);
+ v.setSlab(near, 10000);
  }
- viewer.render(); 
+ v.render(); 
+ });
  }
 
  function extractSequenceAndChains() {
@@ -1908,11 +1987,11 @@ body {
  }
 
  function clearHighlights() { selectedResidues = []; updateVisuals(); }
- function resetView() { if(initialView) viewer.setView(initialView); viewer.zoomTo(); document.getElementById('clipSlider').value = 100; updateClipping(100); viewer.render(); }
+ function resetView() { if(initialView) { viewers.forEach(v => { v.setView(initialView); v.zoomTo(); v.render(); }); } document.getElementById('clipSlider').value = 100; updateClipping(100); }
  
  function toggleSpin() { 
  isSpinning = !isSpinning; 
- viewer.spin(isSpinning ? "y" : false); 
+ viewers.forEach(v => v.spin(isSpinning ? "y" : false)); 
  const btn = document.getElementById('spinBtn');
  btn.classList.toggle('active', isSpinning);
  btn.querySelector('.btn-text').innerText = isSpinning ? '回転: OFF' : '回転: ON'; 
