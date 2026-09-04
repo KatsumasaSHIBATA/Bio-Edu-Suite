@@ -1891,7 +1891,7 @@ body {
 
         globalSamples.forEach((sample, i) => {
             let originalSample = window.transferredSamples ? window.transferredSamples.find(s => s.id === sample.name || s.name === sample.name) : null;
-            let sampleId = originalSample ? originalSample.id : `SAMP_${new Date().getTime()}_${i}`;
+            let sampleId = originalSample ? originalSample.id : (sample.name || `SAMP_${new Date().getTime()}_${i}`);
             let sampleName = originalSample ? originalSample.name : sample.name;
 
             let sampleData = {
@@ -1997,7 +1997,7 @@ body {
         ];
         globalSamples.forEach((sample, i) => {
             let originalSample = window.transferredSamples ? window.transferredSamples.find(s => s.id === sample.name || s.name === sample.name) : null;
-            let sampleId = originalSample ? originalSample.id : `SAMP_${new Date().getTime()}_${i}`;
+            let sampleId = originalSample ? originalSample.id : (sample.name || `SAMP_${new Date().getTime()}_${i}`);
             let sampleName = originalSample ? originalSample.name : sample.name;
             tsvLines.push(`${sampleId}\t${sampleName}\t${globalPCA.pc1[i].toFixed(6)}\t${globalPCA.pc2[i].toFixed(6)}`);
         });

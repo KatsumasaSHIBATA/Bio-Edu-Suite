@@ -1568,7 +1568,7 @@ body {
             if (jsonStr) {
                 let parsedJson = JSON.parse(jsonStr);
                 let morphData = parsedJson.samples ? parsedJson.samples : parsedJson;
-                let normMorphIds = morphData.map(d => normalizeId(d.id));
+                let normMorphIds = morphData.map(d => normalizeId(d.id || d.name));
                 
                 leafNames.forEach(leaf => {
                     let normLeaf = normalizeId(leaf);
