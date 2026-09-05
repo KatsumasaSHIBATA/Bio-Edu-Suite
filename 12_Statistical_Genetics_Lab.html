@@ -2263,128 +2263,156 @@ function closeFeedbackForm() {
     }
 </script>
 
-<!-- 入力データの一時保存（sessionStorage） v34.3.8 -->
+<!-- セッション永続化仕様：統計遺伝学解析ステート・バイプロット・ANOVA完全復元 (v35.3) -->
 <script>
 (function () {
     /* ===================================================================
-       【v34.3.8】ページ遷移時の入力データ一時保存
-       解析パイプラインを行き来しても入力が失われないようにする。
-       ・sessionStorage はタブを閉じるまで有効。localStorage を使う既存の
-         バケツリレー／履歴機能には一切干渉しない。
-       ・復元は「その欄が空のときだけ」行う。これにより、アプリ間の
-         受け渡しデータや初期表示値が入っている場合はそちらを優先する。
-       ・復元後に input イベントを発火し、アプリ側の更新処理
-         （入力欄の活性化判定・文字数表示など）を通常入力時と同じ経路で走らせる。
+       【セッション永続化仕様】アプリ⑫ 統計遺伝学ステート・グラフ・ANOVA完全復元
+       他アプリを行き来しても、TSVデータ、マッピング、AMMIバイプロット、反応規範、ANOVA表を完全再現
        =================================================================== */
-    const AUTOSAVE_KEY = 'bio_edu_autosave_app11';
-    const FIELDS = ['env-input', 'morph-input'];
+    const AUTOSAVE_KEY = 'bio_edu_autosave_app12_full';
 
-    // 離脱時に退避
-    document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState !== 'hidden') return;
+    function saveApp12Session() {
         try {
-            const data = {};
-            let hasValue = false;
-            FIELDS.forEach(id => {
-                const el = document.getElementById(id);
-                if (!el) return;
-                data[id] = el.value;
-                if (String(el.value).trim() !== '') hasValue = true;
-            });
-            if (hasValue) sessionStorage.setItem(AUTOSAVE_KEY, JSON.stringify(data));
-            else sessionStorage.removeItem(AUTOSAVE_KEY);
-        } catch (e) {
-            // 容量超過などで保存できなくても離脱そのものは妨げない
-            console.warn('一時保存に失敗しました:', e);
-        }
-    });
+            const envEl = document.getElementById('env-input');
+            const morphEl = document.getElementById('morph-input');
+            const envVal = envEl ? envEl.value.trim() : '';
+            const morphVal = morphEl ? morphEl.value.trim() : '';
 
-    // 起動時に書き戻す
-    window.addEventListener('DOMContentLoaded', () => {
-        try {
-            const saved = JSON.parse(sessionStorage.getItem(AUTOSAVE_KEY) || 'null');
-            if (!saved) return;
-            let restored = 0;
-            FIELDS.forEach(id => {
-                const el = document.getElementById(id);
-                if (!el) return;
-                if (typeof saved[id] !== 'string' || saved[id].trim() === '') return;
-                if (String(el.value).trim() !== '') return;   // 既存の値を優先
-                el.value = saved[id];
-                el.dispatchEvent(new Event('input', { bubbles: true }));
-                restored++;
-            });
-            if (restored > 0 && typeof showToast === 'function') {
-                showToast('前回の入力内容を復元しました', 'info');
+            const hasState = typeof state !== 'undefined' && state && state.hasRun;
+            if (!envVal && !morphVal && !hasState) {
+                sessionStorage.removeItem(AUTOSAVE_KEY);
+                return;
             }
+
+            const stateData = {
+                savedAt: Date.now(),
+                envVal: envVal,
+                morphVal: morphVal,
+                genoCol: document.getElementById('geno-selector') ? document.getElementById('geno-selector').value : '',
+                envCol: document.getElementById('env-selector') ? document.getElementById('env-selector').value : '',
+                traitCol: document.getElementById('trait-selector') ? document.getElementById('trait-selector').value : '',
+                noiseVal: document.getElementById('noise-slider') ? document.getElementById('noise-slider').value : '0.2',
+                mappingUiDisplay: document.getElementById('mapping-ui') ? document.getElementById('mapping-ui').style.display : 'none',
+                joinedData: typeof joinedData !== 'undefined' ? joinedData : null,
+                joinedHeaders: typeof joinedHeaders !== 'undefined' ? joinedHeaders : [],
+                appState: (typeof state !== 'undefined' && state) ? {
+                    hasRun: state.hasRun,
+                    genotypes: state.genotypes || [],
+                    environments: state.environments || [],
+                    baseData: state.baseData || [],
+                    data: state.data || [],
+                    results: state.results || null
+                } : null
+            };
+
+            sessionStorage.setItem(AUTOSAVE_KEY, JSON.stringify(stateData));
         } catch (e) {
-            console.warn('一時保存の復元に失敗しました:', e);
+            console.warn('[AutoSave] App12 save failed:', e);
         }
-    });
-})();
+    }
 
-    /* ===================================================================
-       【第7項改定】ネイティブ化必須要件：オートセーブ＆ハイドレーション仕様
-       Page Visibility API による瞬間ドラフト保存とステート復元
-       =================================================================== */
-    (function() {
-        const DRAFT_KEY = 'bio_edu_draft_' + (window.location.pathname.split('/').pop() || 'index.html');
+    function restoreApp12Session() {
+        try {
+            const raw = sessionStorage.getItem(AUTOSAVE_KEY);
+            if (!raw) return;
+            const saved = JSON.parse(raw);
+            if (!saved) return;
 
-        function serializeUIState() {
-            try {
-                const inputs = document.querySelectorAll('input, textarea, select');
-                const draft = {};
-                inputs.forEach(el => {
-                    if (el.id && !el.closest('#confirmModal') && !el.closest('#accountModal')) {
-                        if (el.type === 'checkbox' || el.type === 'radio') {
-                            draft[el.id] = el.checked;
-                        } else if (el.type !== 'file' && el.type !== 'password') {
-                            draft[el.id] = el.value;
-                        }
+            // 1. 各入力エリアの復元
+            const envEl = document.getElementById('env-input');
+            const morphEl = document.getElementById('morph-input');
+            if (envEl && (!envEl.value || envEl.value.trim() === '')) {
+                envEl.value = saved.envVal || '';
+            }
+            if (morphEl && (!morphEl.value || morphEl.value.trim() === '')) {
+                morphEl.value = saved.morphVal || '';
+            }
+
+            // 2. 結合データとマッピングUIの復元
+            if (saved.joinedData && saved.joinedHeaders && saved.joinedHeaders.length > 0) {
+                joinedData = saved.joinedData;
+                joinedHeaders = saved.joinedHeaders;
+
+                const selectors = ['geno-selector', 'env-selector', 'trait-selector'];
+                selectors.forEach(id => {
+                    const sel = document.getElementById(id);
+                    if (sel) {
+                        sel.innerHTML = '<option value="">選択してください</option>';
+                        joinedHeaders.forEach(h => {
+                            const opt = document.createElement('option');
+                            opt.value = h;
+                            opt.text = h;
+                            sel.appendChild(opt);
+                        });
                     }
                 });
-                sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-            } catch (e) {
-                console.warn('UIステートのシリアライズに失敗しました:', e);
+                if (saved.genoCol && document.getElementById('geno-selector')) document.getElementById('geno-selector').value = saved.genoCol;
+                if (saved.envCol && document.getElementById('env-selector')) document.getElementById('env-selector').value = saved.envCol;
+                if (saved.traitCol && document.getElementById('trait-selector')) document.getElementById('trait-selector').value = saved.traitCol;
+                if (saved.noiseVal && document.getElementById('noise-slider')) document.getElementById('noise-slider').value = saved.noiseVal;
+                
+                const mapUi = document.getElementById('mapping-ui');
+                if (mapUi && saved.mappingUiDisplay) mapUi.style.display = saved.mappingUiDisplay;
             }
-        }
 
-        function hydrateUIState() {
-            try {
-                const draftStr = sessionStorage.getItem(DRAFT_KEY);
-                if (!draftStr) return;
-                const draft = JSON.parse(draftStr);
-                for (const id in draft) {
-                    const el = document.getElementById(id);
-                    if (el && !el.closest('#confirmModal') && !el.closest('#accountModal')) {
-                        if (el.type === 'checkbox' || el.type === 'radio') {
-                            el.checked = draft[id];
-                        } else if (el.type !== 'file' && el.type !== 'password') {
-                            el.value = draft[id];
-                        }
-                        el.dispatchEvent(new Event('input', { bubbles: true }));
-                        el.dispatchEvent(new Event('change', { bubbles: true }));
-                    }
+            // 3. 解析ステートおよびグラフ・表の再描画
+            if (saved.appState && saved.appState.hasRun && saved.appState.results) {
+                if (typeof state !== 'undefined') {
+                    state.hasRun = saved.appState.hasRun;
+                    state.genotypes = saved.appState.genotypes;
+                    state.environments = saved.appState.environments;
+                    state.baseData = saved.appState.baseData;
+                    state.data = saved.appState.data;
+                    state.results = saved.appState.results;
                 }
-            } catch (e) {
-                console.warn('UIステートのハイドレーションに失敗しました:', e);
+
+                const legendEl = document.getElementById('biplot-legend');
+                if (legendEl) legendEl.style.display = 'flex';
+
+                if (typeof renderBiplot === 'function') renderBiplot();
+                if (typeof renderReactionNorm === 'function') renderReactionNorm();
+                if (typeof renderAnova === 'function') renderAnova();
+
+                const btnPng = document.getElementById('btn-save-png');
+                const btnRnPng = document.getElementById('btn-save-rn-png');
+                const btnCsv = document.getElementById('btn-save-csv');
+                if (btnPng) btnPng.disabled = false;
+                if (btnRnPng) btnRnPng.disabled = false;
+                if (btnCsv) btnCsv.disabled = false;
+
+                if (typeof showToast === 'function') {
+                    showToast('前回の統計遺伝学解析結果を復元しました', 'info');
+                }
             }
+        } catch (e) {
+            console.warn('[AutoSave] App12 restore failed:', e);
         }
+    }
 
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden') {
-                serializeUIState();
-            }
-        });
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') saveApp12Session();
+    });
+    window.addEventListener('pagehide', saveApp12Session);
 
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', hydrateUIState);
-        } else {
-            hydrateUIState();
-        }
-    })();
+    // DOMレイアウトおよびSVG寸法確定後に確実に復元
+    window.addEventListener('load', () => {
+        setTimeout(restoreApp12Session, 120);
+    });
+
+    const origConfirm = window.confirmDataReset;
+    if (typeof origConfirm === 'function') {
+        window.confirmDataReset = function() {
+            sessionStorage.removeItem(AUTOSAVE_KEY);
+            origConfirm();
+        };
+    }
+})();
+</script>
 
 
+
+<script>
     // 最終アクセスアプリの記憶（State Restoration）
     try {
       localStorage.setItem('bio_suite_last_app', window.location.pathname);
