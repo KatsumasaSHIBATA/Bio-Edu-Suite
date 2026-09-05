@@ -2229,126 +2229,205 @@ function closeFeedbackForm() {
     }
 </script>
 
-<!-- 入力データの一時保存（sessionStorage） v34.3.8 -->
+<!-- セッション永続化仕様：3Dタンパク質立体構造・解析ステート完全復元 (v35.3) -->
 <script>
 (function () {
     /* ===================================================================
-       【v34.3.8】ページ遷移時の入力データ一時保存
-       解析パイプラインを行き来しても入力が失われないようにする。
-       ・sessionStorage はタブを閉じるまで有効。localStorage を使う既存の
-         バケツリレー／履歴機能には一切干渉しない。
-       ・復元は「その欄が空のときだけ」行う。これにより、アプリ間の
-         受け渡しデータや初期表示値が入っている場合はそちらを優先する。
-       ・復元後に input イベントを発火し、アプリ側の更新処理
-         （入力欄の活性化判定・文字数表示など）を通常入力時と同じ経路で走らせる。
+       【セッション永続化仕様】アプリ⑭ 3D立体構造・ハイライト・UI完全復元
+       他アプリを行き来しても、PDB/AlphaFold構造、表示スタイル、選択残基を完全再現
        =================================================================== */
-    const AUTOSAVE_KEY = 'bio_edu_autosave_app14';
-    const FIELDS = ['pdbId', 'pasteArea', 'residueList'];
+    const AUTOSAVE_KEY = 'bio_edu_autosave_app14_full';
 
-    // 離脱時に退避
-    document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState !== 'hidden') return;
+    // ローカルテキストデータの退避用フック
+    window._lastLocalStructureText = window._lastLocalStructureText || "";
+    window._lastLocalFilename = window._lastLocalFilename || "";
+    const origProcessTextData = window.processTextData;
+    if (typeof origProcessTextData === 'function') {
+        window.processTextData = function(text, filename) {
+            window._lastLocalStructureText = text;
+            window._lastLocalFilename = filename;
+            return origProcessTextData(text, filename);
+        };
+    }
+
+    // 画面離脱時の瞬間セッション保存
+    function saveApp14Session() {
         try {
-            const data = {};
-            let hasValue = false;
-            FIELDS.forEach(id => {
-                const el = document.getElementById(id);
-                if (!el) return;
-                data[id] = el.value;
-                if (String(el.value).trim() !== '') hasValue = true;
-            });
-            if (hasValue) sessionStorage.setItem(AUTOSAVE_KEY, JSON.stringify(data));
-            else sessionStorage.removeItem(AUTOSAVE_KEY);
-        } catch (e) {
-            // 容量超過などで保存できなくても離脱そのものは妨げない
-            console.warn('一時保存に失敗しました:', e);
-        }
-    });
+            const pdbInput = document.getElementById('pdbId');
+            const pdbVal = pdbInput ? pdbInput.value.trim() : "";
+            const pasteInput = document.getElementById('pasteArea');
+            const pasteVal = pasteInput ? pasteInput.value.trim() : "";
 
-    // 起動時に書き戻す
-    window.addEventListener('DOMContentLoaded', () => {
+            const hasModel = typeof viewer !== 'undefined' && viewer && viewer.getModel(0);
+            if (!hasModel && !pdbVal && !pasteVal && !window._lastLocalStructureText) {
+                sessionStorage.removeItem(AUTOSAVE_KEY);
+                return;
+            }
+
+            let sourceType = 'none';
+            if (pdbVal) sourceType = 'online';
+            else if (window._lastLocalStructureText || pasteVal) sourceType = 'local';
+
+            const state = {
+                savedAt: Date.now(),
+                sourceType: sourceType,
+                pdbId: pdbVal,
+                rawText: window._lastLocalStructureText || pasteVal,
+                rawFilename: window._lastLocalFilename || 'Local_Structure',
+                residueListInput: document.getElementById('residueList') ? document.getElementById('residueList').value : "",
+                currentStyleMode: typeof currentStyleMode !== 'undefined' ? currentStyleMode : 'chain',
+                showLigands: typeof showLigands !== 'undefined' ? showLigands : false,
+                showDNA: typeof showDNA !== 'undefined' ? showDNA : false,
+                showLabels: typeof showLabels !== 'undefined' ? showLabels : false,
+                isEnvViewActive: typeof isEnvViewActive !== 'undefined' ? isEnvViewActive : false,
+                selectedResidues: typeof selectedResidues !== 'undefined' ? selectedResidues : [],
+                hiddenChains: (typeof hiddenChains !== 'undefined' && hiddenChains) ? Array.from(hiddenChains) : [],
+                clipValue: document.getElementById('clipSlider') ? document.getElementById('clipSlider').value : "100"
+            };
+
+            sessionStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state));
+        } catch (e) {
+            console.warn('[AutoSave] App14 save failed:', e);
+        }
+    }
+    // 復元処理（ハイドレーション）
+    function applyPendingHydration(state) {
         try {
-            const saved = JSON.parse(sessionStorage.getItem(AUTOSAVE_KEY) || 'null');
-            if (!saved) return;
-            let restored = 0;
-            FIELDS.forEach(id => {
-                const el = document.getElementById(id);
-                if (!el) return;
-                if (typeof saved[id] !== 'string' || saved[id].trim() === '') return;
-                if (String(el.value).trim() !== '') return;   // 既存の値を優先
-                el.value = saved[id];
-                el.dispatchEvent(new Event('input', { bubbles: true }));
-                restored++;
-            });
-            if (restored > 0 && typeof showToast === 'function') {
-                showToast('前回の入力内容を復元しました', 'info');
+            if (!state) return;
+
+            // スタイル・残基選択の復元
+            if (state.currentStyleMode && typeof currentStyleMode !== 'undefined') {
+                currentStyleMode = state.currentStyleMode;
             }
-        } catch (e) {
-            console.warn('一時保存の復元に失敗しました:', e);
-        }
-    });
-})();
-
-    /* ===================================================================
-       【第7項改定】ネイティブ化必須要件：オートセーブ＆ハイドレーション仕様
-       Page Visibility API による瞬間ドラフト保存とステート復元
-       =================================================================== */
-    (function() {
-        const DRAFT_KEY = 'bio_edu_draft_' + (window.location.pathname.split('/').pop() || 'index.html');
-
-        function serializeUIState() {
-            try {
-                const inputs = document.querySelectorAll('input, textarea, select');
-                const draft = {};
-                inputs.forEach(el => {
-                    if (el.id && !el.closest('#confirmModal') && !el.closest('#accountModal')) {
-                        if (el.type === 'checkbox' || el.type === 'radio') {
-                            draft[el.id] = el.checked;
-                        } else if (el.type !== 'file' && el.type !== 'password') {
-                            draft[el.id] = el.value;
-                        }
-                    }
-                });
-                sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-            } catch (e) {
-                console.warn('UIステートのシリアライズに失敗しました:', e);
+            if (state.selectedResidues && typeof selectedResidues !== 'undefined') {
+                selectedResidues = state.selectedResidues;
             }
-        }
-
-        function hydrateUIState() {
-            try {
-                const draftStr = sessionStorage.getItem(DRAFT_KEY);
-                if (!draftStr) return;
-                const draft = JSON.parse(draftStr);
-                for (const id in draft) {
-                    const el = document.getElementById(id);
-                    if (el && !el.closest('#confirmModal') && !el.closest('#accountModal')) {
-                        if (el.type === 'checkbox' || el.type === 'radio') {
-                            el.checked = draft[id];
-                        } else if (el.type !== 'file' && el.type !== 'password') {
-                            el.value = draft[id];
-                        }
-                        el.dispatchEvent(new Event('input', { bubbles: true }));
-                        el.dispatchEvent(new Event('change', { bubbles: true }));
-                    }
+            if (typeof showLigands !== 'undefined') {
+                showLigands = !!state.showLigands;
+                const btn = document.getElementById('btnLigand');
+                if (btn) {
+                    btn.classList.toggle('active', showLigands);
+                    const txt = btn.querySelector('.btn-text');
+                    if (txt) txt.innerText = showLigands ? 'リガンド: ON' : 'リガンド: OFF';
                 }
-            } catch (e) {
-                console.warn('UIステートのハイドレーションに失敗しました:', e);
             }
-        }
-
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden') {
-                serializeUIState();
+            if (typeof showDNA !== 'undefined') {
+                showDNA = !!state.showDNA;
+                const btn = document.getElementById('btnDNA');
+                if (btn) {
+                    btn.classList.toggle('active', showDNA);
+                    const txt = btn.querySelector('.btn-text');
+                    if (txt) txt.innerText = showDNA ? 'DNA: ON' : 'DNA: OFF';
+                }
             }
-        });
+            if (typeof showLabels !== 'undefined') {
+                showLabels = !!state.showLabels;
+                const btn = document.getElementById('btnLabel');
+                if (btn) {
+                    btn.classList.toggle('active', showLabels);
+                    const txt = btn.querySelector('.btn-text');
+                    if (txt) txt.innerText = showLabels ? 'ラベル: ON' : 'ラベル: OFF';
+                }
+            }
+            if (typeof isEnvViewActive !== 'undefined') {
+                isEnvViewActive = !!state.isEnvViewActive;
+                const btn = document.getElementById('btnEnv');
+                if (btn) {
+                    btn.classList.toggle('active', isEnvViewActive);
+                    const txt = btn.querySelector('.btn-text');
+                    if (txt) txt.innerText = isEnvViewActive ? '周辺5Å: ON' : '周辺5Å: OFF';
+                }
+            }
+            if (state.hiddenChains && typeof hiddenChains !== 'undefined') {
+                hiddenChains = new Set(state.hiddenChains);
+                document.querySelectorAll('.chain-checkbox input').forEach(cb => {
+                    const chain = cb.parentElement.textContent.replace(/[^A-Za-z0-9]/g, '');
+                    cb.checked = !hiddenChains.has(chain);
+                });
+            }
+            if (state.clipValue && document.getElementById('clipSlider')) {
+                document.getElementById('clipSlider').value = state.clipValue;
+            }
+            if (state.residueListInput && document.getElementById('residueList')) {
+                document.getElementById('residueList').value = state.residueListInput;
+            }
 
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', hydrateUIState);
-        } else {
-            hydrateUIState();
+            // ビジュアルの再描画
+            if (typeof updateVisuals === 'function') {
+                updateVisuals();
+            }
+
+            if (typeof showToast === 'function') {
+                showToast('前回の3D立体構造と表示状態を復元しました', 'info');
+            }
+        } catch (e) {
+            console.warn('[AutoSave] App14 apply hydration failed:', e);
         }
-    })();
+    }
+
+    // finishLoadのフック（読み込み完了時に保留中のステートを自動適用）
+    const origFinishLoad = window.finishLoad;
+    if (typeof origFinishLoad === 'function') {
+        window.finishLoad = function(name, colorStyle, isAF) {
+            origFinishLoad(name, colorStyle, isAF);
+            if (window._pendingHydrationState) {
+                const pending = window._pendingHydrationState;
+                window._pendingHydrationState = null;
+                setTimeout(() => applyPendingHydration(pending), 80);
+            }
+        };
+    }
+
+    // ページ訪問時のトリガー
+    function triggerRestore() {
+        try {
+            const raw = sessionStorage.getItem(AUTOSAVE_KEY);
+            if (!raw) return;
+            const state = JSON.parse(raw);
+            if (!state) return;
+
+            // 既に何らかのモデルが読み込まれている場合は上書きしない
+            if (typeof viewer !== 'undefined' && viewer && viewer.getModel(0)) return;
+
+            window._pendingHydrationState = state;
+
+            if (state.sourceType === 'online' && state.pdbId) {
+                const pdbInput = document.getElementById('pdbId');
+                if (pdbInput) pdbInput.value = state.pdbId;
+                if (typeof loadOnlinePDB === 'function') {
+                    loadOnlinePDB();
+                }
+            } else if (state.sourceType === 'local' && state.rawText) {
+                const pasteInput = document.getElementById('pasteArea');
+                if (pasteInput) pasteInput.value = state.rawText;
+                if (typeof processTextData === 'function') {
+                    processTextData(state.rawText, state.rawFilename || 'Restored_Data');
+                }
+            }
+        } catch (e) {
+            console.warn('[AutoSave] App14 restore failed:', e);
+        }
+    }
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') saveApp14Session();
+    });
+    window.addEventListener('pagehide', saveApp14Session);
+
+    // ロード完了後にWebGLと3Dmolの準備を待って自動復元を発火
+    window.addEventListener('load', () => {
+        setTimeout(triggerRestore, 200);
+    });
+
+    // 初期化ボタン対応
+    const origConfirm = window.confirmDataReset;
+    if (typeof origConfirm === 'function') {
+        window.confirmDataReset = function() {
+            sessionStorage.removeItem(AUTOSAVE_KEY);
+            origConfirm();
+        };
+    }
+})();
 
 
     // 最終アクセスアプリの記憶（State Restoration）
