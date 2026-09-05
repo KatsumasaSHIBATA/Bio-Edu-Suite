@@ -3279,8 +3279,8 @@ function closeFeedbackForm() {
     }
 
     /* ===================================================================
-       【セッション永続化仕様】アプリ⑨ 形態解析ステート・ランドマーク・UI完全復元 (v35.3)
-       ランドマーク座標、EFA/GPA係数、PCA結果、TPSグリッドの完全保持
+       【セッション永続化仕様】アプリ⑨ 形態解析ステート・ランドマーク・UI完全復元 (v35.3.1)
+       ランドマーク座標、EFA/GPA係数、PCA結果、TPSグリッド、およびメタデータの完全保持
        =================================================================== */
     (function () {
         const AUTOSAVE_KEY = 'bio_edu_autosave_app9_full';
@@ -3334,6 +3334,7 @@ function closeFeedbackForm() {
                     analysisLogs: typeof analysisLogs !== 'undefined' ? analysisLogs : [],
                     vizStatus: document.getElementById('viz-status') ? document.getElementById('viz-status').innerText : '',
                     activeSampleInfo: document.getElementById('active-sample-info') ? document.getElementById('active-sample-info').innerHTML : '',
+                    transferredSamples: typeof window.transferredSamples !== 'undefined' ? window.transferredSamples : null,
                     hasValidExport: !!(typeof globalPCA !== 'undefined' && globalPCA && typeof globalSamples !== 'undefined' && globalSamples && globalSamples.length > 0)
                 };
 
@@ -3410,6 +3411,7 @@ function closeFeedbackForm() {
                 if (state.analysisResult && typeof analysisResult !== 'undefined') analysisResult = state.analysisResult;
                 if (state.vizStatus && document.getElementById('viz-status')) document.getElementById('viz-status').innerText = state.vizStatus;
                 if (state.activeSampleInfo && document.getElementById('active-sample-info')) document.getElementById('active-sample-info').innerHTML = state.activeSampleInfo;
+                if (state.transferredSamples) window.transferredSamples = state.transferredSamples;
 
                 if (state.analysisLogs && state.analysisLogs.length > 0 && typeof analysisLogs !== 'undefined') {
                     analysisLogs = state.analysisLogs;
