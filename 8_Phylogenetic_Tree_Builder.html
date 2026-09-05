@@ -2808,20 +2808,23 @@ body {
             return;
         }
 
-        const outgroupName = document.getElementById('outgroupSelect')?.value || "";
+        const outgroupRaw = document.getElementById('outgroupSelect')?.value || "";
+        const outgroupName = outgroupRaw.trim();
         const timestamp = new Date().toISOString();
         
         let targetNames = [...sampleNames];
         let targetMat = distMat.map(row => [...row]);
 
-        // 外群が指定されている場合は除外
+        // 外群が指定されている場合は除外（前後の空白や厳密な一致を保証）
         if (outgroupName) {
-            const outgroupIndex = targetNames.indexOf(outgroupName);
+            const outgroupIndex = targetNames.findIndex(name => name.trim() === outgroupName);
             if (outgroupIndex !== -1) {
                 targetNames = targetNames.filter((_, idx) => idx !== outgroupIndex);
                 targetMat = targetMat
                     .filter((_, rIdx) => rIdx !== outgroupIndex)
                     .map(row => row.filter((_, cIdx) => cIdx !== outgroupIndex));
+            } else {
+                console.warn("[App8] Outgroup not found in sampleNames:", outgroupName, targetNames);
             }
         }
 
