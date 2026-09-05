@@ -1093,17 +1093,6 @@ body {
                     ・フーリエ係数を「対称 (a, d)」と「非対称 (b, c)」に分けてPCAにかけることで、「太さ・とまり具合」と「曲がり」を独立して評価できます。
                 </div>
 
-                <div class="drop-zone" id="dropZoneA" data-tooltip="チェーンコードファイルをドラッグ＆ドロップ">
-                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                        <polyline points="14 2 14 8 20 8"/>
-                        <line x1="12" y1="18" x2="12" y2="12"/>
-                        <line x1="9" y1="15" x2="15" y2="15"/>
-                    </svg>
-                    <p>ここをクリック、または [チェーンコード] をドラッグ＆ドロップ</p>
-                    <input type="file" id="fileInputA" accept=".chc,.dat,.txt">
-                </div>
-
                 <!-- 画像二値化＆チェーンコード抽出モジュール -->
                 <div style="background: #fafbfc; border: 1px solid #bdc3c7; border-radius: 4px; padding: 10px; margin-bottom: 5px;">
                     <span style="font-size: 13px; font-weight: bold; color: #34495e; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
@@ -1171,9 +1160,9 @@ body {
                     <label style="font-size:11px; font-weight:bold; color:#2c3e50;">調和数:</label>
                     <input type="number" id="harmonics-input" value="20" min="1" max="40" style="width: 60px; text-align:center;" inputmode="decimal">
                 </div>
-                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 15px; flex-wrap: wrap; gap: 5px;">
-                    <label style="font-size:11px; font-weight:bold; color:#2c3e50;">PCA対象成分:</label>
-                    <select id="pca-feature-mode" style="width: 150px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 15px; flex-wrap: wrap; gap: 8px;">
+                    <label style="font-size:11px; font-weight:bold; color:#2c3e50; white-space: nowrap;">PCA対象成分:</label>
+                    <select id="pca-feature-mode" style="flex: 1; min-width: 195px; max-width: 225px;">
                         <option value="all">全係数 (a, b, c, d)</option>
                         <option value="sym" selected>対称の変異のみ (a, d)</option>
                         <option value="asym">非対称の変異のみ (b, c)</option>
@@ -1722,7 +1711,6 @@ body {
     window.onload = () => {
         updateExportButtonsState(false);
         // ドロップゾーンの初期化
-        setupDropZoneForText('dropZoneA', 'chain-code-input', 'fileInputA');
         setupDropZoneForImage('dropZoneImgA', 'imgUpload', loadImageForTrace);
         setupDropZoneForImage('dropZoneImgC', 'gpaImgUpload', loadGPAImages);
 
@@ -1742,6 +1730,8 @@ body {
                 let imageSamples = samples.filter(s => s.image_data);
                 
                 if (imageSamples.length > 0) {
+                    loadedFromSession = true;
+                    window.transferredSamples = imageSamples;
                     document.getElementById('route_a').checked = true;
                     
                     const totalImgs = imageSamples.length;
@@ -1750,9 +1740,16 @@ body {
                     gpaDataList = new Array(totalImgs);
                     
                     let loadedCount = 0;
+                    let sampleListHTML = '';
                     
                     imageSamples.forEach((sample, i) => {
                         const sName = sample.id || sample.name || `Sample_${i+1}`;
+                        sampleListHTML += `
+                            <div style="display:flex; justify-content:space-between; border-bottom:1px solid #ecf0f1; padding:6px 0;">
+                                <span style="font-family:monospace; font-weight:bold; font-size:11px; color:var(--primary);">${escapeHTML(sample.id || sName)}</span>
+                                <span style="color:var(--text-muted); font-size:10px;">${escapeHTML(sample.name || '')}</span>
+                            </div>
+                        `;
                         optimizeImage(sample.image_data, (dataUrl, w, h, tempCanvas) => {
                             // EFA用 Queue Data
                             const tCtx = tempCanvas.getContext('2d');
@@ -1784,6 +1781,22 @@ body {
                                     
                                     let displaySource = sourceApp.replace(/_/g, " ");
                                     showToast(`${displaySource} から ${totalImgs}件 の画像データを読み込みました`, "success");
+                                    
+                                    // 連携データ受信時は画像ドロップゾーンを非表示にし、UIを「表示と操作」に絞り込む
+                                    const dzA = document.getElementById('dropZoneImgA');
+                                    const dzC = document.getElementById('dropZoneImgC');
+                                    if (dzA) dzA.style.display = 'none';
+                                    if (dzC) dzC.style.display = 'none';
+                                    
+                                    document.getElementById('active-sample-info').innerHTML = `
+                                        <div style="display:flex; justify-content:space-between; align-items:center; gap: 10px; margin-bottom: 8px;">
+                                            <span style="flex: 1; min-width: 0; word-break: break-word; font-weight:bold; font-size:12px; color:var(--primary);">受信済み画像サンプル <span style="color:var(--text-muted); font-size:10px;">(${totalImgs} samples)</span></span>
+                                            <span style="background:var(--success); color:white; padding:2px 6px; border-radius:10px; font-size:10px; font-weight:bold; flex-shrink: 0; white-space: nowrap;">連携済</span>
+                                        </div>
+                                        <div style="max-height: 120px; overflow-y: auto; background: white; border: 1px solid var(--border-color); border-radius: 4px; padding: 4px 8px;">
+                                            ${sampleListHTML}
+                                        </div>
+                                    `;
                                     loadedFromSession = true;
                                 }
                             };
@@ -1794,59 +1807,10 @@ body {
                 sessionStorage.removeItem('bio_edu_bulk_data');
             }
 
-            // 2. 既存のチェーンコード(morphData)の連携処理
-            if (!loadedFromSession && (bulkDataStr || transferDataStr)) {
-                let parsedBulk = bulkDataStr ? JSON.parse(bulkDataStr) : null;
-                let parsedTrans = transferDataStr ? JSON.parse(transferDataStr) : null;
-                let samples = (parsedBulk && parsedBulk.samples) ? parsedBulk.samples : ((parsedTrans && parsedTrans.samples) ? parsedTrans.samples : (parsedTrans || []));
-                
-                let morphSamples = samples.filter(s => s.morphData && s.morphData.trim() !== "");
-                
-                if (morphSamples.length === 0) {
-                    document.getElementById('active-sample-info').innerHTML = `
-                        <div style="display:flex; justify-content:space-between; align-items:center; color: var(--text-muted); gap: 10px;">
-                            <span style="flex: 1; min-width: 0; word-break: break-word;"><strong>Target:</strong> データ未受信 (手動で入力するか、ファイルをドロップしてください)</span>
-                            <span style="background:var(--border-color); color:white; padding:2px 6px; border-radius:10px; font-size:10px; font-weight:bold; flex-shrink: 0; white-space: nowrap;">未選択</span>
-                        </div>
-                    `;
-                } else {
-                    window.transferredSamples = morphSamples;
-                    let combinedData = morphSamples.map(s => {
-                        let raw = s.morphData.trim();
-                        let codes = raw.split(/\s+/);
-                        if(codes.length > 0 && !isNaN(codes[0])) {
-                            return `${s.id} ${codes.length} 0 0 1.0 1.0 ${raw} -1`;
-                        }
-                        return raw;
-                    }).join("\n");
-                    
-                    document.getElementById('chain-code-input').value = combinedData;
-                    document.getElementById('route_a').checked = true;
-                    
-                    let sampleListHTML = morphSamples.map(s => `
-                        <div style="display:flex; justify-content:space-between; border-bottom:1px solid #ecf0f1; padding:6px 0;">
-                            <span style="font-family:monospace; font-weight:bold; font-size:11px; color:var(--primary);">${escapeHTML(s.id)}</span>
-                            <span style="color:var(--text-muted); font-size:10px;">${escapeHTML(s.name)}</span>
-                        </div>
-                    `).join('');
-
-                    document.getElementById('active-sample-info').innerHTML = `
-                        <div style="display:flex; justify-content:space-between; align-items:center; gap: 10px; margin-bottom: 8px;">
-                            <span style="flex: 1; min-width: 0; word-break: break-word; font-weight:bold; font-size:12px; color:var(--primary);">受信済みサンプル <span style="color:var(--text-muted); font-size:10px;">(${morphSamples.length} samples)</span></span>
-                            <span style="background:var(--success); color:white; padding:2px 6px; border-radius:10px; font-size:10px; font-weight:bold; flex-shrink: 0; white-space: nowrap;">連携済</span>
-                        </div>
-                        <div style="max-height: 120px; overflow-y: auto; background: white; border: 1px solid var(--border-color); border-radius: 4px; padding: 4px 8px;">
-                            ${sampleListHTML}
-                        </div>
-                    `;
-                    let displaySource = sourceApp.replace(/_/g, " ");
-                    setTimeout(() => { showToast(`${displaySource} から ${morphSamples.length} 件のサンプルを受信しました`, "success"); }, 500);
-                }
-                if(transferDataStr) sessionStorage.removeItem('bio_edu_transfer_data');
-            } else if (!loadedFromSession) {
+            if (!loadedFromSession) {
                 document.getElementById('active-sample-info').innerHTML = `
                     <div style="display:flex; justify-content:space-between; align-items:center; color: var(--text-muted); gap: 10px;">
-                        <span style="flex: 1; min-width: 0; word-break: break-word;"><strong>Target:</strong> データ未受信 (手動で入力するか、ファイルをドロップしてください)</span>
+                        <span style="flex: 1; min-width: 0; word-break: break-word;"><strong>Target:</strong> 画像データ未受信 (ダッシュボードから送信するか、下部エリアから画像を読み込んでください)</span>
                         <span style="background:var(--border-color); color:white; padding:2px 6px; border-radius:10px; font-size:10px; font-weight:bold; flex-shrink: 0; white-space: nowrap;">未選択</span>
                     </div>
                 `;
