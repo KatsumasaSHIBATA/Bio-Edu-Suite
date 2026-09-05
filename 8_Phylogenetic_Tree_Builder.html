@@ -4930,6 +4930,12 @@ function closeFeedbackForm() {
 
     function savePhyloSession() {
         try {
+            // 計算中に画面遷移した場合は、フリーズしたUIを保存させないよう破棄する
+            if (window.isPhyloCalculating) {
+                sessionStorage.removeItem(AUTOSAVE_KEY);
+                return;
+            }
+
             const fastaEl = document.getElementById('fastaInput');
             const fastaVal = fastaEl ? fastaEl.value : "";
             
