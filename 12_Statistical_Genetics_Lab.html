@@ -1072,6 +1072,9 @@ body {
         </div>
         <div class="card-body" style="background:var(--bg-color); padding:15px; display: flex; flex-direction: column; gap: 15px;">
             
+            <!-- 学術的アシストパネル（実験デザイン不一致時の警告・誘導） -->
+            <div id="gxe-assist-container" style="display: none;"></div>
+
             <!-- セクション: AMMI バイプロット -->
             <div class="settings-group" style="margin-bottom: 0; display: flex; flex-direction: column;">
                 <h4>
@@ -1401,8 +1404,7 @@ body {
         showToast(`${joined.length}件のデータを結合しました`, "success");
     }
 
-    // --- STREAMING_CHUNK:Processing mapped data and calculating AMMI model... ---
-    // マッピングされたデータから解析エンジン（GxE行列）への橋渡し
+    // --- マッピングされたデータから解析エンジン（GxE行列）への橋渡し ---
     function processData() {
         if (!joinedData || joinedData.length === 0) {
             throw new Error("先にデータを結合してください");
@@ -1455,17 +1457,26 @@ body {
             state.baseData[gIdx][eIdx].push(row.val);
         });
         
-        // 平均を計算して単一の値にする、かつ欠損値チェック
+        // 欠損セル（未測定の組み合わせ）の有無を厳格にチェック
+        let missingCombinations = [];
         for (let g = 0; g < G; g++) {
             for (let e = 0; e < E; e++) {
                 const arr = state.baseData[g][e];
                 if (arr === null || arr.length === 0) {
-                    throw new Error(`遺伝子型 '${state.genotypes[g]}' と環境 '${state.environments[e]}' の組み合わせのデータが欠損しています。AMMIモデルは完全な行列を要求します。`);
+                    missingCombinations.push({ g: state.genotypes[g], e: state.environments[e] });
+                } else {
+                    const sum = arr.reduce((a,b) => a+b, 0);
+                    state.baseData[g][e] = sum / arr.length;
                 }
-                // 平均値をセット
-                const sum = arr.reduce((a,b) => a+b, 0);
-                state.baseData[g][e] = sum / arr.length;
             }
+        }
+
+        // 欠損がある場合は架空補完を行わず、固有のエラーオブジェクトを投げる
+        if (missingCombinations.length > 0) {
+            const err = new Error("DESIGN_MISMATCH");
+            err.missingCount = missingCombinations.length;
+            err.totalCells = G * E;
+            throw err;
         }
     }
 
@@ -1711,7 +1722,7 @@ body {
         const height = container.clientHeight;
         if(width === 0 || height === 0) return;
 
-        const margin = { top: 20, right: 100, bottom: 40, left: 50 }; // 右マージンを凡例用に広く
+        const margin = { top: 30, right: 100, bottom: 40, left: 50 }; // 右マージンを凡例用に広く
         const innerWidth = width - margin.left - margin.right;
         const innerHeight = height - margin.top - margin.bottom;
 
@@ -1735,7 +1746,7 @@ body {
             let envVals = [];
             for(let eIdx=0; eIdx<E; eIdx++){
                 let val = state.data[gIdx][eIdx];
-                envVals.push({ env: state.environments[eIdx], val: val });
+                envVals.push({ env: state.environments[eIdx], val: val, gIdx: gIdx, eIdx: eIdx });
                 allValues.push(val);
             }
             lineData.push({
@@ -1808,11 +1819,45 @@ body {
             .data(lineData)
             .enter()
             .append("path")
+            .attr("class", "line")
             .attr("fill", "none")
             .attr("stroke", d => colorScale(d.genotype))
             .attr("stroke-width", 2)
             .attr("d", d => line(d.values))
             .attr("opacity", 0.8);
+
+        // ドラッグイベントの定義
+        const drag = d3.drag()
+            .on("start", function(event, d) {
+                d3.select(this).raise().attr("stroke", "#e74c3c").attr("stroke-width", 2);
+            })
+            .on("drag", function(event, d) {
+                // SVG領域内に制限
+                const yNew = Math.max(0, Math.min(innerHeight, event.y));
+                const valNew = yScale.invert(yNew);
+                
+                // データ更新
+                d.val = valNew;
+                state.data[d.gIdx][d.eIdx] = valNew;
+                
+                // 円の位置を更新
+                d3.select(this).attr("cy", yNew);
+                
+                // 折れ線を更新
+                g.selectAll(".line")
+                    .filter(ld => ld.genotype === d.genotype)
+                    .attr("d", ld => line(ld.values));
+                
+                // AMMIなどの再計算と他グラフのリアルタイム更新
+                calculateAMMI();
+                renderBiplot();
+                renderAnova();
+            })
+            .on("end", function(event, d) {
+                d3.select(this).attr("stroke", "#fff").attr("stroke-width", 1);
+                // ドラッグ終了時に反応規範自体の交差判定も再描画するため全体をリレンダー
+                renderReactionNorm();
+            });
 
         // 点描画
         const points = g.selectAll(".points")
@@ -1827,16 +1872,18 @@ body {
             .append("circle")
             .attr("cx", d => xScale(d.env))
             .attr("cy", d => yScale(d.val))
-            .attr("r", 4)
+            .attr("r", 5)
             .attr("stroke", "#fff")
             .attr("stroke-width", 1)
-            .attr("data-tooltip", d => `${d.genotype}\n環境: ${d.env}\n表現型: ${d.val.toFixed(3)}`)
+            .style("cursor", "ns-resize")
+            .attr("data-tooltip", d => `${d.genotype}\n環境: ${d.env}\n表現型: ${d.val.toFixed(3)}\n(ドラッグで値変更)`)
             .on("mouseover", function(event, d) {
-                d3.select(this).attr("r", 6);
+                d3.select(this).attr("r", 8);
             })
             .on("mouseout", function(event, d) {
-                d3.select(this).attr("r", 4);
-            });
+                d3.select(this).attr("r", 5);
+            })
+            .call(drag); // ドラッグ適用
 
         // 凡例 (右側)
         const legend = g.selectAll(".legend")
@@ -1856,6 +1903,73 @@ body {
             .style("font-size", "10px")
             .style("fill", "#2c3e50")
             .text(d => d);
+
+        // --- 新規追加: 交差（クロス）の自動検出と警告ハイライト ---
+        let intersections = [];
+        let hasGxE = false;
+        
+        for (let e = 0; e < E - 1; e++) {
+            const x1 = xScale(state.environments[e]);
+            const x2 = xScale(state.environments[e+1]);
+            
+            for (let g1 = 0; g1 < G; g1++) {
+                for (let g2 = g1 + 1; g2 < G; g2++) {
+                    const y1_A = state.data[g1][e];
+                    const y2_A = state.data[g1][e+1];
+                    const y1_B = state.data[g2][e];
+                    const y2_B = state.data[g2][e+1];
+                    
+                    // 交差の数学的判定 (互いの差分の符号が反転しているか)
+                    if ((y1_A - y1_B) * (y2_A - y2_B) < 0) {
+                        hasGxE = true;
+                        
+                        const dyA = y2_A - y1_A;
+                        const dyB = y2_B - y1_B;
+                        const t = (y1_B - y1_A) / (dyA - dyB);
+                        const interX = x1 + t * (x2 - x1);
+                        const interY_val = y1_A + t * dyA;
+                        const interY = yScale(interY_val);
+                        
+                        intersections.push({
+                            x: interX,
+                            y: interY,
+                            g1: state.genotypes[g1],
+                            g2: state.genotypes[g2]
+                        });
+                    }
+                }
+            }
+        }
+
+        if (hasGxE) {
+            svg.append("text")
+                .attr("x", width / 2)
+                .attr("y", 18)
+                .attr("text-anchor", "middle")
+                .style("font-size", "12px")
+                .style("font-weight", "bold")
+                .style("fill", "#e74c3c")
+                .text("⚠️ 警告: 適応度の逆転が検出されました！G×E相互作用の決定的証拠です。");
+        }
+
+        const crossMarkers = g.selectAll(".cross-marker")
+            .data(intersections)
+            .enter()
+            .append("g")
+            .attr("transform", d => `translate(${d.x},${d.y})`);
+            
+        crossMarkers.append("circle")
+            .attr("r", 8)
+            .attr("fill", "none")
+            .attr("stroke", "#e74c3c")
+            .attr("stroke-width", 2)
+            .attr("stroke-dasharray", "2,2");
+            
+        crossMarkers.append("circle")
+            .attr("r", 14)
+            .attr("fill", "transparent")
+            .style("cursor", "help")
+            .attr("data-tooltip", d => `${d.g1}と${d.g2}の適応度逆転\n(交差型G×E相互作用)`);
     }
 
     function renderAnova() {
@@ -1883,10 +1997,47 @@ body {
     }
 
     function runAnalysis() {
+        const assistBox = document.getElementById('gxe-assist-container');
+        if (assistBox) assistBox.style.display = 'none';
+
         try {
             processData();
         } catch(e) {
-            showToast(e.message, "error");
+            if (e.message === "DESIGN_MISMATCH") {
+                // 架空データを捏造せず、学術的・教育的ガイダンスを表示
+                if (assistBox) {
+                    assistBox.style.display = 'block';
+                    assistBox.innerHTML = `
+                        <div class="assist-panel" style="margin-top: 0; background: #fef9e7; border-left: 4px solid var(--warning);">
+                            <div class="assist-title" style="color: #d35400;">
+                                <svg class="btn-icon svg-hint" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                実験デザインの不一致（二元配置の欠損）
+                            </div>
+                            <div class="assist-reason" style="color: var(--text-main); margin-top: 8px;">
+                                現在入力されているデータは、各系統が単一の生息地（環境）にのみ対応している<strong>「適応放散データ」</strong>です。<br>
+                                AMMIモデルによるG×E相互作用解析（分散分析）を行うには、同一系統を複数の異なる環境で育成・計測した<strong>「完全な二元配置データ（フルマトリクス）」</strong>が必要です。<br>
+                                <span style="font-size: 11px; color: var(--text-muted);">※全 ${e.totalCells} セル中、${e.missingCount} 箇所の組み合わせ（例: オオガラパゴスフィンチがダフネ島で育った実測値等）が未測定のため、統計的に交互作用を算出できません。</span>
+                            </div>
+                            <div class="assist-fix" style="border: 1px solid var(--warning); background: #ffffff; color: #7e5109; margin-top: 10px; padding: 12px; border-radius: 4px;">
+                                <strong style="color: #d35400;">【推奨される解析パイプライン】</strong><br>
+                                今回のフィンチデータのように、系統間の「遺伝的差異（突然変異）」と「形態的差異（変異）」の共進化や系統樹の不一致を検証したい場合は、以下の専用ツールへデータを持ち込んで解析してください：
+                                <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+                                    <a href="10_integrative_taxonomy_studio.html" class="btn btn-primary" style="font-size: 12px; text-decoration: none;">
+                                        ⑩ Integrative Taxonomy Studio (タングルグラム)
+                                    </a>
+                                    <a href="11_Comparative_Variant_Analyzer.html" class="btn btn-primary" style="font-size: 12px; text-decoration: none;">
+                                        ⑪ Comparative Variant Analyzer (Mantel検定)
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    assistBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+                showToast("実験デザインの不一致：AMMIモデルの二元配置条件を満たしていません。", "warning");
+            } else {
+                showToast(e.message, "error");
+            }
             return;
         }
 
