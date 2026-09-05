@@ -1241,11 +1241,11 @@ body {
     References & Algorithms
     </summary>
     <div style="padding: 10px 0 0 15px; font-size: 11px; color: var(--text-muted); line-height: 1.6;">
-    <p style="margin-bottom: 8px;">本アプリケーションのシミュレーションは、以下のセントラルドグマおよび遺伝暗号に関する古典的文献に基づき実装されています。</p>
+    <p style="margin-bottom: 8px;">本アプリケーションの3D構造表示および疎水性解析は、以下の分子可視化、タンパク質立体構造予測、およびアミノ酸物性に関する原著論文に基づき実装されています。</p>
     <ul style="padding-left: 20px; margin: 0; display: flex; flex-direction: column; gap: 6px;">
-    <li><strong>Central Dogma of Molecular Biology:</strong> Crick, F. (1970). Central dogma of molecular biology. <em>Nature</em>, 227(5258), 561–563.</li>
-    <li><strong>The Standard Genetic Code:</strong> Nirenberg, M., Leder, P., Bernfield, M., Brimacombe, R., Trupin, J., Rottman, F., & O'Neal, C. (1965). RNA codewords and protein synthesis, VII. On the general nature of the RNA code. <em>Proceedings of the National Academy of Sciences</em>, 53(6), 1161–1168.</li>
-    <li><strong>Amino Acid Properties & Classification:</strong> Taylor, W. R. (1986). The classification of amino acid conservation. <em>Journal of Theoretical Biology</em>, 119(2), 205–218.</li>
+    <li><strong>3Dmol.js Molecular Visualization:</strong> Rego, N., & Koes, D. (2015). 3Dmol.js: molecular visualization without Java. <em>Bioinformatics</em>, 31(8), 1322–1324.</li>
+    <li><strong>AlphaFold Protein Structure Database:</strong> Jumper, J., Evans, R., Pritzel, A., Green, T., Figurnov, M., Ronneberger, O., ... & Hassabis, D. (2021). Highly accurate protein structure prediction with AlphaFold. <em>Nature</em>, 596(7873), 583–589.</li>
+    <li><strong>Amino Acid Hydropathy Scale:</strong> Kyte, J., & Doolittle, R. F. (1982). A simple method for displaying the hydropathic character of a protein. <em>Journal of Molecular Biology</em>, 157(1), 105–132.</li>
     </ul>
     </div>
     </details>
@@ -1255,7 +1255,7 @@ body {
 
 <!-- ダークテーマ・フッター規格（マスター同期） -->
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v34.4 | Developed for Bioinformatics &amp; Wet-Lab Education
+    &copy; 2026 Bio-Edu Suite v35.2 | Developed for Bioinformatics &amp; Wet-Lab Education
 </div>
 
 </div><!-- /.main-wrapper -->
@@ -1366,8 +1366,6 @@ body {
  }
  showToast("アプリ⑤または⑫で特定した突然変異部位のデータを受信・同期しました。「追加」ボタンを押してマッピングしてください。", "info");
  }
- } else {
- showToast("アプリ⑤または⑫で特定した突然変異部位のデータを受信・同期できます。", "info");
  }
  }, 500);
  };
@@ -2244,7 +2242,7 @@ function closeFeedbackForm() {
        ・復元後に input イベントを発火し、アプリ側の更新処理
          （入力欄の活性化判定・文字数表示など）を通常入力時と同じ経路で走らせる。
        =================================================================== */
-    const AUTOSAVE_KEY = 'bio_edu_autosave_app13';
+    const AUTOSAVE_KEY = 'bio_edu_autosave_app14';
     const FIELDS = ['pdbId', 'pasteArea', 'residueList'];
 
     // 離脱時に退避
