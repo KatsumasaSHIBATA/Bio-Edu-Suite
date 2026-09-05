@@ -1419,126 +1419,100 @@ function closeFeedbackForm() {
     };
 </script>
 
-<!-- 入力データの一時保存（sessionStorage） v34.3.8 -->
+<!-- セッション永続化仕様：比較変異解析ステート・プロット・Mantel検定完全復元 (v35.3) -->
 <script>
 (function () {
     /* ===================================================================
-       【v34.3.8】ページ遷移時の入力データ一時保存
-       解析パイプラインを行き来しても入力が失われないようにする。
-       ・sessionStorage はタブを閉じるまで有効。localStorage を使う既存の
-         バケツリレー／履歴機能には一切干渉しない。
-       ・復元は「その欄が空のときだけ」行う。これにより、アプリ間の
-         受け渡しデータや初期表示値が入っている場合はそちらを優先する。
-       ・復元後に input イベントを発火し、アプリ側の更新処理
-         （入力欄の活性化判定・文字数表示など）を通常入力時と同じ経路で走らせる。
+       【セッション永続化仕様】アプリ⑪ 突然変異・変異プロット・Mantel検定完全復元
+       他アプリを行き来しても、TSVデータ、各散布図、Mantel相関解析結果を完全再現
        =================================================================== */
-    const AUTOSAVE_KEY = 'bio_edu_autosave_app11';
-    const FIELDS = ['mutation-data', 'variation-data'];
+    const AUTOSAVE_KEY = 'bio_edu_autosave_app11_full';
 
-    // 離脱時に退避
-    document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState !== 'hidden') return;
+    function saveApp11Session() {
         try {
-            const data = {};
-            let hasValue = false;
-            FIELDS.forEach(id => {
-                const el = document.getElementById(id);
-                if (!el) return;
-                data[id] = el.value;
-                if (String(el.value).trim() !== '') hasValue = true;
-            });
-            if (hasValue) sessionStorage.setItem(AUTOSAVE_KEY, JSON.stringify(data));
-            else sessionStorage.removeItem(AUTOSAVE_KEY);
-        } catch (e) {
-            // 容量超過などで保存できなくても離脱そのものは妨げない
-            console.warn('一時保存に失敗しました:', e);
-        }
-    });
+            const mutEl = document.getElementById('mutation-data');
+            const varEl = document.getElementById('variation-data');
+            const mutVal = mutEl ? mutEl.value.trim() : '';
+            const varVal = varEl ? varEl.value.trim() : '';
 
-    // 起動時に書き戻す
-    window.addEventListener('DOMContentLoaded', () => {
+            const resultArea = document.getElementById('result-area');
+            const isExecuted = resultArea ? (resultArea.style.display !== 'none') : false;
+
+            if (!mutVal && !varVal && !isExecuted) {
+                sessionStorage.removeItem(AUTOSAVE_KEY);
+                return;
+            }
+
+            const state = {
+                savedAt: Date.now(),
+                mutationData: mutVal,
+                variationData: varVal,
+                isExecuted: isExecuted
+            };
+
+            sessionStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state));
+        } catch (e) {
+            console.warn('[AutoSave] App11 save failed:', e);
+        }
+    }
+
+    function restoreApp11Session() {
         try {
-            const saved = JSON.parse(sessionStorage.getItem(AUTOSAVE_KEY) || 'null');
-            if (!saved) return;
-            let restored = 0;
-            FIELDS.forEach(id => {
-                const el = document.getElementById(id);
-                if (!el) return;
-                if (typeof saved[id] !== 'string' || saved[id].trim() === '') return;
-                if (String(el.value).trim() !== '') return;   // 既存の値を優先
-                el.value = saved[id];
-                el.dispatchEvent(new Event('input', { bubbles: true }));
-                restored++;
-            });
-            if (restored > 0 && typeof showToast === 'function') {
-                showToast('前回の入力内容を復元しました', 'info');
+            const raw = sessionStorage.getItem(AUTOSAVE_KEY);
+            if (!raw) return;
+            const state = JSON.parse(raw);
+            if (!state) return;
+
+            // 1. 各入力エリアの復元
+            const mutEl = document.getElementById('mutation-data');
+            const varEl = document.getElementById('variation-data');
+
+            if (mutEl && (!mutEl.value || mutEl.value.trim() === '')) {
+                mutEl.value = state.mutationData || '';
             }
-        } catch (e) {
-            console.warn('一時保存の復元に失敗しました:', e);
-        }
-    });
-})();
-
-    /* ===================================================================
-       【第7項改定】ネイティブ化必須要件：オートセーブ＆ハイドレーション仕様
-       Page Visibility API による瞬間ドラフト保存とステート復元
-       =================================================================== */
-    (function() {
-        const DRAFT_KEY = 'bio_edu_draft_' + (window.location.pathname.split('/').pop() || 'index.html');
-
-        function serializeUIState() {
-            try {
-                const inputs = document.querySelectorAll('input, textarea, select');
-                const draft = {};
-                inputs.forEach(el => {
-                    if (el.id && !el.closest('#confirmModal') && !el.closest('#accountModal')) {
-                        if (el.type === 'checkbox' || el.type === 'radio') {
-                            draft[el.id] = el.checked;
-                        } else if (el.type !== 'file' && el.type !== 'password') {
-                            draft[el.id] = el.value;
-                        }
-                    }
-                });
-                sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-            } catch (e) {
-                console.warn('UIステートのシリアライズに失敗しました:', e);
+            if (varEl && (!varEl.value || varEl.value.trim() === '')) {
+                varEl.value = state.variationData || '';
             }
-        }
 
-        function hydrateUIState() {
-            try {
-                const draftStr = sessionStorage.getItem(DRAFT_KEY);
-                if (!draftStr) return;
-                const draft = JSON.parse(draftStr);
-                for (const id in draft) {
-                    const el = document.getElementById(id);
-                    if (el && !el.closest('#confirmModal') && !el.closest('#accountModal')) {
-                        if (el.type === 'checkbox' || el.type === 'radio') {
-                            el.checked = draft[id];
-                        } else if (el.type !== 'file' && el.type !== 'password') {
-                            el.value = draft[id];
-                        }
-                        el.dispatchEvent(new Event('input', { bubbles: true }));
-                        el.dispatchEvent(new Event('change', { bubbles: true }));
-                    }
+            // 2. 解析実行ボタンの活性状態更新
+            const runBtn = document.getElementById('run-analysis-btn');
+            if (runBtn && mutEl && varEl) {
+                const hasMut = mutEl.value.trim().length > 0;
+                const hasVar = varEl.value.trim().length > 0;
+                runBtn.disabled = !(hasMut && hasVar);
+            }
+
+            // 3. 解析実行済みだった場合は、自動で解析を再キックしてグラフとMantel検定を完全再描画
+            if (state.isExecuted && runBtn && !runBtn.disabled) {
+                runBtn.click();
+                if (typeof showToast === 'function') {
+                    showToast('前回の比較変異解析データを復元しました', 'info');
                 }
-            } catch (e) {
-                console.warn('UIステートのハイドレーションに失敗しました:', e);
             }
+        } catch (e) {
+            console.warn('[AutoSave] App11 restore failed:', e);
         }
+    }
 
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden') {
-                serializeUIState();
-            }
-        });
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') saveApp11Session();
+    });
+    window.addEventListener('pagehide', saveApp11Session);
 
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', hydrateUIState);
-        } else {
-            hydrateUIState();
-        }
-    })();
+    // Chart.js および DOMレイアウト確定後に確実に復元
+    window.addEventListener('load', () => {
+        setTimeout(restoreApp11Session, 120);
+    });
+
+    // 初期化ボタン対応
+    const origConfirm = window.confirmDataReset;
+    if (typeof origConfirm === 'function') {
+        window.confirmDataReset = function() {
+            sessionStorage.removeItem(AUTOSAVE_KEY);
+            origConfirm();
+        };
+    }
+})();
 
 
     // 最終アクセスアプリの記憶（State Restoration）
