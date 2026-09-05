@@ -1156,9 +1156,15 @@ body {
     <div class="viewer-container" id="viewer-area" style="transition: 0.3s;">
         <!-- Ⅱ. タングルグラム (分子系統樹 vs 形態系統樹) -->
         <div class="card viewer-pane">
-            <div class="card-header">
-                Ⅱ. タングルグラム (分子系統樹 vs 形態系統樹)
-                <button class="rationale-btn" onclick="toggleRationale(event, 'rat_tangle')">?</button>
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    Ⅱ. タングルグラム (分子系統樹 vs 形態系統樹)
+                    <button class="rationale-btn" onclick="toggleRationale(event, 'rat_tangle')">?</button>
+                </div>
+                <button id="untangleBtn" class="btn" style="padding: 4px 12px; font-size: 12px; min-height: 32px;" onclick="handleUntangle()" aria-label="もつれ解消">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline><polyline points="7.5 19.79 7.5 14.6 3 12"></polyline><polyline points="21 12 16.5 14.6 16.5 19.79"></polyline><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                    もつれ解消 (Untangle)
+                </button>
             </div>
             <div id="rat_tangle" class="rationale-text">
                 <strong>【根拠：タングルグラムと系統の不一致】</strong>
@@ -1183,10 +1189,14 @@ body {
                 ・楕円フーリエ解析で抽出した形状の特徴を主成分分析(PCA)で2次元にプロットし、形質の違い（変異）を可視化しています。<br>
                 ・系統樹と連動し、共通祖先の形を数学的に補間してアニメーション描画します。
             </div>
-            <div class="card-body" style="padding: 0; position: relative;">
-                <div class="canvas-wrapper">
+            <div class="card-body" style="padding: 0; position: relative; display: flex; flex-direction: column;">
+                <div class="canvas-wrapper" style="flex: 1;">
                     <div id="pca-placeholder" style="position: absolute; inset: 0; display:flex; align-items:center; justify-content:center; font-weight:bold; color:var(--text-muted); z-index: 10;">データ待機中</div>
                     <canvas id="pca-canvas"></canvas>
+                </div>
+                <div id="morph-timeline-container" style="padding: 10px 15px; border-top: 1px solid var(--border-color); display: none; align-items: center; gap: 10px; background: #fff;">
+                    <label for="morphTimeline" style="font-size: 12px; font-weight: bold; white-space: nowrap;">進化のタイムライン:</label>
+                    <input type="range" id="morphTimeline" min="0" max="100" value="100" style="flex: 1;" oninput="handleTimelineScrub()">
                 </div>
             </div>
         </div>
@@ -1428,6 +1438,8 @@ body {
     let currentCoeffs = null;
     let animationFrameId = null;
     let globalTreeRoot = null; 
+    let morphStartCoeffs = null;
+    let isUntangled = false;
 
     // ==========================================
     // Main Integration Logic (Hybrid Auto-Detect)
@@ -1606,7 +1618,11 @@ body {
             currentHoveredNode = null;
             targetCoeffs = null;
             currentCoeffs = null;
+            morphStartCoeffs = null;
+            isUntangled = false;
             cancelAnimationFrame(animationFrameId);
+            const timelineContainer = document.getElementById('morph-timeline-container');
+            if (timelineContainer) timelineContainer.style.display = 'none';
             
             // JSONがある場合のみPCA描画を実行、ない場合はプレースホルダー表示
             if (jsonStr && parsedMorphData.length > 0) {
@@ -1752,14 +1768,27 @@ body {
             const morphLeaves = morphRoot.leaves();
             
             const tangleData = [];
-            molLeaves.forEach(molLeaf => {
+            molLeaves.forEach((molLeaf, idx) => {
                 if (!molLeaf.data.name) return;
                 const molName = normalizeId(molLeaf.data.name);
-                const morphLeaf = morphLeaves.find(m => m.data.name && normalizeId(m.data.name) === molName);
-                if (morphLeaf) {
-                    tangleData.push({ mol: molLeaf, morph: morphLeaf });
+                const morphIdx = morphLeaves.findIndex(m => m.data.name && normalizeId(m.data.name) === molName);
+                if (morphIdx !== -1) {
+                    tangleData.push({ mol: molLeaf, morph: morphLeaves[morphIdx], molIndex: idx, morphIndex: morphIdx, isCrossing: false });
                 }
             });
+            
+            for (let i = 0; i < tangleData.length; i++) {
+                for (let j = i + 1; j < tangleData.length; j++) {
+                    let A1 = tangleData[i].molIndex;
+                    let B1 = tangleData[i].morphIndex;
+                    let A2 = tangleData[j].molIndex;
+                    let B2 = tangleData[j].morphIndex;
+                    if ((A1 - A2) * (B1 - B2) < 0) {
+                        tangleData[i].isCrossing = true;
+                        tangleData[j].isCrossing = true;
+                    }
+                }
+            }
             
             svg.selectAll('.tangle-line')
                 .data(tangleData)
@@ -1775,9 +1804,9 @@ body {
                     return `M${x1},${y1} C${x1 + (x2 - x1) / 2},${y1} ${x1 + (x2 - x1) / 2},${y2} ${x2},${y2}`;
                 })
                 .style('fill', 'none')
-                .style('stroke', '#bdc3c7')
-                .style('stroke-width', 1.5)
-                .style('opacity', 0.6)
+                .style('stroke', d => (isUntangled && d.isCrossing) ? '#e67e22' : '#bdc3c7')
+                .style('stroke-width', d => (isUntangled && d.isCrossing) ? 2.5 : 1.5)
+                .style('opacity', d => (isUntangled && d.isCrossing) ? 0.9 : 0.6)
                 .style('pointer-events', 'none');
         }
         
@@ -1787,6 +1816,49 @@ body {
     }
 
     // ==========================================
+    // Untangle Logic
+    // ==========================================
+    function getSubtreeScore(node, referenceOrder) {
+        let leaves = node.leaves();
+        let sum = 0, count = 0;
+        leaves.forEach(l => {
+            let refIndex = referenceOrder.indexOf(normalizeId(l.data.name));
+            if (refIndex !== -1) {
+                sum += refIndex;
+                count++;
+            }
+        });
+        return count > 0 ? sum / count : 0;
+    }
+
+    function untangleTree(node, referenceOrder) {
+        if (!node.children) return;
+        
+        node.children.forEach(c => untangleTree(c, referenceOrder));
+        
+        if (node.children.length === 2) {
+            let scoreA = getSubtreeScore(node.children[0], referenceOrder);
+            let scoreB = getSubtreeScore(node.children[1], referenceOrder);
+            if (scoreA > scoreB) {
+                let temp = node.children[0];
+                node.children[0] = node.children[1];
+                node.children[1] = temp;
+            }
+        }
+    }
+
+    window.handleUntangle = function() {
+        if (!globalTreeRoot || !globalTreeRoot.molRoot || !globalTreeRoot.morphRoot) return;
+        
+        const molLeaves = globalTreeRoot.molRoot.leaves().map(l => normalizeId(l.data.name));
+        
+        untangleTree(globalTreeRoot.morphRoot, molLeaves);
+        
+        isUntangled = true;
+        renderTanglegram(globalTreeRoot.molRoot, globalTreeRoot.morphRoot);
+    };
+
+    // ==========================================
     // Interaction & Morphing Logic
     // ==========================================
     function handleNodeHover(nodeData) {
@@ -1794,7 +1866,10 @@ body {
         d3.selectAll('.node-tree').classed('highlighted', false);
         d3.selectAll('.link-mol').classed('highlighted', false).style('opacity', 1);
         d3.selectAll('.link-morph').classed('highlighted', false).style('opacity', 1);
-        d3.selectAll('.tangle-line').classed('highlighted', false).style('opacity', 0.6).style('stroke', '#bdc3c7').style('stroke-width', 1.5);
+        d3.selectAll('.tangle-line').classed('highlighted', false)
+          .style('opacity', d => (isUntangled && d && d.isCrossing) ? 0.9 : 0.6)
+          .style('stroke', d => (isUntangled && d && d.isCrossing) ? '#e67e22' : '#bdc3c7')
+          .style('stroke-width', d => (isUntangled && d && d.isCrossing) ? 2.5 : 1.5);
         
         if (!nodeData) {
             currentHoveredNode = null;
@@ -1845,10 +1920,21 @@ body {
                 if (!currentCoeffs) {
                     currentCoeffs = JSON.parse(JSON.stringify(targetCoeffs));
                 }
+                
+                const timelineContainer = document.getElementById('morph-timeline-container');
+                const timelineInput = document.getElementById('morphTimeline');
+                if (timelineContainer && timelineInput) {
+                    timelineContainer.style.display = 'flex';
+                    morphStartCoeffs = JSON.parse(JSON.stringify(currentCoeffs));
+                    timelineInput.value = 0;
+                }
+
                 cancelAnimationFrame(animationFrameId);
                 animateMorph();
             } else {
                 targetCoeffs = null;
+                const timelineContainer = document.getElementById('morph-timeline-container');
+                if (timelineContainer) timelineContainer.style.display = 'none';
                 drawPCA();
             }
         }
@@ -1881,27 +1967,61 @@ body {
     }
 
     function animateMorph() {
-        if (!currentCoeffs || !targetCoeffs) return;
+        if (!currentCoeffs || !targetCoeffs || !morphStartCoeffs) return;
         
         let isMoving = false;
+        let totalProgress = 0;
+        let count = 0;
+
         ['a', 'b', 'c', 'd'].forEach(key => {
             for(let i=0; i<currentCoeffs[key].length; i++) {
                 let diff = targetCoeffs[key][i] - currentCoeffs[key][i];
+                let fullDiff = targetCoeffs[key][i] - morphStartCoeffs[key][i];
+                
                 if (Math.abs(diff) > 0.05) {
                     currentCoeffs[key][i] += diff * 0.15; // イーズアウト補間
                     isMoving = true;
                 } else {
                     currentCoeffs[key][i] = targetCoeffs[key][i];
                 }
+
+                if (fullDiff !== 0) {
+                    let p = (currentCoeffs[key][i] - morphStartCoeffs[key][i]) / fullDiff;
+                    totalProgress += Math.max(0, Math.min(1, p));
+                    count++;
+                }
             }
         });
         
+        const timelineInput = document.getElementById('morphTimeline');
+        if (timelineInput && count > 0) {
+            timelineInput.value = (totalProgress / count) * 100;
+        }
+
         drawPCA();
         
         if (isMoving) {
             animationFrameId = requestAnimationFrame(animateMorph);
         }
     }
+
+    window.handleTimelineScrub = function() {
+        cancelAnimationFrame(animationFrameId);
+        const timelineInput = document.getElementById('morphTimeline');
+        if (!timelineInput || !morphStartCoeffs || !targetCoeffs || !currentCoeffs) return;
+        
+        let p = timelineInput.value / 100;
+        
+        ['a', 'b', 'c', 'd'].forEach(key => {
+            for(let i=0; i<currentCoeffs[key].length; i++) {
+                let start = morphStartCoeffs[key][i];
+                let target = targetCoeffs[key][i];
+                currentCoeffs[key][i] = start + (target - start) * p;
+            }
+        });
+        
+        drawPCA();
+    };
 
     // ==========================================
     // Visualization: Canvas PCA
