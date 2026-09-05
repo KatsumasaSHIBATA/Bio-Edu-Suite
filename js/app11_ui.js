@@ -7,6 +7,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const ctx = document.getElementById("mantelChart").getContext("2d");
     window.mantelChartInstance = null;
 
+    let baseMutMatrix = null;
+    let baseVarMatrix = null;
+    const noiseSlider = document.getElementById("noise-slider");
+    const noiseValueDisplay = document.getElementById("noise-value");
+
     // データのパース関数
     function parseData(text) {
         const lines = text.trim().split('\n');
@@ -118,59 +123,15 @@ document.addEventListener("DOMContentLoaded", () => {
             const mutMatrix = calculateEuclideanDistanceMatrix(mutData);
             const varMatrix = calculateEuclideanDistanceMatrix(varData);
 
-            // 2. Mantel相関係数の計算
-            const r = calculateMantelCorrelation(mutMatrix, varMatrix);
+            baseMutMatrix = mutMatrix;
+            baseVarMatrix = varMatrix;
 
-            // 結果の表示
-            mantelRDisplay.textContent = r.toFixed(4);
-            document.getElementById("mantel-placeholder").style.display = "none";
-            resultArea.style.display = "block";
-
-            // 3. 散布図の描画 (Chart.js)
-            const scatterData = extractPairs(mutMatrix, varMatrix);
-            
-            if (window.mantelChartInstance) {
-                window.mantelChartInstance.destroy();
+            if (noiseSlider) {
+                noiseSlider.value = 0;
+                if (noiseValueDisplay) noiseValueDisplay.textContent = "0";
             }
 
-            window.mantelChartInstance = new Chart(ctx, {
-                type: 'scatter',
-                data: {
-                    datasets: [{
-                        label: '個体間ペア距離',
-                        data: scatterData,
-                        backgroundColor: 'rgba(142, 68, 173, 0.8)',
-                        borderColor: '#8e44ad',
-                        borderWidth: 1,
-                        pointRadius: 5,
-                        pointHoverRadius: 7
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: (context) => {
-                                    return `Mutation: ${context.parsed.x.toFixed(3)}, Variation: ${context.parsed.y.toFixed(3)}`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            title: { display: true, text: '遺伝的距離 (Mutation)' },
-                            grid: { color: '#e9ecef' }
-                        },
-                        y: {
-                            title: { display: true, text: '形態的距離 (Variation)' },
-                            grid: { color: '#e9ecef' }
-                        }
-                    }
-                }
-            });
+            updateMantelChartAndR();
 
             // 4. 解析完了時に画面下部へスムーススクロール
             setTimeout(() => {
@@ -182,4 +143,142 @@ document.addEventListener("DOMContentLoaded", () => {
             showSmartAlert("解析中にエラーが発生しました。データフォーマットを確認してください。");
         }
     });
+
+    if (noiseSlider) {
+        noiseSlider.addEventListener("input", (e) => {
+            if (noiseValueDisplay) noiseValueDisplay.textContent = e.target.value;
+            updateMantelChartAndR();
+        });
+    }
+
+    function updateMantelChartAndR() {
+        if (!baseMutMatrix || !baseVarMatrix) return;
+        
+        const noiseLevel = noiseSlider ? parseInt(noiseSlider.value, 10) : 0;
+        const N = baseMutMatrix.length;
+        
+        let maxVar = 0;
+        for (let i = 0; i < N; i++) {
+            for (let j = 0; j < N; j++) {
+                if (baseVarMatrix[i][j] > maxVar) maxVar = baseVarMatrix[i][j];
+            }
+        }
+        
+        const noisedVarMatrix = [];
+        for (let i = 0; i < N; i++) {
+            noisedVarMatrix[i] = [];
+            for (let j = 0; j < N; j++) {
+                if (i === j) {
+                    noisedVarMatrix[i][j] = 0;
+                } else if (j < i) {
+                    const base = baseVarMatrix[i][j];
+                    const noise = (Math.random() - 0.5) * 2 * (maxVar * (noiseLevel / 100));
+                    noisedVarMatrix[i][j] = Math.max(0, base + noise);
+                }
+            }
+        }
+        for (let i = 0; i < N; i++) {
+            for (let j = i + 1; j < N; j++) {
+                noisedVarMatrix[i][j] = noisedVarMatrix[j][i];
+            }
+        }
+
+        // 2. Mantel相関係数の再計算
+        const r = calculateMantelCorrelation(baseMutMatrix, noisedVarMatrix);
+        mantelRDisplay.textContent = r.toFixed(4);
+        
+        document.getElementById("mantel-placeholder").style.display = "none";
+        resultArea.style.display = "block";
+
+        // 3. 散布図データ抽出
+        const scatterData = extractPairs(baseMutMatrix, noisedVarMatrix);
+        
+        // --- 外れ値検出 (線形回帰による残差から) ---
+        let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+        const len = scatterData.length;
+        if (len > 1) {
+            for (let i = 0; i < len; i++) {
+                sumX += scatterData[i].x;
+                sumY += scatterData[i].y;
+                sumXY += scatterData[i].x * scatterData[i].y;
+                sumXX += scatterData[i].x * scatterData[i].x;
+            }
+            const meanX = sumX / len;
+            const meanY = sumY / len;
+            const slope = (sumXX - len * meanX * meanX === 0) ? 0 : (sumXY - len * meanX * meanY) / (sumXX - len * meanX * meanX);
+            const intercept = meanY - slope * meanX;
+
+            let residuals = [];
+            for (let i = 0; i < len; i++) {
+                const predictedY = slope * scatterData[i].x + intercept;
+                const resid = scatterData[i].y - predictedY;
+                residuals.push(resid);
+                scatterData[i]._resid = resid;
+            }
+            const meanResid = residuals.reduce((a,b)=>a+b, 0) / len;
+            const varResid = residuals.reduce((a,b)=>a + Math.pow(b - meanResid, 2), 0) / len;
+            const stdResid = Math.sqrt(varResid);
+
+            const threshold = stdResid * 1.5;
+            for (let i = 0; i < len; i++) {
+                scatterData[i].isOutlier = Math.abs(scatterData[i]._resid) > threshold;
+            }
+        } else {
+            for (let i = 0; i < len; i++) scatterData[i].isOutlier = false;
+        }
+        
+        const bgColors = scatterData.map(d => d.isOutlier ? 'rgba(231, 76, 60, 0.9)' : 'rgba(142, 68, 173, 0.8)');
+        const borderColors = scatterData.map(d => d.isOutlier ? '#c0392b' : '#8e44ad');
+        const radii = scatterData.map(d => d.isOutlier ? 7 : 5);
+        const hoverRadii = scatterData.map(d => d.isOutlier ? 9 : 7);
+
+        if (window.mantelChartInstance) {
+            window.mantelChartInstance.destroy();
+        }
+
+        window.mantelChartInstance = new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: '個体間ペア距離',
+                    data: scatterData,
+                    backgroundColor: bgColors,
+                    borderColor: borderColors,
+                    borderWidth: 1,
+                    pointRadius: radii,
+                    pointHoverRadius: hoverRadii
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const d = context.raw;
+                                let lines = [`Mutation: ${d.x.toFixed(3)}, Variation: ${d.y.toFixed(3)}`];
+                                if (d.isOutlier) {
+                                    lines.push('【特異な適応個体】全体の相関トレンドから逸脱しています。');
+                                    lines.push('局所適応、交雑、または測定ノイズの可能性があります。');
+                                }
+                                return lines;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: '遺伝的距離 (Mutation)' },
+                        grid: { color: '#e9ecef' }
+                    },
+                    y: {
+                        title: { display: true, text: '形態的距離 (Variation)' },
+                        grid: { color: '#e9ecef' }
+                    }
+                }
+            }
+        });
+    }
 });
