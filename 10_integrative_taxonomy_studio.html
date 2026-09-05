@@ -2217,134 +2217,132 @@ function closeFeedbackForm() {
     }
 </script>
 
-<!-- 入力データの一時保存（sessionStorage） v34.3.8 -->
+<!-- セッション永続化仕様：統合検証ステート・タングルグラム・PCA完全復元 (v35.4) -->
 <script>
 (function () {
     /* ===================================================================
-       【v34.3.8】ページ遷移時の入力データ一時保存
-       解析パイプラインを行き来しても入力が失われないようにする。
-       ・sessionStorage はタブを閉じるまで有効。localStorage を使う既存の
-         バケツリレー／履歴機能には一切干渉しない。
-       ・復元は「その欄が空のときだけ」行う。これにより、アプリ間の
-         受け渡しデータや初期表示値が入っている場合はそちらを優先する。
-       ・復元後に input イベントを発火し、アプリ側の更新処理
-         （入力欄の活性化判定・文字数表示など）を通常入力時と同じ経路で走らせる。
+       【セッション永続化仕様】アプリ⑩ 統合検証ステート・描画完全復元 (v35.4)
+       DOM消滅に依存しない実行判定により、タングルグラム・PCA散布図・モーフィングを完全再現
        =================================================================== */
-    const AUTOSAVE_KEY = 'bio_edu_autosave_app10';
-    const FIELDS = ['newick-mol-input', 'hybrid-morph-input', 'json-input'];
+    const AUTOSAVE_KEY = 'bio_edu_autosave_app10_full';
 
-    // 離脱時に退避
-    document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState !== 'hidden') return;
+    function saveApp10Session() {
         try {
-            const data = {};
-            let hasValue = false;
-            FIELDS.forEach(id => {
-                const el = document.getElementById(id);
-                if (!el) return;
-                data[id] = el.value;
-                if (String(el.value).trim() !== '') hasValue = true;
-            });
-            if (hasValue) sessionStorage.setItem(AUTOSAVE_KEY, JSON.stringify(data));
-            else sessionStorage.removeItem(AUTOSAVE_KEY);
-        } catch (e) {
-            // 容量超過などで保存できなくても離脱そのものは妨げない
-            console.warn('一時保存に失敗しました:', e);
-        }
-    });
+            const molEl = document.getElementById('newick-mol-input');
+            const morphEl = document.getElementById('hybrid-morph-input');
+            const jsonEl = document.getElementById('json-input');
 
-    // 起動時に書き戻す
-    window.addEventListener('DOMContentLoaded', () => {
-        try {
-            const saved = JSON.parse(sessionStorage.getItem(AUTOSAVE_KEY) || 'null');
-            if (!saved) return;
-            let restored = 0;
-            FIELDS.forEach(id => {
-                const el = document.getElementById(id);
-                if (!el) return;
-                if (typeof saved[id] !== 'string' || saved[id].trim() === '') return;
-                if (String(el.value).trim() !== '') return;   // 既存の値を優先
-                el.value = saved[id];
-                el.dispatchEvent(new Event('input', { bubbles: true }));
-                restored++;
-            });
-            if (restored > 0 && typeof showToast === 'function') {
-                showToast('前回の入力内容を復元しました', 'info');
+            const molVal = molEl ? molEl.value.trim() : '';
+            const morphVal = morphEl ? morphEl.value.trim() : '';
+            const jsonVal = jsonEl ? jsonEl.value.trim() : '';
+
+            // 【バグ解消】tree-placeholder は描画時に innerHTML='' で消滅するため、
+            // 実際に描画されたSVGの存在、または内部オブジェクト globalTreeRoot の存在で確実に判定する
+            const hasSvg = !!document.querySelector('#tree-svg-container svg');
+            const isExecuted = hasSvg || (typeof globalTreeRoot !== 'undefined' && globalTreeRoot !== null && globalTreeRoot.molRoot !== null);
+
+            if (!molVal && !morphVal && !jsonVal && !isExecuted) {
+                sessionStorage.removeItem(AUTOSAVE_KEY);
+                return;
             }
+
+            const state = {
+                savedAt: Date.now(),
+                molVal: molVal,
+                morphVal: morphVal,
+                jsonVal: jsonVal,
+                dataDirection: document.getElementById('data-direction') ? document.getElementById('data-direction').value : 'col',
+                distType: document.getElementById('dist-type') ? document.getElementById('dist-type').value : 'euclidean',
+                linkType: document.getElementById('link-type') ? document.getElementById('link-type').value : 'ward',
+                isExecuted: isExecuted
+            };
+
+            sessionStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state));
         } catch (e) {
-            console.warn('一時保存の復元に失敗しました:', e);
+            console.warn('[AutoSave] App10 save failed:', e);
         }
-    });
-})();
+    }
 
-    /* ===================================================================
-       【第7項改定】ネイティブ化必須要件：オートセーブ＆ハイドレーション仕様
-       Page Visibility API による瞬間ドラフト保存とステート復元
-       =================================================================== */
-    (function() {
-        const DRAFT_KEY = 'bio_edu_draft_' + (window.location.pathname.split('/').pop() || 'index.html');
+    function restoreApp10Session() {
+        try {
+            const raw = sessionStorage.getItem(AUTOSAVE_KEY);
+            if (!raw) return;
+            const state = JSON.parse(raw);
+            if (!state) return;
 
-        function serializeUIState() {
-            try {
-                const inputs = document.querySelectorAll('input, textarea, select');
-                const draft = {};
-                inputs.forEach(el => {
-                    if (el.id && !el.closest('#confirmModal') && !el.closest('#accountModal')) {
-                        if (el.type === 'checkbox' || el.type === 'radio') {
-                            draft[el.id] = el.checked;
-                        } else if (el.type !== 'file' && el.type !== 'password') {
-                            draft[el.id] = el.value;
-                        }
+            // 1. 各入力エリアの復元
+            const molEl = document.getElementById('newick-mol-input');
+            const morphEl = document.getElementById('hybrid-morph-input');
+            const jsonEl = document.getElementById('json-input');
+
+            if (molEl) molEl.value = state.molVal || '';
+            if (morphEl) morphEl.value = state.morphVal || '';
+            if (jsonEl) jsonEl.value = state.jsonVal || '';
+
+            // 2. クラスタリング条件セレクトボックスの復元
+            if (state.dataDirection && document.getElementById('data-direction')) {
+                document.getElementById('data-direction').value = state.dataDirection;
+            }
+            if (state.distType && document.getElementById('dist-type')) {
+                document.getElementById('dist-type').value = state.distType;
+            }
+            if (state.linkType && document.getElementById('link-type')) {
+                document.getElementById('link-type').value = state.linkType;
+            }
+
+            // 3. CSV判定連動（セレクトボックスのdisabled解除）
+            if (state.morphVal) {
+                const val = state.morphVal.trim();
+                const isCSV = val.length > 0 && !val.startsWith('(') && val.includes(',');
+                ['data-direction', 'dist-type', 'link-type'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.disabled = !isCSV;
+                });
+            }
+
+            // 4. 解析実行ボタンの活性状態更新
+            const runBtn = document.getElementById('run-analysis-btn-10');
+            if (runBtn) {
+                const hasMol = molEl && molEl.value.trim().length > 0;
+                const hasMorph = (morphEl && morphEl.value.trim().length > 0) || (jsonEl && jsonEl.value.trim().length > 0);
+                runBtn.disabled = !(hasMol && hasMorph);
+            }
+
+            // 5. 解析実行済みだった場合は、即座に runIntegration() を呼び出し完全再描画
+            if (state.isExecuted && typeof runIntegration === 'function') {
+                requestAnimationFrame(() => {
+                    runIntegration();
+                    if (typeof showToast === 'function') {
+                        showToast('前回の統合解析データを復元しました', 'info');
                     }
                 });
-                sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-            } catch (e) {
-                console.warn('UIステートのシリアライズに失敗しました:', e);
             }
+        } catch (e) {
+            console.warn('[AutoSave] App10 restore failed:', e);
         }
-
-        function hydrateUIState() {
-            try {
-                const draftStr = sessionStorage.getItem(DRAFT_KEY);
-                if (!draftStr) return;
-                const draft = JSON.parse(draftStr);
-                for (const id in draft) {
-                    const el = document.getElementById(id);
-                    if (el && !el.closest('#confirmModal') && !el.closest('#accountModal')) {
-                        if (el.type === 'checkbox' || el.type === 'radio') {
-                            el.checked = draft[id];
-                        } else if (el.type !== 'file' && el.type !== 'password') {
-                            el.value = draft[id];
-                        }
-                        el.dispatchEvent(new Event('input', { bubbles: true }));
-                        el.dispatchEvent(new Event('change', { bubbles: true }));
-                    }
-                }
-            } catch (e) {
-                console.warn('UIステートのハイドレーションに失敗しました:', e);
-            }
-        }
-
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden') {
-                serializeUIState();
-            }
-        });
-
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', hydrateUIState);
-        } else {
-            hydrateUIState();
-        }
-    })();
-
-
-    // 最終アクセスアプリの記憶（State Restoration）
-    try {
-      localStorage.setItem('bio_suite_last_app', window.location.pathname);
-    } catch (e) {
-      console.warn('State restoration unavailable:', e);
     }
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') saveApp10Session();
+    });
+    window.addEventListener('pagehide', saveApp10Session);
+
+    // 画面遷移・復帰時の発火保証
+    window.addEventListener('pageshow', () => {
+        setTimeout(restoreApp10Session, 60);
+    });
+    window.addEventListener('load', () => {
+        setTimeout(restoreApp10Session, 120);
+    });
+
+    const origConfirm = window.confirmDataReset;
+    if (typeof origConfirm === 'function') {
+        window.confirmDataReset = function() {
+            sessionStorage.removeItem(AUTOSAVE_KEY);
+            origConfirm();
+        };
+    }
+})();
 </script>
 
 <!-- Firebase 認証・クラウド同期（ガイドライン第7項） -->
