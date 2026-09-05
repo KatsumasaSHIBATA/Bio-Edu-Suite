@@ -1469,9 +1469,14 @@ body {
      });
      viewer = viewers[0]; // 主ビューワ
      document.getElementById('dataInfo').innerText = "比較モード";
-     viewers.forEach((v, idx) => {
-         fetchAndDraw(ids[idx], v, idx === 0);
-     });
+     
+     // 第2ビューアの非同期ロード競合を回避するため順次実行（遅延）
+     fetchAndDraw(ids[0], viewers[0], true);
+     setTimeout(() => {
+         if (viewers[1]) {
+             fetchAndDraw(ids[1], viewers[1], false);
+         }
+     }, 400);
  } else {
      gldiv.classList.remove('split-mode');
      gldiv.innerHTML = '';
@@ -1659,9 +1664,9 @@ body {
  }
 
  if (currentStyleMode === 'sphere' || currentStyleMode === 'hydrophobicity') {
- viewer.setStyle(finalEnvSel, baseStyle);
+ viewer.addStyle(finalEnvSel, baseStyle);
  } else {
- viewer.setStyle(finalEnvSel, {stick: {colorscheme: 'greenCarbon', radius: 0.2}});
+ viewer.addStyle(finalEnvSel, {stick: {colorscheme: 'greenCarbon', radius: 0.2}});
  }
  
  } else {
@@ -1698,11 +1703,12 @@ body {
  });
 
  selectedResidues.forEach(sel => {
- let highlightStyle = {cartoon: {color: 'red'}, stick: {color: 'red', radius: 0.5}, sphere: {scale: 1.1, color: 'red'}};
+ // ハイドロパシーの赤等と競合しない高視認性カラー（#f1c40f）に変更
+ let highlightStyle = {cartoon: {color: '#f1c40f'}, stick: {color: '#f1c40f', radius: 0.5}, sphere: {scale: 1.1, color: '#f1c40f'}};
  let haloStyle = null; 
  
  if (currentStyleMode === 'sphere') {
- highlightStyle = {sphere: {color: 'red'}}; 
+ highlightStyle = {sphere: {color: '#f1c40f'}}; 
  } else if (currentStyleMode === 'hydrophobicity') {
  const hydroColor = atom => {
  const hydrophobic = ['VAL','ILE','LEU','MET','PHE','TRP','CYS','ALA'];
@@ -1712,10 +1718,10 @@ body {
  return '#bdc3c7';
  };
  highlightStyle = {sphere: {scale: 1.1, colorfunc: hydroColor}}; 
- haloStyle = {sphere: {color: themeWarningColor || '#f39c12', scale: 1.5, opacity: 0.5}};
+ haloStyle = {sphere: {color: '#f1c40f', scale: 1.5, opacity: 0.8}};
  
  } else if (isEnvViewActive) {
- highlightStyle = {sphere: {color: 'red', scale: 1.1}};
+ highlightStyle = {sphere: {color: '#f1c40f', scale: 1.1}};
  }
 
  const getLabelText = (resi, chainId) => {
@@ -1822,25 +1828,28 @@ body {
  let seqHtml = "";
  let chainHtml = "";
  let chains = new Set();
- let currentChain = "";
  
+ // サブユニット別描画欠損修復：チェーンごとに安全にグループ化して順次生成
+ let atomsByChain = {};
  atoms.forEach(atom => {
- if(!chains.has(atom.chain)) {
- chains.add(atom.chain);
- chainHtml += `<label class="chain-checkbox"><input type="checkbox" checked onchange="toggleChain('${atom.chain}')"> サブユニット ${atom.chain}</label>`;
- }
- if(atom.chain !== currentChain) {
- if(currentChain !== "") seqHtml += "<br><br>";
- seqHtml += `<span class="chain-label">Chain ${atom.chain}</span><br>`;
- currentChain = atom.chain;
- }
+ let c = atom.chain;
+ if(!atomsByChain[c]) atomsByChain[c] = [];
+ atomsByChain[c].push(atom);
+ });
+
+ for (const c in atomsByChain) {
+ chains.add(c);
+ chainHtml += `<label class="chain-checkbox"><input type="checkbox" checked onchange="toggleChain('${c}')"> サブユニット ${c}</label>`;
+ if (seqHtml !== "") seqHtml += "<br><br>";
+ seqHtml += `<span class="chain-label">Chain ${c}</span><br>`;
  
+ atomsByChain[c].forEach(atom => {
  let aa1 = aaMap[atom.resn] || "X"; 
  let info = aaInfo[atom.resn];
  let tooltipText = info ? `<strong style='color:var(--phase-color);'>${info.name} (${atom.resn})</strong><br>残基番号: ${atom.resi}<br>性質: ${info.type}` : `残基番号: ${atom.resi}`;
- 
  seqHtml += `<span class="aa-letter" data-resi="${atom.resi}" data-chain="${atom.chain}" data-tooltip="${tooltipText}">${aa1}</span>`;
  });
+ }
 
  const dnaAtoms = model.selectedAtoms({resn: nucleicResidues, atom: "P"});
  if (dnaAtoms.length > 0) {
