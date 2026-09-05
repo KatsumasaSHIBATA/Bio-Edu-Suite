@@ -353,7 +353,7 @@ input, textarea {
   z-index: 1000;
   transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   width: 95%;
-  max-width: 960px; /* 横並びのため拡張 */
+  max-width: 1100px; /* 横並びのため拡張 */
   border: 1px solid var(--border-color);
   border-bottom: none;
 }
@@ -376,9 +376,15 @@ input, textarea {
 
 /* 一括アクションボタングリッド（スマートアライメントによる幅同期） */
 .bulk-action-buttons { 
-  display: grid; 
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); 
+  display: flex; 
+  flex-direction: column;
   gap: 10px; 
+}
+@media (min-width: 769px) {
+  .bulk-action-buttons {
+    flex-direction: row;
+    justify-content: center;
+  }
 }
 .bulk-action-buttons .btn { 
   width: 100%; 
@@ -388,6 +394,14 @@ input, textarea {
   white-space: normal;
   text-align: center;
   line-height: 1.3;
+}
+@media (min-width: 769px) {
+  .bulk-action-buttons .btn {
+    flex: 1;
+    max-width: 170px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
 }
 
 .bulk-action-buttons .btn-secondary {
@@ -1025,19 +1039,23 @@ body {
       <div class="bulk-action-buttons">
         <button id="btnBulkTrace" class="btn link-dna" onclick="dispatchBulk('trace'); triggerHapticFeedback();">
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-          ④ Sanger Trace Editor
+          ④ .ab1 送信
         </button>
         <button id="btnBulkDna" class="btn link-dna" onclick="dispatchBulk('dna'); triggerHapticFeedback();">
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-          ⑤ DNA Alignment Studio
+          ⑤ FASTA 送信
         </button>
         <button id="btnBulkMorph" class="btn link-morph" onclick="dispatchBulk('morph'); triggerHapticFeedback();">
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-          ⑨ Morphometrics Studio
+          ⑨ 画像 送信
+        </button>
+        <button id="btnBulkMorphCSV" class="btn btn-secondary" onclick="copyMorphCSV(); triggerHapticFeedback();">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+          ⑩ 計測CSV コピー
         </button>
         <button id="btnBulkCopyEnv" class="btn btn-secondary" onclick="copyEnvDataTSV(); triggerHapticFeedback();">
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-          環境メタデータをコピー
+          ⑫ 環境TSV コピー
         </button>
       </div>
     </div>
@@ -1098,9 +1116,9 @@ body {
         </div>
 
         <div class="form-group">
-          <label>形態データ</label>
-          <textarea id="morphData" class="form-control paste-area" placeholder="チェーンコードや計測値などを入力"></textarea>
-          <div class="help-text">後で Morphometrics Studio に送って楕円フーリエ解析やクラスター分析を行えます。</div>
+          <label>形態・計測データ (CSV)</label>
+          <textarea id="morphData" class="form-control paste-area" placeholder="例: 12.5, 4.3, 8.1 などの計測値をカンマ区切りで入力"></textarea>
+          <div class="help-text">後で Integrative Taxonomy Studio (⑩) に送って形態系統樹を構築できます。</div>
         </div>
 
         <hr style="border: 0; border-top: 1px solid #ecf0f1; margin: 20px 0;">
@@ -1384,8 +1402,8 @@ function closeFeedbackForm() {
           id: "SPECIMEN-01_magnirostris",
           name: "[Plate No.1] Geospiza magnirostris (オオガラパゴスフィンチ)",
           envCategory: "ヘノベサ島",
-          envNote: "【生態・形態】頑丈で極太の嘴を持つ大型地上フィンチ。大型の硬い種子を破砕して採食する。\n【図版原典】Darwin (1845) Journal of Researches 2nd ed., p.379, Fig.1\n【遺伝子型】ALX1 鈍端型ハプロタイプ (Blunt B: Pro112, Val211)\n【NCBI参照情報】BioProject: PRJNA263122 | Scaffold: JH739921 | CDS長: 987 bp\n【原著論文】Lamichhaney et al. (2015) Nature 518:371-375 (doi:10.1038/nature14181)\n[Source: App_1_LIMS]",
-          morphData: "",
+          envNote: "【生態・形態】頑丈で極太の嘴を持つ大型地上フィンチ。大型の硬い種子を破砕して採食する。\n【図版原典】Darwin (1845) Journal of Researches 2nd ed., p.379, Fig.1\n【遺伝子型】ALX1 鈍端型ハプロタイプ (Blunt B: Pro112, Val211)\n【NCBI参照情報】BioProject: PRJNA263122 | Scaffold: JH739921 | CDS長: 987 bp\n【原著論文】Lamichhaney et al. (2015) Nature 518:371-375 (doi:10.1038/nature14181)\n【形態データ出典】Grant (1986) / Bowman (1961) - 嘴峰長:15.9mm, 嘴高:17.5mm, 嘴幅:15.5mm\n[Source: App_1_LIMS]",
+          morphData: "15.9, 17.5, 15.5",
           dnaData: ">SPECIMEN-01_magnirostris [Darwin (1845) p.379 Plate No.1] Geospiza magnirostris (Hist: Geospiza magnirostris (Gould, 1837)) ALX1 CDS (987 bp) | 鈍端型 (Blunt B: Pro112, Val211) | BioProject: PRJNA263122 | Scaffold: JH739921 | CDS長: 987 bp | Lamichhaney et al. (2015) Nature 518:371-375 (doi:10.1038/nature14181)\nATGATTATGGATTTTCTGAGCGAGAAGTTTGCCCTGAAGAGCCAGCCGAGCAAGAACAGTGACTTTTATATGGGAGCAGGAGGCAGTTTGGAGCACGTTATGGAAACTTTGGACAATGAGTCCTTTTATAGCAAAACGTCAGGCAGCAAATGCGTGCAGGCCTTCAACCCTCTGCAAAGAGCGGAGCATCATGTGAGGCTGGAGAGGACATCACCCTGCCAGGACACGAACGTGAACTACGGGATTACTAAAGTGGAAGGACAGCCTCTTCACACAGAGCTGAGCAGGCCCATGGACAATTGCAACAATCTCAGGATGTCTCCAGTGAAAGGGCCGCAGGAGAAGGGGGACCTGGATGAACTTGGTGATAAGTGTGACAGCAATGTCTCCAGCAGTAAGAAGAGGAGACACAGAACAACTTTCACCAGTTTGCAGCTGGAGGAACTGGAGAAAGTATTCCAGAAAACTCACTACCCTGATGTCTATGTAAGAGAACAGCTAGCTCTGAGAACAGAGCTCACTGAGGCCAGAGTCCAGGTTTGGTTCCAGAATCGAAGAGCAAAATGGAGAAAAAGAGAACGCTATGGTCAGATCCAGCAAGCCAAGAGCCACTTTGCTGCCACCTATGATGTATCTGTTCTTCCAAGGACTGACAGCTACCCTCAGATTCAGAACAATCTGTGGGCAGGGAATGCGGCCAGTGGTTCTGTGGTTACCTCCTGCATGCTGCCACGAGATACGTCCTCCTGTATGACACCTTACTCCCATTCACCCCGGACAGATTCTGGCTACACAGGCTTTTCAAACCACCAGAATCAATTTAGCCACATGCCCCTCAATAATTTTTTCACTGACTCATTGCTTTCTGGGGCAACCAATGGACATGCTTTTGAAACCAAGCCAGAGTTTGAAAGGAGGTCCTCCAGCATTGCAGTTCTACGGATGAAAGCCAAAGAGCATGCTGCCAATATTTCTTGGGCCATGTAA",
           date: new Date(Date.now() - 10000).toISOString(),
           image_data: "images/finch_1_magnirostris.jpg",
@@ -1395,8 +1413,8 @@ function closeFeedbackForm() {
           id: "SPECIMEN-02_fortis",
           name: "[Plate No.2] Geospiza fortis (ガラパゴスフィンチ)",
           envCategory: "ダフネ・マヨル島",
-          envNote: "【生態・形態】中型の嘴を持つ中型地上フィンチ。環境変動（干ばつ）に伴う自然選択が半世紀にわたり追跡された歴史的モデル生物。\n【図版原典】Darwin (1845) Journal of Researches 2nd ed., p.379, Fig.2\n【遺伝子型】ALX1 鈍端型ハプロタイプ (Blunt B: Pro112, Val211)\n【NCBI参照情報】BioProject: PRJNA263122 | Reference Genome: GeoFor1 | Protein: XP_005421635\n【原著論文】Lamichhaney et al. (2015) Nature 518:371-375 (doi:10.1038/nature14181)\n[Source: App_1_LIMS]",
-          morphData: "",
+          envNote: "【生態・形態】中型の嘴を持つ中型地上フィンチ。環境変動（干ばつ）に伴う自然選択が半世紀にわたり追跡された歴史的モデル生物。\n【図版原典】Darwin (1845) Journal of Researches 2nd ed., p.379, Fig.2\n【遺伝子型】ALX1 鈍端型ハプロタイプ (Blunt B: Pro112, Val211)\n【NCBI参照情報】BioProject: PRJNA263122 | Reference Genome: GeoFor1 | Protein: XP_005421635\n【原著論文】Lamichhaney et al. (2015) Nature 518:371-375 (doi:10.1038/nature14181)\n【形態データ出典】Grant (1986) / Bowman (1961) - 嘴峰長:11.2mm, 嘴高:9.8mm, 嘴幅:9.0mm\n[Source: App_1_LIMS]",
+          morphData: "11.2, 9.8, 9.0",
           dnaData: ">SPECIMEN-02_fortis [Darwin (1845) p.379 Plate No.2] Geospiza fortis (Hist: Geospiza fortis (Gould, 1837)) ALX1 CDS (987 bp) | 鈍端型 (Blunt B: Pro112, Val211) | BioProject: PRJNA263122 | Reference Genome: GeoFor1 | Protein: XP_005421635 | Lamichhaney et al. (2015) Nature 518:371-375 (doi:10.1038/nature14181)\nATGATTATGGATTTTCTGAGCGAGAAGTTTGCCCTGAAGAGCCAGCCGAGCAAGAACAGTGACTTTTATATGGGAGCAGGAGGCAGTTTGGAGCACGTTATGGAAACTTTGGACAATGAGTCCTTTTATAGCAAAACGTCAGGCAGCAAATGCGTGCAGGCCTTCAACCCTCTGCAAAGAGCGGAGCATCATGTGAGGCTGGAGAGGACATCACCCTGCCAGGACACGAACGTGAACTACGGGATTACTAAAGTGGAAGGACAGCCTCTTCACACAGAGCTGAGCAGGCCCATGGACAATTGCAACAATCTCAGGATGTCTCCAGTGAAAGGGCCGCAGGAGAAGGGGGACCTGGATGAACTTGGTGATAAGTGTGACAGCAATGTCTCCAGCAGTAAGAAGAGGAGACACAGAACAACTTTCACCAGTTTGCAGCTGGAGGAACTGGAGAAAGTATTCCAGAAAACTCACTACCCTGATGTCTATGTAAGAGAACAGCTAGCTCTGAGAACAGAGCTCACTGAGGCCAGAGTCCAGGTTTGGTTCCAGAATCGAAGAGCAAAATGGAGAAAAAGAGAACGCTATGGTCAGATCCAGCAAGCCAAGAGCCACTTTGCTGCCACCTATGATGTATCTGTTCTTCCAAGGACTGACAGCTACCCTCAGATTCAGAACAATCTGTGGGCAGGGAATGCGGCCAGTGGTTCTGTGGTTACCTCCTGCATGCTGCCACGAGATACGTCCTCCTGTATGACACCTTACTCCCATTCACCCCGGACAGATTCTGGCTACACAGGCTTTTCAAACCACCAGAATCAATTTAGCCACATGCCCCTCAATAATTTTTTCACTGACTCATTGCTTTCTGGGGCAACCAATGGACATGCTTTTGAAACCAAGCCAGAGTTTGAAAGGAGGTCCTCCAGCATTGCAGTTCTACGGATGAAAGCCAAAGAGCATGCTGCCAATATTTCTTGGGCCATGTAA",
           date: new Date(Date.now() - 20000).toISOString(),
           image_data: "images/finch_2_fortis.jpg",
@@ -1406,8 +1424,8 @@ function closeFeedbackForm() {
           id: "SPECIMEN-03_parvulus",
           name: "[Plate No.3] Camarhynchus parvulus (コダーウィンフィンチ (小樹上フィンチ))",
           envCategory: "サンタ・クルス島",
-          envNote: "【生態・形態】小型の嘴を持つ樹上フィンチ。樹皮下の昆虫を捕食する。旧学名 Geospiza parvula。\n【図版原典】Darwin (1845) Journal of Researches 2nd ed., p.379, Fig.3\n【遺伝子型】ALX1 鋭端型ハプロタイプ (Pointed P: Leu112, Ile211)\n【NCBI参照情報】BioProject: PRJNA263122 | Scaffold: JH739921 | CDS長: 987 bp\n【原著論文】Lamichhaney et al. (2015) Nature 518:371-375 (doi:10.1038/nature14181)\n[Source: App_1_LIMS]",
-          morphData: "",
+          envNote: "【生態・形態】小型の嘴を持つ樹上フィンチ。樹皮下の昆虫を捕食する。旧学名 Geospiza parvula。\n【図版原典】Darwin (1845) Journal of Researches 2nd ed., p.379, Fig.3\n【遺伝子型】ALX1 鋭端型ハプロタイプ (Pointed P: Leu112, Ile211)\n【NCBI参照情報】BioProject: PRJNA263122 | Scaffold: JH739921 | CDS長: 987 bp\n【原著論文】Lamichhaney et al. (2015) Nature 518:371-375 (doi:10.1038/nature14181)\n【形態データ出典】Grant (1986) / Bowman (1961) - 嘴峰長:7.3mm, 嘴高:6.7mm, 嘴幅:6.2mm\n[Source: App_1_LIMS]",
+          morphData: "7.3, 6.7, 6.2",
           dnaData: ">SPECIMEN-03_parvulus [Darwin (1845) p.379 Plate No.3] Camarhynchus parvulus (Hist: Geospiza parvula (Gould, 1837)) ALX1 CDS (987 bp) | 鋭端型 (Pointed P: Leu112, Ile211) | BioProject: PRJNA263122 | Scaffold: JH739921 | CDS長: 987 bp | Lamichhaney et al. (2015) Nature 518:371-375 (doi:10.1038/nature14181)\nATGATTATGGATTTTCTGAGCGAGAAGTTTGCCCTGAAGAGCCAGCCGAGCAAGAACAGTGACTTTTATATGGGAGCAGGAGGCAGTTTGGAGCACGTTATGGAAACTTTGGACAATGAGTCCTTTTATAGCAAAACGTCAGGCAGCAAATGCGTGCAGGCCTTCAACCCTCTGCAAAGAGCGGAGCATCATGTGAGGCTGGAGAGGACATCACCCTGCCAGGACACGAACGTGAACTACGGGATTACTAAAGTGGAAGGACAGCCTCTTCACACAGAGCTGAGCAGGCCCATGGACAATTGCAACAATCTCAGGATGTCTCCAGTGAAAGGGCTGCAGGAGAAGGGGGACCTGGATGAACTTGGTGATAAGTGTGACAGCAATGTCTCCAGCAGTAAGAAGAGGAGACACAGAACAACTTTCACCAGTTTGCAGCTGGAGGAACTGGAGAAAGTATTCCAGAAAACTCACTACCCTGATGTCTATGTAAGAGAACAGCTAGCTCTGAGAACAGAGCTCACTGAGGCCAGAGTCCAGGTTTGGTTCCAGAATCGAAGAGCAAAATGGAGAAAAAGAGAACGCTATGGTCAGATCCAGCAAGCCAAGAGCCACTTTGCTGCCACCTATGATATATCTGTTCTTCCAAGGACTGACAGCTACCCTCAGATTCAGAACAATCTGTGGGCAGGGAATGCGGCCAGTGGTTCTGTGGTTACCTCCTGCATGCTGCCACGAGATACGTCCTCCTGTATGACACCTTACTCCCATTCACCCCGGACAGATTCTGGCTACACAGGCTTTTCAAACCACCAGAATCAATTTAGCCACATGCCCCTCAATAATTTTTTCACTGACTCATTGCTTTCTGGGGCAACCAATGGACATGCTTTTGAAACCAAGCCAGAGTTTGAAAGGAGGTCCTCCAGCATTGCAGTTCTACGGATGAAAGCCAAAGAGCATGCTGCCAATATTTCTTGGGCCATGTAA",
           date: new Date(Date.now() - 30000).toISOString(),
           image_data: "images/finch_3_parvulus.jpg",
@@ -1417,8 +1435,8 @@ function closeFeedbackForm() {
           id: "SPECIMEN-04_olivacea",
           name: "[Plate No.4] Certhidea olivacea (ムシクイフィンチ)",
           envCategory: "サンチャゴ島",
-          envNote: "【生態・形態】極細の嘴を持つムシクイフィンチ。細枝の隙間から昆虫を捕食する、全フィンチ類の中で最も初期に分岐した基底種。\n【図版原典】Darwin (1845) Journal of Researches 2nd ed., p.379, Fig.4\n【遺伝子型】ALX1 鋭端型ハプロタイプ (Pointed P: Leu112, Ile211 / 祖先型)\n【NCBI参照情報】BioProject: PRJNA263122 | Scaffold: JH739921 | CDS長: 987 bp\n【原著論文】Lamichhaney et al. (2015) Nature 518:371-375 (doi:10.1038/nature14181)\n[Source: App_1_LIMS]",
-          morphData: "",
+          envNote: "【生態・形態】極細の嘴を持つムシクイフィンチ。細枝の隙間から昆虫を捕食する、全フィンチ類の中で最も初期に分岐した基底種。\n【図版原典】Darwin (1845) Journal of Researches 2nd ed., p.379, Fig.4\n【遺伝子型】ALX1 鋭端型ハプロタイプ (Pointed P: Leu112, Ile211 / 祖先型)\n【NCBI参照情報】BioProject: PRJNA263122 | Scaffold: JH739921 | CDS長: 987 bp\n【原著論文】Lamichhaney et al. (2015) Nature 518:371-375 (doi:10.1038/nature14181)\n【形態データ出典】Grant (1986) / Bowman (1961) - 嘴峰長:9.8mm, 嘴高:4.1mm, 嘴幅:3.9mm\n[Source: App_1_LIMS]",
+          morphData: "9.8, 4.1, 3.9",
           dnaData: ">SPECIMEN-04_olivacea [Darwin (1845) p.379 Plate No.4] Certhidea olivacea (Hist: Certhidea olivacea (Gould, 1837)) ALX1 CDS (987 bp) | 鋭端型 (Pointed P: Leu112, Ile211 / 祖先型) | BioProject: PRJNA263122 | Scaffold: JH739921 | CDS長: 987 bp | Lamichhaney et al. (2015) Nature 518:371-375 (doi:10.1038/nature14181)\nATGATTATGGATTTTCTGAGCGAGAAGTTTGCCCTGAAGAGCCAGCCGAGCAAGAACAGTGACTTTTATATGGGAGCAGGAGGCAGTTTGGAGCACGTTATGGAAACTTTGGACAATGAGTCCTTTTATAGCAAAACGTCAGGCAGCAAATGCGTGCAGGCCTTCAACCCTCTGCAAAGAGCGGAGCATCATGTGAGGCTGGAGAGGACATCACCCTGCCAGGACACGAACGTGAACTACGGGATTACTAAAGTGGAAGGACAGCCTCTTCACACAGAGCTGAGCAGGCCCATGGACAATTGCAACAATCTCAGGATGTCTCCAGTGAAAGGGCTGCAGGAGAAGGGGGACCTGGATGAACTTGGTGATAAGTGTGACAGCAATGTCTCCAGCAGTAAGAAGAGGAGACACAGAACAACTTTCACCAGTTTGCAGCTGGAGGAACTGGAGAAAGTATTCCAGAAAACTCACTACCCTGATGTCTATGTAAGAGAACAGCTAGCTCTGAGAACAGAGCTCACTGAGGCCAGAGTCCAGGTTTGGTTCCAGAATCGAAGAGCAAAATGGAGAAAAAGAGAACGCTATGGTCAGATCCAGCAAGCCAAGAGCCACTTTGCTGCCACCTATGATATATCTGTTCTTCCAAGGACTGACAGCTACCCTCAGATTCAGAACAATCTGTGGGCAGGGAATGCGGCCAGTGGTTCTGTGGTTACCTCCTGCATGCTGCCACGAGATACGTCCTCCTGTATGACACCTTACTCCCATTCACCCCGGACAGATTCTGGCTACACAGGCTTTTCAAACCACCAGAATCAATTTAGCCACATGCCCCTCAATAATTTTTTCACTGACTCATTGCTTTCTGGGGCAACCAATGGACATGCTTTTGAAACCAAGCCAGAGTTTGAAAGGAGGTCCTCCAGCATTGCAGTTCTACGGATGAAAGCCAAAGAGCATGCTGCCAATATTTCTTGGGCCATGTAA",
           date: new Date(Date.now() - 40000).toISOString(),
           image_data: "images/finch_4_olivacea.jpg",
@@ -1669,7 +1687,7 @@ function closeFeedbackForm() {
         const hasRawSeq = sample.hasRawSeq || false;
         
         const envBadge = hasEnv ? `<span class="badge ok">環境カテゴリあり</span>` : `<span class="badge none">環境カテゴリ未登録</span>`;
-        const morphBadge = hasMorph ? `<span class="badge ok">形態データあり</span>` : `<span class="badge none">形態未登録</span>`;
+        const morphBadge = hasMorph ? `<span class="badge ok">計測データあり</span>` : `<span class="badge none">計測データ未登録</span>`;
         const dnaBadge = hasDna ? `<span class="badge ok">処理済み塩基配列あり</span>` : `<span class="badge none">処理済み塩基配列未登録</span>`;
         const rawDnaBadge = hasRawSeq ? `<span class="badge ok">未処理塩基配列あり</span>` : `<span class="badge none">未処理塩基配列なし</span>`;
 
@@ -1694,7 +1712,7 @@ function closeFeedbackForm() {
             <div class="status-badges">${envBadge}${morphBadge}${dnaBadge}${rawDnaBadge}</div>
             ${hasEnv ? `<div class="data-preview" data-tooltip="環境カテゴリ">${escapeHTML(envCat)}</div>` : ''}
             ${envNote ? `<div class="data-preview" data-tooltip="特記事項">${escapeHTML(envNote.substring(0, 30))}...</div>` : ''}
-            ${hasMorph ? `<div class="data-preview" data-tooltip="形態データ">${escapeHTML(sample.morphData.substring(0, 30))}...</div>` : ''}
+            ${hasMorph ? `<div class="data-preview" data-tooltip="計測データ">${escapeHTML(sample.morphData.substring(0, 30))}...</div>` : ''}
             ${hasDna ? `<div class="data-preview" data-tooltip="処理済み塩基配列">${escapeHTML(sample.dnaData.substring(0, 30))}...</div>` : ''}
           </div>
         `;
@@ -1716,6 +1734,7 @@ function closeFeedbackForm() {
         countSpan.innerText = count;
         
         let canSendMorph = true;
+        let canCopyMorphCSV = true;
         let canSendDna = true;
         let canSendTrace = true;
         let canCopyEnv = true;
@@ -1723,7 +1742,8 @@ function closeFeedbackForm() {
         checkboxes.forEach(cb => {
           const sample = samples.find(s => s.id === cb.value);
           if (sample) {
-            if ((!sample.morphData || sample.morphData.trim() === "") && (!sample.image_data || sample.image_data.trim() === "")) canSendMorph = false;
+            if (!sample.image_data || sample.image_data.trim() === "") canSendMorph = false;
+            if (!sample.morphData || sample.morphData.trim() === "") canCopyMorphCSV = false;
             if (!sample.dnaData || sample.dnaData.trim() === "") canSendDna = false;
             if (!sample.hasRawSeq) canSendTrace = false;
             if (!sample.envCategory || sample.envCategory.trim() === "") canCopyEnv = false;
@@ -1731,11 +1751,13 @@ function closeFeedbackForm() {
         });
 
         const btnMorph = document.getElementById('btnBulkMorph');
+        const btnBulkMorphCSV = document.getElementById('btnBulkMorphCSV');
         const btnDna = document.getElementById('btnBulkDna');
         const btnTrace = document.getElementById('btnBulkTrace');
         const btnCopyEnv = document.getElementById('btnBulkCopyEnv');
 
         btnMorph.classList.toggle('link-disabled', !canSendMorph);
+        if(btnBulkMorphCSV) btnBulkMorphCSV.classList.toggle('link-disabled', !canCopyMorphCSV);
         btnDna.classList.toggle('link-disabled', !canSendDna);
         btnTrace.classList.toggle('link-disabled', !canSendTrace);
         btnCopyEnv.classList.toggle('link-disabled', !canCopyEnv);
@@ -1829,6 +1851,32 @@ function closeFeedbackForm() {
 
       if(targetUrl) {
         setTimeout(() => { window.location.href = targetUrl; }, 800);
+      }
+    }
+
+    function copyMorphCSV() {
+      const checkboxes = document.querySelectorAll('.sample-checkbox:checked');
+      if (checkboxes.length === 0) return;
+
+      const selectedIds = Array.from(checkboxes).map(cb => cb.value);
+      const selectedSamples = selectedIds.map(id => samples.find(s => s.id === id)).filter(Boolean);
+
+      if (selectedSamples.length === 0) return;
+
+      let csv = "";
+      selectedSamples.forEach(s => {
+        // ユーザーがカンマ区切りで入力した計測値に、先頭にサンプルIDを結合して1行とする
+        csv += `${s.id}, ${s.morphData}\n`;
+      });
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(csv).then(() => {
+            document.querySelectorAll('.sample-checkbox').forEach(cb => cb.checked = false);
+            renderSamples();
+            showToast("⑩ Integrative Taxonomy Studio用の計測データ(CSV)をコピーしました", "success");
+          }).catch(err => {
+            showToast("データのコピーに失敗しました", "error");
+          });
       }
     }
 

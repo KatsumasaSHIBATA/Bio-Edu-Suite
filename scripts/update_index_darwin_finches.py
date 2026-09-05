@@ -107,7 +107,7 @@ def main():
           name: "{name_str}",
           envCategory: "{d['island']}",
           envNote: "{env_note}",
-          morphData: "",
+          morphData: "{d.get('morph_data', '')}",
           dnaData: "{fasta_text}",
           date: new Date(Date.now() - {offsets[idx]}).toISOString(),
           image_data: "{d['image']}",
