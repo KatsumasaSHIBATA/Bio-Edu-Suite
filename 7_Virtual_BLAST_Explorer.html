@@ -2062,63 +2062,138 @@ function closeFeedbackForm() {
     }
 
     /* ===================================================================
-       【第7項改定】ネイティブ化必須要件：オートセーブ＆ハイドレーション仕様
-       Page Visibility API による瞬間ドラフト保存とステート復元
+       【セッション永続化仕様】アプリ⑦ 登録DB・BLAST結果・UI完全復元 (v35.3)
+       localDB、クエリ塩基配列、検索結果テーブル、アライメント表示の完全保持
        =================================================================== */
-    (function() {
-        const DRAFT_KEY = 'bio_edu_draft_' + (window.location.pathname.split('/').pop() || 'index.html');
+    (function () {
+        const AUTOSAVE_KEY = 'bio_edu_autosave_app7_full';
 
-        function serializeUIState() {
+        function saveApp7Session() {
             try {
-                const inputs = document.querySelectorAll('input, textarea, select');
-                const draft = {};
-                inputs.forEach(el => {
-                    if (el.id && !el.closest('#confirmModal') && !el.closest('#accountModal')) {
-                        if (el.type === 'checkbox' || el.type === 'radio') {
-                            draft[el.id] = el.checked;
-                        } else if (el.type !== 'file' && el.type !== 'password') {
-                            draft[el.id] = el.value;
-                        }
-                    }
+                const queryEl = document.getElementById('queryInput');
+                const queryVal = queryEl ? queryEl.value : '';
+                const hasDB = typeof localDB !== 'undefined' && Array.isArray(localDB) && localDB.length > 0;
+                const hasQuery = queryVal.trim().length > 0;
+
+                if (!hasDB && !hasQuery) {
+                    sessionStorage.removeItem(AUTOSAVE_KEY);
+                    return;
+                }
+
+                // 選択されている行のインデックスを特定
+                let selectedIdx = -1;
+                const rows = document.querySelectorAll('#hitsTableBody .hit-row');
+                rows.forEach((r, idx) => {
+                    if (r.classList.contains('selected')) selectedIdx = idx;
                 });
-                sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+
+                const state = {
+                    savedAt: Date.now(),
+                    query: queryVal,
+                    queryName: typeof currentQueryName !== 'undefined' ? currentQueryName : '',
+                    match: document.getElementById('valMatch') ? document.getElementById('valMatch').value : '1',
+                    mismatch: document.getElementById('valMismatch') ? document.getElementById('valMismatch').value : '-2',
+                    gap: document.getElementById('valGap') ? document.getElementById('valGap').value : '-5',
+                    presetVal: document.getElementById('presetSelector') ? document.getElementById('presetSelector').value : '',
+                    currentLoadedInfo: document.getElementById('currentLoadedDataInfo') ? document.getElementById('currentLoadedDataInfo').innerText : '',
+                    localDB: hasDB ? localDB : [],
+                    currentResults: (typeof currentResults !== 'undefined' && Array.isArray(currentResults)) ? currentResults : [],
+                    alignmentHtml: document.getElementById('alignmentPanel') ? document.getElementById('alignmentPanel').innerHTML : '',
+                    alignmentDisplay: document.getElementById('alignmentPanel') ? document.getElementById('alignmentPanel').style.display : 'none',
+                    ncbiLinkHtml: document.getElementById('ncbiLinkPanel') ? document.getElementById('ncbiLinkPanel').innerHTML : '',
+                    ncbiLinkDisplay: document.getElementById('ncbiLinkPanel') ? document.getElementById('ncbiLinkPanel').style.display : 'none',
+                    selectedIdx: selectedIdx
+                };
+
+                sessionStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state));
             } catch (e) {
-                console.warn('UIステートのシリアライズに失敗しました:', e);
+                console.warn('[AutoSave] App7 save failed:', e);
             }
         }
 
-        function hydrateUIState() {
+        function restoreApp7Session() {
             try {
-                const draftStr = sessionStorage.getItem(DRAFT_KEY);
-                if (!draftStr) return;
-                const draft = JSON.parse(draftStr);
-                for (const id in draft) {
-                    const el = document.getElementById(id);
-                    if (el && !el.closest('#confirmModal') && !el.closest('#accountModal')) {
-                        if (el.type === 'checkbox' || el.type === 'radio') {
-                            el.checked = draft[id];
-                        } else if (el.type !== 'file' && el.type !== 'password') {
-                            el.value = draft[id];
+                const raw = sessionStorage.getItem(AUTOSAVE_KEY);
+                if (!raw) return;
+                const state = JSON.parse(raw);
+                if (!state) return;
+
+                // 1. クエリおよびスコアリング設定の復元
+                const queryEl = document.getElementById('queryInput');
+                if (queryEl && (!queryEl.value || queryEl.value.trim() === '')) {
+                    queryEl.value = state.query || '';
+                }
+                if (state.queryName && typeof currentQueryName !== 'undefined') {
+                    currentQueryName = state.queryName;
+                }
+                if (state.match && document.getElementById('valMatch')) document.getElementById('valMatch').value = state.match;
+                if (state.mismatch && document.getElementById('valMismatch')) document.getElementById('valMismatch').value = state.mismatch;
+                if (state.gap && document.getElementById('valGap')) document.getElementById('valGap').value = state.gap;
+                if (state.presetVal && document.getElementById('presetSelector')) {
+                    document.getElementById('presetSelector').value = state.presetVal;
+                }
+
+                // 2. ローカルデータベース (localDB) の復元
+                if (state.localDB && Array.isArray(state.localDB) && state.localDB.length > 0 && typeof localDB !== 'undefined') {
+                    localDB = state.localDB;
+                    if (typeof updateDBCount === 'function') updateDBCount();
+                }
+                if (state.currentLoadedInfo && document.getElementById('currentLoadedDataInfo')) {
+                    document.getElementById('currentLoadedDataInfo').innerText = state.currentLoadedInfo;
+                }
+
+                // 3. BLAST検索結果およびアライメントパネルの復元
+                if (state.currentResults && Array.isArray(state.currentResults) && state.currentResults.length > 0 && typeof currentResults !== 'undefined') {
+                    currentResults = state.currentResults;
+                    if (typeof renderHitsTable === 'function') {
+                        renderHitsTable();
+                        // 直前に選択されていた行を復元
+                        if (state.selectedIdx !== undefined && state.selectedIdx >= 0) {
+                            const rows = document.querySelectorAll('#hitsTableBody .hit-row');
+                            if (rows && rows[state.selectedIdx]) {
+                                rows.forEach(r => r.classList.remove('selected'));
+                                rows[state.selectedIdx].classList.add('selected');
+                            }
                         }
-                        el.dispatchEvent(new Event('input', { bubbles: true }));
-                        el.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+
+                    const alnPanel = document.getElementById('alignmentPanel');
+                    if (alnPanel && state.alignmentHtml) {
+                        alnPanel.innerHTML = state.alignmentHtml;
+                        alnPanel.style.display = state.alignmentDisplay || 'block';
+                    }
+
+                    const linkPanel = document.getElementById('ncbiLinkPanel');
+                    if (linkPanel && state.ncbiLinkHtml) {
+                        linkPanel.innerHTML = state.ncbiLinkHtml;
+                        linkPanel.style.display = state.ncbiLinkDisplay || 'none';
+                    }
+
+                    if (typeof showToast === 'function') {
+                        showToast('前回のデータベースと検索結果を復元しました', 'info');
                     }
                 }
             } catch (e) {
-                console.warn('UIステートのハイドレーションに失敗しました:', e);
+                console.warn('[AutoSave] App7 restore failed:', e);
             }
         }
 
         document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden') {
-                serializeUIState();
-            }
+            if (document.visibilityState === 'hidden') saveApp7Session();
+        });
+        window.addEventListener('pagehide', saveApp7Session);
+
+        // ロード完了後に確実に復元
+        window.addEventListener('load', () => {
+            setTimeout(restoreApp7Session, 120);
         });
 
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', hydrateUIState);
-        } else {
-            hydrateUIState();
+        const origConfirm = window.confirmDataReset;
+        if (typeof origConfirm === 'function') {
+            window.confirmDataReset = function() {
+                sessionStorage.removeItem(AUTOSAVE_KEY);
+                origConfirm();
+            };
         }
     })();
 
