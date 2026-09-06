@@ -1732,17 +1732,20 @@ body {
         container.innerHTML = '';
         const width = container.clientWidth;
         const height = container.clientHeight;
-        const margin = {top: 30, right: 40, bottom: 30, left: 40};
+        const margin = {top: 30, right: 30, bottom: 30, left: 30};
         const w = width - margin.left - margin.right;
         const h = height - margin.top - margin.bottom;
         
         const svg = d3.select(container).append('svg')
             .attr('width', width)
             .attr('height', height)
+            .attr('xmlns', 'http://www.w3.org/2000/svg')
+            .style('background', '#ffffff')
             .append('g')
             .attr('transform', `translate(${margin.left},${margin.top})`);
             
-        let treeWidth = morphRoot ? w * 0.35 : w - 140; 
+        // ツリー幅をスリム化し、中央のラベル＆タングル領域（w * 0.56）を十分に確保
+        let treeWidth = morphRoot ? Math.min(w * 0.22, 130) : w - 140; 
         
         // --- 左ツリー (分子系統樹) ---
         const treeLayoutMol = d3.cluster().size([h, treeWidth]);
@@ -1753,10 +1756,14 @@ body {
             d.xMol = d.x;
         });
         
+        // エクスポート時の黒ベタ化を防ぐため、fill: none と stroke を属性として直接設定
         svg.selectAll('.link-mol')
             .data(molRoot.links())
             .enter().append('path')
             .attr('class', 'link link-mol')
+            .attr('fill', 'none')
+            .attr('stroke', '#bdc3c7')
+            .attr('stroke-width', 2)
             .attr('id', d => `link-${d.source.nodeId}-${d.target.nodeId}`)
             .attr('d', d => `M${d.source.yMol},${d.source.xMol} V${d.target.xMol} H${d.target.yMol}`);
             
@@ -1779,10 +1786,11 @@ body {
             .attr('dy', '0.31em')
             .attr('x', d => d.children ? -8 : 10)
             .attr('text-anchor', d => d.children ? 'end' : 'start')
-            .text(d => getShortLabel(d.data.name)) // 短縮ラベルを表示
-            .style('font-size', '11px')
-            .style('font-weight', 'bold')
-            .style('fill', '#2c3e50')
+            .attr('fill', '#2c3e50')
+            .attr('font-size', '11px')
+            .attr('font-weight', 'bold')
+            .attr('font-family', 'Segoe UI, sans-serif')
+            .text(d => getShortLabel(d.data.name))
             .style('pointer-events', 'none');
             
         nodeMol.on('mouseenter', (event, d) => handleNodeHover(d))
@@ -1799,10 +1807,14 @@ body {
                 d.xMorph = d.x;
             });
             
+            // エクスポート時の黒ベタ化を防ぐため、fill: none と stroke を属性として直接設定
             svg.selectAll('.link-morph')
                 .data(morphRoot.links())
                 .enter().append('path')
                 .attr('class', 'link link-morph')
+                .attr('fill', 'none')
+                .attr('stroke', '#bdc3c7')
+                .attr('stroke-width', 2)
                 .attr('id', d => `link-${d.source.nodeId}-${d.target.nodeId}`)
                 .attr('d', d => `M${d.source.yMorph},${d.source.xMorph} V${d.target.xMorph} H${d.target.yMorph}`);
                 
@@ -1825,13 +1837,13 @@ body {
                 .attr('dy', '0.31em')
                 .attr('x', d => d.children ? 8 : -10)
                 .attr('text-anchor', d => d.children ? 'start' : 'end')
-                .text(d => getShortLabel(d.data.name)) // 短縮ラベルを表示
-                .style('font-size', '11px')
-                .style('font-weight', 'bold')
-                .style('fill', '#2c3e50')
+                .attr('fill', '#2c3e50')
+                .attr('font-size', '11px')
+                .attr('font-weight', 'bold')
+                .attr('font-family', 'Segoe UI, sans-serif')
+                .text(d => getShortLabel(d.data.name))
                 .style('pointer-events', 'none');
 
-            // 右側の形態系統樹側にも双方向インタラクションの付与
             nodeMorph.on('mouseenter', (event, d) => handleNodeHover(d))
                      .on('click', (event, d) => handleNodeHover(d));
                 
@@ -1862,23 +1874,24 @@ body {
                 }
             }
             
+            // ラベル幅（約110〜125px）を考慮し、文字の横からタングルラインを美しく繋ぐ
             svg.selectAll('.tangle-line')
                 .data(tangleData)
                 .enter().append('path')
                 .attr('class', 'tangle-line')
                 .attr('d', d => {
-                    // 結線の余白調整
-                    const marginOff = 45;
+                    const availableGap = d.morph.yMorph - d.mol.yMol;
+                    const marginOff = Math.min(125, Math.max(20, availableGap * 0.38));
                     const x1 = d.mol.yMol + marginOff;
                     const y1 = d.mol.xMol;
                     const x2 = d.morph.yMorph - marginOff;
                     const y2 = d.morph.xMorph;
                     return `M${x1},${y1} C${x1 + (x2 - x1) / 2},${y1} ${x1 + (x2 - x1) / 2},${y2} ${x2},${y2}`;
                 })
-                .style('fill', 'none')
-                .style('stroke', d => (isUntangled && d.isCrossing) ? '#e67e22' : '#bdc3c7')
-                .style('stroke-width', d => (isUntangled && d.isCrossing) ? 2.5 : 1.5)
-                .style('opacity', d => (isUntangled && d.isCrossing) ? 0.9 : 0.6)
+                .attr('fill', 'none')
+                .attr('stroke', d => (isUntangled && d.isCrossing) ? '#e67e22' : '#bdc3c7')
+                .attr('stroke-width', d => (isUntangled && d.isCrossing) ? 2.5 : 1.5)
+                .attr('stroke-opacity', d => (isUntangled && d.isCrossing) ? 0.9 : 0.6)
                 .style('pointer-events', 'none');
         }
         
