@@ -1170,9 +1170,15 @@ body {
                 ・左の分子系統樹（DNA）と右の形態系統樹（見た目）を比較します。<br>
                 ・線が交差（クロス）している部分は『見た目は似ているが遺伝的には遠い（収斂進化）』、あるいは『見た目は違うが遺伝的には近い』といった、進化のダイナミズムや隠蔽種（Cryptic species）の存在を示唆しています。
             </div>
-            <div class="card-body" style="padding: 0;">
+            <div class="card-body" style="padding: 0; display: flex; flex-direction: column;">
                 <div id="tree-svg-container" style="width: 100%; height: 500px; background: #fff; position: relative;">
                     <div id="tree-placeholder" style="position: absolute; inset: 0; display:flex; align-items:center; justify-content:center; font-weight:bold; color:var(--text-muted);">データ待機中</div>
+                </div>
+                <div style="padding: 10px 15px; display: flex; justify-content: flex-end; background: #fdfefe; border-top: 1px solid var(--border-color);">
+                    <button id="btn-save-tree-png" class="btn btn-success" disabled onclick="downloadTreePNG()" data-tooltip="タングルグラムをPNG画像としてダウンロードします">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        グラフ保存
+                    </button>
                 </div>
             </div>
         </div>
@@ -1188,7 +1194,7 @@ body {
                 ・楕円フーリエ解析で抽出した形状の特徴を主成分分析(PCA)で2次元にプロットし、形質の違い（変異）を可視化しています。<br>
                 ・系統樹と連動し、共通祖先の形を数学的に補間してアニメーション描画します。
             </div>
-            <div class="card-body" style="padding: 0;">
+            <div class="card-body" style="padding: 0; display: flex; flex-direction: column;">
                 <div class="canvas-wrapper" style="width: 100%; height: 500px; position: relative;">
                     <div id="pca-placeholder" style="position: absolute; inset: 0; display:flex; align-items:center; justify-content:center; font-weight:bold; color:var(--text-muted); z-index: 10;">データ待機中</div>
                     <canvas id="pca-canvas"></canvas>
@@ -1197,6 +1203,12 @@ body {
                         <label for="morphTimeline" style="font-size: 12px; font-weight: bold; white-space: nowrap; color: var(--primary);">進化のタイムライン:</label>
                         <input type="range" id="morphTimeline" min="0" max="100" value="100" style="flex: 1; cursor: pointer; accent-color: var(--phase-color);" oninput="handleTimelineScrub()">
                     </div>
+                </div>
+                <div style="padding: 10px 15px; display: flex; justify-content: flex-end; background: #fdfefe; border-top: 1px solid var(--border-color);">
+                    <button id="btn-save-pca-png" class="btn btn-success" disabled onclick="downloadPcaPNG()" data-tooltip="形態空間PCAプロットをPNG画像としてダウンロードします">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        グラフ保存
+                    </button>
                 </div>
             </div>
         </div>
@@ -1378,6 +1390,60 @@ body {
     // Cluster & Parse Logic
     // ==========================================
     
+    // ==========================================
+    // Export Functions (PNG Save Standard)
+    // ==========================================
+    function getYYYYMMDD() {
+        const d = new Date();
+        return d.getFullYear().toString() + 
+               (d.getMonth() + 1).toString().padStart(2, '0') + 
+               d.getDate().toString().padStart(2, '0');
+    }
+
+    function downloadTreePNG() {
+        exportSvgToPng('#tree-svg-container svg', `BioEdu_Tanglegram_${getYYYYMMDD()}.png`);
+    }
+
+    function downloadPcaPNG() {
+        const canvas = document.getElementById('pca-canvas');
+        if (!canvas) return;
+        const a = document.createElement("a");
+        a.download = `BioEdu_MorphPCA_${getYYYYMMDD()}.png`;
+        a.href = canvas.toDataURL("image/png");
+        a.click();
+    }
+
+    function exportSvgToPng(selector, filename) {
+        const svgElement = document.querySelector(selector);
+        if (!svgElement) return;
+
+        const serializer = new XMLSerializer();
+        let source = serializer.serializeToString(svgElement);
+        if(!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
+            source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+        }
+        source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+        const url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
+        
+        const img = new Image();
+        img.onload = function() {
+            const canvas = document.createElement("canvas");
+            canvas.width = svgElement.clientWidth * 2;
+            canvas.height = svgElement.clientHeight * 2;
+            const ctx = canvas.getContext("2d");
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            
+            const pngUrl = canvas.toDataURL("image/png");
+            const a = document.createElement("a");
+            a.download = filename;
+            a.href = pngUrl;
+            a.click();
+        };
+        img.src = url;
+    }
+
     function clusterToNewick(node, parentHeight = null) {
         if (!node.left && !node.right) {
             let dist = parentHeight !== null ? parentHeight : 0;
@@ -1641,6 +1707,11 @@ body {
                 }
             }
             
+            const btnTree = document.getElementById('btn-save-tree-png');
+            if (btnTree) btnTree.disabled = false;
+            const btnPca = document.getElementById('btn-save-pca-png');
+            if (btnPca) btnPca.disabled = !(jsonStr && parsedMorphData.length > 0);
+
             if (missingLeaves.length === 0) {
                 showToast('統合解析を完了しました。', 'success');
             }
