@@ -1322,23 +1322,27 @@ body {
           "SPECIMEN-03_parvulus",
           "SPECIMEN-04_olivacea"
         ];
-        let needsHydration = false;
-        for (const sid of sampleIds) {
-          const existing = await getFromIndexedDB(STORE_SAMPLES, sid);
-          if (!existing || !existing.data) {
-            needsHydration = true;
-            break;
+        const currentVersion = localStorage.getItem('bio_edu_ab1_version');
+        let needsHydration = currentVersion !== 'v2';
+        if (!needsHydration) {
+          for (const sid of sampleIds) {
+            const existing = await getFromIndexedDB(STORE_SAMPLES, sid);
+            if (!existing || !existing.data) {
+              needsHydration = true;
+              break;
+            }
           }
         }
         if (!needsHydration) return;
 
-        const response = await fetch('data/ab1_presets.json');
+        const response = await fetch('data/ab1_presets.json?v=v2');
         if (!response.ok) return;
         const presets = await response.json();
         for (const [id, preset] of Object.entries(presets)) {
           await saveToIndexedDB(STORE_SAMPLES, preset);
         }
-        console.log("AB1 presets successfully hydrated into IndexedDB.");
+        localStorage.setItem('bio_edu_ab1_version', 'v2');
+        console.log("AB1 presets successfully hydrated into IndexedDB (v2).");
       } catch (err) {
         console.warn("Failed to hydrate AB1 presets:", err);
       }
