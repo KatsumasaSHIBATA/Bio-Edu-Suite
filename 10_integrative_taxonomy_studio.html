@@ -1078,7 +1078,8 @@ body {
         </div>
         <div id="rat_data" class="rationale-text">
             <strong>【根拠：データの連携】</strong>
-            ・分子系統樹（DNAの突然変異の歴史）と形態データ（現在の形質）を統合することで、生物の形がどのように進化・分岐してきたかを推定します。
+            ・分子系統樹（DNAの突然変異の歴史）と形態データ（現在の形質）を統合することで、生物の形がどのように進化・分岐してきたかを推定します。<br>
+            ・一見似ている生物が、実は全く異なる系統であったり（収斂進化）、逆に見た目が違っても近縁であったりするダイナミズムを発見するための起点となります。
         </div>
         <div class="card-body">
             <div class="bench-tip">
@@ -1180,6 +1181,29 @@ body {
                         PNG保存
                     </button>
                 </div>
+
+                <!-- オンデマンド詳しい解説パネル (Soft Scaffolding) -->
+                <div style="margin-top: 5px; border-top: 1px dashed var(--border-color); padding: 15px;">
+                    <details style="cursor: pointer; background: #f8f9fa; border: 1px solid #d1d5db; border-radius: 6px; padding: 12px;">
+                        <summary style="font-weight: bold; color: var(--primary); font-size: 13px; display: flex; align-items: center;">
+                            <svg class="btn-icon svg-hint" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>
+                            考察のヒント：タングルグラムのもつれ（交差）の解釈
+                        </summary>
+                        <div style="margin-top: 12px; font-size: 12px; color: var(--text-main); line-height: 1.6;">
+                            <p style="margin-bottom: 8px;"><strong>1. 平行な結線（一致する系統関係）</strong><br>
+                            DNA（塩基配列の突然変異の蓄積）と形態（現在の見た目）の分岐パターンが一致しています。これは、種が分化していく標準的な進化プロセスを示しています。</p>
+                            
+                            <p style="margin-bottom: 8px;"><strong>2. 交差する結線（不一致・もつれ）</strong><br>
+                            「もつれ解消 (Untangle)」ボタンを押しても解消されないオレンジ色のラインは、遺伝的系統と形態の分類に「真の不一致」があることを示します。ここが進化論的に最も興味深いホットスポットです。</p>
+                            
+                            <p style="margin-bottom: 0;"><strong>3. 交差の要因（生物学的シナリオ）</strong><br>
+                            ・<strong>収斂進化（しゅうれんしんか）</strong>：全く異なる系統の生物が、似たような環境に適応した結果、たまたま同じような形態を獲得したケース。<br>
+                            ・<strong>表現型可塑性</strong>：遺伝子は非常に近い（または同じ）にも関わらず、育った環境の違いによって形が大きく変わっているケース。<br>
+                            ・<strong>浸透交雑</strong>：近縁種間で交雑が起こり、一部の遺伝子が移動したことで系統樹にズレが生じているケース。</p>
+                        </div>
+                    </details>
+                </div>
+
             </div>
         </div>
         
