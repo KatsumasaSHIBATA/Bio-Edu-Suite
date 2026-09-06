@@ -1036,7 +1036,15 @@ body {
                     </div>
 
                     <div class="input-group" style="margin-top: 15px;">
-                        <label>測定誤差 (環境ノイズ) のシミュレート</label>
+                        <label style="display: flex; align-items: center;">
+                            測定誤差 (環境ノイズ) のシミュレート
+                            <button class="rationale-btn" onclick="toggleRationale(event, 'rat_noise_sim')" style="margin-left: 8px;">?</button>
+                        </label>
+                        <div id="rat_noise_sim" class="rationale-text">
+                            <strong>【根拠：環境ノイズと測定誤差】</strong>
+                            ・現実の野外データには、主要な環境要因では説明しきれない微小なばらつき（測定誤差や微小環境差）が含まれます。<br>
+                            ・ノイズを意図的に大きくすることで、乱雑なデータの中からでも「適応度の逆転（G×E）」が統計的に検出できるか、分散分析の堅牢性を検証できます。
+                        </div>
                         <div class="slider-container">
                             <span style="font-weight: normal;">小</span>
                             <input type="range" id="noise-slider" min="0" max="1" step="0.1" value="0.2">
@@ -1149,6 +1157,26 @@ body {
                         CSV保存
                     </button>
                 </div>
+            </div>
+
+            <!-- オンデマンド詳しい解説パネル (Soft Scaffolding) -->
+            <div style="margin-top: 5px; border-top: 1px dashed var(--border-color); padding-top: 15px;">
+                <details style="cursor: pointer; background: #f8f9fa; border: 1px solid #d1d5db; border-radius: 6px; padding: 12px;">
+                    <summary style="font-weight: bold; color: var(--primary); font-size: 13px; display: flex; align-items: center;">
+                        <svg class="btn-icon svg-hint" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>
+                        考察のヒント：G×E相互作用と適応度の解釈
+                    </summary>
+                    <div style="margin-top: 12px; font-size: 12px; color: var(--text-main); line-height: 1.6;">
+                        <p style="margin-bottom: 8px;"><strong>1. 反応規範が交差している場合（適応度の逆転）</strong><br>
+                        環境によって有利な遺伝子型が入れ替わることを示し、G×E相互作用が強く働いている決定的証拠となります。ある環境で最適な形質が別の環境では不利になるトレードオフの存在は、自然界における変異（多様性）が維持される重要なメカニズムです。</p>
+                        
+                        <p style="margin-bottom: 8px;"><strong>2. 反応規範が平行な場合</strong><br>
+                        環境による影響（表現型可塑性）は受けているものの、遺伝子型間の優劣関係はどの環境でも変わりません。この場合、遺伝と環境はそれぞれ独立して働いており、強いG×E相互作用は存在しないと解釈できます。</p>
+                        
+                        <p style="margin-bottom: 0;"><strong>3. AMMIバイプロットの解釈</strong><br>
+                        原点から遠く離れた遺伝子型ほど、特定の環境への反応（相互作用）が特異的で強いことを意味します。バイプロット上で同じ方向（近い位置）にプロットされた遺伝子型と環境は、その環境においてその遺伝子型が特異的に高い適応度（正の相互作用）を示すことを表しています。</p>
+                    </div>
+                </details>
             </div>
 
         </div>
