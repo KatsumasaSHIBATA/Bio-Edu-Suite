@@ -1797,6 +1797,18 @@ body {
 
  updateClearButton();
  updateClipping(currentClip);
+
+ // --- 【追加】周辺5Åボタンの動的非活性化とツールチップ更新 ---
+ const envBtn = document.getElementById('btnEnv');
+ if (envBtn) {
+     if (currentStyleMode === 'sphere' || currentStyleMode === 'hydrophobicity') {
+         envBtn.disabled = false;
+         envBtn.setAttribute('data-tooltip', '選択した突然変異部位の周囲5Åの構造を抽出し、結合状態をピンポイントで確認します');
+     } else {
+         envBtn.disabled = true;
+         envBtn.setAttribute('data-tooltip', '※空間充填またはハイドロパシー表示でのみ実行可能です');
+     }
+ }
  }
 
  function updateClearButton() {
@@ -1967,8 +1979,20 @@ body {
  }
 
  function setStyleMode(s) { 
- currentStyleMode = s; 
- updateVisuals(); 
+     currentStyleMode = s; 
+     
+     // 【追加】空間充填・ハイドロパシー以外が選択された場合、周辺5Å表示を強制OFFにする
+     if (s !== 'sphere' && s !== 'hydrophobicity' && isEnvViewActive) {
+         isEnvViewActive = false;
+         const btn = document.getElementById('btnEnv');
+         if (btn) {
+             btn.classList.remove('active');
+             btn.querySelector('.btn-text').innerText = '周辺5Å: OFF';
+         }
+         showToast("球体表現以外のスタイルが選択されたため、周辺5Å表示を解除しました。", "warning");
+     }
+     
+     updateVisuals(); 
  }
  
  function toggleLabels() { 
