@@ -1499,8 +1499,21 @@ body {
          if(isMain) currentLoadedAfId = "";
          if(isMain) setStatus(`読込中: PDB [${id}] ...`);
          $3Dmol.download("pdb:" + id.toLowerCase(), targetViewer, {multimodel: false, frames: true}, function() {
-             if(isMain) finishLoad(`PDB: ${id}`, 'chain', false);
-             else { targetViewer.zoomTo(); targetViewer.render(); }
+             if(isMain) {
+                 finishLoad(`PDB: ${id}`, 'chain', false);
+             } else {
+                 updateVisuals();
+                 targetViewer.zoomTo();
+                 targetViewer.render();
+                 extractSequenceAndChains();
+                 targetViewer.setClickable({}, true, function(atom) {
+                     if(!atom.resi) return;
+                     processResidue(atom.resi, atom.chain, true); 
+                     updateVisuals();
+                     const el = document.querySelector(`.aa-letter[data-resi="${atom.resi}"][data-chain="${atom.chain || ''}"]`);
+                     if(el) el.scrollIntoView({behavior: "smooth", block: "center"});
+                 });
+             }
          });
      } else {
          if(isMain) currentLoadedAfId = id;
@@ -1512,11 +1525,20 @@ body {
          .then(res => { if(!res.ok) throw new Error(); return res.text(); })
          .then(text => {
              targetViewer.addModel(text, "cif");
-             if(isMain) finishLoad(`AlphaFold: ${id}`, 'plddt', true);
-             else { 
-                 targetViewer.setStyle({}, {cartoon: {colorfunc: atom => atom.b > 90 ? '#0053d6' : atom.b > 70 ? '#65cbfa' : atom.b > 50 ? '#ffd111' : '#ff7d45'}});
+             if(isMain) {
+                 finishLoad(`AlphaFold: ${id}`, 'plddt', true);
+             } else { 
+                 updateVisuals();
                  targetViewer.zoomTo(); 
                  targetViewer.render(); 
+                 extractSequenceAndChains();
+                 targetViewer.setClickable({}, true, function(atom) {
+                     if(!atom.resi) return;
+                     processResidue(atom.resi, atom.chain, true); 
+                     updateVisuals();
+                     const el = document.querySelector(`.aa-letter[data-resi="${atom.resi}"][data-chain="${atom.chain || ''}"]`);
+                     if(el) el.scrollIntoView({behavior: "smooth", block: "center"});
+                 });
              }
          })
          .catch(err => {
@@ -1626,6 +1648,14 @@ body {
  viewer.removeAllLabels();
 
  let baseStyle = {};
+ const hydroColor = atom => {
+ const hydrophobic = ['VAL','ILE','LEU','MET','PHE','TRP','CYS','ALA'];
+ const hydrophilic = ['ARG','LYS','ASP','GLU','ASN','GLN','HIS','SER','THR','TYR'];
+ if (hydrophobic.includes(atom.resn)) return '#e74c3c'; // 赤: 疎水性 (接着面)
+ if (hydrophilic.includes(atom.resn)) return '#3498db'; // 青: 親水性
+ return '#bdc3c7'; // その他
+ };
+
  if(currentStyleMode === 'chain') baseStyle = {cartoon: {colorscheme: 'chain'}};
  else if(currentStyleMode === 'cartoon') baseStyle = {cartoon: {color: 'spectrum'}};
  else if(currentStyleMode === 'sphere') baseStyle = {sphere: {colorscheme: 'chain'}};
@@ -1637,36 +1667,43 @@ body {
  baseStyle = {cartoon: {colorfunc: atom => atom.b > 90 ? '#0053d6' : atom.b > 70 ? '#65cbfa' : atom.b > 50 ? '#ffd111' : '#ff7d45'}};
  }
  else if(currentStyleMode === 'hydrophobicity') {
- const hydroColor = atom => {
- const hydrophobic = ['VAL','ILE','LEU','MET','PHE','TRP','CYS','ALA'];
- const hydrophilic = ['ARG','LYS','ASP','GLU','ASN','GLN','HIS','SER','THR','TYR'];
- if (hydrophobic.includes(atom.resn)) return '#e74c3c'; // 赤: 疎水性 (接着面)
- if (hydrophilic.includes(atom.resn)) return '#3498db'; // 青: 親水性
- return '#bdc3c7'; // その他
- };
  baseStyle = {sphere: {colorfunc: hydroColor}}; 
  }
 
  if (isEnvViewActive && selectedResidues.length > 0) {
- // 全体を半透明にする
- viewer.setStyle({}, {cartoon: {opacity: 0.2, color: '#bdc3c7'}});
+ // 1. 全体背景として分子全体を極薄の半透明リボンに設定（全体が濃く残るバグを解消）
+ viewer.setStyle({}, {cartoon: {opacity: 0.1, color: '#bdc3c7'}});
  
+ // 2. 周囲5Å抽出セレクタを正しく構築
  let selList = selectedResidues.map(sel => {
  return sel.chain && sel.chain !== "undefined" ? {resi: sel.resi, chain: sel.chain} : {resi: sel.resi};
  });
  let targetSel = {or: selList};
  let envSel = {within: {distance: 5.0, sel: targetSel}};
  let visibleChains = window.allAvailableChains ? window.allAvailableChains.filter(c => !hiddenChains.has(c)) : [];
- let finalEnvSel = {and: [envSel, {not: targetSel}]};
- 
+ let finalEnvSel = {and: [envSel]};
  if (visibleChains.length > 0) {
  finalEnvSel.and.push({chain: visibleChains});
  }
 
- if (currentStyleMode === 'sphere' || currentStyleMode === 'hydrophobicity') {
- viewer.addStyle(finalEnvSel, baseStyle);
+ // 3. currentStyleMode に応じて、抽出された周囲5Å（finalEnvSel）にのみ現在のスタイルを鮮明に適用
+ if (currentStyleMode === 'chain') {
+ viewer.setStyle(finalEnvSel, {cartoon: {colorscheme: 'chain'}});
+ } else if (currentStyleMode === 'cartoon') {
+ viewer.setStyle(finalEnvSel, {cartoon: {color: 'spectrum'}});
+ } else if (currentStyleMode === 'sphere') {
+ viewer.setStyle(finalEnvSel, {sphere: {colorscheme: 'chain'}});
+ } else if (currentStyleMode === 'hydrophobicity') {
+ viewer.setStyle(finalEnvSel, {sphere: {colorfunc: hydroColor}});
+ } else if (currentStyleMode === 'surface') {
+ viewer.setStyle(finalEnvSel, {cartoon: {colorscheme: 'chain', opacity: 0.6}});
+ viewer.addSurface($3Dmol.SurfaceType.VDW, {opacity: 0.85, colorscheme: 'whiteCarbon'}, finalEnvSel, finalEnvSel);
+ } else if (currentStyleMode === 'plddt') {
+ viewer.setStyle(finalEnvSel, baseStyle);
+ } else if (currentStyleMode === 'stick') {
+ viewer.setStyle(finalEnvSel, {stick: {colorscheme: 'chain'}});
  } else {
- viewer.addStyle(finalEnvSel, {stick: {colorscheme: 'greenCarbon', radius: 0.2}});
+ viewer.setStyle(finalEnvSel, baseStyle);
  }
  
  } else {
@@ -1703,31 +1740,23 @@ body {
  });
 
  selectedResidues.forEach(sel => {
- // ハイドロパシーの赤等と競合しない高視認性カラー（#f1c40f）に変更
- let highlightStyle = {cartoon: {color: '#f1c40f'}, stick: {color: '#f1c40f', radius: 0.5}, sphere: {scale: 1.1, color: '#f1c40f'}};
+ // ガイドライン第3項準拠: 通常スタイルは赤色（#e74c3c）、ハイドロパシー時のみ疎水性赤との混同を防ぐため不透明な黄色（#f1c40f）で強調表示
+ let highlightStyle;
  let haloStyle = null; 
  
- if (currentStyleMode === 'sphere') {
- highlightStyle = {sphere: {color: '#f1c40f'}}; 
- } else if (currentStyleMode === 'hydrophobicity') {
- const hydroColor = atom => {
- const hydrophobic = ['VAL','ILE','LEU','MET','PHE','TRP','CYS','ALA'];
- const hydrophilic = ['ARG','LYS','ASP','GLU','ASN','GLN','HIS','SER','THR','TYR'];
- if (hydrophobic.includes(atom.resn)) return '#e74c3c';
- if (hydrophilic.includes(atom.resn)) return '#3498db';
- return '#bdc3c7';
- };
- highlightStyle = {sphere: {scale: 1.1, colorfunc: hydroColor}}; 
- haloStyle = {sphere: {color: '#f1c40f', scale: 1.5, opacity: 0.8}};
- 
- } else if (isEnvViewActive) {
- highlightStyle = {sphere: {color: '#f1c40f', scale: 1.1}};
+ if (currentStyleMode === 'hydrophobicity') {
+ highlightStyle = {sphere: {scale: 1.25, color: '#f1c40f'}}; 
+ } else if (currentStyleMode === 'sphere') {
+ highlightStyle = {sphere: {scale: 1.15, color: '#e74c3c'}}; 
+ } else {
+ highlightStyle = {cartoon: {color: '#e74c3c'}, stick: {color: '#e74c3c', radius: 0.5}, sphere: {scale: 1.15, color: '#e74c3c'}};
  }
 
  const getLabelText = (resi, chainId) => {
  let model = viewer.getModel(0);
  if (!model) return `Res:${resi}`;
  let atoms = model.selectedAtoms({resi: resi, chain: chainId, atom: "CA"});
+ if (atoms.length === 0) atoms = model.selectedAtoms({resi: resi, chain: chainId});
  let resn = atoms.length > 0 ? atoms[0].resn : "";
  return resn ? `${resn} ${resi}` : `Res:${resi}`;
  };
@@ -1821,54 +1850,114 @@ body {
  }
 
  function extractSequenceAndChains() {
- const model = viewer.getModel(0);
+ if (!viewers || viewers.length === 0) return;
+
+ let allChainsSet = new Set();
+ let chainHtml = "";
+ let seqHtml = "";
+ const isComparison = viewers.length > 1;
+
+ viewers.forEach((v, vIndex) => {
+ const model = v.getModel(0);
  if (!model) return;
 
- const atoms = model.selectedAtoms({atom: "CA"}); 
- let seqHtml = "";
- let chainHtml = "";
- let chains = new Set();
+ // 全原子からチェーン別・残基番号順に残基を安全・完全に抽出
+ const allAtoms = model.selectedAtoms({});
+ let residuesByChain = {};
+ let dnaChains = new Set();
+ let seenResiByChain = {};
+
+ allAtoms.forEach(atom => {
+ let rawChain = (atom.chain !== undefined && atom.chain !== null && String(atom.chain).trim() !== "") 
+ ? String(atom.chain).trim() : "A";
  
- // サブユニット別描画欠損修復：チェーンごとに安全にグループ化して順次生成
- let atomsByChain = {};
- atoms.forEach(atom => {
- let c = atom.chain;
- if(!atomsByChain[c]) atomsByChain[c] = [];
- atomsByChain[c].push(atom);
+ if (nucleicResidues.includes(atom.resn) || atom.nucleic) {
+ dnaChains.add(rawChain);
+ return;
+ }
+
+ if (["HOH", "WAT", "DOD", "NA", "CL", "MG", "ZN", "CA", "SO4", "PO4"].includes(atom.resn) && !aaMap[atom.resn]) {
+ return;
+ }
+
+ if (!residuesByChain[rawChain]) {
+ residuesByChain[rawChain] = [];
+ seenResiByChain[rawChain] = new Map();
+ }
+
+ let resiKey = atom.resi;
+ if (seenResiByChain[rawChain].has(resiKey)) {
+ let existing = seenResiByChain[rawChain].get(resiKey);
+ if (atom.atom === "CA" && existing.atom !== "CA") {
+ existing.atom = atom.atom;
+ existing.resn = atom.resn;
+ }
+ } else {
+ let item = {
+ resi: atom.resi,
+ resn: atom.resn,
+ chain: rawChain,
+ atom: atom.atom
+ };
+ seenResiByChain[rawChain].set(resiKey, item);
+ residuesByChain[rawChain].push(item);
+ }
  });
 
- for (const c in atomsByChain) {
- chains.add(c);
- chainHtml += `<label class="chain-checkbox"><input type="checkbox" checked onchange="toggleChain('${c}')"> サブユニット ${c}</label>`;
- if (seqHtml !== "") seqHtml += "<br><br>";
- seqHtml += `<span class="chain-label">Chain ${c}</span><br>`;
+ // 各チェーン内の残基番号順（数値昇順）ソート
+ for (const c in residuesByChain) {
+ residuesByChain[c].sort((a, b) => parseInt(a.resi) - parseInt(b.resi));
+ }
+
+ let badgeEl = document.querySelector(`#gldiv-${vIndex} .split-badge`);
+ let modelName = badgeEl ? badgeEl.innerText : (vIndex === 0 ? "主構造" : "比較構造");
+
+ if (isComparison) {
+ chainHtml += `<div style="width:100%; font-size:12px; font-weight:bold; color:var(--primary); margin-top:${vIndex > 0 ? '10px' : '0'}; padding-bottom:2px; border-bottom:1px solid #e2e8f0;">【${modelName}】サブユニット</div>`;
+ if (seqHtml !== "") seqHtml += "<div style='margin: 16px 0; border-top: 2px dashed #cbd5e1;'></div>";
+ seqHtml += `<div style="font-weight:bold; color:var(--primary); font-size:13px; margin-bottom:8px; border-left:4px solid var(--phase-color); padding-left:8px;">${modelName} の配列</div>`;
+ }
+
+ const chainKeys = Object.keys(residuesByChain).sort();
+ chainKeys.forEach(c => {
+ allChainsSet.add(c);
+ chainHtml += `<label class="chain-checkbox"><input type="checkbox" ${hiddenChains.has(c) ? '' : 'checked'} onchange="toggleChain('${c}')"> サブユニット ${c}</label>`;
  
- atomsByChain[c].forEach(atom => {
+ if (!isComparison && seqHtml !== "") seqHtml += "<br><br>";
+ else if (isComparison && !seqHtml.endsWith(` の配列</div>`)) seqHtml += "<br><br>";
+
+ seqHtml += `<span class="chain-label">Chain ${c}</span><span style="font-size:11px; color:var(--text-muted); margin-left:6px;">(${residuesByChain[c].length}残基)</span><br>`;
+
+ residuesByChain[c].forEach(atom => {
  let aa1 = aaMap[atom.resn] || "X"; 
  let info = aaInfo[atom.resn];
- let tooltipText = info ? `<strong style='color:var(--phase-color);'>${info.name} (${atom.resn})</strong><br>残基番号: ${atom.resi}<br>性質: ${info.type}` : `残基番号: ${atom.resi}`;
+ let tooltipText = info ? `<strong style='color:var(--phase-color);'>${info.name} (${atom.resn})</strong><br>残基番号: ${atom.resi}<br>サブユニット: Chain ${atom.chain}<br>性質: ${info.type}` : `残基番号: ${atom.resi} (Chain ${atom.chain})`;
  seqHtml += `<span class="aa-letter" data-resi="${atom.resi}" data-chain="${atom.chain}" data-tooltip="${tooltipText}">${aa1}</span>`;
  });
- }
+ });
 
- const dnaAtoms = model.selectedAtoms({resn: nucleicResidues, atom: "P"});
- if (dnaAtoms.length > 0) {
+ if (dnaChains.size > 0) {
  if (showDNA) {
- dnaAtoms.forEach(atom => {
- if(!chains.has(atom.chain)) {
- chains.add(atom.chain);
- chainHtml += `<label class="chain-checkbox" style="background:#e0f7fa;"><input type="checkbox" checked onchange="toggleChain('${atom.chain}')"> DNA ${atom.chain}</label>`;
- }
+ dnaChains.forEach(dc => {
+ allChainsSet.add(dc);
+ chainHtml += `<label class="chain-checkbox" style="background:#e0f7fa;"><input type="checkbox" ${hiddenChains.has(dc) ? '' : 'checked'} onchange="toggleChain('${dc}')"> DNA ${dc}</label>`;
  });
  } else {
  chainHtml += `<div style="width:100%; font-size:11px; color:var(--text-muted); margin-top:6px; font-weight:normal;">※DNAは非表示設定です（上の「DNA」をONにすると選択可能になります）</div>`;
  }
  }
+ });
 
  document.getElementById('chainSelector').innerHTML = chainHtml;
  document.getElementById('sequenceViewer').innerHTML = seqHtml || "<div style='color:var(--danger);'>アミノ酸配列を抽出できませんでした。</div>";
  
- window.allAvailableChains = Array.from(chains); 
+ window.allAvailableChains = Array.from(allChainsSet); 
+
+ document.querySelectorAll('.aa-letter').forEach(el => {
+ if (selectedResidues.some(sel => sel.resi == el.dataset.resi && (!sel.chain || sel.chain === "undefined" || sel.chain == el.dataset.chain))) {
+ el.classList.add('selected');
+ }
+ });
  }
 
  function toggleChain(chainId) {
