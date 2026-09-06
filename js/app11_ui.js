@@ -17,9 +17,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const lines = text.trim().split('\n');
         let data = [];
         for (let line of lines) {
-            if (!line.trim()) continue;
+            const trimmed = line.trim();
+            if (!trimmed || trimmed.startsWith('#')) continue; // メタデータ行・コメント行を完全無視
             // カンマ、タブ、スペースで区切る
-            const parts = line.trim().split(/[\t, ]+/);
+            const parts = trimmed.split(/[\t, ]+/);
             // 数値に変換可能なものだけを抽出する
             let vector = parts.map(Number).filter(n => !isNaN(n));
             if (vector.length > 0) {
