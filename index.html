@@ -376,15 +376,19 @@ input, textarea {
 
 /* 一括アクションボタングリッドの幅同期・スマートアライメント適用 */
 .bulk-action-buttons { 
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  display: flex;
+  flex-direction: column;
+  width: max-content; /* 最も文字の長いボタンに幅を合わせる */
+  margin: 0 auto;     /* 画面中央に配置 */
   gap: 10px;
-  width: 100%;
 }
 
 @media (min-width: 769px) {
   .bulk-action-buttons {
+    display: grid;
     grid-template-columns: repeat(5, 1fr); /* PC時は5つのボタンを等幅で綺麗に並べる */
+    width: 100%;
+    margin: 0;
   }
 }
 
@@ -396,8 +400,8 @@ input, textarea {
   justify-content: center; 
   white-space: nowrap;
   text-align: center;
-  padding: 10px 8px;
-  font-size: 12px;
+  padding: 10px 20px; /* タッチしやすいよう左右パディングを確保 */
+  font-size: 13px; /* 視認性向上のため13pxへ戻す */
   box-sizing: border-box;
 }
 
