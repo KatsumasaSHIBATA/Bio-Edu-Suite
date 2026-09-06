@@ -1450,31 +1450,12 @@ function closeFeedbackForm() {
             if (sidebar) sidebar.classList.remove('open');
             if (overlay) overlay.classList.remove('open');
         }
-        window.showConfirm("入力されたすべてのデータを初期化しますか？", () => {
-            const mData = document.getElementById('mutation-data');
-            const vData = document.getElementById('variation-data');
-            const rArea = document.getElementById('result-area');
-            const mPlaceholder = document.getElementById('mutation-placeholder');
-            const vPlaceholder = document.getElementById('variation-placeholder');
-            const mantelPlaceholder = document.getElementById('mantel-placeholder');
-
-            if (mData) mData.value = '';
-            if (vData) vData.value = '';
-            if (rArea) rArea.style.display = 'none';
-            if (mantelPlaceholder) mantelPlaceholder.style.display = 'block';
-            if (mPlaceholder) mPlaceholder.style.display = 'flex';
-            if (vPlaceholder) vPlaceholder.style.display = 'flex';
-
-            if (window.mutationChartInstance) window.mutationChartInstance.destroy();
-            if (window.variationChartInstance) window.variationChartInstance.destroy();
-            if (window.mantelChartInstance) window.mantelChartInstance.destroy();
-
-            const runBtn = document.getElementById('run-analysis-btn');
-            if (runBtn) runBtn.disabled = true;
-            ['btn-save-mutation-png', 'btn-save-variation-png', 'btn-save-mantel-png'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.disabled = true;
-            });
+        window.showConfirm("すべての入力データおよびローカル保存データを初期化しますか？この操作は取り消せません。", () => {
+            window.isResetting = true;
+            Storage.prototype.setItem = function() {};
+            localStorage.clear();
+            sessionStorage.clear();
+            location.reload();
         }, "初期化する");
     };
 </script>
