@@ -1074,6 +1074,12 @@ body {
     <div class="card">
         <div class="card-header">
             Ⅰ. データの入力と統合
+            <button class="rationale-btn" onclick="toggleRationale(event, 'rat_input')">?</button>
+        </div>
+        <div id="rat_input" class="rationale-text">
+            <strong>【根拠：データの統合と比較】</strong>
+            ・生物の進化を理解するには、遺伝子の変化（突然変異）と見た目の変化（変異）がどのように連動しているかを確かめる必要があります。<br>
+            ・同じサンプル群に対して「遺伝的距離」と「形態的距離」という2つの異なる物差しを当てはめ、比較検証の準備を行います。
         </div>
         <div class="card-body">
             <div class="bench-tip">
@@ -1164,9 +1170,15 @@ body {
                     Mantel相関係数: r = <span id="mantel-r">---</span>
                 </div>
                 <div class="simulation-controls" style="margin-bottom: 15px; padding: 15px; background: #fff; border: 1px solid #dee2e6; border-radius: 4px;">
-                    <label for="noise-slider" style="font-weight: bold; display: block; margin-bottom: 8px;">
-                        環境要因のノイズ / 遺伝的浮動の強さ: <span id="noise-value">0</span>%
+                    <label for="noise-slider" style="font-weight: bold; display: flex; align-items: center; margin-bottom: 8px;">
+                        環境要因のノイズ / 遺伝的浮動の強さ: <span id="noise-value" style="margin-left: 6px;">0</span>%
+                        <button class="rationale-btn" onclick="toggleRationale(event, 'rat_noise')" style="margin-left: 8px;">?</button>
                     </label>
+                    <div id="rat_noise" class="rationale-text">
+                        <strong>【根拠：相関の崩壊と環境ノイズ】</strong>
+                        ・現実の自然界では、DNAの塩基配列の変化がそのまま形態に直結するわけではありません。<br>
+                        ・生育環境（温度や栄養など）による形態のばらつき（環境ノイズ）や、偶然による遺伝子頻度の変化（遺伝的浮動）が強くなると、遺伝と形態の美しい相関は崩れていきます。
+                    </div>
                     <input type="range" id="noise-slider" min="0" max="100" value="0" style="width: 100%;">
                     <small style="color: var(--text-muted); display: block; margin-top: 5px;">
                         ※スライダーを動かすと、形態的距離に環境由来のノイズが加わり、相関がどのように崩れるか（r値の低下）をシミュレーションできます。
@@ -1180,6 +1192,26 @@ body {
                         <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                         PNG保存
                     </button>
+                </div>
+                
+                <!-- オンデマンド詳しい解説パネル (Soft Scaffolding) -->
+                <div style="margin-top: 20px; border-top: 1px dashed var(--border-color); padding-top: 15px;">
+                    <details style="cursor: pointer; background: #f8f9fa; border: 1px solid #d1d5db; border-radius: 6px; padding: 12px;">
+                        <summary style="font-weight: bold; color: var(--primary); font-size: 13px; display: flex; align-items: center;">
+                            <svg class="btn-icon svg-hint" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>
+                            考察のヒント：外れ値の発生と相関の崩壊
+                        </summary>
+                        <div style="margin-top: 12px; font-size: 12px; color: var(--text-main); line-height: 1.6;">
+                            <p style="margin-bottom: 8px;"><strong>1. 相関が高い（r値が1に近い）場合</strong><br>
+                            遺伝的な変化（塩基配列の突然変異の蓄積）と、形態的な変化が連動して起きています。これは、集団が隔離された期間に応じて徐々に形態も変化していく標準的な進化プロセスを示唆します。</p>
+                            
+                            <p style="margin-bottom: 8px;"><strong>2. トレンドから大きく外れる「特異な適応個体（外れ値）」の存在</strong><br>
+                            「遺伝的距離は近いのに形態的距離が遠い（見た目が全く違う）」場合、特定の環境に対する急速な<strong>局所適応</strong>が起きた可能性があります。逆に「遺伝的距離は遠いのに形態的距離が近い」場合、異なる系統が同じ環境に適応して似た形になる<strong>収斂進化（しゅうれんしんか）</strong>の証拠となります。</p>
+                            
+                            <p style="margin-bottom: 0;"><strong>3. 相関が低い（ノイズが大きい）場合</strong><br>
+                            形態の違いが遺伝的な違いではなく、環境の違い（表現型可塑性）によって生じている可能性が高いことを示します。また、小集団における<strong>遺伝的浮動</strong>が強く働いた場合にも、ランダムな変異が蓄積して相関が崩れる傾向があります。</p>
+                        </div>
+                    </details>
                 </div>
             </div>
         </div>
