@@ -1317,8 +1317,16 @@ body {
                 </div>
                 
                 <div class="canvas-container" style="flex:1; min-height:280px; position:relative;">
-                    <span style="position:absolute; top:10px; left:10px; font-size:11px; font-weight:bold; color:#7f8c8d;">主成分分析 (PCA) 形態空間</span>
-                    <span style="position:absolute; top:25px; left:10px; font-size:10px; color:#95a5a6;">※ドットをクリックすると、スライダーが連動しそのサンプルの形を復元します</span>
+                    <span style="position:absolute; top:10px; left:10px; font-size:11px; font-weight:bold; color:#7f8c8d; display:flex; align-items:center;">
+                        主成分分析 (PCA) 形態空間
+                        <button class="rationale-btn" onclick="toggleRationale(event, 'rat_pca_space_a')">?</button>
+                    </span>
+                    <div id="rat_pca_space_a" class="rationale-text" style="z-index: 9001;">
+                        <strong>【根拠：PCAによる形態空間の可視化】</strong><br>
+                        ・抽出された数十個の形状データを、分散が最大となる軸（第1主成分と第2主成分）に圧縮して2次元平面にプロットしています。<br>
+                        ・近くにプロットされた個体ほど「形が似ている」ことを意味し、集団全体の変異（多様性）の広がりが一目で分かります。
+                    </div>
+                    <span style="position:absolute; top:30px; left:10px; font-size:10px; color:#95a5a6;">※ドットをクリックすると、スライダーが連動しそのサンプルの形を復元します</span>
                     <div id="pca-svg-container" style="width:100%; height:100%;"></div>
                 </div>
             </div>
@@ -1372,11 +1380,39 @@ body {
                 </div>
                 
                 <div class="canvas-container" style="flex:1; min-height:280px; position:relative;">
-                    <span style="position:absolute; top:10px; left:10px; font-size:11px; font-weight:bold; color:#7f8c8d;">主成分分析 (PCA) 形態空間</span>
-                    <span style="position:absolute; top:25px; left:10px; font-size:10px; color:#95a5a6;">※ドットをクリックすると、スライダーが連動しリアルタイムに空間を歪ませます</span>
+                    <span style="position:absolute; top:10px; left:10px; font-size:11px; font-weight:bold; color:#7f8c8d; display:flex; align-items:center;">
+                        主成分分析 (PCA) 形態空間
+                        <button class="rationale-btn" onclick="toggleRationale(event, 'rat_pca_space_c')">?</button>
+                    </span>
+                    <div id="rat_pca_space_c" class="rationale-text" style="z-index: 9001;">
+                        <strong>【根拠：PCAによる形態空間の可視化】</strong><br>
+                        ・GPAによって位置・回転・大きさが補正された純粋な「形の違い」を、分散が最大となる軸に圧縮して2次元平面にプロットしています。<br>
+                        ・近くにプロットされた個体ほど「形が似ている」ことを意味し、集団全体の変異（多様性）の広がりが一目で分かります。
+                    </div>
+                    <span style="position:absolute; top:30px; left:10px; font-size:10px; color:#95a5a6;">※ドットをクリックすると、スライダーが連動しリアルタイムに空間を歪ませます</span>
                     <!-- Route C 専用のPCA描画コンテナ -->
                     <div id="pca-svg-container-c" style="width:100%; height:100%;"></div>
                 </div>
+            </div>
+
+            <!-- オンデマンド詳しい解説パネル (Soft Scaffolding) -->
+            <div style="margin-top: 15px; margin-bottom: 5px; border-top: 1px dashed var(--border-color); padding-top: 15px;">
+                <details style="cursor: pointer; background: #f8f9fa; border: 1px solid #d1d5db; border-radius: 6px; padding: 12px;">
+                    <summary style="font-weight: bold; color: var(--primary); font-size: 13px; display: flex; align-items: center;">
+                        <svg class="btn-icon svg-hint" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>
+                        考察のヒント：形態空間のクラスターと変異の方向性
+                    </summary>
+                    <div style="margin-top: 12px; font-size: 12px; color: var(--text-main); line-height: 1.6;">
+                        <p style="margin-bottom: 8px;"><strong>1. 形態空間におけるクラスター（まとまり）</strong><br>
+                        PCAプロット上で、明確に分かれたいくつかのグループ（クラスター）が存在する場合、それは隠蔽種（見た目が似ているが別種）の存在や、性別・生育段階による形態の二型性を示している可能性があります。</p>
+                        
+                        <p style="margin-bottom: 8px;"><strong>2. 変異（多様性）の方向性</strong><br>
+                        PC1スライダーが、実際の形の「どこ」の変化を表しているかシミュレーターで確認しましょう。「丸さ↔細長さ」なのか「曲がり具合」なのかを把握することで、その生物が環境からどのような選択圧を受けているか推測できます。</p>
+                        
+                        <p style="margin-bottom: 0;"><strong>3. 他データとの統合へ（次のステップ）</strong><br>
+                        この形態の変異が、「生息環境の違い（表現型可塑性）」によるものか、それとも「遺伝的な違い（突然変異の蓄積）」によるものかを確かめるために、抽出したPCAデータを『⑩ Integrative Taxonomy Studio』や『⑪ Comparative Variant Analyzer』へエクスポートして検証を進めましょう。</p>
+                    </div>
+                </details>
             </div>
 
             <!-- 解析ログパネル -->

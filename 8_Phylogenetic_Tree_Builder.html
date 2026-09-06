@@ -1550,11 +1550,16 @@ body {
         <div class="card-header tree-header">
             <span style="display:flex; align-items:center; gap:8px;">
                 Ⅱ. 系統樹の構築過程
+                <button class="rationale-btn" onclick="toggleRationale(event, 'rat_tree_result')">?</button>
                 <select id="outgroupSelect" class="btn btn-sm" style="margin-left: 10px; width: auto;" onchange="changeOutgroup()" disabled data-tooltip="指定した種を外群(一番古い分岐)として根元に再配置します">
                     <option value="">外群指定(自動)</option>
                 </select>
             </span>
-            
+            <div id="rat_tree_result" class="rationale-text">
+                <strong>【根拠：系統樹の解釈】</strong>
+                ・構築された系統樹は、生物間の進化的関係を表す仮説です。<br>
+                ・枝の分岐パターン（トポロジー）と、枝の長さ（進化的な変化量や時間）から、共通祖先からの分化の道筋を読み取ります。
+            </div>
         </div>
         <div class="card-body" style="background:var(--bg-color); padding:16px;">
             <div class="status-box" id="statusLog">
@@ -1580,6 +1585,26 @@ body {
               </button>
               <!-- アプリ⑧ 画像保存 -->
               <button class="btn btn-secondary" id="btnSaveImg" onclick="saveTreeImage()" disabled data-tooltip="構築された系統樹を画像として保存します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PNG保存</button>
+            </div>
+
+            <!-- オンデマンド詳しい解説パネル (Soft Scaffolding) -->
+            <div style="margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 15px;">
+                <details style="cursor: pointer; background: #f8f9fa; border: 1px solid #d1d5db; border-radius: 6px; padding: 12px;">
+                    <summary style="font-weight: bold; color: var(--primary); font-size: 13px; display: flex; align-items: center;">
+                        <svg class="btn-icon svg-hint" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>
+                        考察のヒント：系統樹の確からしさと進化の解釈
+                    </summary>
+                    <div style="margin-top: 12px; font-size: 12px; color: var(--text-main); line-height: 1.6;">
+                        <p style="margin-bottom: 8px;"><strong>1. クレード（単系統群）の確認</strong><br>
+                        1つの共通祖先から分かれた全ての生物を含むグループをクレードと呼びます。想定していた分類が1つのクレードにまとまっているか確認しましょう。</p>
+                        
+                        <p style="margin-bottom: 8px;"><strong>2. ブートストラップ値（%）の意味</strong><br>
+                        分岐点に表示される数値は、その分岐の信頼性を示します。一般的に70%以上であれば比較的信頼できる分岐、90%以上であれば非常に堅牢な分岐とみなされます。低い場合は「偶然のデータによるノイズ」の可能性があります。</p>
+                        
+                        <p style="margin-bottom: 0;"><strong>3. アルゴリズム間の比較</strong><br>
+                        距離法（UPGMAやNJ法）と形質状態法（MP法やML法）で系統樹の形が変わるか試してみましょう。もし樹形が大きく異なる場合、塩基置換の速度が一定ではない、あるいは多重置換が起きているなど、複雑な進化の歴史が隠されている証拠になります。</p>
+                    </div>
+                </details>
             </div>
 
             <div id="autoDiagPanel" style="display:none;"></div>
