@@ -1323,7 +1323,7 @@ body {
           "SPECIMEN-04_olivacea"
         ];
         const currentVersion = localStorage.getItem('bio_edu_ab1_version');
-        let needsHydration = currentVersion !== 'v2';
+        let needsHydration = currentVersion !== 'v3';
         if (!needsHydration) {
           for (const sid of sampleIds) {
             const existing = await getFromIndexedDB(STORE_SAMPLES, sid);
@@ -1335,14 +1335,14 @@ body {
         }
         if (!needsHydration) return;
 
-        const response = await fetch('data/ab1_presets.json?v=v2');
+        const response = await fetch('data/ab1_presets.json?v=v3');
         if (!response.ok) return;
         const presets = await response.json();
         for (const [id, preset] of Object.entries(presets)) {
           await saveToIndexedDB(STORE_SAMPLES, preset);
         }
-        localStorage.setItem('bio_edu_ab1_version', 'v2');
-        console.log("AB1 presets successfully hydrated into IndexedDB (v2).");
+        localStorage.setItem('bio_edu_ab1_version', 'v3');
+        console.log("AB1 presets successfully hydrated into IndexedDB (v3).");
       } catch (err) {
         console.warn("Failed to hydrate AB1 presets:", err);
       }
