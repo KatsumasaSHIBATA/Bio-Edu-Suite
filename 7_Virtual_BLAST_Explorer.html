@@ -2032,6 +2032,8 @@ function closeFeedbackForm() {
         }
 
         showConfirm("すべての入力データおよびローカル保存データを初期化しますか？この操作は取り消せません。", () => {
+            window.isResetting = true;
+            Storage.prototype.setItem = function() {};
             localStorage.clear();
             sessionStorage.clear();
             location.reload();
