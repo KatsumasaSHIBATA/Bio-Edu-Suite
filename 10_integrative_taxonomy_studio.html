@@ -1161,8 +1161,7 @@ body {
                     Ⅱ. タングルグラム (分子系統樹 vs 形態系統樹)
                     <button class="rationale-btn" onclick="toggleRationale(event, 'rat_tangle')">?</button>
                 </div>
-                <button id="untangleBtn" class="btn" style="padding: 4px 12px; font-size: 12px; min-height: 32px;" onclick="handleUntangle()" aria-label="もつれ解消">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline><polyline points="7.5 19.79 7.5 14.6 3 12"></polyline><polyline points="21 12 16.5 14.6 16.5 19.79"></polyline><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                <button id="untangleBtn" class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px; min-height: 32px;" onclick="handleUntangle()" aria-label="もつれ解消">
                     もつれ解消 (Untangle)
                 </button>
             </div>
@@ -1570,6 +1569,7 @@ body {
                 morphRoot.each(d => {
                     d.nodeId = "tree-node-morph-" + (mIdCounter++);
                     d.leavesList = d.leaves().map(l => l.data.name).filter(n => n); // 形態側にも連動用のリストを付与
+                    if (d.children) { d.originalChildren = [...d.children]; }
                 });
             }
             
@@ -1850,11 +1850,25 @@ body {
     window.handleUntangle = function() {
         if (!globalTreeRoot || !globalTreeRoot.molRoot || !globalTreeRoot.morphRoot) return;
         
-        const molLeaves = globalTreeRoot.molRoot.leaves().map(l => normalizeId(l.data.name));
+        const btn = document.getElementById('untangleBtn');
+        isUntangled = !isUntangled;
         
-        untangleTree(globalTreeRoot.morphRoot, molLeaves);
+        if (isUntangled) {
+            const molLeaves = globalTreeRoot.molRoot.leaves().map(l => normalizeId(l.data.name));
+            untangleTree(globalTreeRoot.morphRoot, molLeaves);
+            btn.classList.replace('btn-secondary', 'btn-primary');
+            btn.innerText = "もつれを戻す (Tangle)";
+        } else {
+            // オリジナルの順序に復元
+            globalTreeRoot.morphRoot.each(d => {
+                if (d.originalChildren) {
+                    d.children = [...d.originalChildren];
+                }
+            });
+            btn.classList.replace('btn-primary', 'btn-secondary');
+            btn.innerText = "もつれ解消 (Untangle)";
+        }
         
-        isUntangled = true;
         renderTanglegram(globalTreeRoot.molRoot, globalTreeRoot.morphRoot);
     };
 
@@ -1913,26 +1927,54 @@ body {
         
         // 形態データが存在する場合のみ、モーフィング用係数計算を実行
         if (parsedMorphData.length > 0) {
-            let newTarget = interpolateAncestralEFA(nodeData.leavesList);
+            let targetCoeffs = interpolateAncestralEFA(nodeData.leavesList);
+            let rootCoeffs = interpolateAncestralEFA(globalTreeRoot.molRoot.leavesList);
             
-            if (newTarget) {
-                targetCoeffs = newTarget;
-                if (!currentCoeffs) {
-                    currentCoeffs = JSON.parse(JSON.stringify(targetCoeffs));
+            if (targetCoeffs && rootCoeffs) {
+                let rootPC1 = 0, rootPC2 = 0, validRoot = 0;
+                let targetPC1 = 0, targetPC2 = 0, validTarget = 0;
+                let normTargetLeaves = nodeData.leavesList.map(l => normalizeId(l));
+                
+                parsedMorphData.forEach(d => {
+                    if (d.pc1 !== undefined && d.pc2 !== undefined) {
+                        rootPC1 += d.pc1; rootPC2 += d.pc2; validRoot++;
+                        if (normTargetLeaves.includes(normalizeId(d.id))) {
+                            targetPC1 += d.pc1; targetPC2 += d.pc2; validTarget++;
+                        }
+                    }
+                });
+                if (validRoot > 0) { rootPC1 /= validRoot; rootPC2 /= validRoot; }
+                if (validTarget > 0) { targetPC1 /= validTarget; targetPC2 /= validTarget; }
+                
+                // ガイドライン第14項③: 事前計算（プレキャッシュ）の生成
+                window.morphTimelineCache = [];
+                for (let step = 0; step <= 100; step++) {
+                    let p = step / 100;
+                    let cacheStep = {
+                        coeffs: { a: [], b: [], c: [], d: [] },
+                        pc1: rootPC1 + (targetPC1 - rootPC1) * p,
+                        pc2: rootPC2 + (targetPC2 - rootPC2) * p
+                    };
+                    ['a', 'b', 'c', 'd'].forEach(key => {
+                        for (let i = 0; i < targetCoeffs[key].length; i++) {
+                            let startVal = rootCoeffs[key][i];
+                            let targetVal = targetCoeffs[key][i];
+                            cacheStep.coeffs[key].push(startVal + (targetVal - startVal) * p);
+                        }
+                    });
+                    window.morphTimelineCache.push(cacheStep);
                 }
                 
                 const timelineContainer = document.getElementById('morph-timeline-container');
                 const timelineInput = document.getElementById('morphTimeline');
                 if (timelineContainer && timelineInput) {
                     timelineContainer.style.display = 'flex';
-                    morphStartCoeffs = JSON.parse(JSON.stringify(currentCoeffs));
-                    timelineInput.value = 0;
+                    timelineInput.value = 0; // 進化の起点（0）からスタート
                 }
-
                 cancelAnimationFrame(animationFrameId);
                 animateMorph();
             } else {
-                targetCoeffs = null;
+                window.morphTimelineCache = null;
                 const timelineContainer = document.getElementById('morph-timeline-container');
                 if (timelineContainer) timelineContainer.style.display = 'none';
                 drawPCA();
@@ -1967,60 +2009,24 @@ body {
     }
 
     function animateMorph() {
-        if (!currentCoeffs || !targetCoeffs || !morphStartCoeffs) return;
-        
-        let isMoving = false;
-        let totalProgress = 0;
-        let count = 0;
-
-        ['a', 'b', 'c', 'd'].forEach(key => {
-            for(let i=0; i<currentCoeffs[key].length; i++) {
-                let diff = targetCoeffs[key][i] - currentCoeffs[key][i];
-                let fullDiff = targetCoeffs[key][i] - morphStartCoeffs[key][i];
-                
-                if (Math.abs(diff) > 0.05) {
-                    currentCoeffs[key][i] += diff * 0.15; // イーズアウト補間
-                    isMoving = true;
-                } else {
-                    currentCoeffs[key][i] = targetCoeffs[key][i];
-                }
-
-                if (fullDiff !== 0) {
-                    let p = (currentCoeffs[key][i] - morphStartCoeffs[key][i]) / fullDiff;
-                    totalProgress += Math.max(0, Math.min(1, p));
-                    count++;
-                }
-            }
-        });
-        
         const timelineInput = document.getElementById('morphTimeline');
-        if (timelineInput && count > 0) {
-            timelineInput.value = (totalProgress / count) * 100;
-        }
-
-        drawPCA();
+        if (!timelineInput || !window.morphTimelineCache) return;
         
-        if (isMoving) {
+        let step = parseInt(timelineInput.value, 10);
+        if (step < 100) {
+            step += 2; // 再生スピード
+            if (step > 100) step = 100;
+            timelineInput.value = step;
+            drawPCA();
             animationFrameId = requestAnimationFrame(animateMorph);
+        } else {
+            drawPCA();
         }
     }
 
     window.handleTimelineScrub = function() {
         cancelAnimationFrame(animationFrameId);
-        const timelineInput = document.getElementById('morphTimeline');
-        if (!timelineInput || !morphStartCoeffs || !targetCoeffs || !currentCoeffs) return;
-        
-        let p = timelineInput.value / 100;
-        
-        ['a', 'b', 'c', 'd'].forEach(key => {
-            for(let i=0; i<currentCoeffs[key].length; i++) {
-                let start = morphStartCoeffs[key][i];
-                let target = targetCoeffs[key][i];
-                currentCoeffs[key][i] = start + (target - start) * p;
-            }
-        });
-        
-        drawPCA();
+        drawPCA(); // 再計算せず描画のみ呼ぶ
     };
 
     // ==========================================
@@ -2073,8 +2079,14 @@ body {
         if (parsedMorphData.length === 0) return;
 
         // モーフィング形状の背景描画
-        if (currentCoeffs && currentHoveredNode) {
-            drawEFAShape(ctx, currentCoeffs, w / 2, h / 2, Math.min(w, h) * 0.35);
+        if (window.morphTimelineCache) {
+            const timelineInput = document.getElementById('morphTimeline');
+            let step = timelineInput ? parseInt(timelineInput.value, 10) : 100;
+            let cache = window.morphTimelineCache[step];
+            
+            if (cache && cache.coeffs) {
+                drawEFAShape(ctx, cache.coeffs, w / 2, h / 2, Math.min(w, h) * 0.35);
+            }
         }
         
         // PCAプロットのスケール算出
@@ -2096,6 +2108,31 @@ body {
         const scaleX = (val) => padding + (val - minX) / (maxX - minX) * (w - 2*padding);
         const scaleY = (val) => h - padding - (val - minY) / (maxY - minY) * (h - 2*padding);
         
+        if (window.morphTimelineCache) {
+            const timelineInput = document.getElementById('morphTimeline');
+            let step = timelineInput ? parseInt(timelineInput.value, 10) : 100;
+            let cache = window.morphTimelineCache[step];
+            
+            if (cache && cache.pc1 !== undefined && cache.pc2 !== undefined) {
+                let px = scaleX(cache.pc1);
+                let py = scaleY(cache.pc2);
+                
+                // 祖先推定ポイントの描画
+                ctx.beginPath();
+                ctx.arc(px, py, 12, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(142, 68, 173, 0.8)';
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                ctx.fillStyle = '#8e44ad';
+                ctx.font = "bold 11px 'Segoe UI', sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText("Ancestral Node", px, py - 18);
+            }
+        }
+
         // 点の描画
         parsedMorphData.forEach(d => {
             if (d.pc1 === undefined) return;
