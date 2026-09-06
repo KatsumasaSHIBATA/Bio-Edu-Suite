@@ -2165,22 +2165,32 @@ body {
 
     function formatScientificName(name) {
         let originalName = name.trim();
+        let clean = originalName.replace(/^>\s*/, '');
+        
+        let geneSymbol = '';
+        const geneMatch = clean.match(/\(([-A-Za-z0-9_]+)\)\s*$/);
+        if (geneMatch) {
+            geneSymbol = geneMatch[1];
+        }
         
         const ncbiPattern = /[A-Z]{1,2}_?\d{4,}/i;
-        const scientificNamePattern = /^[A-Z][a-z]+\s+[a-z]+/;
+        const scientificNamePattern = /^[A-Z][a-z]+[\s_]+[a-z]+/;
         
-        if (ncbiPattern.test(originalName) || scientificNamePattern.test(originalName)) {
-            let clean = originalName.replace(/[A-Z]{1,2}_?\d{4,}/ig, '').replace(/_/g, ' ').trim();
-            let parts = clean.split(/\s+/).filter(p => p.length > 0);
+        if (ncbiPattern.test(clean) || scientificNamePattern.test(clean)) {
+            let cleanText = clean.replace(/[A-Z]{1,2}_?\d{4,}(\.\d+)?[:\s]*/ig, '').replace(/_/g, ' ').trim();
+            let parts = cleanText.split(/\s+/).filter(p => p.length > 0);
             
             if (parts.length >= 2) {
-                let genus = parts[0].charAt(0).toUpperCase();
-                let species = parts[1].replace(/[^a-zA-Z]/g, '').toLowerCase(); 
-                if (species.length > 0) {
-                    return `${genus}. ${species}`; 
+                let p0 = parts[0].replace(/[^a-zA-Z]/g, '');
+                let p1 = parts[1].replace(/[^a-zA-Z]/g, '');
+                if (p0.length > 0 && p1.length > 0) {
+                    let genus = p0.charAt(0).toUpperCase();
+                    let species = p1.toLowerCase();
+                    let baseName = `${genus}. ${species}`;
+                    return geneSymbol ? `${baseName}_${geneSymbol}` : baseName;
                 }
             }
-            return clean.length > 0 ? clean : originalName;
+            return cleanText.length > 0 ? cleanText : originalName;
         }
 
         return originalName;
