@@ -1119,6 +1119,12 @@ body {
                     </div>
                     <canvas id="mutationChart"></canvas>
                 </div>
+                <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                    <button id="btn-save-mutation-png" class="btn btn-success" disabled onclick="downloadChartPNG('mutationChart', 'BioEdu_MutationSpace_')" data-tooltip="突然変異プロットをPNG画像としてダウンロードします">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        グラフ保存
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -1133,6 +1139,12 @@ body {
                         データ待機中
                     </div>
                     <canvas id="variationChart"></canvas>
+                </div>
+                <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                    <button id="btn-save-variation-png" class="btn btn-success" disabled onclick="downloadChartPNG('variationChart', 'BioEdu_VariationSpace_')" data-tooltip="変異プロットをPNG画像としてダウンロードします">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        グラフ保存
+                    </button>
                 </div>
             </div>
         </div>
@@ -1162,6 +1174,12 @@ body {
                 </div>
                 <div style="position: relative; height: 350px; width: 100%;">
                     <canvas id="mantelChart"></canvas>
+                </div>
+                <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
+                    <button id="btn-save-mantel-png" class="btn btn-success" disabled onclick="downloadChartPNG('mantelChart', 'BioEdu_MantelCorrelation_')" data-tooltip="Mantel検定散布図をPNG画像としてダウンロードします">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        グラフ保存
+                    </button>
                 </div>
             </div>
         </div>
@@ -1334,6 +1352,35 @@ body {
         if (!name) return "";
         return name.replace(/^\d{8}_\d{6}_/, '');
     }
+
+    // ==========================================
+    // Export Functions (PNG Save Standard)
+    // ==========================================
+    function getYYYYMMDD() {
+        const d = new Date();
+        return d.getFullYear().toString() + 
+               (d.getMonth() + 1).toString().padStart(2, '0') + 
+               d.getDate().toString().padStart(2, '0');
+    }
+
+    function downloadChartPNG(canvasId, prefix) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        
+        // 白背景を敷いた高解像度エクスポート用キャンバス
+        const tempCanvas = document.createElement("canvas");
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+        const ctx = tempCanvas.getContext("2d");
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+        ctx.drawImage(canvas, 0, 0);
+        
+        const a = document.createElement("a");
+        a.download = `${prefix}${getYYYYMMDD()}.png`;
+        a.href = tempCanvas.toDataURL("image/png");
+        a.click();
+    }
     /* ===================================================================
        【v34.3 外箱アップデート／追記専用ブロック】
        既存の関数・イベント紐付けには一切手を加えていない。
@@ -1424,6 +1471,10 @@ function closeFeedbackForm() {
 
             const runBtn = document.getElementById('run-analysis-btn');
             if (runBtn) runBtn.disabled = true;
+            ['btn-save-mutation-png', 'btn-save-variation-png', 'btn-save-mantel-png'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.disabled = true;
+            });
         }, "初期化する");
     };
 </script>
@@ -1688,6 +1739,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const vPlaceholder = document.getElementById('variation-placeholder');
         if (mPlaceholder) mPlaceholder.style.display = 'none';
         if (vPlaceholder) vPlaceholder.style.display = 'none';
+        
+        // 解析完了時に保存ボタンを一括活性化
+        ['btn-save-mutation-png', 'btn-save-variation-png', 'btn-save-mantel-png'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.disabled = false;
+        });
     }
 
     const runBtn = document.getElementById('run-analysis-btn');
