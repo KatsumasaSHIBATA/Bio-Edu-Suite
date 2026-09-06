@@ -1091,11 +1091,11 @@ body {
                 </div>
                 <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">※原点から遠い遺伝子型ほど、特定の環境に対する相互作用（適応性や可塑性の偏り）が強いことを示します。近接してプロットされるGとEは、正の強い相互作用を持ちます。</p>
                 
-                <!-- 🖼️ グラフ保存 ボタン (データがない状態ではdisabled) -->
+                <!-- 🖼️ PNG保存 ボタン (データがない状態ではdisabled) -->
                 <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
                     <button id="btn-save-png" class="btn btn-success" disabled onclick="downloadBiplotPNG()" data-tooltip="描画されたグラフをPNG画像としてダウンロードします">
                         <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        グラフ保存
+                        PNG保存
                     </button>
                 </div>
             </div>
@@ -1110,11 +1110,11 @@ body {
                     <span style="color: #7f8c8d; font-weight: bold;">左のパネルからデータを結合・マッピングし、解析を実行してください...</span>
                 </div>
                 
-                <!-- 🖼️ グラフ保存 ボタン -->
+                <!-- 🖼️ PNG保存 ボタン -->
                 <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
                     <button id="btn-save-rn-png" class="btn btn-success" disabled onclick="downloadReactionNormPNG()" data-tooltip="描画されたグラフをPNG画像としてダウンロードします">
                         <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        グラフ保存
+                        PNG保存
                     </button>
                 </div>
             </div>
@@ -2062,7 +2062,7 @@ body {
         }, 600);
     }
 
-    // --- 出力機能: グラフ保存 (SVG -> PNG) ---
+    // --- 出力機能: PNG保存 (SVG -> PNG) ---
     function downloadBiplotPNG() {
         if (!state.hasRun) {
             showToast("解析を実行してから保存してください。", "warning");
