@@ -1397,12 +1397,14 @@ body {
 
             <!-- オンデマンド詳しい解説パネル (Soft Scaffolding) -->
             <div style="margin-top: 15px; margin-bottom: 5px; border-top: 1px dashed var(--border-color); padding-top: 15px;">
-                <details style="cursor: pointer; background: #f8f9fa; border: 1px solid #d1d5db; border-radius: 6px; padding: 12px;">
+                <details id="morph-insight-details" style="cursor: pointer; background: #f8f9fa; border: 1px solid #d1d5db; border-radius: 8px; padding: 14px 18px;">
                     <summary style="font-weight: bold; color: var(--primary); font-size: 13px; display: flex; align-items: center;">
                         <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; color: var(--primary);"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
                         考察のヒント：形態空間のクラスターと変異の方向性
                     </summary>
-                    <div style="margin-top: 12px; font-size: 12px; color: var(--text-main); line-height: 1.6;">
+
+                    <!-- ① 原理・原則（静的な足場掛け） -->
+                    <div style="font-size: 12px; color: var(--text-main); line-height: 1.7; margin-top: 14px; margin-bottom: 16px;">
                         <p style="margin-bottom: 8px;"><strong>1. 形態空間におけるクラスター（まとまり）</strong><br>
                         PCAプロット上で、明確に分かれたいくつかのグループ（クラスター）が存在する場合、それは隠蔽種（見た目が似ているが別種）の存在や、性別・生育段階による形態の二型性を示している可能性があります。</p>
                         
@@ -1411,6 +1413,20 @@ body {
                         
                         <p style="margin-bottom: 0;"><strong>3. 他データとの統合へ（次のステップ）</strong><br>
                         この形態の変異が、「生息環境の違い（表現型可塑性）」によるものか、それとも「遺伝的な違い（突然変異の蓄積）」によるものかを確かめるために、抽出したPCAデータを『⑩ Integrative Taxonomy Studio』や『⑪ Comparative Variant Analyzer』へエクスポートして検証を進めましょう。</p>
+                    </div>
+
+                    <!-- ② 動的観察ポイント（左の太帯なし・均一な細枠の学術レポート枠） -->
+                    <div id="dynamic-insight-panel" style="background: #ffffff; border: 1px solid #d1d5db; border-radius: 6px; padding: 14px 16px;">
+                        <div style="font-weight: bold; color: var(--primary); font-size: 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                            <span style="display: flex; align-items: center; gap: 6px;">
+                                <svg style="width: 15px; height: 15px; flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                                上記を踏まえた今回の解析データの観察ポイント（動的診断レポート）
+                            </span>
+                            <span id="insight-status-badge" style="font-size: 11px; padding: 2px 8px; border-radius: 12px; background: #f1f5f9; color: #64748b; font-weight: bold; border: 1px solid #e2e8f0;">解析待機中</span>
+                        </div>
+                        <div id="insight-dynamic-content" style="font-size: 12px; color: var(--text-main); line-height: 1.7;">
+                            データ待機中：形態解析（PCA）を実行すると、サンプルのばらつき、最も極端な変異を示す特異個体、PC1/PC2が捉えた形態変化の特徴に基づく具体的な着眼点がここに表示されます。
+                        </div>
                     </div>
                 </details>
             </div>
@@ -2500,7 +2516,62 @@ body {
                         logStatus(`[SYSTEM] ${d.name || d.id} を選択し、TPSシミュレータに反映しました。`);
                     }
                 });
+
+            // 動的観察ポイント（ダイナミック・フィードバック）のリアルタイム更新
+            updateMorphDynamicInsight(pcaResult, samples, containerId);
         });
+    }
+
+    // ==========================================
+    // Dynamic Insight Logic (絵文字ゼロ・学術レポート仕様)
+    // ==========================================
+    function updateMorphDynamicInsight(pcaResult, samples, containerId) {
+        const badge = document.getElementById('insight-status-badge');
+        const content = document.getElementById('insight-dynamic-content');
+        if (!badge || !content) return;
+
+        if (!pcaResult || !samples || samples.length === 0 || !pcaResult.pc1) {
+            badge.style.background = '#f1f5f9';
+            badge.style.color = '#64748b';
+            badge.style.border = '1px solid #e2e8f0';
+            badge.innerText = '解析待機中';
+            content.innerHTML = '<p style="margin: 0; color: var(--text-muted);">データ待機中：形態解析（PCA）を実行すると、サンプルのばらつき、最も極端な変異を示す特異個体、PC1/PC2が捉えた形態変化の特徴に基づく具体的な着眼点がここに表示されます。</p>';
+            return;
+        }
+
+        const isRouteC = (containerId === 'pca-svg-container-c');
+        const routeLabel = isRouteC ? "Route C (幾何学的形態測定学 GPA)" : "Route A/B (形態主成分分析 PCA)";
+        const N = samples.length;
+
+        // PC1の最大・最小サンプルを特定
+        let minIdx = 0, maxIdx = 0;
+        let minVal = Infinity, maxVal = -Infinity;
+        pcaResult.pc1.forEach((val, i) => {
+            if (val < minVal) { minVal = val; minIdx = i; }
+            if (val > maxVal) { maxVal = val; maxIdx = i; }
+        });
+        const sampleMin = samples[minIdx] ? (samples[minIdx].name || samples[minIdx].id || `サンプル${minIdx+1}`) : "";
+        const sampleMax = samples[maxIdx] ? (samples[maxIdx].name || samples[maxIdx].id || `サンプル${maxIdx+1}`) : "";
+
+        // ステータスバッジ
+        badge.style.background = '#f0fdf4';
+        badge.style.color = '#15803d';
+        badge.style.border = '1px solid #bbf7d0';
+        badge.innerText = `${isRouteC ? 'GPA' : 'PCA'}完了 (N = ${N})`;
+
+        let routeDetailText = isRouteC 
+            ? "プロクラステス重ね合わせ（GPA）により、位置・回転・サイズの影響を数学的に除外した純粋な「かたち」の変異を抽出しています。"
+            : "楕円フーリエ記述子／計測量に基づき、集団内の形態的変異の主要な方向性を主成分（PC）として抽出しています。";
+
+        let extremumText = (sampleMin && sampleMax && sampleMin !== sampleMax)
+            ? `<p style="margin-bottom: 6px;"><strong>形態変異の両極:</strong> 第1主成分（PC1）軸において、最も異なる特徴を持つ両極の個体は <strong>【${escapeHTML(sampleMin)}】</strong> と <strong>【${escapeHTML(sampleMax)}】</strong> です。この2つのサンプルをクリックして形状を比較し、どの部位が最も大きく異なっているか観察してみましょう。</p>`
+            : "";
+
+        content.innerHTML = `
+            <p style="margin-bottom: 6px;"><strong>解析手法 (${routeLabel}):</strong> ${routeDetailText}</p>
+            ${extremumText}
+            <p style="margin-bottom: 0;"><strong>考察のアクション:</strong> PC1スライダーを動かした際、実際の形状の「どの部分（細長さ・湾曲・比率等）」が変形するかを確認してください。その形態変異が、生息環境や機能（遊泳・咀嚼・飛行など）への適応とどのように結びついているか考察を深めてみましょう。</p>
+        `;
     }
 
     const BioMathEngine = {

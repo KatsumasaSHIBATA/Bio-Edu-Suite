@@ -1217,12 +1217,14 @@ body {
 
     <!-- 統合考察のヒントパネル (Soft Scaffolding) -->
     <div style="margin-top: 16px; margin-bottom: 24px;">
-        <details style="cursor: pointer; background: #f8f9fa; border: 1px solid #d1d5db; border-radius: 8px; padding: 14px 18px;">
+        <details id="tangle-insight-details" style="cursor: pointer; background: #f8f9fa; border: 1px solid #d1d5db; border-radius: 8px; padding: 14px 18px;">
             <summary style="font-weight: bold; color: var(--primary); font-size: 13px; display: flex; align-items: center;">
                 <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; color: var(--primary);"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
                 考察のヒント：タングルグラムのもつれ（交差）と形態空間の解釈
             </summary>
-            <div style="margin-top: 12px; font-size: 12px; color: var(--text-main); line-height: 1.7;">
+
+            <!-- ① 原理・原則（静的な足場掛け） -->
+            <div style="font-size: 12px; color: var(--text-main); line-height: 1.7; margin-top: 14px; margin-bottom: 16px;">
                 <p style="margin-bottom: 8px;"><strong>1. 平行な結線（一致する系統関係）</strong><br>
                 DNA（塩基配列の突然変異の蓄積）と形態（現在の見た目）の分岐パターンが一致しています。これは、種が分化していく標準的な進化プロセスを示しています。</p>
                 
@@ -1236,6 +1238,20 @@ body {
                 
                 <p style="margin-bottom: 0;"><strong>4. 形態空間モーフィングとの連動検証</strong><br>
                 タングルグラム上で気になるノード（分岐点）をクリックすると、右側のモーフィング画面にその共通祖先の形態シミュレーションが描画されます。交差している枝の祖先形を復元・比較することで、進化の過程で「どの段階で形が大きく変化したのか」を視覚的に追跡できます。</p>
+            </div>
+
+            <!-- ② 動的観察ポイント（左の太帯なし・均一な細枠の学術レポート枠） -->
+            <div id="dynamic-insight-panel" style="background: #ffffff; border: 1px solid #d1d5db; border-radius: 6px; padding: 14px 16px;">
+                <div style="font-weight: bold; color: var(--primary); font-size: 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                    <span style="display: flex; align-items: center; gap: 6px;">
+                        <svg style="width: 15px; height: 15px; flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                        上記を踏まえた今回の解析データの観察ポイント（動的診断レポート）
+                    </span>
+                    <span id="insight-status-badge" style="font-size: 11px; padding: 2px 8px; border-radius: 12px; background: #f1f5f9; color: #64748b; font-weight: bold; border: 1px solid #e2e8f0;">解析待機中</span>
+                </div>
+                <div id="insight-dynamic-content" style="font-size: 12px; color: var(--text-main); line-height: 1.7;">
+                    データ待機中：解析を実行すると、今回のデータから検出された交差（もつれ）や形態空間上の位置関係に基づく具体的な着眼点がここに表示されます。
+                </div>
             </div>
         </details>
     </div>
@@ -1887,6 +1903,8 @@ body {
                 }
             });
             
+            let crossingCount = 0;
+            const crossingPairs = [];
             for (let i = 0; i < tangleData.length; i++) {
                 for (let j = i + 1; j < tangleData.length; j++) {
                     let A1 = tangleData[i].molIndex;
@@ -1896,6 +1914,10 @@ body {
                     if ((A1 - A2) * (B1 - B2) < 0) {
                         tangleData[i].isCrossing = true;
                         tangleData[j].isCrossing = true;
+                        crossingCount++;
+                        let nameA = (tangleData[i].mol.data && tangleData[i].mol.data.name) ? tangleData[i].mol.data.name : `種${i+1}`;
+                        let nameB = (tangleData[j].mol.data && tangleData[j].mol.data.name) ? tangleData[j].mol.data.name : `種${j+1}`;
+                        crossingPairs.push([nameA, nameB]);
                     }
                 }
             }
@@ -1919,11 +1941,99 @@ body {
                 .attr('stroke-width', d => (isUntangled && d.isCrossing) ? 2.5 : 1.5)
                 .attr('stroke-opacity', d => (isUntangled && d.isCrossing) ? 0.9 : 0.6)
                 .style('pointer-events', 'none');
+
+            // 動的観察ポイント（ダイナミック・フィードバック）のリアルタイム更新
+            updateDynamicInsight(tangleData, isUntangled, crossingPairs, crossingCount);
         }
         
         d3.select(container).select('svg').on('mouseleave', () => {
             handleNodeHover(null);
         });
+    }
+
+    // ==========================================
+    // Dynamic Insight Logic (絵文字ゼロ・学術レポート仕様)
+    // ==========================================
+    function escapeHTML(str) {
+        if (!str) return "";
+        return String(str).replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag]));
+    }
+
+    function updateDynamicInsight(tangleData, isUntangledState, crossingPairs, crossingCount) {
+        const panel = document.getElementById('dynamic-insight-panel');
+        const badge = document.getElementById('insight-status-badge');
+        const content = document.getElementById('insight-dynamic-content');
+        if (!panel || !badge || !content) return;
+
+        if (!tangleData || tangleData.length === 0) {
+            badge.style.background = '#f1f5f9';
+            badge.style.color = '#64748b';
+            badge.style.border = '1px solid #e2e8f0';
+            badge.innerText = '解析待機中';
+            content.innerHTML = '<p style="margin: 0; color: var(--text-muted);">データ待機中：解析を実行すると、今回のデータから検出された交差（もつれ）や形態空間上の位置関係に基づく具体的な着眼点がここに表示されます。</p>';
+            return;
+        }
+
+        if (!isUntangledState) {
+            // パターンA: もつれ未解消（初回解析時）
+            badge.style.background = '#f1f5f9';
+            badge.style.color = '#475569';
+            badge.style.border = '1px solid #cbd5e1';
+            badge.innerText = `もつれ未解消（交差: ${crossingCount}箇所）`;
+
+            let pairText = '';
+            if (crossingPairs.length > 0) {
+                const samplePairs = crossingPairs.slice(0, 3).map(p => `【${escapeHTML(p[0])}】×【${escapeHTML(p[1])}】`).join('、');
+                pairText = `（主な交差ペア: ${samplePairs}${crossingPairs.length > 3 ? ' 等' : ''}）`;
+            }
+
+            content.innerHTML = `
+                <p style="margin-bottom: 6px;"><strong>現在の状態:</strong> 左右の樹形図間で <strong>${crossingCount}箇所</strong> の結線の交差が検出されています。${pairText}</p>
+                <p style="margin-bottom: 0;"><strong>観察のステップ:</strong> 右上の「もつれ解消」ボタンを実行してください。回転可能な枝を数学的に最適化し、見かけの枝の並び順による交差か、生物学的に真の不一致かを切り分けます。</p>
+            `;
+        } else {
+            // もつれ解消実行後
+            if (crossingCount === 0) {
+                // パターンB: 完全一致
+                badge.style.background = '#dcfce7';
+                badge.style.color = '#15803d';
+                badge.style.border = '1px solid #bbf7d0';
+                badge.innerText = '系統完全一致（交差: 0箇所）';
+
+                content.innerHTML = `
+                    <p style="margin-bottom: 6px;"><strong>系統関係の一致:</strong> 枝の回転最適化によりすべての交差が解消され、結線が完全に平行になりました（交差: 0箇所）。</p>
+                    <p style="margin-bottom: 0;"><strong>考察の視点:</strong> 分子系統樹（DNAの突然変異の蓄積）と形態分類の分岐パターンが美しく一致しています。種分化に伴い現在の形態差が順調に蓄積していった、標準的な分岐進化プロセスを示唆します。</p>
+                `;
+            } else {
+                // パターンC: 真の不一致あり
+                badge.style.background = '#ffedd5';
+                badge.style.color = '#c2410c';
+                badge.style.border = '1px solid #fed7aa';
+                badge.innerText = `真の系統不一致（交差: ${crossingCount}箇所）`;
+
+                // 交差に関与している固有の生物種名を抽出
+                const crossingSpeciesSet = new Set();
+                crossingPairs.forEach(pair => {
+                    crossingSpeciesSet.add(pair[0]);
+                    crossingSpeciesSet.add(pair[1]);
+                });
+                const speciesList = Array.from(crossingSpeciesSet).slice(0, 4).map(s => `【${escapeHTML(s)}】`).join('、');
+
+                // 形態データ(PCA)の存在確認
+                const hasPCA = (typeof parsedMorphData !== 'undefined' && parsedMorphData && parsedMorphData.length > 0);
+
+                let pcaInsightText = '';
+                if (hasPCA) {
+                    pcaInsightText = `<p style="margin-bottom: 6px;"><strong>形態空間との照合:</strong> 右側の形態空間プロットを確認してください。遺伝的には遠縁であるこれらの種が形態空間上で近接している場合、類似の環境に適応した結果生じた<strong>収斂進化（しゅうれんしんか）</strong>の可能性が高くなります。逆に遺伝的に近いのに形態が離れている場合は、急速な適応放散や表現型可塑性が示唆されます。</p>`;
+                }
+
+                content.innerHTML = `
+                    <p style="margin-bottom: 6px;"><strong>真の系統不一致を検出:</strong> 枝の最適化を行っても解消されない交差が <strong>${crossingCount}箇所</strong> 残存しています。交差に関与している生物種: ${speciesList}${crossingSpeciesSet.size > 4 ? ' 等' : ''}。</p>
+                    ${pcaInsightText}
+                    <p style="margin-bottom: 0;"><strong>祖先形の検証:</strong> タングルグラム上の分岐ノードをクリックすると、右側のモーフィング画面にその共通祖先の推定形態が再現されます。どの進化段階で形態の急激な変化が起きたかをシミュレーションしてみましょう。</p>
+                `;
+            }
+        }
     }
 
     // ==========================================

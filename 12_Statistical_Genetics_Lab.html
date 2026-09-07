@@ -1161,12 +1161,14 @@ body {
 
             <!-- オンデマンド詳しい解説パネル (Soft Scaffolding) -->
             <div style="margin-top: 5px; border-top: 1px dashed var(--border-color); padding-top: 15px;">
-                <details style="cursor: pointer; background: #f8f9fa; border: 1px solid #d1d5db; border-radius: 6px; padding: 12px;">
+                <details id="gxe-insight-details" style="cursor: pointer; background: #f8f9fa; border: 1px solid #d1d5db; border-radius: 8px; padding: 14px 18px;">
                     <summary style="font-weight: bold; color: var(--primary); font-size: 13px; display: flex; align-items: center;">
                         <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; color: var(--primary);"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
                         考察のヒント：G×E相互作用と適応度の解釈
                     </summary>
-                    <div style="margin-top: 12px; font-size: 12px; color: var(--text-main); line-height: 1.6;">
+
+                    <!-- ① 原理・原則（静的な足場掛け） -->
+                    <div style="font-size: 12px; color: var(--text-main); line-height: 1.7; margin-top: 14px; margin-bottom: 16px;">
                         <p style="margin-bottom: 8px;"><strong>1. 反応規範が交差している場合（適応度の逆転）</strong><br>
                         環境によって有利な遺伝子型が入れ替わることを示し、G×E相互作用が強く働いている決定的証拠となります。ある環境で最適な形質が別の環境では不利になるトレードオフの存在は、自然界における変異（多様性）が維持される重要なメカニズムです。</p>
                         
@@ -1175,6 +1177,20 @@ body {
                         
                         <p style="margin-bottom: 0;"><strong>3. AMMIバイプロットの解釈</strong><br>
                         原点から遠く離れた遺伝子型ほど、特定の環境への反応（相互作用）が特異的で強いことを意味します。バイプロット上で同じ方向（近い位置）にプロットされた遺伝子型と環境は、その環境においてその遺伝子型が特異的に高い適応度（正の相互作用）を示すことを表しています。</p>
+                    </div>
+
+                    <!-- ② 動的観察ポイント（左の太帯なし・均一な細枠の学術レポート枠） -->
+                    <div id="dynamic-insight-panel" style="background: #ffffff; border: 1px solid #d1d5db; border-radius: 6px; padding: 14px 16px;">
+                        <div style="font-weight: bold; color: var(--primary); font-size: 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                            <span style="display: flex; align-items: center; gap: 6px;">
+                                <svg style="width: 15px; height: 15px; flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                                上記を踏まえた今回の解析データの観察ポイント（動的診断レポート）
+                            </span>
+                            <span id="insight-status-badge" style="font-size: 11px; padding: 2px 8px; border-radius: 12px; background: #f1f5f9; color: #64748b; font-weight: bold; border: 1px solid #e2e8f0;">解析待機中</span>
+                        </div>
+                        <div id="insight-dynamic-content" style="font-size: 12px; color: var(--text-main); line-height: 1.7;">
+                            データ待機中：分散分析（ANOVA）と反応規範の描画を実行すると、G×E交互作用の強さ、環境間の適応度逆転（交差）の有無、AMMIバイプロットの特異個体に基づく具体的な着眼点がここに表示されます。
+                        </div>
                     </div>
                 </details>
             </div>
@@ -1977,8 +1993,11 @@ body {
                 .style("font-size", "12px")
                 .style("font-weight", "bold")
                 .style("fill", "#e74c3c")
-                .text("⚠️ 警告: 適応度の逆転が検出されました！G×E相互作用の決定的証拠です。");
+                .text("警告: 適応度の逆転が検出されました（交差型G×E相互作用）");
         }
+
+        window.currentIntersections = intersections;
+        window.currentHasGxE = hasGxE;
 
         const crossMarkers = g.selectAll(".cross-marker")
             .data(intersections)
@@ -1998,6 +2017,8 @@ body {
             .attr("fill", "transparent")
             .style("cursor", "help")
             .attr("data-tooltip", d => `${d.g1}と${d.g2}の適応度逆転\n(交差型G×E相互作用)`);
+
+        updateGxeDynamicInsight();
     }
 
     function renderAnova() {
@@ -2022,6 +2043,78 @@ body {
                 <td style="color:var(--text-muted);">${r.data.f ? r.data.f.toFixed(2) : '-'}</td>
             </tr>
         `).join('');
+
+        updateGxeDynamicInsight();
+    }
+
+    // ==========================================
+    // Dynamic Insight Logic (絵文字ゼロ・学術レポート仕様)
+    // ==========================================
+    function escapeHTML(str) {
+        if (!str) return "";
+        return String(str).replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag]));
+    }
+
+    function updateGxeDynamicInsight() {
+        const badge = document.getElementById('insight-status-badge');
+        const content = document.getElementById('insight-dynamic-content');
+        if (!badge || !content) return;
+
+        if (!state.results || !state.results.anova || !state.genotypes || state.genotypes.length === 0) {
+            badge.style.background = '#f1f5f9';
+            badge.style.color = '#64748b';
+            badge.style.border = '1px solid #e2e8f0';
+            badge.innerText = '解析待機中';
+            content.innerHTML = '<p style="margin: 0; color: var(--text-muted);">データ待機中：分散分析（ANOVA）と反応規範の描画を実行すると、G×E交互作用の強さ、環境間の適応度逆転（交差）の有無、AMMIバイプロットの特異個体に基づく具体的な着眼点がここに表示されます。</p>';
+            return;
+        }
+
+        const anova = state.results.anova;
+        const gxeF = anova.GxE ? anova.GxE.f : null;
+        const intersections = window.currentIntersections || [];
+        const hasGxE = (intersections.length > 0) || (window.currentHasGxE === true);
+
+        // ステータスバッジ
+        if (hasGxE) {
+            badge.style.background = '#fff7ed';
+            badge.style.color = '#c2410c';
+            badge.style.border = '1px solid #fed7aa';
+            badge.innerText = `適応度逆転を検出 (交差: ${intersections.length}箇所)`;
+        } else if (gxeF && gxeF > 2.0) {
+            badge.style.background = '#eff6ff';
+            badge.style.color = '#1d4ed8';
+            badge.style.border = '1px solid #bfdbfe';
+            badge.innerText = `有意なG×E交互作用 (F = ${gxeF.toFixed(2)})`;
+        } else {
+            badge.style.background = '#f0fdf4';
+            badge.style.color = '#15803d';
+            badge.style.border = '1px solid #bbf7d0';
+            badge.innerText = '平行型反応規範 (逆転なし)';
+        }
+
+        // 反応規範の交差に関する記述
+        let crossText = "";
+        if (intersections.length > 0) {
+            const pairNames = Array.from(new Set(intersections.map(d => `【${escapeHTML(d.g1)}】×【${escapeHTML(d.g2)}】`))).slice(0, 3).join('、');
+            crossText = `<p style="margin-bottom: 6px;"><strong>適応度の逆転 (交差型G×E):</strong> 環境の違いによって有利な遺伝子型が入れ替わる交差が <strong>${intersections.length}箇所</strong> 検出されました（該当ペア: ${pairNames}）。これは、ある環境に特化した適応が別の環境では不利になるという「適応度のトレードオフ」を示し、集団内で遺伝的多様性が維持される決定的な証拠となります。</p>`;
+        } else {
+            crossText = `<p style="margin-bottom: 6px;"><strong>反応規範の平行性:</strong> 反応規範の線は交差しておらず、どの環境においても遺伝子型間の相対的な優劣順位が保たれています。環境変化に対する可塑的な応答は見られるものの、適応度の逆転を伴う強い交差型相互作用は起きていません。</p>`;
+        }
+
+        // 分散分析(ANOVA)の評価
+        let anovaText = "";
+        if (gxeF !== null) {
+            anovaText = `<p style="margin-bottom: 6px;"><strong>分散分析 (ANOVA) の着眼点:</strong> G×E交互作用項の F値は <strong>${gxeF.toFixed(2)}</strong> です。遺伝子型主効果（G）や環境主効果（E）の平方和（SS）と比較し、表現型のばらつきが「遺伝そのもの」によるものか、「環境による底上げ」か、それとも「環境特異的な応答」かを確認しましょう。</p>`;
+        }
+
+        // AMMIバイプロットの誘導
+        let ammiText = `<p style="margin-bottom: 0;"><strong>バイプロットとの連動検証:</strong> 上のAMMIバイプロットで、原点から遠く離れている遺伝子型と、同じ方向に伸びている環境ベクトルに着目してください。その組み合わせにおいて、特異的に高い適応度（正の相互作用）が発揮されています。</p>`;
+
+        content.innerHTML = `
+            ${crossText}
+            ${anovaText}
+            ${ammiText}
+        `;
     }
 
     function runAnalysis() {

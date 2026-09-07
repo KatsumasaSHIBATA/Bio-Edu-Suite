@@ -281,5 +281,78 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
         });
+
+        // 動的観察ポイント（ダイナミック・フィードバック）の更新
+        updateMantelDynamicInsight(r, noiseLevel, scatterData);
+    }
+
+    // ==========================================
+    // Dynamic Insight Logic (絵文字ゼロ・学術レポート仕様)
+    // ==========================================
+    function updateMantelDynamicInsight(r, noiseLevel, scatterData) {
+        const badge = document.getElementById('insight-status-badge');
+        const content = document.getElementById('insight-dynamic-content');
+        if (!badge || !content) return;
+
+        if (r === null || isNaN(r) || !scatterData || scatterData.length === 0) {
+            badge.style.background = '#f1f5f9';
+            badge.style.color = '#64748b';
+            badge.style.border = '1px solid #e2e8f0';
+            badge.innerText = '解析待機中';
+            content.innerHTML = '<p style="margin: 0; color: var(--text-muted);">データ待機中：Mantel検定を実行すると、相関係数 r の強度、回帰トレンドから乖離した外れ値ペアの有無、環境ノイズ・遺伝的浮動による相関崩壊のシミュレーション結果に基づく具体的な着眼点がここに表示されます。</p>';
+            return;
+        }
+
+        const outlierCount = scatterData.filter(d => d.isOutlier).length;
+
+        // ステータスバッジ
+        if (r >= 0.7) {
+            badge.style.background = '#f0fdf4';
+            badge.style.color = '#15803d';
+            badge.style.border = '1px solid #bbf7d0';
+            badge.innerText = `強い正の相関 (r = ${r.toFixed(4)})`;
+        } else if (r >= 0.4) {
+            badge.style.background = '#eff6ff';
+            badge.style.color = '#1d4ed8';
+            badge.style.border = '1px solid #bfdbfe';
+            badge.innerText = `中程度の相関 (r = ${r.toFixed(4)})`;
+        } else {
+            badge.style.background = '#fff7ed';
+            badge.style.color = '#c2410c';
+            badge.style.border = '1px solid #fed7aa';
+            badge.innerText = `相関が低い/崩壊 (r = ${r.toFixed(4)})`;
+        }
+
+        // 相関強度に応じた進化シナリオ
+        let scenarioText = "";
+        if (r >= 0.7) {
+            scenarioText = "遺伝的距離（突然変異の蓄積）と形態的距離（変異）の間に<strong>強い正の相関</strong>が成立しています。集団が隔離されて以降、時間の経過に応じて徐々に形態の分化が進んだ標準的な分岐進化シナリオが支持されます。";
+        } else if (r >= 0.4) {
+            scenarioText = "遺伝と形態の間にある程度の連動は見られるものの、ばらつきが存在します。遺伝的な分化だけでなく、環境要因による変異（表現型可塑性）や、特定の形質に対する選択圧が複合的に働いている可能性があります。";
+        } else {
+            scenarioText = "遺伝的距離と形態的距離の相関が著しく低くなっています。形態差が遺伝的距離を反映していないため、急速な局所適応、収斂進化（しゅうれんしんか）、あるいは強い遺伝的浮動や環境ノイズの影響が示唆されます。";
+        }
+
+        // 外れ値に関する記述
+        let outlierText = "";
+        if (outlierCount > 0) {
+            outlierText = `<p style="margin-bottom: 6px;"><strong>特異な適応ペア (外れ値: ${outlierCount}組):</strong> 全体の相関トレンドから外れた赤いプロットが存在します。「遺伝的に近いのに形態差が大きい」ペアは急激な局所適応、「遺伝的に遠いのに形態差が小さい」ペアは収斂進化の有力な候補です。プロットにホバーして具体的な距離を確認してみましょう。</p>`;
+        } else {
+            outlierText = `<p style="margin-bottom: 6px;"><strong>外れ値の検証:</strong> 極端な回帰残差を示す特異ペアは検出されず、全体として整った距離相関を示しています。</p>`;
+        }
+
+        // シミュレーション（ノイズ）
+        let noiseText = "";
+        if (noiseLevel > 0) {
+            noiseText = `<p style="margin-bottom: 0;"><strong>環境ノイズ・遺伝的浮動のシミュレーション:</strong> 現在 <strong>${noiseLevel}%</strong> のノイズが付加されています。自然界において環境由来のばらつきや偶然の浮動が大きくなると、本来の遺伝的シグナルがどのようにかき乱され、相関（r値）が崩れていくかを観察できます。</p>`;
+        } else {
+            noiseText = `<p style="margin-bottom: 0;"><strong>シミュレーションの試行:</strong> 上のスライダーを動かして環境要因のノイズや遺伝的浮動の強さを高め、相関係数 r がどのように低下していくか（相関の崩壊）を体感してみましょう。</p>`;
+        }
+
+        content.innerHTML = `
+            <p style="margin-bottom: 6px;"><strong>進化シナリオの判定:</strong> ${scenarioText}</p>
+            ${outlierText}
+            ${noiseText}
+        `;
     }
 });

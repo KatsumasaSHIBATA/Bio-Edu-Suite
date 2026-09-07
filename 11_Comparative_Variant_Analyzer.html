@@ -1196,12 +1196,14 @@ body {
                 
                 <!-- オンデマンド詳しい解説パネル (Soft Scaffolding) -->
                 <div style="margin-top: 20px; border-top: 1px dashed var(--border-color); padding-top: 15px;">
-                    <details style="cursor: pointer; background: #f8f9fa; border: 1px solid #d1d5db; border-radius: 6px; padding: 12px;">
+                    <details id="mantel-insight-details" style="cursor: pointer; background: #f8f9fa; border: 1px solid #d1d5db; border-radius: 8px; padding: 14px 18px;">
                         <summary style="font-weight: bold; color: var(--primary); font-size: 13px; display: flex; align-items: center;">
                             <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; color: var(--primary);"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
                             考察のヒント：外れ値の発生と相関の崩壊
                         </summary>
-                        <div style="margin-top: 12px; font-size: 12px; color: var(--text-main); line-height: 1.6;">
+
+                        <!-- ① 原理・原則（静的な足場掛け） -->
+                        <div style="font-size: 12px; color: var(--text-main); line-height: 1.7; margin-top: 14px; margin-bottom: 16px;">
                             <p style="margin-bottom: 8px;"><strong>1. 相関が高い（r値が1に近い）場合</strong><br>
                             遺伝的な変化（塩基配列の突然変異の蓄積）と、形態的な変化が連動して起きています。これは、集団が隔離された期間に応じて徐々に形態も変化していく標準的な進化プロセスを示唆します。</p>
                             
@@ -1210,6 +1212,20 @@ body {
                             
                             <p style="margin-bottom: 0;"><strong>3. 相関が低い（ノイズが大きい）場合</strong><br>
                             形態の違いが遺伝的な違いではなく、環境の違い（表現型可塑性）によって生じている可能性が高いことを示します。また、小集団における<strong>遺伝的浮動</strong>が強く働いた場合にも、ランダムな変異が蓄積して相関が崩れる傾向があります。</p>
+                        </div>
+
+                        <!-- ② 動的観察ポイント（左の太帯なし・均一な細枠の学術レポート枠） -->
+                        <div id="dynamic-insight-panel" style="background: #ffffff; border: 1px solid #d1d5db; border-radius: 6px; padding: 14px 16px;">
+                            <div style="font-weight: bold; color: var(--primary); font-size: 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                                <span style="display: flex; align-items: center; gap: 6px;">
+                                    <svg style="width: 15px; height: 15px; flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                                    上記を踏まえた今回の解析データの観察ポイント（動的診断レポート）
+                                </span>
+                                <span id="insight-status-badge" style="font-size: 11px; padding: 2px 8px; border-radius: 12px; background: #f1f5f9; color: #64748b; font-weight: bold; border: 1px solid #e2e8f0;">解析待機中</span>
+                            </div>
+                            <div id="insight-dynamic-content" style="font-size: 12px; color: var(--text-main); line-height: 1.7;">
+                                データ待機中：Mantel検定を実行すると、相関係数 r の強度、回帰トレンドから乖離した外れ値ペアの有無、環境ノイズ・遺伝的浮動による相関崩壊のシミュレーション結果に基づく具体的な着眼点がここに表示されます。
+                            </div>
                         </div>
                     </details>
                 </div>
