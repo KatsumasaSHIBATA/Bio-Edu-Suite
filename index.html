@@ -1049,23 +1049,23 @@ body {
       <div class="bulk-action-buttons">
         <button id="btnBulkTrace" class="btn link-dna" onclick="dispatchBulk('trace'); triggerHapticFeedback();">
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-          ④ .ab1 送信
+          ④ .ab1 を送る
         </button>
         <button id="btnBulkDna" class="btn link-dna" onclick="dispatchBulk('dna'); triggerHapticFeedback();">
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-          ⑤ FASTA 送信
+          ⑤ FASTA を送る
         </button>
         <button id="btnBulkMorph" class="btn link-morph" onclick="dispatchBulk('morph'); triggerHapticFeedback();">
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-          ⑨ 画像 送信
+          ⑨ 画像 を送る
         </button>
         <button id="btnBulkMorphCSV" class="btn btn-secondary" onclick="copyMorphCSV(); triggerHapticFeedback();">
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-          ⑩ 計測CSV コピー
+          ⑩ 計測CSVをコピー
         </button>
         <button id="btnBulkCopyEnv" class="btn btn-secondary" onclick="copyEnvDataTSV(); triggerHapticFeedback();">
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-          ⑫ 環境TSV コピー
+          ⑫ 環境TSVをコピー
         </button>
       </div>
     </div>
@@ -1095,7 +1095,7 @@ body {
         <hr style="border: 0; border-top: 1px solid #ecf0f1; margin: 20px 0;">
 
         <div class="form-group">
-          <label>環境カテゴリ</label>
+          <label>環境データ</label>
           <input type="text" id="envCategory" class="form-control" placeholder="例: A湖畔、B山林など" enterkeyhint="done">
           <div class="help-text">Statistical Genetics Lab で「環境(E)」要因として解析されます。</div>
         </div>
@@ -1126,7 +1126,7 @@ body {
         </div>
 
         <div class="form-group">
-          <label>形態・計測データ (CSV)</label>
+          <label>計測データ (CSV)</label>
           <textarea id="morphData" class="form-control paste-area" placeholder="例: 12.5, 4.3, 8.1 などの計測値をカンマ区切りで入力"></textarea>
           <div class="help-text">後で Integrative Taxonomy Studio (⑩) に送って形態系統樹を構築できます。</div>
         </div>
@@ -1702,9 +1702,9 @@ function closeFeedbackForm() {
         const hasImage = sample.image_data && sample.image_data.trim() !== "";
         const hasRawSeq = sample.hasRawSeq || false;
         
-        const envBadge = hasEnv ? `<span class="badge ok">環境カテゴリあり</span>` : `<span class="badge none">環境カテゴリ未登録</span>`;
-        const morphBadge = hasMorph ? `<span class="badge ok">計測データあり</span>` : `<span class="badge none">計測データ未登録</span>`;
-        const dnaBadge = hasDna ? `<span class="badge ok">処理済み塩基配列あり</span>` : `<span class="badge none">処理済み塩基配列未登録</span>`;
+        const envBadge = hasEnv ? `<span class="badge ok">環境カテゴリあり</span>` : `<span class="badge none">環境カテゴリなし</span>`;
+        const morphBadge = hasMorph ? `<span class="badge ok">計測データあり</span>` : `<span class="badge none">計測データなし</span>`;
+        const dnaBadge = hasDna ? `<span class="badge ok">処理済み塩基配列あり</span>` : `<span class="badge none">処理済み塩基配列なし</span>`;
         const rawDnaBadge = hasRawSeq ? `<span class="badge ok">未処理塩基配列あり</span>` : `<span class="badge none">未処理塩基配列なし</span>`;
 
         const card = document.createElement('div');
