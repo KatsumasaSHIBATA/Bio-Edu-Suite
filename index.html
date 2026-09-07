@@ -1702,10 +1702,11 @@ function closeFeedbackForm() {
         const hasImage = sample.image_data && sample.image_data.trim() !== "";
         const hasRawSeq = sample.hasRawSeq || false;
         
-        const envBadge = hasEnv ? `<span class="badge ok">環境カテゴリあり</span>` : `<span class="badge none">環境カテゴリなし</span>`;
+        const envBadge = hasEnv ? `<span class="badge ok">環境データあり</span>` : `<span class="badge none">環境データなし</span>`;
         const morphBadge = hasMorph ? `<span class="badge ok">計測データあり</span>` : `<span class="badge none">計測データなし</span>`;
-        const dnaBadge = hasDna ? `<span class="badge ok">処理済み塩基配列あり</span>` : `<span class="badge none">処理済み塩基配列なし</span>`;
+        const imageBadge = hasImage ? `<span class="badge ok">画像データあり</span>` : `<span class="badge none">画像データなし</span>`;
         const rawDnaBadge = hasRawSeq ? `<span class="badge ok">未処理塩基配列あり</span>` : `<span class="badge none">未処理塩基配列なし</span>`;
+        const dnaBadge = hasDna ? `<span class="badge ok">処理済み塩基配列あり</span>` : `<span class="badge none">処理済み塩基配列なし</span>`;
 
         const card = document.createElement('div');
         card.className = 'sample-card';
@@ -1725,8 +1726,8 @@ function closeFeedbackForm() {
             </div>
           </div>
           <div class="card-body" onclick="editSample('${sample.id}'); triggerHapticFeedback();">
-            <div class="status-badges">${envBadge}${morphBadge}${dnaBadge}${rawDnaBadge}</div>
-            ${hasEnv ? `<div class="data-preview" data-tooltip="環境カテゴリ">${escapeHTML(envCat)}</div>` : ''}
+            <div class="status-badges">${envBadge}${morphBadge}${imageBadge}${rawDnaBadge}${dnaBadge}</div>
+            ${hasEnv ? `<div class="data-preview" data-tooltip="環境データ">${escapeHTML(envCat)}</div>` : ''}
             ${envNote ? `<div class="data-preview" data-tooltip="特記事項">${escapeHTML(envNote.substring(0, 30))}...</div>` : ''}
             ${hasMorph ? `<div class="data-preview" data-tooltip="計測データ">${escapeHTML(sample.morphData.substring(0, 30))}...</div>` : ''}
             ${hasDna ? `<div class="data-preview" data-tooltip="処理済み塩基配列">${escapeHTML(sample.dnaData.substring(0, 30))}...</div>` : ''}
