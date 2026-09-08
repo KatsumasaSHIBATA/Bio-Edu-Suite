@@ -1157,12 +1157,31 @@ body {
                 <textarea id="chain-code-input" class="paste-area" placeholder="チェーンコード（ Freeman Chain Code ）を入力してください"></textarea>
                 
                 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 5px; flex-wrap: wrap; gap: 5px;">
-                    <label style="font-size:11px; font-weight:bold; color:#2c3e50;">調和数:</label>
+                    <div style="display:flex; align-items:center;">
+                        <label style="font-size:11px; font-weight:bold; color:#2c3e50;">調和数:</label>
+                        <div class="rationale-wrapper"><button class="rationale-btn" onclick="toggleRationale(event, 'rat_harmonics')">?</button>
+                            <div id="rat_harmonics" class="rationale-text">
+                                <strong>【根拠：調和数 (Harmonics)】</strong><br>
+                                ・抽出した輪郭をいくつの楕円の足し合わせで近似するかの数です。<br>
+                                ・数が多いほど元の複雑な形を精密に再現できますが、多すぎると画像のギザギザ（ノイズ）まで拾ってしまいます。<br>
+                                ・生物の全体的な形状を比較する場合、通常は 20〜30 程度で十分な精度が得られます。
+                            </div>
+                        </div>
+                    </div>
                     <input type="number" id="harmonics-input" value="20" min="1" max="40" style="width: 60px; text-align:center;" inputmode="decimal">
                 </div>
                 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 15px; flex-wrap: wrap; gap: 8px;">
-                    <label style="font-size:11px; font-weight:bold; color:#2c3e50; white-space: nowrap;">PCA対象成分:</label>
-                    <select id="pca-feature-mode" style="flex: 1; min-width: 195px; max-width: 225px;">
+                    <div style="display:flex; align-items:center; white-space: nowrap;">
+                        <label style="font-size:11px; font-weight:bold; color:#2c3e50;">PCA対象成分:</label>
+                        <div class="rationale-wrapper"><button class="rationale-btn" onclick="toggleRationale(event, 'rat_pca_feature')">?</button>
+                            <div id="rat_pca_feature" class="rationale-text">
+                                <strong>【根拠：PCA対象成分の選択】</strong><br>
+                                ・計算された4つの楕円フーリエ係数 (a, b, c, d) のうち、主成分分析 (PCA) の対象とする係数を選択します。<br>
+                                ・<strong>対称の変異のみ (a, d)</strong>: 写真の撮り方による曲がりなどの非対称な成分 (b, c) を除外し、純粋な「太さ」や「長さ」といった対称的な形の違いだけを比較したい場合に有効です。
+                            </div>
+                        </div>
+                    </div>
+                    <select id="pca-feature-mode" style="flex: 1; min-width: 155px; max-width: 225px;">
                         <option value="all">全係数 (a, b, c, d)</option>
                         <option value="sym" selected>対称の変異のみ (a, d)</option>
                         <option value="asym">非対称の変異のみ (b, c)</option>
@@ -3415,6 +3434,25 @@ function closeFeedbackForm() {
                     imgSrc: d.img ? (d.img.currentSrc || d.img.src || null) : null
                 })) : [];
 
+                // efaImageQueue の直列化（画像DataURLを抽出）
+                const serializedEFA = (typeof efaImageQueue !== 'undefined' && efaImageQueue) ? efaImageQueue.map(item => {
+                    let dataUrl = null;
+                    try {
+                        const tempCanvas = document.createElement('canvas');
+                        tempCanvas.width = item.width;
+                        tempCanvas.height = item.height;
+                        const ctx = tempCanvas.getContext('2d');
+                        ctx.putImageData(item.imageData, 0, 0);
+                        dataUrl = tempCanvas.toDataURL('image/jpeg', 0.8);
+                    } catch(e) {}
+                    return {
+                        name: item.name,
+                        width: item.width,
+                        height: item.height,
+                        dataUrl: dataUrl
+                    };
+                }) : [];
+
                 const state = {
                     savedAt: Date.now(),
                     route: route,
@@ -3424,6 +3462,8 @@ function closeFeedbackForm() {
                     pcaFeatureMode: document.getElementById('pca-feature-mode') ? document.getElementById('pca-feature-mode').value : 'sym',
                     currentFeatureMode: typeof currentFeatureMode !== 'undefined' ? currentFeatureMode : 'all',
                     globalMeanCoeffs: typeof globalMeanCoeffs !== 'undefined' ? globalMeanCoeffs : [],
+                    efaCurrentIndex: typeof efaCurrentIndex !== 'undefined' ? efaCurrentIndex : -1,
+                    efaImageQueue: serializedEFA,
                     pc1SliderA: document.getElementById('pc1-slider') ? document.getElementById('pc1-slider').value : '0',
                     pc2SliderA: document.getElementById('pc2-slider') ? document.getElementById('pc2-slider').value : '0',
                     
@@ -3483,6 +3523,36 @@ function closeFeedbackForm() {
                 }
                 if (state.globalMeanCoeffs && state.globalMeanCoeffs.length > 0 && typeof globalMeanCoeffs !== 'undefined') {
                     globalMeanCoeffs = state.globalMeanCoeffs;
+                }
+
+                if (state.efaImageQueue && state.efaImageQueue.length > 0 && typeof efaImageQueue !== 'undefined') {
+                    efaImageQueue = new Array(state.efaImageQueue.length);
+                    let loadedEfaCount = 0;
+                    state.efaImageQueue.forEach((item, i) => {
+                        if (item.dataUrl) {
+                            let imgObj = new Image();
+                            imgObj.onload = () => {
+                                const tempCanvas = document.createElement('canvas');
+                                tempCanvas.width = item.width; tempCanvas.height = item.height;
+                                const ctx = tempCanvas.getContext('2d');
+                                ctx.drawImage(imgObj, 0, 0, item.width, item.height);
+                                efaImageQueue[i] = {
+                                    name: item.name,
+                                    width: item.width,
+                                    height: item.height,
+                                    imageData: ctx.getImageData(0, 0, item.width, item.height)
+                                };
+                                loadedEfaCount++;
+                                if (loadedEfaCount === state.efaImageQueue.length) {
+                                    if (typeof efaCurrentIndex !== 'undefined') {
+                                        efaCurrentIndex = state.efaCurrentIndex !== undefined ? state.efaCurrentIndex : 0;
+                                        if (typeof efaRenderCurrentQueue === 'function') efaRenderCurrentQueue();
+                                    }
+                                }
+                            };
+                            imgObj.src = item.dataUrl;
+                        }
+                    });
                 }
 
                 // 3. Route C の復元（ランドマーク座標・画像オブジェクト）
@@ -3563,7 +3633,9 @@ function closeFeedbackForm() {
                         if (document.getElementById('pc1-val-c')) document.getElementById('pc1-val-c').innerText = (targetPc1C > 0 ? "+" : "") + targetPc1C.toFixed(1) + "σ";
                         if (document.getElementById('pc2-val-c')) document.getElementById('pc2-val-c').innerText = (targetPc2C > 0 ? "+" : "") + targetPc2C.toFixed(1) + "σ";
                         if (typeof tpsForceRecomputeBaseScale !== 'undefined') tpsForceRecomputeBaseScale = true;
-                        if (typeof renderTPSForPC === 'function') renderTPSForPC(currentPc1C, currentPc2C);
+                        window.requestAnimationFrame(() => {
+                            if (typeof renderTPSForPC === 'function') renderTPSForPC(currentPc1C, currentPc2C);
+                        });
                     }
 
                     if (typeof updateExportButtonsState === 'function') updateExportButtonsState(true);
