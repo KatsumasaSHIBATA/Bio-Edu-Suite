@@ -1087,18 +1087,19 @@ body {
                 他の解析ツール（⑧ Phylogenetic Tree Builder や ⑨ Morphometrics Studio）からデータをコピーして貼り付けてください。両方のデータに共通の Sample ID が存在している必要があります。
             </div>
 
-            <!-- スマート・ハイブリッド入力UI -->
-            <div style="display: flex; flex-wrap: wrap; gap: 24px;">
-                <div style="flex: 1; min-width: 250px;">
-                    <label class="input-label">1. 分子系統樹 (Newick形式)</label>
-                    <textarea id="newick-mol-input" class="paste-area" placeholder="ここに分子系統樹データ（Newick形式）を貼り付けてください"></textarea>
+            <!-- 2×2 フレキシブル・グリッド入力UI (上段: 基本ツリー / 下段: 目的別オプション) -->
+            <!-- 上段【必須の主役：タングルグラム左右ツリー】（各50%幅） -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 20px;">
+                <!-- 上段左: 基準系統樹 -->
+                <div style="display: flex; flex-direction: column;">
+                    <label class="input-label">1. 分子系統樹 [宿主・基準系統] (Newick形式)</label>
+                    <textarea id="newick-mol-input" class="paste-area" style="max-width: 100%; width: 100%;" placeholder="ここに分子系統樹データ（Newick形式）を貼り付けてください"></textarea>
                 </div>
                 
-                <div style="flex: 1; min-width: 250px;">
-                    <label class="input-label">
-                        2. 形態系統樹 / 計測データ (Newick・CSV形式)
-                    </label>
-                    <textarea id="hybrid-morph-input" class="paste-area" placeholder="系統樹(Newick) または 計測値(CSV)を自動判定します"></textarea>
+                <!-- 上段右: 比較系統樹 -->
+                <div style="display: flex; flex-direction: column;">
+                    <label class="input-label">2. 比較系統樹 [寄生虫 / 形態 / 計測値] (Newick・CSV形式)</label>
+                    <textarea id="hybrid-morph-input" class="paste-area" style="max-width: 100%; width: 100%;" placeholder="寄生虫の系統樹、形態系統樹(Newick)、または計測値(CSV)を入力してください"></textarea>
                     
                     <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: nowrap; align-items: flex-start; overflow-x: auto;">
                         <div style="flex: 1; min-width: 80px;">
@@ -1130,10 +1131,20 @@ body {
                         </div>
                     </div>
                 </div>
+            </div>
                 
-                <div style="flex: 1; min-width: 250px;">
-                    <label class="input-label">3. 形態データ (JSON形式)</label>
-                    <textarea id="json-input" class="paste-area" placeholder="ここに形態データ（JSON形式）を貼り付けてください"></textarea>
+            <!-- 下段【目的別の任意オプション】（各50%幅） -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
+                <!-- 下段左: 形態データオプション -->
+                <div style="display: flex; flex-direction: column;">
+                    <label class="input-label">3. 形態データ [任意] (JSON形式 / モーフィング用)</label>
+                    <textarea id="json-input" class="paste-area" style="max-width: 100%; width: 100%;" placeholder="ここに形態データ（JSON形式）を貼り付けてください（モーフィング解析時に使用）"></textarea>
+                </div>
+
+                <!-- 下段右: 系統間対応表オプション -->
+                <div style="display: flex; flex-direction: column;">
+                    <label class="input-label">4. 系統間対応表 [任意] (宿主-寄生虫 等 / TSV形式)</label>
+                    <textarea id="mapping-input" class="paste-area" style="max-width: 100%; width: 100%;" placeholder="宿主ID [Tabまたはスペース] 寄生虫ID&#10;（未入力の場合は同名ノード同士を結線します）"></textarea>
                 </div>
             </div>
             
@@ -1155,14 +1166,14 @@ body {
 
     <!-- 1画面モーフィングUI -->
     <div class="viewer-container" id="viewer-area" style="transition: 0.3s;">
-        <!-- Ⅱ. タングルグラム (分子系統樹 vs 形態系統樹) -->
-        <div class="card viewer-pane">
-            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <!-- Ⅱ. タングルグラム (分子 vs 形態 / 宿主 vs 寄生虫) -->
+        <div class="card viewer-pane" id="tangle-card">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; min-height: 58px; height: 58px; box-sizing: border-box;">
                 <div>
-                    Ⅱ. タングルグラム (分子系統樹 vs 形態系統樹)
+                    Ⅱ. タングルグラム (分子 vs 形態 / 宿主 vs 寄生虫)
                     <button class="rationale-btn" onclick="toggleRationale(event, 'rat_tangle')">?</button>
                 </div>
-                <button id="untangleBtn" class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px; min-height: 32px;" onclick="handleUntangle()" aria-label="もつれ解消">
+                <button id="untangleBtn" class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px; min-height: 32px; height: 32px; box-sizing: border-box;" onclick="handleUntangle()" aria-label="もつれ解消">
                     もつれ解消
                 </button>
             </div>
@@ -1185,10 +1196,12 @@ body {
         </div>
         
         <!-- Ⅲ. 形態空間モーフィング (Morphology PCA & Simulation) -->
-        <div class="card viewer-pane">
-            <div class="card-header">
-                Ⅲ. 形態空間モーフィング
-                <button class="rationale-btn" onclick="toggleRationale(event, 'rat_morph')">?</button>
+        <div class="card viewer-pane" id="pca-card">
+            <div class="card-header" style="display: flex; align-items: center; min-height: 58px; height: 58px; box-sizing: border-box;">
+                <div>
+                    Ⅲ. 形態空間モーフィング
+                    <button class="rationale-btn" onclick="toggleRationale(event, 'rat_morph')">?</button>
+                </div>
             </div>
             <div id="rat_morph" class="rationale-text">
                 <strong>【根拠：PCAと変異の評価】</strong>
@@ -1556,10 +1569,12 @@ body {
         let molInput = document.getElementById('newick-mol-input');
         let morphInput = document.getElementById('hybrid-morph-input');
         let jsonInput = document.getElementById('json-input');
+        let mappingInput = document.getElementById('mapping-input');
 
         let newickMolStr = molInput ? molInput.value.trim() : '';
         let hybridMorphVal = morphInput ? morphInput.value.trim() : '';
         let jsonStr = jsonInput ? jsonInput.value.trim() : '';
+        let mappingStr = mappingInput ? mappingInput.value.trim() : '';
         
         if (!newickMolStr) {
             showToast('1. 分子系統樹 (Newick形式) を入力してください。', 'error');
@@ -1700,7 +1715,20 @@ body {
                 parsedMorphData = morphData;
             }
             
-            globalTreeRoot = { molRoot, morphRoot }; 
+            let pairMappings = [];
+            if (mappingStr) {
+                const lines = mappingStr.split('\n');
+                for (let line of lines) {
+                    line = line.trim();
+                    if (!line) continue;
+                    const parts = line.split(/[\t\s]+/);
+                    if (parts.length >= 2) {
+                        pairMappings.push({ left: parts[0], right: parts[1] });
+                    }
+                }
+            }
+
+            globalTreeRoot = { molRoot, morphRoot, pairMappings }; 
             
             // 不足がある場合、処理は止めずに確実にトーストを発火させる
             if (missingLeaves.length > 0) {
@@ -1720,8 +1748,23 @@ body {
             
             let pcaPlaceholder = document.getElementById('pca-placeholder');
             
-            // タングルグラム描画はJSONがなくても実行
-            renderTanglegram(molRoot, morphRoot);
+            // 形態データの有無で右パネル（PCAカード）の表示/非表示を動的に切り替え
+            const pcaCard = document.getElementById('pca-card');
+            if (jsonStr && parsedMorphData.length > 0) {
+                if (pcaCard) pcaCard.style.display = 'flex';
+                if (pcaPlaceholder) pcaPlaceholder.style.display = 'none';
+                drawPCA();
+            } else {
+                if (pcaCard) pcaCard.style.display = 'none'; // パネルを折りたたみ、左カードを全幅に拡張
+                const canvas = document.getElementById('pca-canvas');
+                if (canvas) {
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+            }
+
+            // パネルの表示状態（幅）が確定した直後にタングルグラムを描画し、全幅をフル活用
+            renderTanglegram(molRoot, morphRoot, pairMappings);
             
             // 描画初期化
             currentHoveredNode = null;
@@ -1729,25 +1772,17 @@ body {
             currentCoeffs = null;
             morphStartCoeffs = null;
             isUntangled = false;
+            
+            // Untangleボタンのスタイルリセット
+            const untangleBtn = document.getElementById('untangleBtn');
+            if (untangleBtn) {
+                untangleBtn.classList.replace('btn-secondary', 'btn-primary');
+                untangleBtn.innerText = "もつれを解く";
+            }
+            
             cancelAnimationFrame(animationFrameId);
             const timelineContainer = document.getElementById('morph-timeline-container');
             if (timelineContainer) timelineContainer.style.display = 'none';
-            
-            // JSONがある場合のみPCA描画を実行、ない場合はプレースホルダー表示
-            if (jsonStr && parsedMorphData.length > 0) {
-                if (pcaPlaceholder) pcaPlaceholder.style.display = 'none';
-                drawPCA();
-            } else {
-                const canvas = document.getElementById('pca-canvas');
-                if (canvas) {
-                    const ctx = canvas.getContext('2d');
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                }
-                if (pcaPlaceholder) {
-                    pcaPlaceholder.style.display = 'flex';
-                    pcaPlaceholder.innerText = '形態データが入力されていないため、モーフィングはスキップされました。';
-                }
-            }
             
             const btnTree = document.getElementById('btn-save-tree-png');
             if (btnTree) btnTree.disabled = false;
@@ -1767,7 +1802,7 @@ body {
     // ==========================================
     // Visualization: D3 Tanglegram (Tree)
     // ==========================================
-    function renderTanglegram(molRoot, morphRoot) {
+    function renderTanglegram(molRoot, morphRoot, pairMappings = []) {
         const container = document.getElementById('tree-svg-container');
         if (!container) return;
         
@@ -1786,9 +1821,25 @@ body {
             .append('g')
             .attr('transform', `translate(${margin.left},${margin.top})`);
             
-        // ツリー幅をスリム化し、中央のラベル＆タングル領域（w * 0.56）を十分に確保
-        let treeWidth = morphRoot ? Math.min(w * 0.22, 130) : w - 140; 
+        // 学術タングルグラムの黄金比（左ツリー約30% : 中央結線約40% : 右ツリー約30%）
+        // 画面幅に応じてツリー幅を柔軟にスケーリングし、中央の間延び・両端への押し潰れを防止
+        let treeWidth = morphRoot ? Math.max(160, Math.min(w * 0.30, 420)) : w - 140; 
         
+        // テキスト幅のリアルタイム精密計測エンジン（文字長に応じた動的余白計算）
+        const textMeasureCanvas = document.createElement('canvas');
+        const textMeasureCtx = textMeasureCanvas.getContext('2d');
+        textMeasureCtx.font = 'bold 11px "Segoe UI", "Noto Sans JP", sans-serif';
+        function getComputedLabelWidth(text) {
+            if (!text) return 0;
+            return textMeasureCtx.measureText(getShortLabel(text)).width;
+        }
+
+        // SVGレイヤー構造の分離（最背面に結線、中間に枝、最前面にノードとテキスト）
+        // これにより線が文字の上を覆うことを物理的に完全排除
+        const tangleLinesLayer = svg.append('g').attr('class', 'layer-tangle-lines');
+        const treeLinksLayer = svg.append('g').attr('class', 'layer-tree-links');
+        const treeNodesLayer = svg.append('g').attr('class', 'layer-tree-nodes');
+
         // --- 左ツリー (分子系統樹) ---
         const treeLayoutMol = d3.cluster().size([h, treeWidth]);
         treeLayoutMol(molRoot);
@@ -1799,7 +1850,7 @@ body {
         });
         
         // エクスポート時の黒ベタ化を防ぐため、fill: none と stroke を属性として直接設定
-        svg.selectAll('.link-mol')
+        treeLinksLayer.selectAll('.link-mol')
             .data(molRoot.links())
             .enter().append('path')
             .attr('class', 'link link-mol')
@@ -1809,7 +1860,7 @@ body {
             .attr('id', d => `link-${d.source.nodeId}-${d.target.nodeId}`)
             .attr('d', d => `M${d.source.yMol},${d.source.xMol} V${d.target.xMol} H${d.target.yMol}`);
             
-        const nodeMol = svg.selectAll('.node-mol')
+        const nodeMol = treeNodesLayer.selectAll('.node-mol')
             .data(molRoot.descendants())
             .enter().append('g')
             .attr('class', 'node-tree node-mol')
@@ -1832,6 +1883,10 @@ body {
             .attr('font-size', '11px')
             .attr('font-weight', 'bold')
             .attr('font-family', 'Segoe UI, sans-serif')
+            .style('paint-order', 'stroke fill')
+            .style('stroke', '#ffffff')
+            .style('stroke-width', '3.5px')
+            .style('stroke-linejoin', 'round')
             .text(d => getShortLabel(d.data.name))
             .style('pointer-events', 'none');
             
@@ -1850,7 +1905,7 @@ body {
             });
             
             // エクスポート時の黒ベタ化を防ぐため、fill: none と stroke を属性として直接設定
-            svg.selectAll('.link-morph')
+            treeLinksLayer.selectAll('.link-morph')
                 .data(morphRoot.links())
                 .enter().append('path')
                 .attr('class', 'link link-morph')
@@ -1860,7 +1915,7 @@ body {
                 .attr('id', d => `link-${d.source.nodeId}-${d.target.nodeId}`)
                 .attr('d', d => `M${d.source.yMorph},${d.source.xMorph} V${d.target.xMorph} H${d.target.yMorph}`);
                 
-            const nodeMorph = svg.selectAll('.node-morph')
+            const nodeMorph = treeNodesLayer.selectAll('.node-morph')
                 .data(morphRoot.descendants())
                 .enter().append('g')
                 .attr('class', 'node-tree node-morph')
@@ -1883,6 +1938,10 @@ body {
                 .attr('font-size', '11px')
                 .attr('font-weight', 'bold')
                 .attr('font-family', 'Segoe UI, sans-serif')
+                .style('paint-order', 'stroke fill')
+                .style('stroke', '#ffffff')
+                .style('stroke-width', '3.5px')
+                .style('stroke-linejoin', 'round')
                 .text(d => getShortLabel(d.data.name))
                 .style('pointer-events', 'none');
 
@@ -1894,14 +1953,26 @@ body {
             const morphLeaves = morphRoot.leaves();
             
             const tangleData = [];
-            molLeaves.forEach((molLeaf, idx) => {
-                if (!molLeaf.data.name) return;
-                const molName = normalizeId(molLeaf.data.name);
-                const morphIdx = morphLeaves.findIndex(m => m.data.name && normalizeId(m.data.name) === molName);
-                if (morphIdx !== -1) {
-                    tangleData.push({ mol: molLeaf, morph: morphLeaves[morphIdx], molIndex: idx, morphIndex: morphIdx, isCrossing: false });
-                }
-            });
+            if (pairMappings && pairMappings.length > 0) {
+                pairMappings.forEach((mapping) => {
+                    const molName = normalizeId(mapping.left);
+                    const morphName = normalizeId(mapping.right);
+                    const molIdx = molLeaves.findIndex(m => m.data.name && normalizeId(m.data.name) === molName);
+                    const morphIdx = morphLeaves.findIndex(m => m.data.name && normalizeId(m.data.name) === morphName);
+                    if (molIdx !== -1 && morphIdx !== -1) {
+                        tangleData.push({ mol: molLeaves[molIdx], morph: morphLeaves[morphIdx], molIndex: molIdx, morphIndex: morphIdx, isCrossing: false });
+                    }
+                });
+            } else {
+                molLeaves.forEach((molLeaf, idx) => {
+                    if (!molLeaf.data.name) return;
+                    const molName = normalizeId(molLeaf.data.name);
+                    const morphIdx = morphLeaves.findIndex(m => m.data.name && normalizeId(m.data.name) === molName);
+                    if (morphIdx !== -1) {
+                        tangleData.push({ mol: molLeaf, morph: morphLeaves[morphIdx], molIndex: idx, morphIndex: morphIdx, isCrossing: false });
+                    }
+                });
+            }
             
             let crossingCount = 0;
             const crossingPairs = [];
@@ -1922,19 +1993,25 @@ body {
                 }
             }
             
-            // ラベル幅（約110〜125px）を考慮し、文字の横からタングルラインを美しく繋ぐ
-            svg.selectAll('.tangle-line')
+            // 各生物種の文字実長を動的計算し、文字の末尾のすぐ横から最背面レイヤーへ結線
+            tangleLinesLayer.selectAll('.tangle-line')
                 .data(tangleData)
                 .enter().append('path')
                 .attr('class', 'tangle-line')
                 .attr('d', d => {
-                    const availableGap = d.morph.yMorph - d.mol.yMol;
-                    const marginOff = Math.min(125, Math.max(20, availableGap * 0.38));
-                    const x1 = d.mol.yMol + marginOff;
+                    // 左側: ノード座標 + マージン(10px) + 文字実幅 + 余白(10px)
+                    const molTextW = getComputedLabelWidth(d.mol.data.name);
+                    const x1 = d.mol.yMol + 10 + molTextW + 10;
                     const y1 = d.mol.xMol;
-                    const x2 = d.morph.yMorph - marginOff;
+                    
+                    // 右側: ノード座標 - マージン(10px) - 文字実幅 - 余白(10px)
+                    const morphTextW = getComputedLabelWidth(d.morph.data.name);
+                    const x2 = d.morph.yMorph - 10 - morphTextW - 10;
                     const y2 = d.morph.xMorph;
-                    return `M${x1},${y1} C${x1 + (x2 - x1) / 2},${y1} ${x1 + (x2 - x1) / 2},${y2} ${x2},${y2}`;
+                    
+                    // 中央ベジェ曲線（もし文字が極端に長くx1 >= x2になる場合は中間点フォールバック）
+                    const cX = x1 + (x2 - x1) / 2;
+                    return `M${x1},${y1} C${cX},${y1} ${cX},${y2} ${x2},${y2}`;
                 })
                 .attr('fill', 'none')
                 .attr('stroke', d => (isUntangled && d.isCrossing) ? '#e67e22' : '#bdc3c7')
@@ -2032,6 +2109,18 @@ body {
                     ${pcaInsightText}
                     <p style="margin-bottom: 0;"><strong>祖先形の検証:</strong> タングルグラム上の分岐ノードをクリックすると、右側のモーフィング画面にその共通祖先の推定形態が再現されます。どの進化段階で形態の急激な変化が起きたかをシミュレーションしてみましょう。</p>
                 `;
+            // 宿主・寄生虫対応表モードの場合の上書き
+            const isMappingMode = globalTreeRoot && globalTreeRoot.pairMappings && globalTreeRoot.pairMappings.length > 0;
+            if (isMappingMode && isUntangledState) {
+                if (crossingCount === 0) {
+                    badge.innerText = '共進化・共分岐（交差: 0箇所）';
+                    content.innerHTML = `<p style="margin-bottom: 0;"><strong>共進化・共分岐（Co-speciation）の成立:</strong> 左右の系統樹が完全に平行です。宿主の種分化と寄生虫の種分化が厳密に同期して進んだことを示唆しています。</p>`;
+                } else {
+                    badge.innerText = `宿主転換の示唆（交差: ${crossingCount}箇所）`;
+                    content.innerHTML = `<p style="margin-bottom: 0;"><strong>宿主転換（Host switch）の示唆:</strong> 枝の最適化後も残る交差は、寄生虫が本来の共分岐系統から別の宿主系統へ乗り換えた（宿主転換）、あるいは重複寄生が起きたホットスポットを示しています。</p>`;
+                }
+            }
+
             }
         }
     }
@@ -2039,11 +2128,19 @@ body {
     // ==========================================
     // Untangle Logic
     // ==========================================
-    function getSubtreeScore(node, referenceOrder) {
+    function getSubtreeScore(node, referenceOrder, pairMappings = []) {
         let leaves = node.leaves();
         let sum = 0, count = 0;
+        let reverseMap = {};
+        if (pairMappings && pairMappings.length > 0) {
+            pairMappings.forEach(m => { reverseMap[normalizeId(m.right)] = normalizeId(m.left); });
+        }
         leaves.forEach(l => {
-            let refIndex = referenceOrder.indexOf(normalizeId(l.data.name));
+            let targetName = normalizeId(l.data.name);
+            if (pairMappings && pairMappings.length > 0 && reverseMap[targetName]) {
+                targetName = reverseMap[targetName];
+            }
+            let refIndex = referenceOrder.indexOf(targetName);
             if (refIndex !== -1) {
                 sum += refIndex;
                 count++;
@@ -2052,14 +2149,14 @@ body {
         return count > 0 ? sum / count : 0;
     }
 
-    function untangleTree(node, referenceOrder) {
+    function untangleTree(node, referenceOrder, pairMappings = []) {
         if (!node.children) return;
         
-        node.children.forEach(c => untangleTree(c, referenceOrder));
+        node.children.forEach(c => untangleTree(c, referenceOrder, pairMappings));
         
         if (node.children.length === 2) {
-            let scoreA = getSubtreeScore(node.children[0], referenceOrder);
-            let scoreB = getSubtreeScore(node.children[1], referenceOrder);
+            let scoreA = getSubtreeScore(node.children[0], referenceOrder, pairMappings);
+            let scoreB = getSubtreeScore(node.children[1], referenceOrder, pairMappings);
             if (scoreA > scoreB) {
                 let temp = node.children[0];
                 node.children[0] = node.children[1];
@@ -2076,10 +2173,10 @@ body {
         
         if (isUntangled) {
             const molLeaves = globalTreeRoot.molRoot.leaves().map(l => normalizeId(l.data.name));
-            untangleTree(globalTreeRoot.morphRoot, molLeaves);
+            untangleTree(globalTreeRoot.morphRoot, molLeaves, globalTreeRoot.pairMappings || []);
             // 押した後（解消中）は控えめな白（btn-secondary）
             btn.classList.replace('btn-primary', 'btn-secondary');
-            btn.innerText = "もつれを戻す (Tangle)";
+            btn.innerText = "もつれを戻す";
         } else {
             // オリジナルの順序に復元
             globalTreeRoot.morphRoot.each(d => {
@@ -2092,7 +2189,7 @@ body {
             btn.innerText = "もつれ解消";
         }
         
-        renderTanglegram(globalTreeRoot.molRoot, globalTreeRoot.morphRoot);
+        renderTanglegram(globalTreeRoot.molRoot, globalTreeRoot.morphRoot, globalTreeRoot.pairMappings || []);
     };
 
     // ==========================================
@@ -2614,10 +2711,12 @@ function closeFeedbackForm() {
             const molEl = document.getElementById('newick-mol-input');
             const morphEl = document.getElementById('hybrid-morph-input');
             const jsonEl = document.getElementById('json-input');
+            const mappingEl = document.getElementById('mapping-input');
 
             const molVal = molEl ? molEl.value.trim() : '';
             const morphVal = morphEl ? morphEl.value.trim() : '';
             const jsonVal = jsonEl ? jsonEl.value.trim() : '';
+            const mappingVal = mappingEl ? mappingEl.value.trim() : '';
 
             // 【バグ解消】tree-placeholder は描画時に innerHTML='' で消滅するため、
             // 実際に描画されたSVGの存在、または内部オブジェクト globalTreeRoot の存在で確実に判定する
@@ -2634,6 +2733,7 @@ function closeFeedbackForm() {
                 molVal: molVal,
                 morphVal: morphVal,
                 jsonVal: jsonVal,
+                mappingVal: mappingVal,
                 dataDirection: document.getElementById('data-direction') ? document.getElementById('data-direction').value : 'col',
                 distType: document.getElementById('dist-type') ? document.getElementById('dist-type').value : 'euclidean',
                 linkType: document.getElementById('link-type') ? document.getElementById('link-type').value : 'ward',
@@ -2657,10 +2757,12 @@ function closeFeedbackForm() {
             const molEl = document.getElementById('newick-mol-input');
             const morphEl = document.getElementById('hybrid-morph-input');
             const jsonEl = document.getElementById('json-input');
+            const mappingEl = document.getElementById('mapping-input');
 
             if (molEl) molEl.value = state.molVal || '';
             if (morphEl) morphEl.value = state.morphVal || '';
             if (jsonEl) jsonEl.value = state.jsonVal || '';
+            if (mappingEl) mappingEl.value = state.mappingVal || '';
 
             // 2. クラスタリング条件セレクトボックスの復元
             if (state.dataDirection && document.getElementById('data-direction')) {
@@ -2780,7 +2882,7 @@ document.addEventListener('DOMContentLoaded', () => {
         runBtn.disabled = !(hasMol && hasMorph);
     }
 
-    ['newick-mol-input', 'hybrid-morph-input', 'json-input'].forEach(id => {
+    ['newick-mol-input', 'hybrid-morph-input', 'json-input', 'mapping-input'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
             el.addEventListener('input', checkApp10Inputs);
