@@ -742,7 +742,7 @@
     margin-left: auto !important;
 }
 .morpho-export-group .btn, #morphoExportGroup .btn, .export-btn-group .btn-secondary {
-    min-width: 110px !important; /* 一番文字数の長い「JSONコピー」基準 */
+    min-width: 115px !important;
     text-align: center !important;
     justify-content: center !important;
     box-sizing: border-box !important;
@@ -871,17 +871,18 @@ body {
 }
 
 
-/* アプリ⑨ ボタン微調整（幅同期・中央寄せ） */
+/* アプリ⑨ ボタン微調整（幅同期・右寄せ） */
 .morpho-export-group, #morphoExportGroup, .export-btn-group {
     display: flex !important;
-    justify-content: center !important;
+    justify-content: flex-end !important;
     align-items: center !important;
+    flex-wrap: wrap !important;
     gap: 8px !important;
     width: 100% !important;
-    margin: 0 auto !important;
+    margin-left: auto !important;
 }
 .morpho-export-group .btn, #morphoExportGroup .btn, .export-btn-group .btn-secondary {
-    min-width: 140px !important;
+    min-width: 125px !important;
     text-align: center !important;
     justify-content: center !important;
     box-sizing: border-box !important;
@@ -1266,27 +1267,6 @@ body {
                     </button>
                 </div>
             </div>
-            
-            <!-- バケツリレー用 3連エクスポートボタングループ -->
-            <div id="export-buttons-container" class="export-btn-group" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px;">
-              <!-- アプリ⑩ 行き -->
-              <button id="btnCopyForApp10" class="btn btn-secondary" onclick="copyDataForApp10(); triggerHapticFeedback();" disabled data-tooltip="⑩ Integrative Taxonomy Studio用に出力">
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-                JSONコピー
-              </button>
-
-              <!-- アプリ⑪ 行き -->
-              <button id="btnCopyForApp11" class="btn btn-secondary" onclick="copyVariationDataForApp11(); triggerHapticFeedback();" disabled data-tooltip="⑪ Comparative Variant Analyzer用に出力">
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-                PCAコピー
-              </button>
-
-              <!-- アプリ⑫ 行き（旧11番から改称） -->
-              <button id="btnCopyForApp12" class="btn btn-secondary" onclick="copyMorphDataTSV(); triggerHapticFeedback();" disabled data-tooltip="⑫ Statistical Genetics Lab用に出力">
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-                TSVコピー
-              </button>
-            </div>
         </div>
     </div>
 
@@ -1412,6 +1392,33 @@ body {
                     <!-- Route C 専用のPCA描画コンテナ -->
                     <div id="pca-svg-container-c" style="width:100%; height:100%;"></div>
                 </div>
+            </div>
+
+            <!-- バケツリレー用 エクスポートボタングループ -->
+            <div id="export-buttons-container" class="export-btn-group" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: flex-end; margin-top: 10px;">
+              <!-- アプリ⑩ 行き -->
+              <button id="btnCopyForApp10" class="btn btn-secondary" onclick="copyDataForApp10(); triggerHapticFeedback();" disabled data-tooltip="⑩ Integrative Taxonomy Studio用に出力">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                JSONコピー
+              </button>
+
+              <!-- アプリ⑩ 比較系統樹行き -->
+              <button id="btnCopyMorphTree" class="btn btn-secondary" onclick="copyMorphTreeNewick(); triggerHapticFeedback();" disabled data-tooltip="⑩ Integrative Taxonomy Studioの比較系統樹用(Newick形式)に出力">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                Newickコピー
+              </button>
+
+              <!-- アプリ⑪ 行き -->
+              <button id="btnCopyForApp11" class="btn btn-secondary" onclick="copyVariationDataForApp11(); triggerHapticFeedback();" disabled data-tooltip="⑪ Comparative Variant Analyzer用に出力">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                PCAコピー
+              </button>
+
+              <!-- アプリ⑫ 行き（旧11番から改称） -->
+              <button id="btnCopyForApp12" class="btn btn-secondary" onclick="copyMorphDataTSV(); triggerHapticFeedback();" disabled data-tooltip="⑫ Statistical Genetics Lab用に出力">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                TSVコピー
+              </button>
             </div>
 
             <!-- オンデマンド詳しい解説パネル (Soft Scaffolding) -->
@@ -1900,12 +1907,128 @@ body {
         const btn10 = document.getElementById('btnCopyForApp10');
         const btn11 = document.getElementById('btnCopyForApp11');
         const btn12 = document.getElementById('btnCopyForApp12');
+        const btnTree = document.getElementById('btnCopyMorphTree');
         
         if (btn10) btn10.disabled = !hasValidData;
         if (btn11) btn11.disabled = !hasValidData;
         if (btn12) btn12.disabled = !hasValidData;
+        if (btnTree) btnTree.disabled = !hasValidData;
     }
     window.updateExportButtonsState = updateExportButtonsState;
+
+    function generateUPGMANewick(samples) {
+        const n = samples.length;
+        if (n < 2) return null;
+
+        let clusters = samples.map((s, idx) => ({
+            id: idx,
+            name: s.name || s.id || `Sample_${idx + 1}`,
+            size: 1,
+            height: 0,
+            newick: s.name || s.id || `Sample_${idx + 1}`
+        }));
+
+        let dist = Array.from({ length: n }, () => new Float64Array(n));
+        for (let i = 0; i < n; i++) {
+            for (let j = i + 1; j < n; j++) {
+                let d = 0;
+                const fA = samples[i].features;
+                const fB = samples[j].features;
+                const len = Math.min(fA.length, fB.length);
+                for (let k = 0; k < len; k++) {
+                    const diff = fA[k] - fB[k];
+                    d += diff * diff;
+                }
+                d = Math.sqrt(d);
+                dist[i][j] = d;
+                dist[j][i] = d;
+            }
+        }
+
+        while (clusters.length > 1) {
+            let minD = Infinity;
+            let minI = 0, minJ = 1;
+            const cLen = clusters.length;
+
+            for (let i = 0; i < cLen; i++) {
+                for (let j = i + 1; j < cLen; j++) {
+                    const d = dist[clusters[i].id][clusters[j].id];
+                    if (d < minD) {
+                        minD = d;
+                        minI = i;
+                        minJ = j;
+                    }
+                }
+            }
+
+            const cA = clusters[minI];
+            const cB = clusters[minJ];
+            const newHeight = minD / 2;
+            const branchLenA = Math.max(0, newHeight - cA.height);
+            const branchLenB = Math.max(0, newHeight - cB.height);
+
+            const newClusterId = dist.length;
+            const newDistRow = new Float64Array(newClusterId + 1);
+            for (let i = 0; i < dist.length; i++) {
+                const newRow = new Float64Array(newClusterId + 1);
+                newRow.set(dist[i]);
+                dist[i] = newRow;
+            }
+            dist.push(newDistRow);
+
+            for (let k = 0; k < cLen; k++) {
+                if (k !== minI && k !== minJ) {
+                    const cK = clusters[k];
+                    const d_AK = dist[cA.id][cK.id];
+                    const d_BK = dist[cB.id][cK.id];
+                    const d_newK = (d_AK * cA.size + d_BK * cB.size) / (cA.size + cB.size);
+                    dist[newClusterId][cK.id] = d_newK;
+                    dist[cK.id][newClusterId] = d_newK;
+                }
+            }
+
+            const mergedNewick = `(${cA.newick}:${branchLenA.toFixed(4)},${cB.newick}:${branchLenB.toFixed(4)})`;
+            const newCluster = {
+                id: newClusterId,
+                size: cA.size + cB.size,
+                height: newHeight,
+                newick: mergedNewick
+            };
+
+            clusters.splice(minJ, 1);
+            clusters.splice(minI, 1);
+            clusters.push(newCluster);
+        }
+
+        return clusters[0].newick + ";";
+    }
+
+    function copyMorphTreeNewick() {
+        if (!globalSamples || globalSamples.length < 2) {
+            showToast("2つ以上のサンプルで形態解析を実行してからコピーしてください", "warning");
+            return;
+        }
+
+        const newickBody = generateUPGMANewick(globalSamples);
+        if (!newickBody) {
+            showToast("系統樹の生成に失敗しました", "error");
+            return;
+        }
+
+        const timestamp = new Date().toISOString();
+        const outText = `# source: App_9_Morphometrics_Studio | type: morphological_tree | timestamp: ${timestamp}\n${newickBody}`;
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(outText).then(() => {
+                showToast("⑩ 比較系統樹用 Newickをクリップボードにコピーしました！", "success");
+            }).catch(err => {
+                fallbackCopyTextToClipboard(outText, "⑩ 比較系統樹用 Newickをクリップボードにコピーしました！");
+            });
+        } else {
+            fallbackCopyTextToClipboard(outText, "⑩ 比較系統樹用 Newickをクリップボードにコピーしました！");
+        }
+    }
+    window.copyMorphTreeNewick = copyMorphTreeNewick;
 
     // アプリ⑩ Integrative Taxonomy Studio 向け統合JSONエクスポート
     function copyDataForApp10() {

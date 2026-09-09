@@ -1172,8 +1172,8 @@ body {
                 
                 <!-- 上段右: 比較系統樹 -->
                 <div style="display: flex; flex-direction: column;">
-                    <label class="input-label">2. 比較系統樹 [寄生虫 / 形態 / 計測値] (Newick・CSV形式)</label>
-                    <textarea id="hybrid-morph-input" class="paste-area" style="max-width: 100%; width: 100%;" placeholder="寄生虫の系統樹、形態系統樹(Newick)、または計測値(CSV)を入力してください"></textarea>
+                    <label class="input-label">2. 比較系統樹 [形態 / 寄生虫 / 計測値] (Newick・CSV形式)</label>
+                    <textarea id="hybrid-morph-input" class="paste-area" style="max-width: 100%; width: 100%;" placeholder="アプリ⑨の形態系統樹(Newick)、寄生虫の系統樹、または計測値(CSV)を入力してください"></textarea>
                     
                     <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: nowrap; align-items: flex-start; overflow-x: auto;">
                         <div style="flex: 1; min-width: 80px;">
@@ -1658,16 +1658,22 @@ body {
         
         let newickMorphStr = '';
 
+        // コメント行（#）を除去して純粋なデータを抽出
+        let cleanHybridVal = hybridMorphVal.split('\n')
+            .map(l => l.trim())
+            .filter(l => l.length > 0 && !l.startsWith('#'))
+            .join('\n');
+
         // ハイブリッド自動判定と動的パースロジック
-        if (hybridMorphVal) {
-            if (hybridMorphVal.startsWith('(') || hybridMorphVal.endsWith(';')) {
+        if (cleanHybridVal) {
+            if (cleanHybridVal.startsWith('(') || cleanHybridVal.endsWith(';')) {
                 // Newick形式と判定
-                newickMorphStr = hybridMorphVal;
-            } else if (hybridMorphVal.includes(',') && !hybridMorphVal.includes('(')) {
+                newickMorphStr = cleanHybridVal;
+            } else if (cleanHybridVal.includes(',') && !cleanHybridVal.includes('(')) {
                 // CSV形式（計測データ）と判定し、方向に応じたパースを実行
                 let sampleNames = [];
                 let dataMatrix = [];
-                const lines = hybridMorphVal.trim().split('\n').map(l => l.split(/[,\t\s]+/).filter(s => s !== ""));
+                const lines = cleanHybridVal.trim().split('\n').map(l => l.split(/[,\t\s]+/).filter(s => s !== ""));
                 const dataDirection = document.getElementById('data-direction').value;
                 
                 if (lines.length > 0) {
@@ -2722,7 +2728,9 @@ body {
             area.addEventListener('paste', (e) => {
                 setTimeout(() => {
                     const val = e.target.value;
-                    if (val.includes('"source"')) {
+                    if (val.includes('morphological_tree') || (val.includes('App_9') && val.includes(';'))) {
+                        showToast('⑨ Morphometrics Studio から形態系統樹を受信しました！', 'success');
+                    } else if (val.includes('"source"')) {
                         const match = val.match(/"source"\s*:\s*"([^"]+)"/);
                         if (match) {
                             if (match[1].includes('App_9')) {
