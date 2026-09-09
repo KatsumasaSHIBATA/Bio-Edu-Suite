@@ -1553,6 +1553,7 @@ body {
     // ==========================================
     // Global State
     // ==========================================
+    let currentMorphMethod = 'efa'; // 'efa' または 'gpa'
     let parsedMorphData = [];
     let currentHoveredNode = null;
     let targetCoeffs = null;
@@ -1706,6 +1707,15 @@ body {
                 let morphData = parsedJson.samples ? parsedJson.samples : parsedJson;
                 let normMorphIds = morphData.map(d => normalizeId(d.id || d.name));
                 
+                // メソッドの自動判定 (GPA or EFA)
+                if (parsedJson.metadata && parsedJson.metadata.method === 'GPA_PCA') {
+                    currentMorphMethod = 'gpa';
+                } else if (morphData.length > 0 && morphData[0].gpaCoordinates) {
+                    currentMorphMethod = 'gpa';
+                } else {
+                    currentMorphMethod = 'efa';
+                }
+
                 leafNames.forEach(leaf => {
                     let normLeaf = normalizeId(leaf);
                     if (!normMorphIds.includes(normLeaf)) {
@@ -2244,47 +2254,72 @@ body {
             .style('opacity', 1)
             .style('stroke', 'var(--phase-color)')
             .style('stroke-width', 2);
-        
-        // 形態データが存在する場合のみ、モーフィング用係数計算を実行
+        // 形態データが存在する場合のみ、モーフィング用計算を実行
         if (parsedMorphData.length > 0) {
-            let targetCoeffs = interpolateAncestralEFA(nodeData.leavesList);
-            let rootCoeffs = interpolateAncestralEFA(globalTreeRoot.molRoot.leavesList);
+            let rootPC1 = 0, rootPC2 = 0, validRoot = 0;
+            let targetPC1 = 0, targetPC2 = 0, validTarget = 0;
+            let normTargetLeaves = nodeData.leavesList.map(l => normalizeId(l));
             
-            if (targetCoeffs && rootCoeffs) {
-                let rootPC1 = 0, rootPC2 = 0, validRoot = 0;
-                let targetPC1 = 0, targetPC2 = 0, validTarget = 0;
-                let normTargetLeaves = nodeData.leavesList.map(l => normalizeId(l));
-                
-                parsedMorphData.forEach(d => {
-                    if (d.pc1 !== undefined && d.pc2 !== undefined) {
-                        rootPC1 += d.pc1; rootPC2 += d.pc2; validRoot++;
-                        if (normTargetLeaves.includes(normalizeId(d.id))) {
-                            targetPC1 += d.pc1; targetPC2 += d.pc2; validTarget++;
-                        }
+            parsedMorphData.forEach(d => {
+                if (d.pc1 !== undefined && d.pc2 !== undefined) {
+                    rootPC1 += d.pc1; rootPC2 += d.pc2; validRoot++;
+                    if (normTargetLeaves.includes(normalizeId(d.id))) {
+                        targetPC1 += d.pc1; targetPC2 += d.pc2; validTarget++;
                     }
-                });
-                if (validRoot > 0) { rootPC1 /= validRoot; rootPC2 /= validRoot; }
-                if (validTarget > 0) { targetPC1 /= validTarget; targetPC2 /= validTarget; }
-                
-                // ガイドライン第14項③: 事前計算（プレキャッシュ）の生成
-                window.morphTimelineCache = [];
-                for (let step = 0; step <= 100; step++) {
-                    let p = step / 100;
-                    let cacheStep = {
-                        coeffs: { a: [], b: [], c: [], d: [] },
-                        pc1: rootPC1 + (targetPC1 - rootPC1) * p,
-                        pc2: rootPC2 + (targetPC2 - rootPC2) * p
-                    };
-                    ['a', 'b', 'c', 'd'].forEach(key => {
-                        for (let i = 0; i < targetCoeffs[key].length; i++) {
-                            let startVal = rootCoeffs[key][i];
-                            let targetVal = targetCoeffs[key][i];
-                            cacheStep.coeffs[key].push(startVal + (targetVal - startVal) * p);
-                        }
-                    });
-                    window.morphTimelineCache.push(cacheStep);
                 }
-                
+            });
+            if (validRoot > 0) { rootPC1 /= validRoot; rootPC2 /= validRoot; }
+            if (validTarget > 0) { targetPC1 /= validTarget; targetPC2 /= validTarget; }
+
+            window.morphTimelineCache = [];
+
+            if (currentMorphMethod === 'gpa') {
+                let targetLandmarks = interpolateAncestralGPA(nodeData.leavesList);
+                let rootLandmarks = interpolateAncestralGPA(globalTreeRoot.molRoot.leavesList);
+
+                if (targetLandmarks && rootLandmarks) {
+                    for (let step = 0; step <= 100; step++) {
+                        let p = step / 100;
+                        let interpolatedPoints = [];
+                        for (let i = 0; i < targetLandmarks.length; i++) {
+                            let rx = rootLandmarks[i][0], ry = rootLandmarks[i][1];
+                            let tx = targetLandmarks[i][0], ty = targetLandmarks[i][1];
+                            interpolatedPoints.push([rx + (tx - rx) * p, ry + (ty - ry) * p]);
+                        }
+                        window.morphTimelineCache.push({
+                            type: 'gpa',
+                            landmarks: interpolatedPoints,
+                            pc1: rootPC1 + (targetPC1 - rootPC1) * p,
+                            pc2: rootPC2 + (targetPC2 - rootPC2) * p
+                        });
+                    }
+                }
+            } else {
+                let targetCoeffs = interpolateAncestralEFA(nodeData.leavesList);
+                let rootCoeffs = interpolateAncestralEFA(globalTreeRoot.molRoot.leavesList);
+
+                if (targetCoeffs && rootCoeffs) {
+                    for (let step = 0; step <= 100; step++) {
+                        let p = step / 100;
+                        let cacheStep = {
+                            type: 'efa',
+                            coeffs: { a: [], b: [], c: [], d: [] },
+                            pc1: rootPC1 + (targetPC1 - rootPC1) * p,
+                            pc2: rootPC2 + (targetPC2 - rootPC2) * p
+                        };
+                        ['a', 'b', 'c', 'd'].forEach(key => {
+                            for (let i = 0; i < targetCoeffs[key].length; i++) {
+                                let startVal = rootCoeffs[key][i];
+                                let targetVal = targetCoeffs[key][i];
+                                cacheStep.coeffs[key].push(startVal + (targetVal - startVal) * p);
+                            }
+                        });
+                        window.morphTimelineCache.push(cacheStep);
+                    }
+                }
+            }
+
+            if (window.morphTimelineCache && window.morphTimelineCache.length > 0) {
                 const timelineContainer = document.getElementById('morph-timeline-container');
                 const timelineInput = document.getElementById('morphTimeline');
                 if (timelineContainer && timelineInput) {
@@ -2300,6 +2335,31 @@ body {
                 drawPCA();
             }
         }
+    }
+
+    function interpolateAncestralGPA(leafIds) {
+        let normLeafIds = leafIds.map(id => normalizeId(id));
+        let targets = parsedMorphData.filter(d => normLeafIds.includes(normalizeId(d.id)) && d.gpaCoordinates);
+        
+        if (targets.length === 0) return null;
+        
+        let coordLength = targets[0].gpaCoordinates.length;
+        let avgCoords = new Array(coordLength).fill(0);
+        
+        for (let i = 0; i < coordLength; i++) {
+            let sum = 0;
+            targets.forEach(t => {
+                sum += (t.gpaCoordinates[i] || 0);
+            });
+            avgCoords[i] = sum / targets.length;
+        }
+        
+        // [ [x1, y1], [x2, y2], ... ] のペア形式に変換
+        let landmarkPairs = [];
+        for (let i = 0; i < coordLength; i += 2) {
+            landmarkPairs.push([avgCoords[i], avgCoords[i + 1]]);
+        }
+        return landmarkPairs;
     }
 
     function interpolateAncestralEFA(leafIds) {
@@ -2326,6 +2386,50 @@ body {
         }
         
         return {a, b, c, d: d_arr};
+    }
+
+    function drawGPAShape(ctx, points, cx, cy, radius) {
+        if (!points || points.length === 0) return;
+        
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        for (let pt of points) {
+            if (pt[0] < minX) minX = pt[0]; if (pt[0] > maxX) maxX = pt[0];
+            if (pt[1] < minY) minY = pt[1]; if (pt[1] > maxY) maxY = pt[1];
+        }
+        
+        let rangeX = maxX - minX || 1;
+        let rangeY = maxY - minY || 1;
+        let scale = (radius * 2) / Math.max(rangeX, rangeY);
+        let midX = (minX + maxX) / 2;
+        let midY = (minY + maxY) / 2;
+        
+        // 1. 輪郭ポリゴンの描画
+        ctx.beginPath();
+        for (let i = 0; i < points.length; i++) {
+            let px = cx + (points[i][0] - midX) * scale;
+            let py = cy + (points[i][1] - midY) * scale;
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.fillStyle = "rgba(142, 68, 173, 0.15)";
+        ctx.fill();
+        ctx.strokeStyle = "rgba(142, 68, 173, 0.9)";
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+        
+        // 2. 各ランドマーク相同点（ドット）の描画
+        for (let i = 0; i < points.length; i++) {
+            let px = cx + (points[i][0] - midX) * scale;
+            let py = cy + (points[i][1] - midY) * scale;
+            ctx.beginPath();
+            ctx.arc(px, py, 4, 0, Math.PI * 2);
+            ctx.fillStyle = '#e74c3c';
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+        }
     }
 
     function animateMorph() {
@@ -2404,8 +2508,12 @@ body {
             let step = timelineInput ? parseInt(timelineInput.value, 10) : 100;
             let cache = window.morphTimelineCache[step];
             
-            if (cache && cache.coeffs) {
-                drawEFAShape(ctx, cache.coeffs, w / 2, h / 2, Math.min(w, h) * 0.35);
+            if (cache) {
+                if (cache.type === 'gpa' && cache.landmarks) {
+                    drawGPAShape(ctx, cache.landmarks, w / 2, h / 2, Math.min(w, h) * 0.35);
+                } else if (cache.coeffs) {
+                    drawEFAShape(ctx, cache.coeffs, w / 2, h / 2, Math.min(w, h) * 0.35);
+                }
             }
         }
         
