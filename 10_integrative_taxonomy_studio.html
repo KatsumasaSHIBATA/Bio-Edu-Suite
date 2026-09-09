@@ -878,6 +878,80 @@ body {
     transform: none !important;
 }
 
+/* 【ガイドライン第4項・第9項②準拠】PNG保存ボタン（Success緑）規格 */
+.btn-success {
+    background-color: #27ae60 !important;
+    color: #ffffff !important;
+    border: 1px solid #219653 !important;
+    border-radius: 4px !important;
+    padding: 8px 16px !important;
+    font-size: 13px !important;
+    font-weight: bold !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    box-shadow: none !important;
+    transition: all 0.2s ease !important;
+    width: fit-content !important;
+    min-height: 44px !important;
+    box-sizing: border-box !important;
+}
+.btn-success:hover:not(:disabled) {
+    background-color: #219653 !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+.btn-success:disabled {
+    background-color: #ffffff !important;
+    color: #bdc3c7 !important;
+    border: 1px solid #d5dbdb !important;
+    cursor: not-allowed !important;
+    opacity: 0.8 !important;
+    box-shadow: none !important;
+    filter: none !important;
+    transform: none !important;
+}
+
+/* 【ガイドライン第9項②準拠】もつれ解消ボタン（ヘッダー32px高さを厳密維持した動的発色＆無効化規格） */
+#untangleBtn {
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    white-space: nowrap !important;
+}
+/* 有効時・未解消（Primary青：前進アクション） */
+#untangleBtn.btn-primary:not(:disabled) {
+    background-color: #3498db !important;
+    color: #ffffff !important;
+    border: 1px solid #2980b9 !important;
+}
+#untangleBtn.btn-primary:not(:disabled):hover {
+    background-color: #2980b9 !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+/* 有効時・解消済み（Secondary白：戻すアクション） */
+#untangleBtn.btn-secondary:not(:disabled) {
+    background-color: #fdfefe !important;
+    color: #2c3e50 !important;
+    border: 1px solid #bdc3c7 !important;
+}
+#untangleBtn.btn-secondary:not(:disabled):hover {
+    background-color: #f4f6f6 !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+/* 無効時（disabled：解析実行ボタンと完全同一の白背景・薄グレー枠・淡文字・not-allowed） */
+#untangleBtn:disabled {
+    background-color: #ffffff !important;
+    color: #bdc3c7 !important;
+    border: 1px solid #d5dbdb !important;
+    cursor: not-allowed !important;
+    opacity: 0.8 !important;
+    box-shadow: none !important;
+    filter: none !important;
+    transform: none !important;
+}
+
 </style>
 </head>
 <body class="app-mode no-select-ui">
@@ -1173,7 +1247,7 @@ body {
                     Ⅱ. タングルグラム (分子 vs 形態 / 宿主 vs 寄生虫)
                     <button class="rationale-btn" onclick="toggleRationale(event, 'rat_tangle')">?</button>
                 </div>
-                <button id="untangleBtn" class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px; min-height: 32px; height: 32px; box-sizing: border-box;" onclick="handleUntangle()" aria-label="もつれ解消">
+                <button id="untangleBtn" class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px; min-height: 32px; height: 32px; box-sizing: border-box;" onclick="handleUntangle()" aria-label="もつれ解消" disabled>
                     もつれ解消
                 </button>
             </div>
@@ -1783,11 +1857,18 @@ body {
             morphStartCoeffs = null;
             isUntangled = false;
             
-            // Untangleボタンのスタイルリセット
+            // Untangleボタンの活性化・スタイルリセット（左右の系統樹が揃っている場合のみ活性化）
             const untangleBtn = document.getElementById('untangleBtn');
             if (untangleBtn) {
-                untangleBtn.classList.replace('btn-secondary', 'btn-primary');
-                untangleBtn.innerText = "もつれを解く";
+                const canUntangle = !!(molRoot && morphRoot);
+                untangleBtn.disabled = !canUntangle;
+                if (canUntangle) {
+                    untangleBtn.classList.replace('btn-secondary', 'btn-primary');
+                    untangleBtn.innerText = "もつれ解消";
+                } else {
+                    untangleBtn.classList.replace('btn-primary', 'btn-secondary');
+                    untangleBtn.innerText = "もつれ解消";
+                }
             }
             
             cancelAnimationFrame(animationFrameId);
