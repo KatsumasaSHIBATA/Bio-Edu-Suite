@@ -23,6 +23,7 @@ enableIndexedDbPersistence(db).catch((err) => {
 let currentRoomCode = localStorage.getItem('bio_edu_room_code') || "";
 let currentParticipantId = localStorage.getItem('bio_edu_participant_id') || "";
 let isConnected = !!(currentRoomCode && currentParticipantId);
+let isTeacher = currentParticipantId.toUpperCase().startsWith("TEACHER");
 
 export function renderAuthStatus() {
   const icon = document.getElementById("accountUserIcon");
@@ -33,11 +34,11 @@ export function renderAuthStatus() {
   const participantDisplay = document.getElementById("participantDisplay");
   const syncBadge = document.getElementById("syncStatusBadge");
   const syncNote = document.getElementById("syncStatusNote");
+  const teacherSection = document.getElementById("teacherPresetSection");
 
   const isOnline = navigator.onLine;
 
   if (!isConnected) {
-    // 【未接続（ローカル）】: 単一の薄灰色丸ランプ
     if (icon) {
       icon.style.color = "#bdc3c7";
       icon.style.fill = "#bdc3c7";
@@ -48,25 +49,25 @@ export function renderAuthStatus() {
     }
     if (modalLoggedOut) modalLoggedOut.style.display = "block";
     if (modalLoggedIn) modalLoggedIn.style.display = "none";
+    if (teacherSection) teacherSection.style.display = "none";
   } else {
-    // 【ルーム接続中】
     if (isOnline) {
-      // 接続中: 単一の鮮やかな緑色丸ランプ
       if (icon) {
-        icon.style.color = "#2ecc71";
-        icon.style.fill = "#2ecc71";
+        icon.style.color = isTeacher ? "#f39c12" : "#2ecc71";
+        icon.style.fill = isTeacher ? "#f39c12" : "#2ecc71";
       }
       if (text) {
-        text.textContent = `${currentRoomCode} (${currentParticipantId})`;
-        text.style.color = "var(--phase-color)";
+        text.textContent = isTeacher 
+          ? `${currentRoomCode} (👑${currentParticipantId})` 
+          : `${currentRoomCode} (${currentParticipantId})`;
+        text.style.color = isTeacher ? "#f39c12" : "var(--phase-color)";
       }
       if (syncBadge) {
-        syncBadge.textContent = "🟢 ルーム同期中";
-        syncBadge.style.color = "#2ecc71";
+        syncBadge.textContent = isTeacher ? "👑 教員モード同期中" : "🟢 ルーム同期中";
+        syncBadge.style.color = isTeacher ? "#f39c12" : "#2ecc71";
       }
       if (syncNote) syncNote.style.display = "none";
     } else {
-      // オフライン: 赤色丸ランプ
       if (icon) {
         icon.style.color = "var(--danger)";
         icon.style.fill = "var(--danger)";
@@ -87,8 +88,13 @@ export function renderAuthStatus() {
       roomDisplay.style.display = "block";
     }
     if (participantDisplay) {
-      participantDisplay.textContent = `参加者ID: ${currentParticipantId}`;
+      participantDisplay.textContent = `参加者ID: ${currentParticipantId} ${isTeacher ? '（教員権限）' : ''}`;
       participantDisplay.style.display = "block";
+    }
+
+    // 教員モード時のみシークレット登録パネルを動的解放
+    if (teacherSection) {
+      teacherSection.style.display = isTeacher ? "block" : "none";
     }
 
     if (modalLoggedOut) modalLoggedOut.style.display = "none";
@@ -107,13 +113,12 @@ window.addEventListener("offline", renderAuthStatus);
 window.addEventListener("online", renderAuthStatus);
 document.addEventListener("DOMContentLoaded", renderAuthStatus);
 
-
-
 export function joinRoom(roomCode, participantId) {
   if (!roomCode || !participantId) return;
   currentRoomCode = roomCode.toUpperCase().trim();
   currentParticipantId = participantId.trim();
   isConnected = true;
+  isTeacher = currentParticipantId.toUpperCase().startsWith("TEACHER");
 
   localStorage.setItem('bio_edu_room_code', currentRoomCode);
   localStorage.setItem('bio_edu_participant_id', currentParticipantId);
@@ -121,7 +126,8 @@ export function joinRoom(roomCode, participantId) {
   renderAuthStatus();
 
   if (typeof showToast === 'function') {
-    showToast(`ルーム「${currentRoomCode}」に入室しました`, "success");
+    const roleMsg = isTeacher ? "【教員モード】" : "";
+    showToast(`${roleMsg}ルーム「${currentRoomCode}」に入室しました`, "success");
   }
 
   syncFromCloud();
@@ -132,6 +138,7 @@ export function leaveRoom() {
   currentRoomCode = "";
   currentParticipantId = "";
   isConnected = false;
+  isTeacher = false;
 
   localStorage.removeItem('bio_edu_room_code');
   localStorage.removeItem('bio_edu_participant_id');
@@ -152,6 +159,8 @@ export async function registerMasterPreset(taskCode, payload) {
     await setDoc(docRef, {
       taskCode: cleanCode,
       payload: payload,
+      creatorRoom: currentRoomCode,
+      creatorId: currentParticipantId,
       createdAt: Date.now()
     });
     if (typeof showToast === 'function') {
@@ -176,11 +185,18 @@ export async function importMasterPreset(taskCode) {
     if (snap.exists()) {
       const data = snap.data();
       if (data.payload) {
-        const activeTextarea = document.querySelector('textarea.paste-area, textarea#dnaInput, textarea#fastaInput, textarea#chain-code-input');
+        // ① アクティブなテキストエリアへ展開
+        const activeTextarea = document.querySelector('textarea.paste-area, textarea#dnaInput, textarea#fastaInput, textarea#chain-code-input, textarea#pasteArea');
         if (activeTextarea && data.payload.sequence) {
           activeTextarea.value = data.payload.sequence;
           activeTextarea.dispatchEvent(new Event('input', { bubbles: true }));
           activeTextarea.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        // ② セッションワークスペースデータが存在する場合は展開
+        if (data.payload.sessionData) {
+          Object.keys(data.payload.sessionData).forEach((k) => {
+            sessionStorage.setItem(k, data.payload.sessionData[k]);
+          });
         }
         if (typeof showToast === 'function') showToast(`課題「${cleanCode}」を展開しました`, "success");
       }
@@ -192,6 +208,7 @@ export async function importMasterPreset(taskCode) {
     if (typeof showToast === 'function') showToast("課題の取得に失敗しました", "error");
   }
 }
+
 async function syncFromCloud() {
   if (!isConnected || !auth.currentUser) return;
   try {
@@ -233,4 +250,3 @@ export async function saveCurrentWorkspace() {
 }
 
 export { app, auth, db };
-

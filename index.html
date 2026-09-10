@@ -1233,7 +1233,21 @@ body {
           </div>
         </div>
 
-        <button class="btn btn-secondary" style="width: 100%; color: var(--danger); border-color: #f5b7b1;" onclick="window.handleLeaveRoom(); triggerHapticFeedback();">
+        
+        <!-- 教員専用：マスター課題データ発行パネル（isTeacher時のみ動的表示） -->
+        <div id="teacherPresetSection" style="display: none; border-top: 1px dashed var(--border-color); padding-top: 12px; margin-bottom: 14px;">
+          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+            <span style="font-size: 12px; font-weight: bold; color: #d35400;">👑 教員専用：現在の画面を課題として発行</span>
+          </div>
+          <p style="font-size: 11px; color: var(--text-muted); margin: 0 0 8px 0; line-height: 1.4;">
+            現在の画面の入力データを、生徒が一括インポートできる課題コードとしてクラウドに登録します。
+          </p>
+          <div style="display: flex; gap: 6px;">
+            <input type="text" id="newMasterTaskCodeInput" class="primer-input" placeholder="新課題コード (例: TASK-01)" style="flex: 1; text-transform: uppercase;">
+            <button class="btn btn-primary" style="font-size: 11px; padding: 6px 12px; white-space: nowrap; background: #e67e22; border-color: #d35400;" onclick="window.handleRegisterCurrentPreset(); triggerHapticFeedback();">登録・発行</button>
+          </div>
+        </div>
+<button class="btn btn-secondary" style="width: 100%; color: var(--danger); border-color: #f5b7b1;" onclick="window.handleLeaveRoom(); triggerHapticFeedback();">
           ルームから退出（切断）
         </button>
       </div>
@@ -2258,8 +2272,28 @@ function closeFeedbackForm() {
         }
         importMasterPreset(t);
     };
-    window.handleRegisterPreset = function(taskCode, payload) {
-        registerMasterPreset(taskCode, payload);
+    window.handleRegisterCurrentPreset = function() {
+        const tEl = document.getElementById('newMasterTaskCodeInput');
+        const t = tEl ? tEl.value.trim() : '';
+        if (!t) {
+            if (typeof showToast === 'function') showToast('発行する課題コードを入力してください', 'warning');
+            return;
+        }
+        // 現在の画面のテキストエリアおよびセッションデータを収集
+        const activeTextarea = document.querySelector('textarea.paste-area, textarea#dnaInput, textarea#fastaInput, textarea#chain-code-input, textarea#pasteArea');
+        const seq = activeTextarea ? activeTextarea.value.trim() : '';
+        const sessionSnap = {};
+        for (let i = 0; i < sessionStorage.length; i++) {
+            const k = sessionStorage.key(i);
+            if (k) sessionSnap[k] = sessionStorage.getItem(k);
+        }
+        const payload = {
+            sequence: seq,
+            sessionData: sessionSnap,
+            appName: document.title,
+            registeredAt: Date.now()
+        };
+        registerMasterPreset(t, payload);
     };
 </script>
 
