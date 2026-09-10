@@ -58,12 +58,12 @@ export function renderAuthStatus() {
       }
       if (text) {
         text.textContent = isTeacher 
-          ? `${currentRoomCode} (👑${currentParticipantId})` 
+          ? `${currentRoomCode} (${currentParticipantId}) [教員]` 
           : `${currentRoomCode} (${currentParticipantId})`;
         text.style.color = isTeacher ? "#f39c12" : "var(--phase-color)";
       }
       if (syncBadge) {
-        syncBadge.textContent = isTeacher ? "👑 教員モード同期中" : "🟢 ルーム同期中";
+        syncBadge.textContent = isTeacher ? "🟢 教員モード同期中" : "🟢 ルーム同期中";
         syncBadge.style.color = isTeacher ? "#f39c12" : "#2ecc71";
       }
       if (syncNote) syncNote.style.display = "none";
