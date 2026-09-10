@@ -1046,10 +1046,10 @@ body {
         <!-- ヘッダー右側（統合アカウントボタン） -->
         <div class="header-right">
             <button id="accountBtn" class="account-btn" onclick="openAccountSettings(); triggerHapticFeedback();" data-tooltip="アカウント・同期設定">
-                <svg id="accountUserIcon" class="account-user-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="8"></circle>
-                </svg>
-                <span id="accountStatusText" class="btn-text" style="font-size: 13px; font-weight: bold; color: #bdc3c7;">接続中...</span>
+                <svg id="accountUserIcon" class="account-user-icon" viewBox="0 0 24 24" style="width: 14px; height: 14px; flex-shrink: 0;">
+  <circle cx="12" cy="12" r="7" fill="currentColor"></circle>
+</svg>
+                <span id="accountStatusText" class="btn-text" style="font-size: 13px; font-weight: bold; color: #bdc3c7;">未接続（ローカル）</span>
             </button>
         </div>
     </div>
