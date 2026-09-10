@@ -45,7 +45,7 @@
  /* ガイドライン第5項: グローバル・ドロワー規格 */
  .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100dvh; background-color: var(--primary); color: white; display: flex; flex-direction: column; z-index: 1002; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 2px 0 15px rgba(0,0,0,0.2); }
  .sidebar.open { left: 0; }
- .sidebar-overlay { display: block; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.5); z-index: 1001; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(2px); }
+ .sidebar-overlay { display: block; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0, 0, 0, 0.6); z-index: 1001; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(2px); }
  .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
  
  @media (min-width: 1025px) {
@@ -324,7 +324,7 @@
           padding-top: env(safe-area-inset-top, 0px);
           padding-bottom: env(safe-area-inset-bottom, 0px);
         }
-        .sidebar-overlay { display: block; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.5); z-index: 1001; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(2px); }
+        .sidebar-overlay { display: block; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0, 0, 0, 0.6); z-index: 1001; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(2px); }
         .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
 
         /* スクロールバーの完全隠蔽 */
@@ -1028,8 +1028,8 @@ body {
         <!-- ヘッダー右側（統合アカウントボタン） -->
         <div class="header-right">
             <button id="accountBtn" class="account-btn" onclick="openAccountSettings(); triggerHapticFeedback();" data-tooltip="アカウント・同期設定">
-                <svg id="accountUserIcon" class="account-user-icon" viewBox="0 0 24 24" style="width: 14px; height: 14px; flex-shrink: 0;">
-  <circle cx="12" cy="12" r="7" fill="currentColor"></circle>
+                <svg id="accountUserIcon" class="account-user-icon" viewBox="0 0 24 24" style="width: 12px; height: 12px; flex-shrink: 0; margin-right: 2px;">
+  <circle cx="12" cy="12" r="8" fill="currentColor"></circle>
 </svg>
                 <span id="accountStatusText" class="btn-text" style="font-size: 13px; font-weight: bold; color: #bdc3c7;">未接続（ローカル）</span>
             </button>
@@ -2249,7 +2249,7 @@ function closeFeedbackForm() {
 
 <!-- Firebase 認証・クラウド同期（ガイドライン第7項） -->
 <script type="module">
-    import { joinRoom, leaveRoom, importMasterPreset } from './auth_sync.js';
+    import { joinRoom, leaveRoom, importMasterPreset, registerMasterPreset } from './auth_sync.js';
     window.handleJoinRoom = function() {
         const rEl = document.getElementById('roomCodeInput');
         const pEl = document.getElementById('participantIdInput');
@@ -2275,19 +2275,9 @@ function closeFeedbackForm() {
         }
         importMasterPreset(t);
     };
-
-    /* ===================================================================
-       【第10項 JS規格】長押し・右クリックメニューの封印 (input/textarea/contenteditable除外)
-       =================================================================== */
-    (function() {
-        document.addEventListener('contextmenu', function(e) {
-            if (e.target.closest('input, textarea, [contenteditable="true"], [contenteditable=""]')) {
-                return;
-            }
-            e.preventDefault();
-        }, { passive: false });
-    })();
-
+    window.handleRegisterPreset = function(taskCode, payload) {
+        registerMasterPreset(taskCode, payload);
+    };
 </script>
 
 <!-- アプリ内Googleフォーム・フィードバックモーダル -->

@@ -110,7 +110,7 @@
       padding-top: env(safe-area-inset-top, 0px);
       padding-bottom: env(safe-area-inset-bottom, 0px);
     }
-    .sidebar-overlay { display: block; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.5); z-index: 1001; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(2px); }
+    .sidebar-overlay { display: block; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0, 0, 0, 0.6); z-index: 1001; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(2px); }
     .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
     
     .sidebar::-webkit-scrollbar, .nav-menu::-webkit-scrollbar { display: none; }
@@ -792,8 +792,8 @@ body {
       
       <div class="header-right">
         <button id="accountBtn" class="account-btn" onclick="openAccountSettings(); triggerHapticFeedback();" data-tooltip="アカウント・同期設定">
-          <svg id="accountUserIcon" class="account-user-icon" viewBox="0 0 24 24" style="width: 14px; height: 14px; flex-shrink: 0;">
-  <circle cx="12" cy="12" r="7" fill="currentColor"></circle>
+          <svg id="accountUserIcon" class="account-user-icon" viewBox="0 0 24 24" style="width: 12px; height: 12px; flex-shrink: 0; margin-right: 2px;">
+  <circle cx="12" cy="12" r="8" fill="currentColor"></circle>
 </svg>
           <span id="accountStatusText" class="btn-text" style="font-size: 13px; font-weight: bold; color: #bdc3c7;">未接続（ローカル）</span>
         </button>
@@ -1413,31 +1413,35 @@ function closeFeedbackForm() {
 </script>
 
 <script type="module">
-  window.handleGoogleLogin = function() {
-    document.getElementById('modalLoggedOutView').style.display = 'none';
-    document.getElementById('modalLoggedInView').style.display = 'block';
-    document.getElementById('userNameDisplay').innerText = "BioEdu ゲスト ユーザー";
-    document.getElementById('userEmailDisplay').innerText = "guest@example.com";
-    document.getElementById('accountStatusText').innerText = "オンライン";
-    showToast("Googleアカウントでログインしました", "success");
-    closeAccountSettings();
-  };
-  
-  window.handleLogout = function() {
-    document.getElementById('modalLoggedOutView').style.display = 'block';
-    document.getElementById('modalLoggedInView').style.display = 'none';
-    document.getElementById('accountStatusText').innerText = "オフライン";
-    showToast("ログアウトしました。データは端末内に保存されます。", "info");
-    closeAccountSettings();
-  };
-
-  // プレビュー環境でのモジュール解決エラーを回避するため、動的インポートへ切り替え
-  import('./auth_sync.js').then(module => {
-    window.handleGoogleLogin = module.loginWithGoogle;
-    window.handleLogout = module.logoutUser;
-  }).catch(err => {
-    console.warn("auth_sync.jsモジュールの読み込みをスキップしました（プレビュー環境用フォールバックを使用します）:", err);
-  });
+    import { joinRoom, leaveRoom, importMasterPreset, registerMasterPreset } from './auth_sync.js';
+    window.handleJoinRoom = function() {
+        const rEl = document.getElementById('roomCodeInput');
+        const pEl = document.getElementById('participantIdInput');
+        const r = rEl ? rEl.value.trim() : '';
+        const p = pEl ? pEl.value.trim() : '';
+        if (!r || !p) {
+            if (typeof showToast === 'function') showToast('ルームコードと参加者IDを入力してください', 'warning');
+            return;
+        }
+        joinRoom(r, p);
+        if (typeof closeAccountSettings === 'function') closeAccountSettings();
+    };
+    window.handleLeaveRoom = function() {
+        leaveRoom();
+        if (typeof closeAccountSettings === 'function') closeAccountSettings();
+    };
+    window.handleImportPreset = function() {
+        const tEl = document.getElementById('masterTaskCodeInput');
+        const t = tEl ? tEl.value.trim() : '';
+        if (!t) {
+            if (typeof showToast === 'function') showToast('課題コードを入力してください', 'warning');
+            return;
+        }
+        importMasterPreset(t);
+    };
+    window.handleRegisterPreset = function(taskCode, payload) {
+        registerMasterPreset(taskCode, payload);
+    };
 </script>
 
 <script>

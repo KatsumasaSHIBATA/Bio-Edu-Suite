@@ -37,7 +37,7 @@ export function renderAuthStatus() {
   const isOnline = navigator.onLine;
 
   if (!isConnected) {
-    // 【未接続（ローカル）】
+    // 【未接続（ローカル）】: 単一の薄灰色丸ランプ
     if (icon) {
       icon.style.color = "#bdc3c7";
       icon.style.fill = "#bdc3c7";
@@ -51,9 +51,10 @@ export function renderAuthStatus() {
   } else {
     // 【ルーム接続中】
     if (isOnline) {
+      // 接続中: 単一の鮮やかな緑色丸ランプ
       if (icon) {
-        icon.style.color = "var(--phase-color)";
-        icon.style.fill = "var(--phase-color)";
+        icon.style.color = "#2ecc71";
+        icon.style.fill = "#2ecc71";
       }
       if (text) {
         text.textContent = `${currentRoomCode} (${currentParticipantId})`;
@@ -61,11 +62,11 @@ export function renderAuthStatus() {
       }
       if (syncBadge) {
         syncBadge.textContent = "🟢 ルーム同期中";
-        syncBadge.style.color = "var(--phase-color)";
+        syncBadge.style.color = "#2ecc71";
       }
       if (syncNote) syncNote.style.display = "none";
     } else {
-      // 接続中だがオフライン
+      // オフライン: 赤色丸ランプ
       if (icon) {
         icon.style.color = "var(--danger)";
         icon.style.fill = "var(--danger)";
@@ -95,8 +96,6 @@ export function renderAuthStatus() {
   }
 }
 
-
-// 認証・通信イベント監視
 onAuthStateChanged(auth, (user) => {
   if (!user) {
     signInAnonymously(auth).catch((e) => console.warn("匿名認証待機:", e));
@@ -108,6 +107,8 @@ window.addEventListener("offline", renderAuthStatus);
 window.addEventListener("online", renderAuthStatus);
 document.addEventListener("DOMContentLoaded", renderAuthStatus);
 
+
+
 export function joinRoom(roomCode, participantId) {
   if (!roomCode || !participantId) return;
   currentRoomCode = roomCode.toUpperCase().trim();
@@ -117,14 +118,12 @@ export function joinRoom(roomCode, participantId) {
   localStorage.setItem('bio_edu_room_code', currentRoomCode);
   localStorage.setItem('bio_edu_participant_id', currentParticipantId);
 
-  // 即時UI同期実行
   renderAuthStatus();
 
   if (typeof showToast === 'function') {
     showToast(`ルーム「${currentRoomCode}」に入室しました`, "success");
   }
 
-  // クラウドから最新データを取得（ハイドレーション）
   syncFromCloud();
 }
 
@@ -137,7 +136,6 @@ export function leaveRoom() {
   localStorage.removeItem('bio_edu_room_code');
   localStorage.removeItem('bio_edu_participant_id');
 
-  // 即時UI同期実行
   renderAuthStatus();
 
   if (typeof showToast === 'function') {
@@ -145,7 +143,29 @@ export function leaveRoom() {
   }
 }
 
-// 教員マスター課題データの読込
+// 教員用：マスター課題データの登録・発行
+export async function registerMasterPreset(taskCode, payload) {
+  if (!taskCode || !payload) return;
+  const cleanCode = taskCode.toUpperCase().trim();
+  try {
+    const docRef = doc(db, "master_tasks", cleanCode);
+    await setDoc(docRef, {
+      taskCode: cleanCode,
+      payload: payload,
+      createdAt: Date.now()
+    });
+    if (typeof showToast === 'function') {
+      showToast(`課題「${cleanCode}」をクラウドに登録・発行しました`, "success");
+    }
+  } catch (e) {
+    console.error("Master task registration error:", e);
+    if (typeof showToast === 'function') {
+      showToast("課題の登録に失敗しました", "error");
+    }
+  }
+}
+
+// 生徒用：教員マスター課題データの読込・展開
 export async function importMasterPreset(taskCode) {
   if (!taskCode) return;
   const cleanCode = taskCode.toUpperCase().trim();
@@ -156,8 +176,7 @@ export async function importMasterPreset(taskCode) {
     if (snap.exists()) {
       const data = snap.data();
       if (data.payload) {
-        // 現在のアプリの入力要素へ自動展開
-        const activeTextarea = document.querySelector('textarea.paste-area, textarea#dnaInput, textarea#fastaInput');
+        const activeTextarea = document.querySelector('textarea.paste-area, textarea#dnaInput, textarea#fastaInput, textarea#chain-code-input');
         if (activeTextarea && data.payload.sequence) {
           activeTextarea.value = data.payload.sequence;
           activeTextarea.dispatchEvent(new Event('input', { bubbles: true }));
@@ -173,8 +192,6 @@ export async function importMasterPreset(taskCode) {
     if (typeof showToast === 'function') showToast("課題の取得に失敗しました", "error");
   }
 }
-
-// クラウドからの復元
 async function syncFromCloud() {
   if (!isConnected || !auth.currentUser) return;
   try {
@@ -183,11 +200,10 @@ async function syncFromCloud() {
     if (snap.exists()) {
       const remoteData = snap.data();
       if (remoteData && remoteData.workspace) {
-        // セッションストレージへ反映
         Object.keys(remoteData.workspace).forEach((k) => {
           sessionStorage.setItem(k, remoteData.workspace[k]);
         });
-        if (typeof showToast === 'function') showToast("クラウドから作業データを復元しました", "info");
+        if (typeof showToast === 'function') showToast("クラウドから最新の作業状態を復元しました", "info");
       }
     }
   } catch (e) {
@@ -195,23 +211,18 @@ async function syncFromCloud() {
   }
 }
 
-// 初期化多重保護付きクラウド保存
 export async function saveCurrentWorkspace() {
   if (!isConnected || !auth.currentUser) return;
-  if (window.isResetting === true) {
-    console.log("[AuthSync] 初期化フラグ検知のためクラウド保存を安全にスキップ");
-    return;
-  }
+  if (window.isResetting === true) return;
 
   try {
     const snap = {};
     for (let i = 0; i < sessionStorage.length; i++) {
       const k = sessionStorage.key(i);
-      if (k && (k.startsWith('bio_edu_ws_') || k.startsWith('bio_edu_draft_'))) {
+      if (k && (k.startsWith('bio_edu_ws_') || k.startsWith('bio_edu_draft_') || k.startsWith('bio_edu_autosave_'))) {
         snap[k] = sessionStorage.getItem(k);
       }
     }
-    // 空データ上書き防止
     if (Object.keys(snap).length === 0) return;
 
     const docRef = doc(db, `rooms/${currentRoomCode}/participants`, currentParticipantId);
@@ -222,3 +233,4 @@ export async function saveCurrentWorkspace() {
 }
 
 export { app, auth, db };
+
