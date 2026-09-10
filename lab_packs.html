@@ -696,7 +696,23 @@ body {
     }
 }
 
-</style>
+
+
+        /* ===================================================================
+           【ガイドライン v35.5 準拠】モーダル内スマホCSS崩壊物理遮断・堅牢化
+           =================================================================== */
+        .modal-content .btn { width: auto !important; max-width: none !important; min-height: 32px !important; }
+        #teacherPresetSection { display: none; border-top: 1px dashed var(--border-color); padding-top: 12px; margin-bottom: 14px; }
+        #teacherPresetSection .btn { width: auto !important; flex: 0 0 auto !important; }
+        @media (max-width: 768px) {
+            .modal-content .btn { width: auto !important; }
+            #teacherPresetSection { flex-direction: column; align-items: stretch; }
+            #teacherPresetSection .flex-row { flex-direction: row !important; display: flex !important; gap: 6px !important; width: 100% !important; }
+            #teacherPresetSection .flex-row input { flex: 1 1 auto !important; width: 100% !important; }
+            #teacherPresetSection .flex-row .btn { flex: 0 0 auto !important; width: auto !important; }
+        }
+    </style>
+
 </head>
 <body class="dashboard-mode no-select-ui">
 
