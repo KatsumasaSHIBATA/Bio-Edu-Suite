@@ -22,6 +22,8 @@
             }
         },
         clear: function() {
+            window.isResetting = true;
+            Storage.prototype.setItem = function() {};
             Object.keys(sessionStorage).forEach(k => {
                 if (k.startsWith('bio_edu_ws_')) {
                     sessionStorage.removeItem(k);
@@ -178,6 +180,20 @@
     }
 
     // --- 4. 全アプリ共通：標準フォーム要素（textarea / input）の自律保護 ---
+    function triggerCloudSync() {
+        if (window.BioEduAuthSync && typeof window.BioEduAuthSync.saveCurrentWorkspace === 'function') {
+            const data = {};
+            Object.keys(sessionStorage).forEach(k => {
+                if (k.startsWith('bio_edu_ws_')) {
+                    try {
+                        data[k] = JSON.parse(sessionStorage.getItem(k));
+                    } catch(e) {}
+                }
+            });
+            window.BioEduAuthSync.saveCurrentWorkspace(data);
+        }
+    }
+
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
             const inputs = document.querySelectorAll('textarea, input[type="text"], input[type="number"], select');
@@ -188,8 +204,11 @@
                 }
             });
             window.BioEduWorkspace.save('dom_inputs', snap);
+            triggerCloudSync();
         }
     });
+
+    window.addEventListener('pagehide', triggerCloudSync);
 
     window.addEventListener('DOMContentLoaded', () => {
         const snap = window.BioEduWorkspace.load('dom_inputs');
@@ -208,6 +227,8 @@
         const confirmOkBtn = document.getElementById('confirmOkBtn');
         if (confirmOkBtn) {
             confirmOkBtn.addEventListener('click', () => {
+                window.isResetting = true;
+                Storage.prototype.setItem = function() {}; // 保存機能を一時的に無力化
                 window.BioEduWorkspace.clear();
             });
         }

@@ -1165,43 +1165,66 @@ body {
 </div>
 
 <!-- アカウント・同期設定モーダル -->
+<!-- ルーム接続・同期設定（Kahoot方式）モーダル v35.4 -->
 <div class="modal-overlay" id="accountModal">
   <div class="modal-content" style="max-width: 380px;">
     <div class="modal-header">
-      <h3 style="margin: 0; font-size: 16px;">アカウント・同期設定</h3>
+      <h3 style="margin: 0; font-size: 16px;">ルーム接続・同期設定</h3>
       <button class="modal-close" onclick="closeAccountSettings(); triggerHapticFeedback();" data-tooltip="閉じる">
         <svg class="btn-icon" style="margin:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg>
       </button>
     </div>
     <div class="modal-body" style="padding: 20px;">
-      
+
+      <!-- ① 未接続ビュー -->
       <div id="modalLoggedOutView">
         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-          <span style="font-size: 14px; font-weight: bold; color: var(--text-muted);">⚪️ ゲストモード</span>
+          <span style="font-size: 14px; font-weight: bold; color: var(--text-muted);">⚪️ 未接続（ローカル作業中）</span>
         </div>
-        <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 16px 0; line-height: 1.6;">
-          現在は端末内のみにデータが保存されています。Googleアカウントでログインすると、自宅のPCや他の端末とデータを自動同期できます。
+        <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 14px 0; line-height: 1.5;">
+          ルームコードとIDを入力して入室すると、班員とのリアルタイム共有や、自宅端末へのデータ引き継ぎが可能です。
         </p>
-        <button class="btn btn-primary" style="width: 100%;" onclick="window.handleGoogleLogin(); triggerHapticFeedback();">
-          Googleアカウントでログイン
+
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px;">
+          <div>
+            <label style="font-size: 11px; font-weight: bold; color: var(--primary); display: block; margin-bottom: 4px;">ルームコード</label>
+            <input type="text" id="roomCodeInput" class="primer-input" placeholder="例: BIO-101" style="width: 100%; box-sizing: border-box; text-transform: uppercase;">
+          </div>
+          <div>
+            <label style="font-size: 11px; font-weight: bold; color: var(--primary); display: block; margin-bottom: 4px;">参加者ID（班名 または 出席番号）</label>
+            <input type="text" id="participantIdInput" class="primer-input" placeholder="例: Team-B02 または No-15" style="width: 100%; box-sizing: border-box;">
+          </div>
+        </div>
+
+        <button class="btn btn-primary" style="width: 100%; margin-bottom: 14px;" onclick="window.handleJoinRoom(); triggerHapticFeedback();">
+          ルームに入室・同期開始
         </button>
+
+        <div style="border-top: 1px dashed var(--border-color); padding-top: 12px;">
+          <label style="font-size: 11px; font-weight: bold; color: var(--text-muted); display: block; margin-bottom: 4px;">教員マスター課題データの読込</label>
+          <div style="display: flex; gap: 6px;">
+            <input type="text" id="masterTaskCodeInput" class="primer-input" placeholder="課題コード (例: TASK-01)" style="flex: 1; text-transform: uppercase;">
+            <button class="btn btn-secondary" style="font-size: 11px; padding: 6px 10px; white-space: nowrap;" onclick="window.handleImportPreset(); triggerHapticFeedback();">読込</button>
+          </div>
+        </div>
       </div>
 
+      <!-- ② 接続中ビュー -->
       <div id="modalLoggedInView" style="display: none;">
         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-          <span id="syncStatusBadge" style="font-size: 14px; font-weight: bold; color: var(--phase-color);">🟢 クラウド同期中</span>
+          <span id="syncStatusBadge" style="font-size: 14px; font-weight: bold; color: var(--phase-color);">🟢 ルーム同期中</span>
         </div>
-        
+
         <div style="background: #f8f9fa; border: 1px solid #e1e8ed; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
-          <div id="userNameDisplay" style="font-weight: bold; font-size: 14px; color: var(--primary);"></div>
-          <div id="userEmailDisplay" style="font-size: 11px; color: var(--text-muted); margin-top: 2px;"></div>
+          <div id="roomDisplay" style="font-weight: bold; font-size: 14px; color: var(--primary);"></div>
+          <div id="participantDisplay" style="font-size: 12px; color: var(--text-muted); margin-top: 2px;"></div>
           <div id="syncStatusNote" style="font-size: 11px; color: var(--danger); margin-top: 6px; display: none;">
             ※オフライン中です。データは端末内に一時保存され、再接続時に自動同期されます。
           </div>
         </div>
 
-        <button class="btn btn-secondary" style="width: 100%; color: var(--danger); border-color: #f5b7b1;" onclick="window.handleLogout(); triggerHapticFeedback();">
-          ログアウト
+        <button class="btn btn-secondary" style="width: 100%; color: var(--danger); border-color: #f5b7b1;" onclick="window.handleLeaveRoom(); triggerHapticFeedback();">
+          ルームから退出（切断）
         </button>
       </div>
 
