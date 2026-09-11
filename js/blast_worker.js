@@ -23,14 +23,15 @@ function sendProgress(percent, stageText) {
 }
 
 async function fetchWithFallback(url, options) {
+    const fetchOptions = { ...options, cache: 'no-store' };
     try {
-        const response = await fetch(url, options);
+        const response = await fetch(url, fetchOptions);
         if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
         return response;
     } catch (err) {
         if (err.name === 'TypeError' || err.message.includes('Failed to fetch')) {
             const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(url)}`;
-            const proxyRes = await fetch(proxyUrl, options);
+            const proxyRes = await fetch(proxyUrl, fetchOptions);
             if (!proxyRes.ok) throw new Error(`Proxy HTTP Error: ${proxyRes.status}`);
             return proxyRes;
         }
@@ -173,7 +174,7 @@ async function runNcbiBlast(query) {
             let percent = 35 + Math.min((pollCount / 10) * 55, 55); // 40~90%
             sendProgress(Math.floor(percent), `NCBI計算キューで解析中... (確認 ${pollCount}回目)`);
 
-            const checkUrl = `https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Get&FORMAT_OBJECT=SearchInfo&RID=${rid}`;
+            const checkUrl = `https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Get&FORMAT_OBJECT=SearchInfo&RID=${rid}&_t=${Date.now()}`;
             const checkResponse = await fetchWithFallback(checkUrl);
             if (!checkResponse.ok) {
                 throw new Error(`NCBI API Check Error: ${checkResponse.statusText}`);
@@ -198,10 +199,10 @@ async function runNcbiBlast(query) {
                 isReady = true;
                 if (checkText.includes('ThereAreHits=yes')) {
                     sendProgress(95, 'アライメントデータを受信・正規化中...');
-                    const getUrl = `https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Get&FORMAT_TYPE=JSON2&RID=${rid}`;
+                    const getUrl = `https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Get&FORMAT_TYPE=JSON2&RID=${rid}&_t=${Date.now()}`;
                     let getResponse = await fetchWithFallback(getUrl);
                     if (!getResponse.ok) {
-                        getResponse = await fetchWithFallback(`https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Get&FORMAT_TYPE=JSON&RID=${rid}`);
+                        getResponse = await fetchWithFallback(`https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Get&FORMAT_TYPE=JSON&RID=${rid}&_t=${Date.now()}`);
                     }
                     if (!getResponse.ok) {
                         throw new Error(`NCBI API Get Results Error: ${getResponse.statusText}`);
