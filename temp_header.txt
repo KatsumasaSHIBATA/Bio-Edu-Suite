@@ -1,0 +1,29 @@
+<!-- 3. メインコンテンツラッパー -->
+<div class="main-wrapper">
+
+<!-- グローバルヘッダー -->
+<div class="header-container">
+    <div class="header">
+        <div class="header-left">
+            <!-- スマホ用ヘッダーハンバーガー -->
+            <button class="mobile-hamburger" onclick="toggleSidebarPin(); triggerHapticFeedback();" aria-label="メニューを開く">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+            <div class="header-title-group">
+                <h1><svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>PCR Master Mix Studio</h1>
+                <p>Bio-Edu Suite: Phase 2 / Precision Planning &amp; Preparation</p>
+            </div>
+        </div>
+
+        <!-- ヘッダー右側（統合アカウントボタン） -->
+        <div class="header-right">
+            <button id="accountBtn" class="account-btn" onclick="openAccountSettings(); triggerHapticFeedback();" data-tooltip="アカウント・同期設定">
+                <svg id="accountUserIcon" class="account-user-icon" viewBox="0 0 24 24" style="width: 12px; height: 12px; flex-shrink: 0; margin-right: 2px;">
+  <circle cx="12" cy="12" r="8" fill="currentColor"></circle>
+</svg>
+                <span id="accountStatusText" class="btn-text" style="font-size: 13px; font-weight: bold; color: #bdc3c7;">未接続（ローカル）</span>
+            </button>
+        </div>
+    </div>
+</div>
+

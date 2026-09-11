@@ -339,6 +339,1342 @@
   </div>
       padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(16,185,129,0.3);
 
+    <!-- /.content-area -->
+
+<!-- カスタム確認ダイアログ（データ初期化用等） -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-content" style="max-width: 400px; border-top: none; text-align: center;">
+    <div class="modal-body" style="padding: 30px 20px 10px;">
+      <svg class="svg-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 42px; height: 42px; margin-bottom: 12px; opacity: 0.9;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+      <h3 id="confirmTitle" style="margin: 0 0 10px 0; font-size: 16px; color: var(--primary);">確認</h3>
+      <div id="confirmMessage" style="font-size: 13px; line-height: 1.6; color: var(--text-main);"></div>
+    </div>
+        <div class="modal-footer" style="border-top: none; background: white; justify-content: center; gap: 12px; padding-bottom: 30px;">
+      <button class="btn btn-secondary" onclick="closeConfirm(); triggerHapticFeedback();">キャンセル</button>
+      <button class="btn btn-danger" id="confirmOkBtn" style="background: var(--danger); color: white;">初期化する</button>
+    </div>
+  </div>
+</div>
+
+<!-- アカウント・同期設定（ログインパネル）モーダル -->
+<!-- ルーム接続・同期設定（Kahoot方式）モーダル v35.4 -->
+<div class="modal-overlay" id="accountModal">
+  <div class="modal-content" style="max-width: 380px;">
+    <div class="modal-header">
+      <h3 style="margin: 0; font-size: 16px;">ルーム接続・同期設定</h3>
+      <button class="modal-close" onclick="closeAccountSettings(); triggerHapticFeedback();" data-tooltip="閉じる">
+        <svg class="btn-icon" style="margin:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="padding: 20px;">
+
+      <!-- ① 未接続ビュー -->
+      <div id="modalLoggedOutView">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+          <span style="font-size: 14px; font-weight: bold; color: var(--text-muted);">⚪️ 未接続（ローカル作業中）</span>
+        </div>
+        <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 14px 0; line-height: 1.5;">
+          ルームコードとIDを入力して入室すると、班員とのリアルタイム共有や、自宅端末へのデータ引き継ぎが可能です。
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px;">
+          <div>
+            <label style="font-size: 11px; font-weight: bold; color: var(--primary); display: block; margin-bottom: 4px;">ルームコード</label>
+            <input type="text" id="roomCodeInput" class="primer-input" placeholder="例: BIO-101" style="width: 100%; box-sizing: border-box; text-transform: uppercase;">
+          </div>
+          <div>
+            <label style="font-size: 11px; font-weight: bold; color: var(--primary); display: block; margin-bottom: 4px;">参加者ID（班名 または 出席番号）</label>
+            <input type="text" id="participantIdInput" class="primer-input" placeholder="例: Team-B02 または No-15" style="width: 100%; box-sizing: border-box;">
+          </div>
+        </div>
+
+        <button class="btn btn-primary" style="width: 100%; margin-bottom: 14px;" onclick="window.handleJoinRoom(); triggerHapticFeedback();">
+          ルームに入室・同期開始
+        </button>
+
+        <div style="border-top: 1px dashed var(--border-color); padding-top: 12px;">
+          <label style="font-size: 11px; font-weight: bold; color: var(--text-muted); display: block; margin-bottom: 4px;">教員マスター課題データの読込</label>
+          <div style="display: flex; gap: 6px;">
+            <input type="text" id="masterTaskCodeInput" class="primer-input" placeholder="課題コード (例: TASK-01)" style="flex: 1; text-transform: uppercase;">
+            <button class="btn btn-secondary" style="font-size: 11px; padding: 6px 10px; white-space: nowrap;" onclick="window.handleImportPreset(); triggerHapticFeedback();">読込</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ② 接続中ビュー -->
+      <div id="modalLoggedInView" style="display: none;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+          <span id="syncStatusBadge" style="font-size: 14px; font-weight: bold; color: var(--phase-color);">🟢 ルーム同期中</span>
+        </div>
+
+        <div style="background: #f8f9fa; border: 1px solid #e1e8ed; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
+          <div id="roomDisplay" style="font-weight: bold; font-size: 14px; color: var(--primary);"></div>
+          <div id="participantDisplay" style="font-size: 12px; color: var(--text-muted); margin-top: 2px;"></div>
+          <div id="syncStatusNote" style="font-size: 11px; color: var(--danger); margin-top: 6px; display: none;">
+            ※オフライン中です。データは端末内に一時保存され、再接続時に自動同期されます。
+          </div>
+        </div>
+
+        
+        <!-- 教員専用：マスター課題データ発行パネル（isTeacher時のみ動的表示） -->
+        <div id="teacherPresetSection" style="display: none; border-top: 1px dashed var(--border-color); padding-top: 12px; margin-bottom: 14px;">
+          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+            <span style="font-size: 12px; font-weight: bold; color: #d35400;">教員専用：現在の画面を課題として発行</span>
+          </div>
+          <p style="font-size: 11px; color: var(--text-muted); margin: 0 0 8px 0; line-height: 1.4;">
+            現在の画面の入力データを、生徒が一括インポートできる課題コードとしてクラウドに登録します。
+          </p>
+          <div style="display: flex; gap: 6px;">
+            <input type="text" id="newMasterTaskCodeInput" class="primer-input" placeholder="新課題コード (例: TASK-01)" style="flex: 1; text-transform: uppercase;">
+            <button class="btn btn-primary" style="font-size: 11px; padding: 6px 12px; white-space: nowrap; background: #e67e22; border-color: #d35400;" onclick="window.handleRegisterCurrentPreset(); triggerHapticFeedback();">登録・発行</button>
+          </div>
+        </div>
+<button class="btn btn-secondary" style="width: 100%; color: var(--danger); border-color: #f5b7b1;" onclick="window.handleLeaveRoom(); triggerHapticFeedback();">
+          ルームから退出（切断）
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- トースト通知用のコンテナ -->
+<div id="toast" class="toast"></div>
+
+<script>
+    // --- ドロワー開閉制御 ---
+    function toggleSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
+        if(sidebar) sidebar.classList.toggle('open');
+        if(overlay) overlay.classList.toggle('open');
+    }
+
+    // --- 入力値のフォーマットとエラーハンドリング ---
+    function handleTableInput(inputEl) {
+        const valStr = inputEl.value;
+        if (valStr.includes('.')) {
+            const decimalPart = valStr.split('.')[1];
+            // 小数第2位以上の入力があり、Taq酵素以外の場合に警告を表示
+            if (decimalPart && decimalPart.length > 1 && inputEl.id !== 'val_1x_taq') {
+                showToast('手動ピペッティングでは誤差が大きいため、0.1µL単位を推奨します', 'error');
+            }
+        }
+    }
+
+    function handleTableChange(inputEl) {
+        let val = parseFloat(inputEl.value);
+        if (!isNaN(val)) {
+            // 自動的に小数第1位にフォーマットする（例: 1 -> 1.0）
+            inputEl.value = val.toFixed(1);
+        }
+    }
+
+    // --- 教育的UIモジュール①: 根拠ポップオーバー（ガイドライン第6項① 準拠 / フリップ計算付き絶対配置） ---
+    function toggleRationale(event, id) {
+        event.stopPropagation();
+        const el = document.getElementById(id);
+        const btn = event.currentTarget;
+        const isShown = el.classList.contains('show');
+
+        // 他のポップオーバーを閉じる
+        document.querySelectorAll('.rationale-text').forEach(e => {
+            e.classList.remove('show', 'arrow-top', 'arrow-bottom');
+        });
+
+        if(!isShown) {
+            if (el.parentNode !== document.body) document.body.appendChild(el);
+            el.style.top = '0px'; el.style.left = '0px';
+            el.classList.add('show');
+
+            // フリップ計算による絶対配置 (offsetWidthを用いた親要素追従)
+            const elHeight = el.offsetHeight;
+            const elWidth = el.offsetWidth;
+            const rect = btn.getBoundingClientRect();
+
+            let topPos = rect.bottom + 12;
+            let arrowClass = 'arrow-top';
+            // 画面下端に見切れる場合は上側に配置
+            if (rect.bottom + elHeight + 20 > window.innerHeight) {
+                topPos = rect.top - elHeight - 12;
+                arrowClass = 'arrow-bottom';
+            }
+            el.classList.add(arrowClass);
+            el.style.top = topPos + 'px';
+
+            // 左右位置の調整 (offsetWidth を使用してはみ出し防止)
+            let leftPos = rect.left - (elWidth / 2) + (rect.width / 2);
+            if (leftPos + elWidth > window.innerWidth) leftPos = window.innerWidth - elWidth - 10;
+            if (leftPos < 10) leftPos = 10;
+            el.style.left = leftPos + 'px';
+
+            // 尻尾の水平位置をボタン中央に合わせるカスタムプロパティ
+            const arrowOffset = rect.left - leftPos + (rect.width / 2) - 6;
+            el.style.setProperty('--arrow-left', arrowOffset + 'px');
+        }
+    }
+
+    // 外部クリック・スクロールで閉じる
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.rationale-text') && !e.target.closest('.rationale-btn')) {
+            document.querySelectorAll('.rationale-text').forEach(el => {
+                el.classList.remove('show', 'arrow-top', 'arrow-bottom');
+            });
+        }
+    });
+
+    document.addEventListener('scroll', () => {
+        document.querySelectorAll('.rationale-text').forEach(el => {
+            el.classList.remove('show', 'arrow-top', 'arrow-bottom');
+        });
+    }, true);
+
+    // --- カスタムツールチップ初期化（ガイドライン第5項④ 準拠 / ネイティブ title 属性は使用禁止） ---
+    function initTooltips() {
+        if (document.getElementById('__bes_tooltip')) return; // 二重初期化を防ぐ
+        const tooltip = document.createElement('div');
+        tooltip.id = '__bes_tooltip';
+        tooltip.className = 'custom-tooltip';
+        document.body.appendChild(tooltip);
+
+        document.body.addEventListener('mouseover', (e) => {
+            const target = e.target.closest('[data-tooltip]');
+            if (target && !target.classList.contains('rationale-btn')) {
+                tooltip.innerHTML = target.getAttribute('data-tooltip');
+                tooltip.style.display = 'block';
+                const rect = target.getBoundingClientRect();
+                const ttRect = tooltip.getBoundingClientRect();
+                let topPos = rect.top - ttRect.height - 8;
+                let leftPos = rect.left + (rect.width / 2);
+                let arrowClass = 'show-top';
+                if (topPos < 0) { topPos = rect.bottom + 8; arrowClass = 'show-bottom'; }
+                if (leftPos - ttRect.width / 2 < 5) leftPos = 5 + ttRect.width / 2;
+                else if (leftPos + ttRect.width / 2 > window.innerWidth - 5) leftPos = window.innerWidth - ttRect.width / 2 - 5;
+                tooltip.className = `custom-tooltip ${arrowClass}`;
+                tooltip.style.top = topPos + 'px';
+                tooltip.style.left = leftPos + 'px';
+                tooltip.style.transform = 'translateX(-50%)';
+                tooltip.style.opacity = '1';
+            }
+        });
+        document.body.addEventListener('mouseout', (e) => {
+            if (e.target.closest('[data-tooltip]')) {
+                tooltip.style.opacity = '0';
+                setTimeout(() => { if (tooltip.style.opacity === '0') tooltip.style.display = 'none'; }, 200);
+            }
+        });
+        document.addEventListener('scroll', () => {
+            tooltip.style.opacity = '0'; tooltip.style.display = 'none';
+        }, true);
+    }
+    
+    // --- トースト通知（ガイドライン第6項⑤ 準拠 / alert() は使用禁止） ---
+    // type: ""(=成功/緑) | "error" | "warning" | "info"。'success' 等の未知値は既定の緑にフォールバックする
+    function showToast(msg, type = "") {
+        const toast = document.getElementById('toast');
+        if (!toast) return;
+        toast.innerText = msg;
+        let className = "show";
+        if (type === "error") className += " error";
+        else if (type === "warning") className += " warning";
+        else if (type === "info") className += " info";
+        toast.className = "";
+        void toast.offsetWidth; // リフローを挟み、連続表示でもアニメーションを再生させる
+        toast.className = className;
+        setTimeout(() => { toast.classList.remove("show"); }, 3000);
+    }
+
+    // --- アプリ②への連携保存機能 (オートセーブ) ---
+    function autoSaveData() {
+        try {
+            const data = {
+                totalVol: document.getElementById('mm_total_vol').value,
+                enzyme: document.getElementById('enzyme_type').value,
+                timestamp: new Date().getTime()
+            };
+            localStorage.setItem('bio_edu_mm_data', JSON.stringify(data));
+        } catch(e) {
+            console.error('自動保存に失敗しました。', e);
+        }
+    }
+
+    window.onload = () => { initTooltips(); updateTotalVol(); };
+
+    function toggleDilutionMode() {
+        const isRatio = document.getElementById('dil_mode_ratio').checked;
+        document.getElementById('panel_dil_ratio').style.display = isRatio ? 'block' : 'none';
+        document.getElementById('panel_dil_conc').style.display = isRatio ? 'none' : 'block';
+        calcDilution();
+    }
+
+    function calcDilution() {
+        const isRatio = document.getElementById('dil_mode_ratio').checked;
+        let dna = 0, water = 0;
+        let hasError = false;
+
+        if (isRatio) {
+            const v = parseFloat(document.getElementById('dr_vol').value) || 0;
+            const r = parseFloat(document.getElementById('dr_ratio').value) || 1;
+            dna = v; water = v * (r - 1);
+        } else {
+            const c1 = parseFloat(document.getElementById('dc_c1').value) || 0;
+            const c2 = parseFloat(document.getElementById('dc_c2').value) || 0;
+            const v2 = parseFloat(document.getElementById('dc_v2').value) || 0;
+            
+            if (c2 > c1) {
+                showToast('目標濃度が高すぎます。現在の濃度(C1)以下にしてください', 'error');
+                hasError = true;
+            } else if (c1 > 0) { 
+                dna = (c2 * v2) / c1; water = v2 - dna; 
+            }
+        }
+
+        if(hasError) {
+            document.getElementById('res_dil_dna').innerText = "エラー";
+            document.getElementById('res_dil_water').innerText = "エラー";
+        } else {
+            document.getElementById('res_dil_dna').innerText = dna.toFixed(1) + " μL";
+            document.getElementById('res_dil_water').innerText = water.toFixed(1) + " μL";
+        }
+    }
+
+    function updateTotalVol(sourceElement) {
+        // 排他制御：制限酵素とシーケンス精製用は同時に設定しない
+        if (sourceElement) {
+            if (sourceElement.id === 'vol_re' && sourceElement.value !== "0") {
+                document.getElementById('vol_seq').value = "0";
+            } else if (sourceElement.id === 'vol_seq' && sourceElement.value !== "0") {
+                document.getElementById('vol_re').value = "0";
+            }
+        }
+
+        const base = parseFloat(document.getElementById('vol_base').value) || 0;
+        const reCount = parseFloat(document.getElementById('vol_re').value) || 0;
+        const seq = parseFloat(document.getElementById('vol_seq').value) || 0;
+        document.getElementById('mm_total_vol').value = base + (reCount * 10) + seq;
+        recalcVolumes();
+    }
+
+    function changeEnzymeType() {
+        const type = document.getElementById('enzyme_type').value;
+        const total = parseFloat(document.getElementById('mm_total_vol').value) || 0;
+        document.querySelectorAll('.row-premix').forEach(el => el.style.display = type === 'premix' ? 'table-row' : 'none');
+        document.querySelectorAll('.row-sep').forEach(el => el.style.display = type !== 'premix' ? 'table-row' : 'none');
+        
+        if (type === 'buf10x') {
+            document.getElementById('lbl_buffer').innerText = "10x ExTaq Buffer";
+            document.getElementById('lbl_taq').innerText = "Ex Taq 酵素";
+            document.getElementById('val_1x_buf').value = (total / 10).toFixed(1);
+        } else if (type === 'buf5x') {
+            document.getElementById('lbl_buffer').innerText = "5x GXL Buffer";
+            document.getElementById('lbl_taq').innerText = "PrimeSTAR 酵素";
+            document.getElementById('val_1x_buf').value = (total / 5).toFixed(1);
+        }
+        calcMM();
+    }
+
+    function recalcVolumes() {
+        const total = parseFloat(document.getElementById('mm_total_vol').value) || 0;
+        let newPrimerVol = (total / 30).toFixed(1);
+        if(newPrimerVol < 0.5) newPrimerVol = 0.5;
+        document.getElementById('val_1x_fp').value = newPrimerVol;
+        document.getElementById('val_1x_rp').value = newPrimerVol;
+        changeEnzymeType(); 
+    }
+
+    function calcMM() {
+        const n = parseInt(document.getElementById('mm_n').value) || 1;
+        const marginMode = document.querySelector('input[name="margin_mode"]:checked').value;
+        
+        // 動的なマージン（N+1）計算
+        let nTotal = 1;
+        if (marginMode === '1.1') {
+            nTotal = n * 1.1;
+        } else if (marginMode === '1.2') {
+            nTotal = n * 1.2;
+        } else if (marginMode === 'plus1') {
+            nTotal = n + 1;
+        }
+
+        document.getElementById('res_n_total').innerText = nTotal.toFixed(1);
+        document.getElementById('mm_col_head').innerText = `MM (x${nTotal.toFixed(1)})`;
+
+        const totalVol = parseFloat(document.getElementById('mm_total_vol').value) || 0;
+        const type = document.getElementById('enzyme_type').value;
+        let sumReagents = 0;
+        
+        const fp = parseFloat(document.getElementById('val_1x_fp').value) || 0;
+        const rp = parseFloat(document.getElementById('val_1x_rp').value) || 0;
+        sumReagents += (fp + rp);
+        
+        let taq = 0;
+
+        document.getElementById('val_1x_fp').classList.remove('error');
+        document.getElementById('val_1x_rp').classList.remove('error');
+        document.getElementById('val_1x_dna').classList.remove('error');
+        document.getElementById('val_1x_taq').classList.remove('error');
+
+        document.getElementById('val_mm_fp').innerText = (fp * nTotal).toFixed(1);
+        document.getElementById('val_mm_rp').innerText = (rp * nTotal).toFixed(1);
+
+        if (type === 'premix') {
+            const premix = totalVol / 2;
+            sumReagents += premix;
+            document.getElementById('val_1x_premix').innerText = premix.toFixed(1);
+            document.getElementById('val_mm_premix').innerText = (premix * nTotal).toFixed(1);
+        } else {
+            const buf = parseFloat(document.getElementById('val_1x_buf').value) || 0;
+            const dntp = parseFloat(document.getElementById('val_1x_dntp').value) || 0;
+            taq = parseFloat(document.getElementById('val_1x_taq').value) || 0;
+            sumReagents += (buf + dntp + taq);
+            document.getElementById('val_mm_buf').innerText = (buf * nTotal).toFixed(1);
+            document.getElementById('val_mm_dntp').innerText = (dntp * nTotal).toFixed(1);
+            document.getElementById('val_mm_taq').innerText = (taq * nTotal).toFixed(1);
+        }
+
+        const dnaVol = parseFloat(document.getElementById('val_1x_dna').value) || 0;
+        let water = totalVol - dnaVol - sumReagents;
+
+        // --- AI Educational Assist Logic ---
+        let errorMessage = "";
+        
+        // 1. Water Error
+        if (water < 0) {
+            errorMessage = '容量オーバーです。総液量を増やすか各試薬を減らしてください';
+            document.getElementById('val_1x_water').style.color = "var(--danger)";
+            document.getElementById('val_1x_water').innerText = "エラー";
+            document.getElementById('val_mm_water').innerText = "---";
+        } else {
+            document.getElementById('val_1x_water').style.color = "#2980b9";
+            document.getElementById('val_1x_water').innerText = water.toFixed(1);
+            document.getElementById('val_mm_water').innerText = (water * nTotal).toFixed(1);
+        }
+
+        // 2. DNA Excess
+        if (dnaVol > totalVol * 0.2) {
+            document.getElementById('val_1x_dna').classList.add('error');
+            if(!errorMessage) errorMessage = 'DNA抽出液が多すぎます。総液量の10%未満に減らしてください';
+        }
+
+        // 3. Primer Excess
+        if (fp > totalVol * 0.1 || rp > totalVol * 0.1) {
+            if(fp > totalVol * 0.1) document.getElementById('val_1x_fp').classList.add('error');
+            if(rp > totalVol * 0.1) document.getElementById('val_1x_rp').classList.add('error');
+            if(!errorMessage) errorMessage = 'プライマーが多すぎます。総液量の1/20〜1/30に減らしてください';
+        }
+
+        // 4. Taq Excess
+        if (type !== 'premix' && taq > totalVol * 0.05) {
+            document.getElementById('val_1x_taq').classList.add('error');
+            if(!errorMessage) errorMessage = '酵素(Taq)の入れすぎです。0.25〜0.5µL程度に設定してください';
+        }
+
+        // トーストによる一律通知
+        if (errorMessage) {
+            showToast(errorMessage, 'error');
+        }
+
+        const dist = totalVol - dnaVol;
+        document.getElementById('val_1x_dist').innerText = dist.toFixed(1);
+        document.getElementById('val_mm_total').innerText = (dist * nTotal).toFixed(1);
+        document.getElementById('notice_dist').innerText = dist.toFixed(1);
+        document.getElementById('notice_dna').innerText = dnaVol.toFixed(1);
+        document.getElementById('notice_total').innerText = totalVol.toFixed(1);
+
+        // 常に最新の状態を自動保存
+        autoSaveData();
+    }
+
+    /* ===================================================================
+       【v34.3 外箱アップデート／追記専用ブロック】
+       既存の関数・紐付けには一切手を加えていない。
+       =================================================================== */
+
+    // --- 第15項③ 触覚（Haptic）フィードバック共通関数 ---
+    function triggerHapticFeedback() {
+        if (navigator.vibrate) {
+            navigator.vibrate(10); // 10msの極小振動
+        }
+    }
+
+    // --- 第5項 Peg Menu ピン留め切り替え ---
+    function toggleSidebarPin() {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
+        const isMobile = window.innerWidth <= 1024; // v34.4: タブレット縦表示(1024px以下)も含めてモバイル判定
+
+        if (!isMobile) {
+            sidebar.classList.toggle('pinned');
+            document.body.classList.toggle('has-pinned-sidebar', sidebar.classList.contains('pinned'));
+        } else {
+            sidebar.classList.toggle('open');
+            if (overlay) overlay.classList.toggle('open', sidebar.classList.contains('open'));
+        }
+    }
+
+    // --- ご意見箱（Googleフォーム）への動的パラメータ付き遷移 ---
+    // Googleフォーム アプリ内モーダル開閉関数 (濃紺コンテキスト維持)
+function openFeedbackForm() {
+    const baseUrl = "https://docs.google.com/forms/d/e/1FAIpQLSet9LJgsTO0aZ6pbdekLr4fBeeDPAxREk8xmzY1f-gTcDnFrQ/viewform";
+    const appName = document.title;
+    window.open(`${baseUrl}?usp=pp_url&entry.1969218085=${encodeURIComponent(appName)}`, '_blank');
+}
+function closeFeedbackForm() {
+    const modal = document.getElementById('feedbackModal');
+    if (modal) modal.style.display = 'none';
+}
+
+    // --- データ初期化（ネイティブ confirm() は使用禁止） ---
+    function confirmDataReset() {
+        // スマホの場合はメニューを自動で閉じる
+        if (window.innerWidth <= 1024) {
+            document.querySelector('.sidebar').classList.remove('open');
+            const overlay = document.querySelector('.sidebar-overlay');
+            if (overlay) overlay.classList.remove('open');
+        }
+
+        showConfirm("すべての入力データおよびローカル保存データを初期化しますか？この操作は取り消せません。", () => {
+            window.isResetting = true;
+            Storage.prototype.setItem = function() {};
+            localStorage.clear();
+            sessionStorage.clear();
+            location.reload();
+        }, "初期化する");
+    }
+
+    // --- カスタム確認ダイアログ制御 ---
+    function showConfirm(message, onOk, okLabel = "実行する") {
+        document.getElementById('confirmMessage').innerText = message;
+        const btn = document.getElementById('confirmOkBtn');
+        btn.innerText = okLabel;
+        btn.onclick = () => { closeConfirm(); onOk(); };
+        document.getElementById('confirmModal').style.display = 'flex';
+    }
+
+    function closeConfirm() {
+        document.getElementById('confirmModal').style.display = 'none';
+        document.getElementById('confirmOkBtn').onclick = null;
+    }
+
+    // --- アカウント・同期設定モーダル制御 ---
+    function openAccountSettings() {
+        document.getElementById('accountModal').style.display = 'flex';
+    }
+
+    function closeAccountSettings() {
+        document.getElementById('accountModal').style.display = 'none';
+    }
+
+    /* ===================================================================
+       【第7項改定】ネイティブ化必須要件：オートセーブ＆ハイドレーション仕様
+       Page Visibility API による瞬間ドラフト保存とステート復元
+       =================================================================== */
+    (function() {
+        const DRAFT_KEY = 'bio_edu_draft_' + (window.location.pathname.split('/').pop() || 'index.html');
+
+        function serializeUIState() {
+            try {
+                const inputs = document.querySelectorAll('input, textarea, select');
+                const draft = {};
+                inputs.forEach(el => {
+                    if (el.id && !el.closest('#confirmModal') && !el.closest('#accountModal')) {
+                        if (el.type === 'checkbox' || el.type === 'radio') {
+                            draft[el.id] = el.checked;
+                        } else if (el.type !== 'file' && el.type !== 'password') {
+                            draft[el.id] = el.value;
+                        }
+                    }
+                });
+                sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+            } catch (e) {
+                console.warn('UIステートのシリアライズに失敗しました:', e);
+            }
+        }
+
+        function hydrateUIState() {
+            try {
+                const draftStr = sessionStorage.getItem(DRAFT_KEY);
+                if (!draftStr) return;
+                const draft = JSON.parse(draftStr);
+                for (const id in draft) {
+                    const el = document.getElementById(id);
+                    if (el && !el.closest('#confirmModal') && !el.closest('#accountModal')) {
+                        if (el.type === 'checkbox' || el.type === 'radio') {
+                            el.checked = draft[id];
+                        } else if (el.type !== 'file' && el.type !== 'password') {
+                            el.value = draft[id];
+                        }
+                        el.dispatchEvent(new Event('input', { bubbles: true }));
+                        el.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                }
+            } catch (e) {
+                console.warn('UIステートのハイドレーションに失敗しました:', e);
+            }
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                serializeUIState();
+            }
+        });
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', hydrateUIState);
+        } else {
+            hydrateUIState();
+        }
+    })();
+
+
+    // 最終アクセスアプリの記憶（State Restoration）
+    try {
+      localStorage.setItem('bio_suite_last_app', window.location.pathname);
+    } catch (e) {
+      console.warn('State restoration unavailable:', e);
+    }
+</script>
+
+<!-- Firebase 認証・クラウド同期（ガイドライン第7項） -->
+<script type="module">
+    import { joinRoom, leaveRoom, importMasterPreset, registerMasterPreset } from './auth_sync.js';
+    window.handleJoinRoom = function() {
+        const rEl = document.getElementById('roomCodeInput');
+        const pEl = document.getElementById('participantIdInput');
+        const r = rEl ? rEl.value.trim() : '';
+        const p = pEl ? pEl.value.trim() : '';
+        if (!r || !p) {
+            if (typeof showToast === 'function') showToast('ルームコードと参加者IDを入力してください', 'warning');
+            return;
+        }
+        joinRoom(r, p);
+        if (typeof closeAccountSettings === 'function') closeAccountSettings();
+    };
+    window.handleLeaveRoom = function() {
+        leaveRoom();
+        if (typeof closeAccountSettings === 'function') closeAccountSettings();
+    };
+    window.handleImportPreset = function() {
+        const tEl = document.getElementById('masterTaskCodeInput');
+        const t = tEl ? tEl.value.trim() : '';
+        if (!t) {
+            if (typeof showToast === 'function') showToast('課題コードを入力してください', 'warning');
+            return;
+        }
+        importMasterPreset(t);
+    };
+    window.handleRegisterCurrentPreset = function() {
+        const tEl = document.getElementById('newMasterTaskCodeInput');
+        const t = tEl ? tEl.value.trim() : '';
+        if (!t) {
+            if (typeof showToast === 'function') showToast('発行する課題コードを入力してください', 'warning');
+            return;
+        }
+        // 現在の画面のテキストエリアおよびセッションデータを収集
+        const activeTextarea = document.querySelector('textarea.paste-area, textarea#dnaInput, textarea#fastaInput, textarea#chain-code-input, textarea#pasteArea');
+        const seq = activeTextarea ? activeTextarea.value.trim() : '';
+        const sessionSnap = {};
+        for (let i = 0; i < sessionStorage.length; i++) {
+            const k = sessionStorage.key(i);
+            if (k) sessionSnap[k] = sessionStorage.getItem(k);
+        }
+        const payload = {
+            sequence: seq,
+            sessionData: sessionSnap,
+            appName: document.title,
+            registeredAt: Date.now()
+        };
+        registerMasterPreset(t, payload);
+    };
+</script>
+
+<!-- アプリ内Googleフォーム・フィードバックモーダル -->
+<div class="modal-overlay" id="feedbackModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10010; justify-content: center; align-items: center;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 style="margin: 0; font-size: 15px; color: #fff; display: flex; align-items: center; gap: 8px;">
+        <svg class="header-icon" style="width: 18px; height: 18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        ご意見・フィードバック
+      </h3>
+      <button class="modal-close" onclick="closeFeedbackForm(); triggerHapticFeedback();" style="background: transparent; border: none; color: #bdc3c7; cursor: pointer; font-size: 20px;">&times;</button>
+    </div>
+    <iframe id="feedbackIframe" src="about:blank" loading="lazy"></iframe>
+  </div>
+</div>
+
+
+  <!-- /* [Bio-Edu Suite v35.1] Session-Persistent Workspace Standard */ -->
+  <script src="js/session_workspace.js"></script>
+
+
+    <!-- /.content-area -->
+
+<!-- カスタム確認ダイアログ（データ初期化用等） -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-content" style="max-width: 400px; border-top: none; text-align: center;">
+    <div class="modal-body" style="padding: 30px 20px 10px;">
+      <svg class="svg-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 42px; height: 42px; margin-bottom: 12px; opacity: 0.9;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+      <h3 id="confirmTitle" style="margin: 0 0 10px 0; font-size: 16px; color: var(--primary);">確認</h3>
+      <div id="confirmMessage" style="font-size: 13px; line-height: 1.6; color: var(--text-main);"></div>
+    </div>
+        <div class="modal-footer" style="border-top: none; background: white; justify-content: center; gap: 12px; padding-bottom: 30px;">
+      <button class="btn btn-secondary" onclick="closeConfirm(); triggerHapticFeedback();">キャンセル</button>
+      <button class="btn btn-danger" id="confirmOkBtn" style="background: var(--danger); color: white;">初期化する</button>
+    </div>
+  </div>
+</div>
+
+<!-- アカウント・同期設定（ログインパネル）モーダル -->
+<!-- ルーム接続・同期設定（Kahoot方式）モーダル v35.4 -->
+<div class="modal-overlay" id="accountModal">
+  <div class="modal-content" style="max-width: 380px;">
+    <div class="modal-header">
+      <h3 style="margin: 0; font-size: 16px;">ルーム接続・同期設定</h3>
+      <button class="modal-close" onclick="closeAccountSettings(); triggerHapticFeedback();" data-tooltip="閉じる">
+        <svg class="btn-icon" style="margin:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="padding: 20px;">
+
+      <!-- ① 未接続ビュー -->
+      <div id="modalLoggedOutView">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+          <span style="font-size: 14px; font-weight: bold; color: var(--text-muted);">⚪️ 未接続（ローカル作業中）</span>
+        </div>
+        <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 14px 0; line-height: 1.5;">
+          ルームコードとIDを入力して入室すると、班員とのリアルタイム共有や、自宅端末へのデータ引き継ぎが可能です。
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px;">
+          <div>
+            <label style="font-size: 11px; font-weight: bold; color: var(--primary); display: block; margin-bottom: 4px;">ルームコード</label>
+            <input type="text" id="roomCodeInput" class="primer-input" placeholder="例: BIO-101" style="width: 100%; box-sizing: border-box; text-transform: uppercase;">
+          </div>
+          <div>
+            <label style="font-size: 11px; font-weight: bold; color: var(--primary); display: block; margin-bottom: 4px;">参加者ID（班名 または 出席番号）</label>
+            <input type="text" id="participantIdInput" class="primer-input" placeholder="例: Team-B02 または No-15" style="width: 100%; box-sizing: border-box;">
+          </div>
+        </div>
+
+        <button class="btn btn-primary" style="width: 100%; margin-bottom: 14px;" onclick="window.handleJoinRoom(); triggerHapticFeedback();">
+          ルームに入室・同期開始
+        </button>
+
+        <div style="border-top: 1px dashed var(--border-color); padding-top: 12px;">
+          <label style="font-size: 11px; font-weight: bold; color: var(--text-muted); display: block; margin-bottom: 4px;">教員マスター課題データの読込</label>
+          <div style="display: flex; gap: 6px;">
+            <input type="text" id="masterTaskCodeInput" class="primer-input" placeholder="課題コード (例: TASK-01)" style="flex: 1; text-transform: uppercase;">
+            <button class="btn btn-secondary" style="font-size: 11px; padding: 6px 10px; white-space: nowrap;" onclick="window.handleImportPreset(); triggerHapticFeedback();">読込</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ② 接続中ビュー -->
+      <div id="modalLoggedInView" style="display: none;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+          <span id="syncStatusBadge" style="font-size: 14px; font-weight: bold; color: var(--phase-color);">🟢 ルーム同期中</span>
+        </div>
+
+        <div style="background: #f8f9fa; border: 1px solid #e1e8ed; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
+          <div id="roomDisplay" style="font-weight: bold; font-size: 14px; color: var(--primary);"></div>
+          <div id="participantDisplay" style="font-size: 12px; color: var(--text-muted); margin-top: 2px;"></div>
+          <div id="syncStatusNote" style="font-size: 11px; color: var(--danger); margin-top: 6px; display: none;">
+            ※オフライン中です。データは端末内に一時保存され、再接続時に自動同期されます。
+          </div>
+        </div>
+
+        
+        <!-- 教員専用：マスター課題データ発行パネル（isTeacher時のみ動的表示） -->
+        <div id="teacherPresetSection" style="display: none; border-top: 1px dashed var(--border-color); padding-top: 12px; margin-bottom: 14px;">
+          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+            <span style="font-size: 12px; font-weight: bold; color: #d35400;">教員専用：現在の画面を課題として発行</span>
+          </div>
+          <p style="font-size: 11px; color: var(--text-muted); margin: 0 0 8px 0; line-height: 1.4;">
+            現在の画面の入力データを、生徒が一括インポートできる課題コードとしてクラウドに登録します。
+          </p>
+          <div style="display: flex; gap: 6px;">
+            <input type="text" id="newMasterTaskCodeInput" class="primer-input" placeholder="新課題コード (例: TASK-01)" style="flex: 1; text-transform: uppercase;">
+            <button class="btn btn-primary" style="font-size: 11px; padding: 6px 12px; white-space: nowrap; background: #e67e22; border-color: #d35400;" onclick="window.handleRegisterCurrentPreset(); triggerHapticFeedback();">登録・発行</button>
+          </div>
+        </div>
+<button class="btn btn-secondary" style="width: 100%; color: var(--danger); border-color: #f5b7b1;" onclick="window.handleLeaveRoom(); triggerHapticFeedback();">
+          ルームから退出（切断）
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- トースト通知用のコンテナ -->
+<div id="toast" class="toast"></div>
+
+<script>
+    // --- ドロワー開閉制御 ---
+    function toggleSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
+        if(sidebar) sidebar.classList.toggle('open');
+        if(overlay) overlay.classList.toggle('open');
+    }
+
+    // --- 入力値のフォーマットとエラーハンドリング ---
+    function handleTableInput(inputEl) {
+        const valStr = inputEl.value;
+        if (valStr.includes('.')) {
+            const decimalPart = valStr.split('.')[1];
+            // 小数第2位以上の入力があり、Taq酵素以外の場合に警告を表示
+            if (decimalPart && decimalPart.length > 1 && inputEl.id !== 'val_1x_taq') {
+                showToast('手動ピペッティングでは誤差が大きいため、0.1µL単位を推奨します', 'error');
+            }
+        }
+    }
+
+    function handleTableChange(inputEl) {
+        let val = parseFloat(inputEl.value);
+        if (!isNaN(val)) {
+            // 自動的に小数第1位にフォーマットする（例: 1 -> 1.0）
+            inputEl.value = val.toFixed(1);
+        }
+    }
+
+    // --- 教育的UIモジュール①: 根拠ポップオーバー（ガイドライン第6項① 準拠 / フリップ計算付き絶対配置） ---
+    function toggleRationale(event, id) {
+        event.stopPropagation();
+        const el = document.getElementById(id);
+        const btn = event.currentTarget;
+        const isShown = el.classList.contains('show');
+
+        // 他のポップオーバーを閉じる
+        document.querySelectorAll('.rationale-text').forEach(e => {
+            e.classList.remove('show', 'arrow-top', 'arrow-bottom');
+        });
+
+        if(!isShown) {
+            if (el.parentNode !== document.body) document.body.appendChild(el);
+            el.style.top = '0px'; el.style.left = '0px';
+            el.classList.add('show');
+
+            // フリップ計算による絶対配置 (offsetWidthを用いた親要素追従)
+            const elHeight = el.offsetHeight;
+            const elWidth = el.offsetWidth;
+            const rect = btn.getBoundingClientRect();
+
+            let topPos = rect.bottom + 12;
+            let arrowClass = 'arrow-top';
+            // 画面下端に見切れる場合は上側に配置
+            if (rect.bottom + elHeight + 20 > window.innerHeight) {
+                topPos = rect.top - elHeight - 12;
+                arrowClass = 'arrow-bottom';
+            }
+            el.classList.add(arrowClass);
+            el.style.top = topPos + 'px';
+
+            // 左右位置の調整 (offsetWidth を使用してはみ出し防止)
+            let leftPos = rect.left - (elWidth / 2) + (rect.width / 2);
+            if (leftPos + elWidth > window.innerWidth) leftPos = window.innerWidth - elWidth - 10;
+            if (leftPos < 10) leftPos = 10;
+            el.style.left = leftPos + 'px';
+
+            // 尻尾の水平位置をボタン中央に合わせるカスタムプロパティ
+            const arrowOffset = rect.left - leftPos + (rect.width / 2) - 6;
+            el.style.setProperty('--arrow-left', arrowOffset + 'px');
+        }
+    }
+
+    // 外部クリック・スクロールで閉じる
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.rationale-text') && !e.target.closest('.rationale-btn')) {
+            document.querySelectorAll('.rationale-text').forEach(el => {
+                el.classList.remove('show', 'arrow-top', 'arrow-bottom');
+            });
+        }
+    });
+
+    document.addEventListener('scroll', () => {
+        document.querySelectorAll('.rationale-text').forEach(el => {
+            el.classList.remove('show', 'arrow-top', 'arrow-bottom');
+        });
+    }, true);
+
+    // --- カスタムツールチップ初期化（ガイドライン第5項④ 準拠 / ネイティブ title 属性は使用禁止） ---
+    function initTooltips() {
+        if (document.getElementById('__bes_tooltip')) return; // 二重初期化を防ぐ
+        const tooltip = document.createElement('div');
+        tooltip.id = '__bes_tooltip';
+        tooltip.className = 'custom-tooltip';
+        document.body.appendChild(tooltip);
+
+        document.body.addEventListener('mouseover', (e) => {
+            const target = e.target.closest('[data-tooltip]');
+            if (target && !target.classList.contains('rationale-btn')) {
+                tooltip.innerHTML = target.getAttribute('data-tooltip');
+                tooltip.style.display = 'block';
+                const rect = target.getBoundingClientRect();
+                const ttRect = tooltip.getBoundingClientRect();
+                let topPos = rect.top - ttRect.height - 8;
+                let leftPos = rect.left + (rect.width / 2);
+                let arrowClass = 'show-top';
+                if (topPos < 0) { topPos = rect.bottom + 8; arrowClass = 'show-bottom'; }
+                if (leftPos - ttRect.width / 2 < 5) leftPos = 5 + ttRect.width / 2;
+                else if (leftPos + ttRect.width / 2 > window.innerWidth - 5) leftPos = window.innerWidth - ttRect.width / 2 - 5;
+                tooltip.className = `custom-tooltip ${arrowClass}`;
+                tooltip.style.top = topPos + 'px';
+                tooltip.style.left = leftPos + 'px';
+                tooltip.style.transform = 'translateX(-50%)';
+                tooltip.style.opacity = '1';
+            }
+        });
+        document.body.addEventListener('mouseout', (e) => {
+            if (e.target.closest('[data-tooltip]')) {
+                tooltip.style.opacity = '0';
+                setTimeout(() => { if (tooltip.style.opacity === '0') tooltip.style.display = 'none'; }, 200);
+            }
+        });
+        document.addEventListener('scroll', () => {
+            tooltip.style.opacity = '0'; tooltip.style.display = 'none';
+        }, true);
+    }
+    
+    // --- トースト通知（ガイドライン第6項⑤ 準拠 / alert() は使用禁止） ---
+    // type: ""(=成功/緑) | "error" | "warning" | "info"。'success' 等の未知値は既定の緑にフォールバックする
+    function showToast(msg, type = "") {
+        const toast = document.getElementById('toast');
+        if (!toast) return;
+        toast.innerText = msg;
+        let className = "show";
+        if (type === "error") className += " error";
+        else if (type === "warning") className += " warning";
+        else if (type === "info") className += " info";
+        toast.className = "";
+        void toast.offsetWidth; // リフローを挟み、連続表示でもアニメーションを再生させる
+        toast.className = className;
+        setTimeout(() => { toast.classList.remove("show"); }, 3000);
+    }
+
+    // --- アプリ②への連携保存機能 (オートセーブ) ---
+    function autoSaveData() {
+        try {
+            const data = {
+                totalVol: document.getElementById('mm_total_vol').value,
+                enzyme: document.getElementById('enzyme_type').value,
+                timestamp: new Date().getTime()
+            };
+            localStorage.setItem('bio_edu_mm_data', JSON.stringify(data));
+        } catch(e) {
+            console.error('自動保存に失敗しました。', e);
+        }
+    }
+
+    window.onload = () => { initTooltips(); updateTotalVol(); };
+
+    function toggleDilutionMode() {
+        const isRatio = document.getElementById('dil_mode_ratio').checked;
+        document.getElementById('panel_dil_ratio').style.display = isRatio ? 'block' : 'none';
+        document.getElementById('panel_dil_conc').style.display = isRatio ? 'none' : 'block';
+        calcDilution();
+    }
+
+    function calcDilution() {
+        const isRatio = document.getElementById('dil_mode_ratio').checked;
+        let dna = 0, water = 0;
+        let hasError = false;
+
+        if (isRatio) {
+            const v = parseFloat(document.getElementById('dr_vol').value) || 0;
+            const r = parseFloat(document.getElementById('dr_ratio').value) || 1;
+            dna = v; water = v * (r - 1);
+        } else {
+            const c1 = parseFloat(document.getElementById('dc_c1').value) || 0;
+            const c2 = parseFloat(document.getElementById('dc_c2').value) || 0;
+            const v2 = parseFloat(document.getElementById('dc_v2').value) || 0;
+            
+            if (c2 > c1) {
+                showToast('目標濃度が高すぎます。現在の濃度(C1)以下にしてください', 'error');
+                hasError = true;
+            } else if (c1 > 0) { 
+                dna = (c2 * v2) / c1; water = v2 - dna; 
+            }
+        }
+
+        if(hasError) {
+            document.getElementById('res_dil_dna').innerText = "エラー";
+            document.getElementById('res_dil_water').innerText = "エラー";
+        } else {
+            document.getElementById('res_dil_dna').innerText = dna.toFixed(1) + " μL";
+            document.getElementById('res_dil_water').innerText = water.toFixed(1) + " μL";
+        }
+    }
+
+    function updateTotalVol(sourceElement) {
+        // 排他制御：制限酵素とシーケンス精製用は同時に設定しない
+        if (sourceElement) {
+            if (sourceElement.id === 'vol_re' && sourceElement.value !== "0") {
+                document.getElementById('vol_seq').value = "0";
+            } else if (sourceElement.id === 'vol_seq' && sourceElement.value !== "0") {
+                document.getElementById('vol_re').value = "0";
+            }
+        }
+
+        const base = parseFloat(document.getElementById('vol_base').value) || 0;
+        const reCount = parseFloat(document.getElementById('vol_re').value) || 0;
+        const seq = parseFloat(document.getElementById('vol_seq').value) || 0;
+        document.getElementById('mm_total_vol').value = base + (reCount * 10) + seq;
+        recalcVolumes();
+    }
+
+    function changeEnzymeType() {
+        const type = document.getElementById('enzyme_type').value;
+        const total = parseFloat(document.getElementById('mm_total_vol').value) || 0;
+        document.querySelectorAll('.row-premix').forEach(el => el.style.display = type === 'premix' ? 'table-row' : 'none');
+        document.querySelectorAll('.row-sep').forEach(el => el.style.display = type !== 'premix' ? 'table-row' : 'none');
+        
+        if (type === 'buf10x') {
+            document.getElementById('lbl_buffer').innerText = "10x ExTaq Buffer";
+            document.getElementById('lbl_taq').innerText = "Ex Taq 酵素";
+            document.getElementById('val_1x_buf').value = (total / 10).toFixed(1);
+        } else if (type === 'buf5x') {
+            document.getElementById('lbl_buffer').innerText = "5x GXL Buffer";
+            document.getElementById('lbl_taq').innerText = "PrimeSTAR 酵素";
+            document.getElementById('val_1x_buf').value = (total / 5).toFixed(1);
+        }
+        calcMM();
+    }
+
+    function recalcVolumes() {
+        const total = parseFloat(document.getElementById('mm_total_vol').value) || 0;
+        let newPrimerVol = (total / 30).toFixed(1);
+        if(newPrimerVol < 0.5) newPrimerVol = 0.5;
+        document.getElementById('val_1x_fp').value = newPrimerVol;
+        document.getElementById('val_1x_rp').value = newPrimerVol;
+        changeEnzymeType(); 
+    }
+
+    function calcMM() {
+        const n = parseInt(document.getElementById('mm_n').value) || 1;
+        const marginMode = document.querySelector('input[name="margin_mode"]:checked').value;
+        
+        // 動的なマージン（N+1）計算
+        let nTotal = 1;
+        if (marginMode === '1.1') {
+            nTotal = n * 1.1;
+        } else if (marginMode === '1.2') {
+            nTotal = n * 1.2;
+        } else if (marginMode === 'plus1') {
+            nTotal = n + 1;
+        }
+
+        document.getElementById('res_n_total').innerText = nTotal.toFixed(1);
+        document.getElementById('mm_col_head').innerText = `MM (x${nTotal.toFixed(1)})`;
+
+        const totalVol = parseFloat(document.getElementById('mm_total_vol').value) || 0;
+        const type = document.getElementById('enzyme_type').value;
+        let sumReagents = 0;
+        
+        const fp = parseFloat(document.getElementById('val_1x_fp').value) || 0;
+        const rp = parseFloat(document.getElementById('val_1x_rp').value) || 0;
+        sumReagents += (fp + rp);
+        
+        let taq = 0;
+
+        document.getElementById('val_1x_fp').classList.remove('error');
+        document.getElementById('val_1x_rp').classList.remove('error');
+        document.getElementById('val_1x_dna').classList.remove('error');
+        document.getElementById('val_1x_taq').classList.remove('error');
+
+        document.getElementById('val_mm_fp').innerText = (fp * nTotal).toFixed(1);
+        document.getElementById('val_mm_rp').innerText = (rp * nTotal).toFixed(1);
+
+        if (type === 'premix') {
+            const premix = totalVol / 2;
+            sumReagents += premix;
+            document.getElementById('val_1x_premix').innerText = premix.toFixed(1);
+            document.getElementById('val_mm_premix').innerText = (premix * nTotal).toFixed(1);
+        } else {
+            const buf = parseFloat(document.getElementById('val_1x_buf').value) || 0;
+            const dntp = parseFloat(document.getElementById('val_1x_dntp').value) || 0;
+            taq = parseFloat(document.getElementById('val_1x_taq').value) || 0;
+            sumReagents += (buf + dntp + taq);
+            document.getElementById('val_mm_buf').innerText = (buf * nTotal).toFixed(1);
+            document.getElementById('val_mm_dntp').innerText = (dntp * nTotal).toFixed(1);
+            document.getElementById('val_mm_taq').innerText = (taq * nTotal).toFixed(1);
+        }
+
+        const dnaVol = parseFloat(document.getElementById('val_1x_dna').value) || 0;
+        let water = totalVol - dnaVol - sumReagents;
+
+        // --- AI Educational Assist Logic ---
+        let errorMessage = "";
+        
+        // 1. Water Error
+        if (water < 0) {
+            errorMessage = '容量オーバーです。総液量を増やすか各試薬を減らしてください';
+            document.getElementById('val_1x_water').style.color = "var(--danger)";
+            document.getElementById('val_1x_water').innerText = "エラー";
+            document.getElementById('val_mm_water').innerText = "---";
+        } else {
+            document.getElementById('val_1x_water').style.color = "#2980b9";
+            document.getElementById('val_1x_water').innerText = water.toFixed(1);
+            document.getElementById('val_mm_water').innerText = (water * nTotal).toFixed(1);
+        }
+
+        // 2. DNA Excess
+        if (dnaVol > totalVol * 0.2) {
+            document.getElementById('val_1x_dna').classList.add('error');
+            if(!errorMessage) errorMessage = 'DNA抽出液が多すぎます。総液量の10%未満に減らしてください';
+        }
+
+        // 3. Primer Excess
+        if (fp > totalVol * 0.1 || rp > totalVol * 0.1) {
+            if(fp > totalVol * 0.1) document.getElementById('val_1x_fp').classList.add('error');
+            if(rp > totalVol * 0.1) document.getElementById('val_1x_rp').classList.add('error');
+            if(!errorMessage) errorMessage = 'プライマーが多すぎます。総液量の1/20〜1/30に減らしてください';
+        }
+
+        // 4. Taq Excess
+        if (type !== 'premix' && taq > totalVol * 0.05) {
+            document.getElementById('val_1x_taq').classList.add('error');
+            if(!errorMessage) errorMessage = '酵素(Taq)の入れすぎです。0.25〜0.5µL程度に設定してください';
+        }
+
+        // トーストによる一律通知
+        if (errorMessage) {
+            showToast(errorMessage, 'error');
+        }
+
+        const dist = totalVol - dnaVol;
+        document.getElementById('val_1x_dist').innerText = dist.toFixed(1);
+        document.getElementById('val_mm_total').innerText = (dist * nTotal).toFixed(1);
+        document.getElementById('notice_dist').innerText = dist.toFixed(1);
+        document.getElementById('notice_dna').innerText = dnaVol.toFixed(1);
+        document.getElementById('notice_total').innerText = totalVol.toFixed(1);
+
+        // 常に最新の状態を自動保存
+        autoSaveData();
+    }
+
+    /* ===================================================================
+       【v34.3 外箱アップデート／追記専用ブロック】
+       既存の関数・紐付けには一切手を加えていない。
+       =================================================================== */
+
+    // --- 第15項③ 触覚（Haptic）フィードバック共通関数 ---
+    function triggerHapticFeedback() {
+        if (navigator.vibrate) {
+            navigator.vibrate(10); // 10msの極小振動
+        }
+    }
+
+    // --- 第5項 Peg Menu ピン留め切り替え ---
+    function toggleSidebarPin() {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
+        const isMobile = window.innerWidth <= 1024; // v34.4: タブレット縦表示(1024px以下)も含めてモバイル判定
+
+        if (!isMobile) {
+            sidebar.classList.toggle('pinned');
+            document.body.classList.toggle('has-pinned-sidebar', sidebar.classList.contains('pinned'));
+        } else {
+            sidebar.classList.toggle('open');
+            if (overlay) overlay.classList.toggle('open', sidebar.classList.contains('open'));
+        }
+    }
+
+    // --- ご意見箱（Googleフォーム）への動的パラメータ付き遷移 ---
+    // Googleフォーム アプリ内モーダル開閉関数 (濃紺コンテキスト維持)
+function openFeedbackForm() {
+    const baseUrl = "https://docs.google.com/forms/d/e/1FAIpQLSet9LJgsTO0aZ6pbdekLr4fBeeDPAxREk8xmzY1f-gTcDnFrQ/viewform";
+    const appName = document.title;
+    window.open(`${baseUrl}?usp=pp_url&entry.1969218085=${encodeURIComponent(appName)}`, '_blank');
+}
+function closeFeedbackForm() {
+    const modal = document.getElementById('feedbackModal');
+    if (modal) modal.style.display = 'none';
+}
+
+    // --- データ初期化（ネイティブ confirm() は使用禁止） ---
+    function confirmDataReset() {
+        // スマホの場合はメニューを自動で閉じる
+        if (window.innerWidth <= 1024) {
+            document.querySelector('.sidebar').classList.remove('open');
+            const overlay = document.querySelector('.sidebar-overlay');
+            if (overlay) overlay.classList.remove('open');
+        }
+
+        showConfirm("すべての入力データおよびローカル保存データを初期化しますか？この操作は取り消せません。", () => {
+            window.isResetting = true;
+            Storage.prototype.setItem = function() {};
+            localStorage.clear();
+            sessionStorage.clear();
+            location.reload();
+        }, "初期化する");
+    }
+
+    // --- カスタム確認ダイアログ制御 ---
+    function showConfirm(message, onOk, okLabel = "実行する") {
+        document.getElementById('confirmMessage').innerText = message;
+        const btn = document.getElementById('confirmOkBtn');
+        btn.innerText = okLabel;
+        btn.onclick = () => { closeConfirm(); onOk(); };
+        document.getElementById('confirmModal').style.display = 'flex';
+    }
+
+    function closeConfirm() {
+        document.getElementById('confirmModal').style.display = 'none';
+        document.getElementById('confirmOkBtn').onclick = null;
+    }
+
+    // --- アカウント・同期設定モーダル制御 ---
+    function openAccountSettings() {
+        document.getElementById('accountModal').style.display = 'flex';
+    }
+
+    function closeAccountSettings() {
+        document.getElementById('accountModal').style.display = 'none';
+    }
+
+    /* ===================================================================
+       【第7項改定】ネイティブ化必須要件：オートセーブ＆ハイドレーション仕様
+       Page Visibility API による瞬間ドラフト保存とステート復元
+       =================================================================== */
+    (function() {
+        const DRAFT_KEY = 'bio_edu_draft_' + (window.location.pathname.split('/').pop() || 'index.html');
+
+        function serializeUIState() {
+            try {
+                const inputs = document.querySelectorAll('input, textarea, select');
+                const draft = {};
+                inputs.forEach(el => {
+                    if (el.id && !el.closest('#confirmModal') && !el.closest('#accountModal')) {
+                        if (el.type === 'checkbox' || el.type === 'radio') {
+                            draft[el.id] = el.checked;
+                        } else if (el.type !== 'file' && el.type !== 'password') {
+                            draft[el.id] = el.value;
+                        }
+                    }
+                });
+                sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+            } catch (e) {
+                console.warn('UIステートのシリアライズに失敗しました:', e);
+            }
+        }
+
+        function hydrateUIState() {
+            try {
+                const draftStr = sessionStorage.getItem(DRAFT_KEY);
+                if (!draftStr) return;
+                const draft = JSON.parse(draftStr);
+                for (const id in draft) {
+                    const el = document.getElementById(id);
+                    if (el && !el.closest('#confirmModal') && !el.closest('#accountModal')) {
+                        if (el.type === 'checkbox' || el.type === 'radio') {
+                            el.checked = draft[id];
+                        } else if (el.type !== 'file' && el.type !== 'password') {
+                            el.value = draft[id];
+                        }
+                        el.dispatchEvent(new Event('input', { bubbles: true }));
+                        el.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                }
+            } catch (e) {
+                console.warn('UIステートのハイドレーションに失敗しました:', e);
+            }
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                serializeUIState();
+            }
+        });
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', hydrateUIState);
+        } else {
+            hydrateUIState();
+        }
+    })();
+
+
+    // 最終アクセスアプリの記憶（State Restoration）
+    try {
+      localStorage.setItem('bio_suite_last_app', window.location.pathname);
+    } catch (e) {
+      console.warn('State restoration unavailable:', e);
+    }
+</script>
+
+<!-- Firebase 認証・クラウド同期（ガイドライン第7項） -->
+<script type="module">
+    import { joinRoom, leaveRoom, importMasterPreset, registerMasterPreset } from './auth_sync.js';
+    window.handleJoinRoom = function() {
+        const rEl = document.getElementById('roomCodeInput');
+        const pEl = document.getElementById('participantIdInput');
+        const r = rEl ? rEl.value.trim() : '';
+        const p = pEl ? pEl.value.trim() : '';
+        if (!r || !p) {
+            if (typeof showToast === 'function') showToast('ルームコードと参加者IDを入力してください', 'warning');
+            return;
+        }
+        joinRoom(r, p);
+        if (typeof closeAccountSettings === 'function') closeAccountSettings();
+    };
+    window.handleLeaveRoom = function() {
+        leaveRoom();
+        if (typeof closeAccountSettings === 'function') closeAccountSettings();
+    };
+    window.handleImportPreset = function() {
+        const tEl = document.getElementById('masterTaskCodeInput');
+        const t = tEl ? tEl.value.trim() : '';
+        if (!t) {
+            if (typeof showToast === 'function') showToast('課題コードを入力してください', 'warning');
+            return;
+        }
+        importMasterPreset(t);
+    };
+    window.handleRegisterCurrentPreset = function() {
+        const tEl = document.getElementById('newMasterTaskCodeInput');
+        const t = tEl ? tEl.value.trim() : '';
+        if (!t) {
+            if (typeof showToast === 'function') showToast('発行する課題コードを入力してください', 'warning');
+            return;
+        }
+        // 現在の画面のテキストエリアおよびセッションデータを収集
+        const activeTextarea = document.querySelector('textarea.paste-area, textarea#dnaInput, textarea#fastaInput, textarea#chain-code-input, textarea#pasteArea');
+        const seq = activeTextarea ? activeTextarea.value.trim() : '';
+        const sessionSnap = {};
+        for (let i = 0; i < sessionStorage.length; i++) {
+            const k = sessionStorage.key(i);
+            if (k) sessionSnap[k] = sessionStorage.getItem(k);
+        }
+        const payload = {
+            sequence: seq,
+            sessionData: sessionSnap,
+            appName: document.title,
+            registeredAt: Date.now()
+        };
+        registerMasterPreset(t, payload);
+    };
+</script>
+
+<!-- アプリ内Googleフォーム・フィードバックモーダル -->
+<div class="modal-overlay" id="feedbackModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10010; justify-content: center; align-items: center;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 style="margin: 0; font-size: 15px; color: #fff; display: flex; align-items: center; gap: 8px;">
+        <svg class="header-icon" style="width: 18px; height: 18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        ご意見・フィードバック
+      </h3>
+      <button class="modal-close" onclick="closeFeedbackForm(); triggerHapticFeedback();" style="background: transparent; border: none; color: #bdc3c7; cursor: pointer; font-size: 20px;">&times;</button>
+    </div>
+    <iframe id="feedbackIframe" src="about:blank" loading="lazy"></iframe>
+  </div>
+</div>
+
+
+  <!-- /* [Bio-Edu Suite v35.1] Session-Persistent Workspace Standard */ -->
+  <script src="js/session_workspace.js"></script>
+
+
   <script>
     const SPECIES_LIST = [
         { id: "chicken", name: "ニワトリ", skfbId: "6U8nX" },

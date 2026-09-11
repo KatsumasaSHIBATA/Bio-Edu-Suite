@@ -1,0 +1,107 @@
+<!-- 1. ドロワー用オーバーレイ -->
+<div class="sidebar-overlay" onclick="toggleSidebarPin(); triggerHapticFeedback();"></div>
+
+<!-- 2. グローバル・ドロワー (Peg Menu) -->
+<div class="sidebar">
+  <div class="sidebar-header">
+    <button class="hamburger-btn" onclick="toggleSidebarPin(); triggerHapticFeedback();" aria-label="メニューを開く/閉じる">
+      <!-- ≡ アイコン -->
+      <svg class="icon-menu" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      <!-- × アイコン -->
+      <svg class="icon-close" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+  </div>
+
+  <div class="nav-menu">
+    <div class="nav-header p1"><span class="nav-header-text">Phase 1: 収集・ハブ</span></div>
+    <a href="index.html" class="nav-item p1" onclick="try{localStorage.removeItem('bio_suite_last_app');}catch(e){}">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+      <span class="nav-text">Investigation Dashboard</span>
+    </a>
+
+    <div class="nav-header p2"><span class="nav-header-text">Phase 2: DNAラボ</span></div>
+    <a href="1_Master_Mix_Studio.html" class="nav-item p2 active">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>
+      <span class="nav-text">① PCR Master Mix Studio</span>
+    </a>
+    <a href="2_Thermal_Cycler_Simulator.html" class="nav-item p2">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>
+      <span class="nav-text">② Thermal Cycler Simulator</span>
+    </a>
+    <a href="3_Virtual_PCR_RFLP.html" class="nav-item p2">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>
+      <span class="nav-text">③ Virtual PCR &amp; RFLP</span>
+    </a>
+    <a href="4_Sanger_Trace_Editor.html" class="nav-item p2">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>
+      <span class="nav-text">④ Sanger Trace Editor</span>
+    </a>
+    <a href="5_DNA_Alignment_Studio.html" class="nav-item p2">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>
+      <span class="nav-text">⑤ DNA Alignment Studio</span>
+    </a>
+    <a href="6_Alignment_Print_Studio.html" class="nav-item p2">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>
+      <span class="nav-text">⑥ Alignment Print Studio</span>
+    </a>
+    <a href="7_Virtual_BLAST_Explorer.html" class="nav-item p2">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>
+      <span class="nav-text">⑦ Virtual BLAST Explorer</span>
+    </a>
+    <a href="8_Phylogenetic_Tree_Builder.html" class="nav-item p2">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>
+      <span class="nav-text">⑧ Phylogenetic Tree Builder</span>
+    </a>
+
+    <div class="nav-header p3"><span class="nav-header-text">Phase 3: 形態ラボ</span></div>
+    <a href="9_Morphometrics_Studio.html" class="nav-item p3">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 21h18L3 3z"/><path d="M7 21v-2M11 21v-2M15 21v-2"/></svg>
+      <span class="nav-text">⑨ Morphometrics Studio</span>
+    </a>
+
+        <div class="nav-header p4"><span class="nav-header-text">Phase 4: 統合検証ルーム</span></div>
+    <a href="10_integrative_taxonomy_studio.html" class="nav-item p4">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3v18M8 21h8M4 7h16"/><path d="M4 7l-2 5h4z"/><path d="M20 7l-2 5h4z"/></svg>
+      <span class="nav-text">⑩ Integrative Taxonomy Studio</span>
+    </a>
+    <a href="11_Comparative_Variant_Analyzer.html" class="nav-item p4">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3v18M8 21h8M4 7h16"/><path d="M4 7l-2 5h4z"/><path d="M20 7l-2 5h4z"/></svg>
+      <span class="nav-text">⑪ Comparative Variant Analyzer</span>
+    </a>
+
+    <div class="nav-header p5"><span class="nav-header-text">Phase 5: 統計遺伝学</span></div>
+    <a href="12_Statistical_Genetics_Lab.html" class="nav-item p5">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 21h18"/><path d="M7 21V10M12 21V4M17 21V14"/></svg>
+      <span class="nav-text">⑫ Statistical Genetics Lab</span>
+    </a>
+
+    <div class="nav-header p6"><span class="nav-header-text">Phase 6: 構造生物学</span></div>
+    <a href="13_Central_Dogma_Simulator.html" class="nav-item p6">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+      <span class="nav-text">⑬ Central Dogma Simulator</span>
+    </a>
+    <a href="14_Protein_Structure_Explorer.html" class="nav-item p6">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+      <span class="nav-text">⑭ Protein Structure Explorer</span>
+    </a>
+
+    <div class="nav-header extra"><span class="nav-header-text">Extra: 拡張パッケージ</span></div>
+    <a href="lab_packs.html" class="nav-item extra">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="4" rx="2" ry="2"/><path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg>
+      <span class="nav-text">Lab Packs (教材パック)</span>
+    </a>
+  </div>
+
+  <!-- ドロワー最下部アクション（ご意見箱 ＆ データ初期化） -->
+  <div class="sidebar-footer-actions">
+    <button class="sidebar-action-btn" onclick="openFeedbackForm(); triggerHapticFeedback();">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+      <span class="sidebar-action-text">ご意見・フィードバック</span>
+    </button>
+    <button class="sidebar-action-btn danger" onclick="confirmDataReset(); triggerHapticFeedback();">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+      <span class="sidebar-action-text">データを初期化</span>
+    </button>
+  </div>
+</div>
+

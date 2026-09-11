@@ -1,0 +1,145 @@
+### **【マスターテンプレート】外箱HTML構造（全アプリ共通）**
+
+全アプリでUIを完全に一致させるため、`<body>` 直下のHTML構造は以下のコードを**一字一句改変せずにそのままコピーして使用すること**（アプリ名、Phase番号、固有SVG、`.nav-menu` 内のリンクのみ各アプリに合わせて書き換える）
+
+\<\!-- 1\. ドロワー用オーバーレイ \--\>
+
+\<div class="sidebar-overlay" onclick="toggleSidebarPin(); triggerHapticFeedback();"\>\</div\>
+
+\<\!-- 2\. グローバル・ドロワー (Peg Menu) \--\>
+
+\<div class="sidebar"\>
+
+  \<div class="sidebar-header"\>
+
+    \<button class="hamburger-btn" onclick="toggleSidebarPin(); triggerHapticFeedback();" aria-label="メニューを開く/閉じる"\>
+
+      \<\!-- ≡ アイコン \--\>
+
+      \<svg class="icon-menu" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"\>\<line x1="3" y1="12" x2="21" y2="12"\>\</line\>\<line x1="3" y1="6" x2="21" y2="6"\>\</line\>\<line x1="3" y1="18" x2="21" y2="18"\>\</line\>\</svg\>
+
+      \<\!-- × アイコン \--\>
+
+      \<svg class="icon-close" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"\>\<line x1="18" y1="6" x2="6" y2="18"\>\</line\>\<line x1="6" y1="6" x2="18" y2="18"\>\</line\>\</svg\>
+
+    \</button\>
+
+  \</div\>
+
+  \<div class="nav-menu"\>
+
+    \<\!-- ※ここに各アプリへのリンク（.nav-item）を配置 \--\>
+
+  \</div\>
+
+
+  \<\!-- ドロワー最下部アクション（ご意見箱 ＆ データ初期化パネル） \--\>
+
+  \<div class="sidebar-footer-actions"\>
+
+    \<button class="sidebar-action-btn" onclick="openFeedbackForm(); triggerHapticFeedback();"\>
+
+      \<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"\>\<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"\>\</path\>\</svg\>
+
+      \<span class="sidebar-action-text"\>ご意見・フィードバック\</span\>
+
+    \</button\>
+
+    \<button class="sidebar-action-btn danger" onclick="confirmDataReset(); triggerHapticFeedback();"\>
+
+      \<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"\>\<polyline points="3 6 5 6 21 6"\>\</polyline\>\<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"\>\</path\>\</svg\>
+
+      \<span class="sidebar-action-text"\>データを初期化\</span\>
+
+    \</button\>
+
+  \</div\>
+
+\</div\>
+
+\<\!-- 3\. メインコンテンツラッパー \--\>
+
+\<div class="main-wrapper"\>
+
+
+  \<\!-- グローバルヘッダー \--\>
+
+  \<div class="header-container"\>
+
+    \<div class="header"\>
+
+      \<div class="header-left"\>
+
+        \<\!-- スマホ用ヘッダーハンバーガー \--\>
+
+        \<button class="mobile-hamburger" onclick="toggleSidebarPin(); triggerHapticFeedback();" aria-label="メニューを開く"\>
+
+          \<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"\>\<line x1="3" y1="12" x2="21" y2="12"\>\</line\>\<line x1="3" y1="6" x2="21" y2="6"\>\</line\>\<line x1="3" y1="18" x2="21" y2="18"\>\</line\>\</svg\>
+
+        \</button\>
+
+        
+
+        \<div class="header-title-group"\>
+
+          \<h1\>
+
+            \<\!-- ※ここに各Phaseの公式SVGを配置 \--\>
+
+            \<svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"\>...\</svg\>
+
+            アプリ名をここに記述
+
+          \</h1\>
+
+          \<p\>Bio-Edu Suite: Phase X / サブタイトル\</p\>
+
+        \</div\>
+
+      \</div\>
+
+      
+
+      \<\!-- ヘッダー右側（ログインアイコン・アカウント統合ボタン） \--\>
+
+      \<div class="header-right"\>
+
+        \<button id="accountBtn" class="account-btn" onclick="openAccountSettings(); triggerHapticFeedback();" data-tooltip="アカウント・同期設定"\>
+
+          \<svg id="accountUserIcon" class="account-user-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"\>
+
+            \<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"\>\</path\>
+
+            \<circle cx="12" cy="7" r="4"\>\</circle\>
+
+          \</svg\>
+
+          \<span id="accountStatusText" class="btn-text" style="font-size: 13px; font-weight: bold; color: \#bdc3c7;"\>接続中...\</span\>
+
+        \</button\>
+
+      \</div\>
+
+    \</div\> 
+
+  \</div\> 
+
+  \<\!-- コンテンツエリア \--\>
+
+  \<div class="content-area"\>
+
+    \<\!-- ※ここに各アプリの機能（パネルや結果エリア等）を記述 \--\>
+
+  \</div\>
+
+
+  \<\!-- ダークテーマ・フッター規格 \--\>
+
+  \<div class="footer"\>
+
+    \&copy; 2026 Bio-Edu Suite v34.4 | Developed for Bioinformatics & Wet-Lab Education
+
+  \</div\>
+
+
+\</div\>
