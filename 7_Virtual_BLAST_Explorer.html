@@ -1014,16 +1014,10 @@ body {
                 <label style="font-size:13px; font-weight:bold; color:var(--primary);">検索モード（Engine）</label>
             </div>
             <div class="scoring-panel" style="flex-direction: column; gap: 8px; align-items: stretch;">
-                <div style="display: flex; gap: 14px; align-items: center; flex-wrap: wrap;">
-                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; font-weight: 500; min-height: 44px; margin: 0;">
-                        <input type="radio" name="searchEngine" id="engineLocal" value="local" checked onchange="handleEngineChange()" style="cursor: pointer;">
-                        <span>💻 ローカルDBで瞬時検索 (Offline)</span>
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; font-weight: 500; min-height: 44px; margin: 0;">
-                        <input type="radio" name="searchEngine" id="engineNcbi" value="ncbi" onchange="handleEngineChange()" style="cursor: pointer;">
-                        <span>🌍 NCBI本家データベースで本格検索 (Online)</span>
-                    </label>
-                </div>
+                <select id="searchEngine" class="primer-input" onchange="handleEngineChange()" style="width: 100%; font-size: 13px;">
+                    <option value="local">ローカルDB (高速・オフライン)</option>
+                    <option value="ncbi">NCBI本家データベース (オンライン・詳細)</option>
+                </select>
                 <div id="ncbiModeNotice" class="dynamic-hint" style="display: none; font-size: 12px; color: #b7791f; background: #fffbe6; border: 1px solid #ffe58f; border-radius: 6px; padding: 8px 12px; line-height: 1.4;">
                     <svg class="btn-icon svg-info" style="color:#faad14; vertical-align:middle; margin-right:4px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
                     <span>※ 数分かかる場合があります（NCBI本家サーバーと通信するため）。通信遮断時は自動的にローカル検索へフォールバックします。</span>
@@ -1614,10 +1608,10 @@ body {
     }
 
     function handleEngineChange() {
-        const ncbiRadio = document.getElementById('engineNcbi');
+        const engineSelect = document.getElementById('searchEngine');
         const notice = document.getElementById('ncbiModeNotice');
-        if (notice && ncbiRadio) {
-            notice.style.display = ncbiRadio.checked ? 'block' : 'none';
+        if (notice && engineSelect) {
+            notice.style.display = engineSelect.value === 'ncbi' ? 'block' : 'none';
         }
     }
 
@@ -1645,19 +1639,37 @@ body {
         const runBtn = document.getElementById('runBlastBtn');
         const originalBtnHtml = `<svg class="btn-icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> 解析を実行`;
 
-        let mode = 'local';
-        const ncbiRadio = document.getElementById('engineNcbi');
-        if (!isFallback && ncbiRadio && ncbiRadio.checked) {
-            mode = 'ncbi';
+        let mode = document.getElementById('searchEngine').value;
+        if (isFallback) {
+            mode = 'local';
+        }
+
+        const spinnerHtml = `<svg class="btn-icon" style="width:16px;height:16px;animation:spin 1s linear infinite;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="4.93" x2="19.07" y2="7.76"></line></svg>`;
+        
+        if (!document.getElementById('spinnerKeyframes')) {
+            const style = document.createElement('style');
+            style.id = 'spinnerKeyframes';
+            style.innerHTML = `@keyframes spin { 100% { transform: rotate(360deg); } }`;
+            document.head.appendChild(style);
         }
 
         if (runBtn) {
             runBtn.disabled = true;
             if (mode === 'ncbi') {
-                runBtn.innerHTML = `🔄 検索中... (NCBI問い合わせ中)`;
+                runBtn.innerHTML = `${spinnerHtml} 検索中... (NCBI問い合わせ中)`;
             } else {
-                runBtn.innerHTML = `🔄 検索中... (ローカル解析中)`;
+                runBtn.innerHTML = `${spinnerHtml} 検索中... (ローカル解析中)`;
             }
+        }
+
+        const progressPanel = document.getElementById('blastProgressPanel');
+        const progressBar = document.getElementById('blastProgressBar');
+        const progressStatus = document.getElementById('blastProgressStatus');
+        
+        if (progressPanel) {
+            progressPanel.style.display = 'block';
+            progressBar.style.width = '0%';
+            progressStatus.textContent = `検索準備中...`;
         }
 
         if (!blastWorker) {
@@ -1665,18 +1677,30 @@ body {
         }
 
         blastWorker.onmessage = function(e) {
+            if (e.data && e.data.type === 'progress') {
+                if (progressBar) progressBar.style.width = e.data.percent + '%';
+                if (progressStatus) progressStatus.textContent = e.data.stageText;
+                return;
+            }
+
             if (e.data && e.data.error) {
+                if (progressPanel) progressPanel.style.display = 'none';
                 showToast(e.data.message || "エラーが発生しました。", "error");
 
                 // 自動フォールバック（堅牢性ガード）
                 if (e.data.fallbackTarget === 'local' && mode === 'ncbi') {
-                    const localRadio = document.getElementById('engineLocal');
-                    if (localRadio) localRadio.checked = true;
+                    const engineSelect = document.getElementById('searchEngine');
+                    if (engineSelect) engineSelect.value = 'local';
                     handleEngineChange();
 
                     mode = 'local';
                     if (runBtn) {
-                        runBtn.innerHTML = `🔄 検索中... (ローカルへ切替中)`;
+                        runBtn.innerHTML = `${spinnerHtml} 検索中... (ローカルへ切替中)`;
+                    }
+                    if (progressPanel) {
+                        progressPanel.style.display = 'block';
+                        progressBar.style.width = '0%';
+                        progressStatus.textContent = `ローカルDBでフォールバック検索中...`;
                     }
 
                     blastWorker.postMessage({
@@ -1698,6 +1722,11 @@ body {
             }
 
             if (e.data && e.data.results) {
+                if (progressPanel) {
+                    progressBar.style.width = '100%';
+                    progressStatus.textContent = `完了`;
+                    setTimeout(() => { progressPanel.style.display = 'none'; }, 500);
+                }
                 currentResults = e.data.results;
                 renderHitsTable();
                 document.getElementById('alignmentPanel').style.display = 'none'; 

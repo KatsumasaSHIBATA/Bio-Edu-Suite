@@ -18,6 +18,26 @@ self.onmessage = async function(event) {
     }
 };
 
+function sendProgress(percent, stageText) {
+    self.postMessage({ type: 'progress', percent: percent, stageText: stageText });
+}
+
+async function fetchWithFallback(url, options) {
+    try {
+        const response = await fetch(url, options);
+        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+        return response;
+    } catch (err) {
+        if (err.name === 'TypeError' || err.message.includes('Failed to fetch')) {
+            const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(url)}`;
+            const proxyRes = await fetch(proxyUrl, options);
+            if (!proxyRes.ok) throw new Error(`Proxy HTTP Error: ${proxyRes.status}`);
+            return proxyRes;
+        }
+        throw err;
+    }
+}
+
 function runLocalBlast(query, localDB, pMatch, pMismatch, pGap) {
     try {
         let currentResults = [];
@@ -109,6 +129,7 @@ function smithWaterman(query, subject, match, mismatch, gap) {
 
 async function runNcbiBlast(query) {
     try {
+        sendProgress(15, 'NCBI QBLASTサーバーへ検索リクエスト送信中...');
         const startTime = Date.now();
         const TIMEOUT_MS = 120000; // 2 minutes
 
@@ -120,7 +141,7 @@ async function runNcbiBlast(query) {
             QUERY: query
         });
 
-        const putResponse = await fetch(putUrl, {
+        const putResponse = await fetchWithFallback(putUrl, {
             method: 'POST',
             body: putParams
         });
@@ -140,11 +161,20 @@ async function runNcbiBlast(query) {
         const rid = ridMatch[1];
         const rtoe = rtoeMatch ? parseInt(rtoeMatch[1], 10) : 10;
 
+        sendProgress(35, `チケット発行完了 (RID: ${rid}, 推定所要時間: 約${rtoe}秒)`);
+
         await new Promise(resolve => setTimeout(resolve, Math.max(5, rtoe) * 1000));
 
+        let pollCount = 0;
+        let isReady = false;
+
         while (Date.now() - startTime < TIMEOUT_MS) {
+            pollCount++;
+            let percent = 35 + Math.min((pollCount / 10) * 55, 55); // 40~90%
+            sendProgress(Math.floor(percent), `NCBI計算キューで解析中... (確認 ${pollCount}回目)`);
+
             const checkUrl = `https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Get&FORMAT_OBJECT=SearchInfo&RID=${rid}`;
-            const checkResponse = await fetch(checkUrl);
+            const checkResponse = await fetchWithFallback(checkUrl);
             if (!checkResponse.ok) {
                 throw new Error(`NCBI API Check Error: ${checkResponse.statusText}`);
             }
@@ -165,11 +195,13 @@ async function runNcbiBlast(query) {
             }
 
             if (checkText.includes('Status=READY')) {
+                isReady = true;
                 if (checkText.includes('ThereAreHits=yes')) {
+                    sendProgress(95, 'アライメントデータを受信・正規化中...');
                     const getUrl = `https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Get&FORMAT_TYPE=JSON2&RID=${rid}`;
-                    let getResponse = await fetch(getUrl);
+                    let getResponse = await fetchWithFallback(getUrl);
                     if (!getResponse.ok) {
-                        getResponse = await fetch(`https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Get&FORMAT_TYPE=JSON&RID=${rid}`);
+                        getResponse = await fetchWithFallback(`https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Get&FORMAT_TYPE=JSON&RID=${rid}`);
                     }
                     if (!getResponse.ok) {
                         throw new Error(`NCBI API Get Results Error: ${getResponse.statusText}`);
@@ -177,9 +209,11 @@ async function runNcbiBlast(query) {
 
                     const jsonData = await getResponse.json();
                     const results = normalizeNcbiResults(jsonData);
+                    sendProgress(100, '完了');
                     self.postMessage({ mode: 'ncbi', results });
                     return;
                 } else {
+                    sendProgress(100, '完了');
                     self.postMessage({ mode: 'ncbi', results: [] });
                     return;
                 }
@@ -188,13 +222,27 @@ async function runNcbiBlast(query) {
             await new Promise(resolve => setTimeout(resolve, 5000));
         }
 
-        throw new Error('指定された時間（2分）を超過しました。');
+        if (!isReady) {
+            const timeoutError = new Error('検索タイムアウト（最大待機時間を超過しました）。');
+            timeoutError.name = 'TimeoutError';
+            throw timeoutError;
+        }
 
     } catch (err) {
+        let isFetchError = err.name === 'TypeError' || (err.message && err.message.includes('Failed to fetch'));
+        let isTimeout = err.name === 'TimeoutError' || (Date.now() - startTime >= 120000);
+        
+        let errorMsg = `NCBI APIエラーが発生しました。（詳細: ${err.message}）`;
+        if (isFetchError) {
+            errorMsg = `通信が遮断されました(CORS等)。プロキシでも解決できませんでした。ローカル検索に切り替えます。（詳細: ${err.message}）`;
+        } else if (isTimeout) {
+            errorMsg = `NCBI APIがタイムアウトしました。ローカル検索に切り替えます。`;
+        }
+
         self.postMessage({
             error: true,
             fallbackTarget: 'local',
-            message: `NCBI APIがタイムアウトしました。ローカル検索に切り替えます。（詳細: ${err.message}）`
+            message: errorMsg
         });
     }
 }
