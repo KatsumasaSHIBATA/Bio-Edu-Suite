@@ -1009,6 +1009,29 @@ body {
 
             <div style="border-top: 1px dashed var(--border-color); margin: 5px 0;"></div>
 
+            <!-- 検索モード（Engine）切り替えUI（ガイドライン第7項 7.6 / 第14項） -->
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <label style="font-size:13px; font-weight:bold; color:var(--primary);">検索モード（Engine）</label>
+            </div>
+            <div class="scoring-panel" style="flex-direction: column; gap: 8px; align-items: stretch;">
+                <div style="display: flex; gap: 14px; align-items: center; flex-wrap: wrap;">
+                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; font-weight: 500; min-height: 44px; margin: 0;">
+                        <input type="radio" name="searchEngine" id="engineLocal" value="local" checked onchange="handleEngineChange()" style="cursor: pointer;">
+                        <span>💻 ローカルDBで瞬時検索 (Offline)</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; font-weight: 500; min-height: 44px; margin: 0;">
+                        <input type="radio" name="searchEngine" id="engineNcbi" value="ncbi" onchange="handleEngineChange()" style="cursor: pointer;">
+                        <span>🌍 NCBI本家データベースで本格検索 (Online)</span>
+                    </label>
+                </div>
+                <div id="ncbiModeNotice" class="dynamic-hint" style="display: none; font-size: 12px; color: #b7791f; background: #fffbe6; border: 1px solid #ffe58f; border-radius: 6px; padding: 8px 12px; line-height: 1.4;">
+                    <svg class="btn-icon svg-info" style="color:#faad14; vertical-align:middle; margin-right:4px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    <span>※ 数分かかる場合があります（NCBI本家サーバーと通信するため）。通信遮断時は自動的にローカル検索へフォールバックします。</span>
+                </div>
+            </div>
+
+            <div style="border-top: 1px dashed var(--border-color); margin: 5px 0;"></div>
+
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <label style="font-size:13px; font-weight:bold; color:var(--primary);">3. 検索対象データベース (Local DB) 
                     <button class="rationale-btn" onclick="toggleRationale(event, 'rat_db')">?</button>
@@ -1088,7 +1111,7 @@ body {
             </div>
 
             <div style="display:flex; gap:10px; margin-top:15px;">
-                <button class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 14px;" onclick="runVirtualBlast()" data-tooltip="データベースと照合し、最も相同性の高い生物種を検索します"><svg class="btn-icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> 解析を実行</button>
+                <button id="runBlastBtn" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 14px;" onclick="runVirtualBlast()" data-tooltip="データベースと照合し、最も相同性の高い生物種を検索します"><svg class="btn-icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> 解析を実行</button>
             </div>
 
         </div>
@@ -1590,79 +1613,18 @@ body {
         showToast("短い塩基配列を読み込みました。「解析を実行」をクリックしてE-valueの変化を確認してください。");
     }
 
-    function smithWaterman(query, subject, match, mismatch, gap) {
-        let m = query.length;
-        let n = subject.length;
-        let dp = Array.from({length: m + 1}, () => new Int32Array(n + 1));
-        
-        let maxScore = 0;
-        let maxI = 0, maxJ = 0;
-
-        for (let i = 1; i <= m; i++) {
-            for (let j = 1; j <= n; j++) {
-                let scoreDiag = dp[i-1][j-1] + (query[i-1] === subject[j-1] ? match : mismatch);
-                let scoreUp = dp[i-1][j] + gap;
-                let scoreLeft = dp[i][j-1] + gap;
-                
-                let currentMax = Math.max(0, scoreDiag, scoreUp, scoreLeft);
-                dp[i][j] = currentMax;
-
-                if (currentMax > maxScore) {
-                    maxScore = currentMax;
-                    maxI = i; maxJ = j;
-                }
-            }
+    function handleEngineChange() {
+        const ncbiRadio = document.getElementById('engineNcbi');
+        const notice = document.getElementById('ncbiModeNotice');
+        if (notice && ncbiRadio) {
+            notice.style.display = ncbiRadio.checked ? 'block' : 'none';
         }
-
-        let alignQ = "", alignS = "", alignPipe = "";
-        let i = maxI, j = maxJ;
-        let matches = 0, totalLen = 0;
-
-        while (i > 0 && j > 0 && dp[i][j] > 0) {
-            let current = dp[i][j];
-            let diag = dp[i-1][j-1];
-            let up = dp[i-1][j];
-            let left = dp[i][j-1];
-            let weight = query[i-1] === subject[j-1] ? match : mismatch;
-
-            if (current === diag + weight) {
-                alignQ = query[i-1] + alignQ;
-                alignS = subject[j-1] + alignS;
-                if (query[i-1] === subject[j-1]) { alignPipe = "|" + alignPipe; matches++; }
-                else { alignPipe = " " + alignPipe; }
-                i--; j--;
-            } else if (current === left + gap) {
-                alignQ = "-" + alignQ;
-                alignS = subject[j-1] + alignS;
-                alignPipe = " " + alignPipe;
-                j--;
-            } else {
-                alignQ = query[i-1] + alignQ;
-                alignS = "-" + alignS;
-                alignPipe = " " + alignPipe;
-                i--;
-            }
-            totalLen++;
-        }
-
-        let identity = totalLen > 0 ? ((matches / totalLen) * 100).toFixed(1) : 0;
-        
-        let bitScore = maxScore > 0 ? (maxScore * 1.5) : 0; 
-        let evalue = (query.length * DB_SIZE) / Math.pow(2, bitScore);
-        
-        let evalueStr = "";
-        if (maxScore === 0) evalueStr = "No Hit";
-        else if (evalue < 1e-100) evalueStr = "0.0";
-        else if (evalue < 0.01) evalueStr = evalue.toExponential(1);
-        else if (evalue > 100) evalueStr = "> 100 (Random)";
-        else evalueStr = evalue.toFixed(2);
-
-        return { score: maxScore, identity, evalue, evalueNum: evalue, alignQ, alignPipe, alignS };
     }
 
     let currentResults = [];
+    let blastWorker = null;
 
-    function runVirtualBlast() {
+    function runVirtualBlast(isFallback = false) {
         let rawInput = document.getElementById('queryInput').value;
         let query = rawInput.split('\n').filter(line => !line.startsWith('>')).join('').toUpperCase().replace(/[^ATGC]/g, '');
 
@@ -1680,20 +1642,91 @@ body {
         let pMismatch = parseInt(document.getElementById('valMismatch').value) || -2;
         let pGap = parseInt(document.getElementById('valGap').value) || -5;
 
-        currentResults = [];
-        localDB.forEach(dbSeq => {
-            let res = smithWaterman(query, dbSeq.seq, pMatch, pMismatch, pGap);
-            currentResults.push({ name: dbSeq.name, id: dbSeq.id, gene: dbSeq.gene, ...res });
-        });
+        const runBtn = document.getElementById('runBlastBtn');
+        const originalBtnHtml = `<svg class="btn-icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> 解析を実行`;
 
-        currentResults.sort((a, b) => {
-            if(b.score !== a.score) return b.score - a.score;
-            return a.evalueNum - b.evalueNum;
-        });
+        let mode = 'local';
+        const ncbiRadio = document.getElementById('engineNcbi');
+        if (!isFallback && ncbiRadio && ncbiRadio.checked) {
+            mode = 'ncbi';
+        }
 
-        renderHitsTable();
-        document.getElementById('alignmentPanel').style.display = 'none'; 
-        document.getElementById('ncbiLinkPanel').style.display = 'none'; 
+        if (runBtn) {
+            runBtn.disabled = true;
+            if (mode === 'ncbi') {
+                runBtn.innerHTML = `🔄 検索中... (NCBI問い合わせ中)`;
+            } else {
+                runBtn.innerHTML = `🔄 検索中... (ローカル解析中)`;
+            }
+        }
+
+        if (!blastWorker) {
+            blastWorker = new Worker('js/blast_worker.js');
+        }
+
+        blastWorker.onmessage = function(e) {
+            if (e.data && e.data.error) {
+                showToast(e.data.message || "エラーが発生しました。", "error");
+
+                // 自動フォールバック（堅牢性ガード）
+                if (e.data.fallbackTarget === 'local' && mode === 'ncbi') {
+                    const localRadio = document.getElementById('engineLocal');
+                    if (localRadio) localRadio.checked = true;
+                    handleEngineChange();
+
+                    mode = 'local';
+                    if (runBtn) {
+                        runBtn.innerHTML = `🔄 検索中... (ローカルへ切替中)`;
+                    }
+
+                    blastWorker.postMessage({
+                        mode: 'local',
+                        query: query,
+                        localDB: localDB,
+                        match: pMatch,
+                        mismatch: pMismatch,
+                        gap: pGap
+                    });
+                    return;
+                }
+
+                if (runBtn) {
+                    runBtn.disabled = false;
+                    runBtn.innerHTML = originalBtnHtml;
+                }
+                return;
+            }
+
+            if (e.data && e.data.results) {
+                currentResults = e.data.results;
+                renderHitsTable();
+                document.getElementById('alignmentPanel').style.display = 'none'; 
+                document.getElementById('ncbiLinkPanel').style.display = 'none'; 
+            }
+
+            if (runBtn) {
+                runBtn.disabled = false;
+                runBtn.innerHTML = originalBtnHtml;
+            }
+        };
+
+        blastWorker.onerror = function(err) {
+            console.error("Worker Error:", err);
+            showToast("バックグラウンド検索処理でエラーが発生しました。", "error");
+            if (runBtn) {
+                runBtn.disabled = false;
+                runBtn.innerHTML = originalBtnHtml;
+            }
+        };
+
+        blastWorker.postMessage({
+            mode: mode,
+            query: query,
+            localDB: localDB,
+            match: pMatch,
+            mismatch: pMismatch,
+            gap: pGap
+        });
     }
 
     function renderHitsTable() {
