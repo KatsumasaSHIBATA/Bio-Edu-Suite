@@ -134,21 +134,9 @@ async function runNcbiBlast(query) {
         const startTime = Date.now();
         const TIMEOUT_MS = 120000; // 2 minutes
 
-        const putUrl = 'https://blast.ncbi.nlm.nih.gov/Blast.cgi';
-        const putParams = new URLSearchParams({
-            CMD: 'Put',
-            PROGRAM: 'blastn',
-            MEGABLAST: 'on',
-            DATABASE: 'nt',
-            QUERY: query
-        });
-
+        const putUrl = `https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Put&PROGRAM=blastn&MEGABLAST=on&DATABASE=nt&QUERY=${encodeURIComponent(query)}&_t=${Date.now()}`;
         const putResponse = await fetchWithFallback(putUrl, {
-            method: 'POST',
-            body: putParams,
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
+            method: 'GET'
         });
 
         if (!putResponse.ok) {
