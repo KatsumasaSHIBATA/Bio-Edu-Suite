@@ -30,7 +30,7 @@ async function fetchWithFallback(url, options) {
         return response;
     } catch (err) {
         if (err.name === 'TypeError' || err.message.includes('Failed to fetch')) {
-            const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(url)}`;
+            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
             const proxyRes = await fetch(proxyUrl, fetchOptions);
             if (!proxyRes.ok) throw new Error(`Proxy HTTP Error: ${proxyRes.status}`);
             return proxyRes;
@@ -138,13 +138,17 @@ async function runNcbiBlast(query) {
         const putParams = new URLSearchParams({
             CMD: 'Put',
             PROGRAM: 'blastn',
+            MEGABLAST: 'on',
             DATABASE: 'nt',
             QUERY: query
         });
 
         const putResponse = await fetchWithFallback(putUrl, {
             method: 'POST',
-            body: putParams
+            body: putParams,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
         });
 
         if (!putResponse.ok) {
@@ -183,7 +187,7 @@ async function runNcbiBlast(query) {
             const checkText = await checkResponse.text();
 
             if (checkText.includes('Status=WAITING')) {
-                await new Promise(resolve => setTimeout(resolve, 5000));
+                await new Promise(resolve => setTimeout(resolve, 10000));
                 continue;
             }
 
@@ -199,17 +203,14 @@ async function runNcbiBlast(query) {
                 isReady = true;
                 if (checkText.includes('ThereAreHits=yes')) {
                     sendProgress(95, 'アライメントデータを受信・正規化中...');
-                    const getUrl = `https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Get&FORMAT_TYPE=JSON2&RID=${rid}&_t=${Date.now()}`;
+                    const getUrl = `https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Get&FORMAT_TYPE=XML&RID=${rid}&_t=${Date.now()}`;
                     let getResponse = await fetchWithFallback(getUrl);
-                    if (!getResponse.ok) {
-                        getResponse = await fetchWithFallback(`https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Get&FORMAT_TYPE=JSON&RID=${rid}&_t=${Date.now()}`);
-                    }
                     if (!getResponse.ok) {
                         throw new Error(`NCBI API Get Results Error: ${getResponse.statusText}`);
                     }
 
-                    const jsonData = await getResponse.json();
-                    const results = normalizeNcbiResults(jsonData);
+                    const xmlText = await getResponse.text();
+                    const results = normalizeNcbiXml(xmlText);
                     sendProgress(100, '完了');
                     self.postMessage({ mode: 'ncbi', results });
                     return;
@@ -220,7 +221,7 @@ async function runNcbiBlast(query) {
                 }
             }
 
-            await new Promise(resolve => setTimeout(resolve, 5000));
+            await new Promise(resolve => setTimeout(resolve, 10000));
         }
 
         if (!isReady) {
@@ -248,73 +249,46 @@ async function runNcbiBlast(query) {
     }
 }
 
-function normalizeNcbiResults(jsonData) {
+function normalizeNcbiXml(xmlText) {
     const results = [];
-    try {
-        let hits = [];
-        if (jsonData.BlastOutput2 && jsonData.BlastOutput2[0] && jsonData.BlastOutput2[0].report) {
-            const search = jsonData.BlastOutput2[0].report.results.search;
-            hits = search.hits || [];
-        } else if (jsonData.BlastOutput) {
-            hits = jsonData.BlastOutput.BlastOutput_iterations?.Iteration?.Iteration_hits?.Hit || [];
-        }
+    const hitRegex = /<Hit>([\s\S]*?)<\/Hit>/g;
+    let hitMatch;
+    while ((hitMatch = hitRegex.exec(xmlText)) !== null) {
+        const block = hitMatch[1];
+        const getTag = (tag) => {
+            const m = block.match(new RegExp(`<${tag}>([\\s\\S]*?)<\\/${tag}>`));
+            return m ? m[1].trim() : '';
+        };
+        const def = getTag('Hit_def');
+        const acc = getTag('Hit_accession');
+        const bitScore = Math.round(parseFloat(getTag('Hsp_bit-score')) || 0);
+        const evalue = getTag('Hsp_evalue');
+        const evalueNum = parseFloat(evalue) || 0;
+        const identityVal = parseInt(getTag('Hsp_identity'), 10) || 0;
+        const alignLen = parseInt(getTag('Hsp_align-len'), 10) || 1;
+        const qseq = getTag('Hsp_qseq');
+        const hseq = getTag('Hsp_hseq');
+        const midline = getTag('Hsp_midline') || generateAlignPipe(qseq, hseq);
 
-        hits.forEach(hit => {
-            const hsps = (hit.hsps && hit.hsps[0]) || (hit.Hit_hsps && hit.Hit_hsps.Hsp && (Array.isArray(hit.Hit_hsps.Hsp) ? hit.Hit_hsps.Hsp[0] : hit.Hit_hsps.Hsp));
-            if (!hsps) return;
+        let evalueStr = "";
+        if (bitScore === 0) evalueStr = "No Hit";
+        else if (evalueNum === 0) evalueStr = "0.0";
+        else if (evalueNum < 0.01) evalueStr = evalueNum.toExponential(1);
+        else if (evalueNum > 100) evalueStr = "> 100 (Random)";
+        else evalueStr = evalueNum.toFixed(2);
 
-            let name = 'Unknown';
-            let id = '-';
-            let gene = '-';
-
-            if (hit.description && hit.description[0]) {
-                const desc = hit.description[0];
-                name = desc.sciname || desc.title || 'Unknown';
-                id = desc.accession || desc.id || '-';
-            } else if (hit.Hit_def) {
-                name = hit.Hit_def;
-                id = hit.Hit_accession || hit.Hit_id || '-';
-            }
-
-            const bitScore = Math.round(hsps.bit_score || hsps['Hsp_bit-score'] || 0);
-            const score = hsps.score || hsps.Hsp_score || bitScore;
-            const evalueNum = hsps.evalue !== undefined ? hsps.evalue : (hsps.Hsp_evalue !== undefined ? parseFloat(hsps.Hsp_evalue) : 0);
-            const identityVal = hsps.identity !== undefined ? hsps.identity : (hsps.Hsp_identity || 0);
-            const alignLen = hsps.align_len || hsps['Hsp_align-len'] || (hsps.qseq ? hsps.qseq.length : 1);
-            const identity = alignLen > 0 ? ((identityVal / alignLen) * 100).toFixed(1) : '0.0';
-
-            const qseq = hsps.qseq || hsps.Hsp_qseq || '';
-            const hseq = hsps.hseq || hsps.Hsp_hseq || '';
-            const midline = hsps.midline || hsps.Hsp_midline || generateAlignPipe(qseq, hseq);
-
-            let evalueStr = "";
-            if (score === 0) evalueStr = "No Hit";
-            else if (evalueNum === 0) evalueStr = "0.0";
-            else if (evalueNum < 0.01) evalueStr = evalueNum.toExponential(1);
-            else if (evalueNum > 100) evalueStr = "> 100 (Random)";
-            else evalueStr = evalueNum.toFixed(2);
-
-            results.push({
-                name: name,
-                id: id,
-                gene: gene,
-                score: bitScore || score,
-                identity: identity,
-                evalue: evalueStr,
-                evalueNum: evalueNum,
-                alignQ: qseq,
-                alignPipe: midline,
-                alignS: hseq
-            });
+        results.push({
+            name: def || 'Unknown',
+            id: acc || '-',
+            gene: '-',
+            score: bitScore,
+            identity: ((identityVal / alignLen) * 100).toFixed(1),
+            evalue: evalueStr,
+            evalueNum: evalueNum,
+            alignQ: qseq,
+            alignPipe: midline,
+            alignS: hseq
         });
-
-        results.sort((a, b) => {
-            if (b.score !== a.score) return b.score - a.score;
-            return a.evalueNum - b.evalueNum;
-        });
-
-    } catch (e) {
-        console.error('NCBI結果のパースエラー:', e);
     }
     return results;
 }

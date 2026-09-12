@@ -1116,6 +1116,17 @@ body {
             <span style="color: white;">Ⅱ. 検索結果 (Hits & Alignment)</span>
         </div>
         <div class="card-body" style="background:var(--bg-color); padding:15px;">
+        <!-- NCBI BLAST Progress Panel -->
+        <div id="blastProgressPanel" style="display: none; background: #ffffff; border: 1px solid #d1d5db; border-radius: 6px; padding: 14px 16px; margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span id="blastProgressStatus" style="font-size: 12px; font-weight: bold; color: var(--primary);">検索準備中...</span>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="cancelBlastSearch()" style="color: var(--danger); font-size: 11px; padding: 4px 8px; min-height: 28px;">中止してローカル検索</button>
+            </div>
+            <div style="width: 100%; height: 8px; background: #ecf0f1; border-radius: 4px; overflow: hidden;">
+                <div id="blastProgressBar" style="width: 0%; height: 100%; background: var(--phase-color); transition: width 0.3s ease;"></div>
+            </div>
+        </div>
+
             
             <div style="background:white; border:1px solid var(--border-color); border-radius:4px; overflow:hidden;">
                 <div style="background:#f8f9fa; padding:10px 12px; font-size:13px; font-weight:bold; color:var(--primary); border-bottom:1px solid var(--border-color);">
@@ -2120,6 +2131,18 @@ body {
             if (overlay) overlay.classList.toggle('open', sidebar.classList.contains('open'));
         }
     }
+    function cancelBlastSearch() {
+        if (blastWorker) {
+            blastWorker.terminate();
+            blastWorker = null;
+        }
+        const engineSelect = document.getElementById('searchEngine');
+        if (engineSelect) engineSelect.value = 'local';
+        handleEngineChange();
+        showToast("NCBI検索を中止し、ローカル検索に切り替えます。", "info");
+        runVirtualBlast(true);
+    }
+
 
     // --- ご意見箱（Googleフォーム）への動的パラメータ付き遷移 ---
     // Googleフォーム アプリ内モーダル開閉関数 (濃紺コンテキスト維持)
