@@ -380,6 +380,22 @@
     /* 現場のコツ (専用デザイン) */
     .bench-tip { background: #f0f8ff; border-left: 4px solid #3498db; padding: 12px 15px; border-radius: 0 4px 4px 0; font-size: 12px; color: var(--text-main); line-height: 1.6; box-shadow: 0 2px 5px rgba(0,0,0,0.02); margin-top: 15px; margin-bottom: 15px; }
     .bench-tip strong { color: #2980b9; display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 13px; }
+
+    /* CSS実装: 根拠 (Rationale) */
+    .rationale-btn { background: var(--phase-color); color: white; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; margin-left: 5px; border: none; font-weight: bold; transition: 0.2s; flex-shrink: 0; }
+    .rationale-btn:hover { transform: scale(1.1); filter: brightness(1.2); }
+
+    .rationale-text { position: fixed; background: #fef9e7; border: 1px solid var(--warning); padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: max-content; max-width: min(320px, calc(100vw - 24px)); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; }
+    .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
+    .rationale-text strong { color: #d35400; display: block; margin-bottom: 4px; font-size: 12px; }
+
+    /* 吹き出しの尻尾 (三角形) */
+    .rationale-text::after { content: ''; position: absolute; border-width: 6px; border-style: solid; left: var(--arrow-left, 50%); }
+    .rationale-text.arrow-top::after { top: -12px; border-color: transparent transparent #fef9e7 transparent; }
+    .rationale-text.arrow-bottom::after { bottom: -12px; border-color: #fef9e7 transparent transparent transparent; }
+    .rationale-text::before { content: ''; position: absolute; border-width: 7px; border-style: solid; left: calc(var(--arrow-left, 50%) - 1px); }
+    .rationale-text.arrow-top::before { top: -14px; border-color: transparent transparent var(--warning) transparent; }
+    .rationale-text.arrow-bottom::before { bottom: -14px; border-color: var(--warning) transparent transparent transparent; }
   </style>
 
 </head>
@@ -680,6 +696,66 @@
   window.handleRegisterCurrentPreset = function() {
       alert('UIモックアップのため、課題発行は実行されません。');
   };
+
+  // JS実装: 動的幅算出・フリップ計算付き表示ロジック
+  function toggleRationale(event, id) {
+    event.stopPropagation();
+    const el = document.getElementById(id);
+    const btn = event.currentTarget;
+    const isShown = el.classList.contains('show');
+
+    // 他のポップオーバーを閉じる
+    document.querySelectorAll('.rationale-text').forEach(e => {
+      e.classList.remove('show', 'arrow-top', 'arrow-bottom');
+    });
+
+    if(!isShown) {
+      if (el.parentNode !== document.body) document.body.appendChild(el);
+      el.style.top = '0px'; el.style.left = '0px';
+      el.classList.add('show');
+
+      // フリップ計算による絶対配置
+      const elHeight = el.offsetHeight; 
+      const elWidth = el.offsetWidth;
+      const rect = btn.getBoundingClientRect(); 
+
+      let topPos = rect.bottom + 12; 
+      let arrowClass = 'arrow-top';
+
+      // 画面下端に見切れる場合は上側に配置 
+      if (rect.bottom + elHeight + 20 > window.innerHeight) { 
+        topPos = rect.top - elHeight - 12; 
+        arrowClass = 'arrow-bottom';
+      } 
+      el.classList.add(arrowClass);
+      el.style.top = topPos + 'px'; 
+
+      // 左右位置の調整
+      let leftPos = rect.left - (elWidth / 2) + (rect.width / 2); 
+      if (leftPos + elWidth > window.innerWidth) leftPos = window.innerWidth - elWidth - 10; 
+      if (leftPos < 10) leftPos = 10; 
+      el.style.left = leftPos + 'px'; 
+
+      // 尻尾の水平位置をボタン中央に合わせる
+      const arrowOffset = rect.left - leftPos + (rect.width / 2) - 6;
+      el.style.setProperty('--arrow-left', arrowOffset + 'px');
+    }
+  }
+
+  // 外部クリック・スクロールで閉じる
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.rationale-text') && !e.target.closest('.rationale-btn')) {
+      document.querySelectorAll('.rationale-text').forEach(el => {
+        el.classList.remove('show', 'arrow-top', 'arrow-bottom');
+      });
+    }
+  });
+
+  document.addEventListener('scroll', () => {
+    document.querySelectorAll('.rationale-text').forEach(el => {
+      el.classList.remove('show', 'arrow-top', 'arrow-bottom');
+    });
+  }, true);
 </script>
 
 <script type="text/babel">
@@ -915,22 +991,7 @@
                                 <div className="flex justify-between items-end border-b-2 border-slate-200 pb-1.5">
                                     <div className="flex items-center gap-2">
                                         <h2 className="text-[14px] font-bold text-slate-800">Ⅰ. カラーコードと部位の確認 (3Dリファレンス)</h2>
-                                    </div>
-                                    <div className="bio-tooltip relative flex items-center justify-center cursor-help">
-                                        <div className="text-[10px] text-amber-800 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded flex items-center gap-1 font-bold hover:bg-amber-200 transition-colors shadow-sm">
-                                            <svg className="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
-                                            <span>スクショガイド</span>
-                                        </div>
-                                        <div className="tooltiptext">
-                                            <div className="font-bold border-b border-slate-500 pb-1 mb-2 text-sm text-white">スクリーンショットの撮り方</div>
-                                            <ul className="list-disc pl-4 space-y-1 text-white">
-                                                <li><span className="text-sky-300 font-bold">iPad:</span> トップボタン ＋ 音量ボタンを同時に押す</li>
-                                                <li><span className="text-green-300 font-bold">Chromebook:</span> Ctrl ＋ 「ウィンドウを表示」キー</li>
-                                                <li><span className="text-blue-300 font-bold">Windows:</span> Windowsロゴキー ＋ Shift ＋ S</li>
-                                                <li><span className="text-gray-300 font-bold">Mac:</span> Command ＋ Shift ＋ 3 (または4)</li>
-                                                <li><span className="text-emerald-300 font-bold">Android:</span> 電源ボタン ＋ 音量下ボタンを同時に長押し</li>
-                                            </ul>
-                                        </div>
+                                        <button className="rationale-btn" onClick={(e) => window.toggleRationale(e, 'rationale-screenshot')} title="なぜスクショを撮るのか？">?</button>
                                     </div>
                                 </div>
                                 
@@ -1284,6 +1345,28 @@
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(<App />);
 </script>
+
+<!-- 根拠 (Rationale) ポップオーバー: スクショ計測の意義と手順 -->
+<div id="rationale-screenshot" class="rationale-text">
+  <strong>【根拠：なぜスクリーンショットを撮って計測するのか？】</strong>
+  <p style="margin: 0 0 10px 0;">
+    ・実際の形態計測の研究現場では、実物を直接測るだけでなく、対象物をスキャナ等で正確に平面画像として取り込み、画像上で寸法や角度を解析する手法が広く用いられています。<br>
+    ・本アプリでは、この本格的なアプローチを疑似体験するため、あえてアプリ内蔵の自動計測ではなく、画面キャプチャを用いた手動計測を設計しています。
+  </p>
+  <strong>【計測の手順とコツ】</strong>
+  <p style="margin: 0 0 10px 0;">
+    ・ショートカットキーで腕の骨の構造をスクリーンショット撮影します。<br>
+    ・撮影した画像を「写真」や「ペイント」等の画像ビューワーで開きます。<br>
+    ・ビューワー上で画像を拡大し、実際の定規を画面に当てるか、画像処理ツールの測定機能を用いてA・B・Cの長さを測ります。
+  </p>
+  <strong>【スクリーンショットの撮り方（ショートカット）】</strong>
+  <p style="margin: 0;">
+    ・Windows: Windowsロゴキー ＋ Shift ＋ S<br>
+    ・Mac: Command ＋ Shift ＋ 4<br>
+    ・Chromebook: Ctrl ＋ Shift ＋ 「ウィンドウを表示」キー<br>
+    ・iPad: トップボタン ＋ 音量ボタンを同時押し
+  </p>
+</div>
 
 </body>
 </html>
