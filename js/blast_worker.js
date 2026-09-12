@@ -157,114 +157,85 @@ async function runNcbiBlast(query) {
     const startTime = Date.now();
     const TIMEOUT_MS = 120000; // 2 minutes
     try {
-        sendProgress(15, 'NCBI QBLASTサーバーへ検索リクエスト送信中...');
+        sendProgress(15, 'グローバルサーバー(EBI/NCBI)へ検索リクエスト送信中...');
 
-        const putUrl = `https://blast.ncbi.nlm.nih.gov/Blast.cgi`;
-        const putOptions = {
+        // 1. プロキシ不要！ EBI の CORS対応APIへ直接POST
+        const runUrl = `https://www.ebi.ac.uk/Tools/services/rest/ncbiblast/run`;
+        const params = new URLSearchParams({
+            email: 'bio-edu-suite@example.com',
+            program: 'blastn',
+            stype: 'dna',
+            database: 'embla', // EBIの標準塩基配列DB (NCBI nt相当)
+            sequence: query
+        });
+
+        const runResponse = await fetch(runUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: `CMD=Put&PROGRAM=blastn&MEGABLAST=on&DATABASE=nt&QUERY=${encodeURIComponent(query)}`
-        };
-        const putResponse = await fetchWithFallback(putUrl, putOptions);
+            body: params
+        });
 
-        if (!putResponse.ok) {
-            throw new Error(`NCBI API Put Error: ${putResponse.statusText}`);
+        if (!runResponse.ok) {
+            throw new Error(`EBI API Run Error: ${runResponse.statusText}`);
         }
 
-        const putText = await putResponse.text();
-        const ridMatch = putText.match(/RID = (\w+)/);
-        const rtoeMatch = putText.match(/RTOE = (\d+)/);
-
-        if (!ridMatch) {
-            throw new Error('NCBI APIからのRID取得に失敗しました。');
+        const jobId = await runResponse.text(); // ジョブIDがプレーンテキストで返る
+        if (!jobId || !jobId.includes('ncbiblast')) {
+            throw new Error('EBI APIからのジョブID取得に失敗しました。');
         }
 
-        const rid = ridMatch[1];
-        const rtoe = rtoeMatch ? parseInt(rtoeMatch[1], 10) : 10;
-
-        sendProgress(35, `チケット発行完了 (RID: ${rid}, 推定所要時間: 約${rtoe}秒)`);
-
-        await new Promise(resolve => setTimeout(resolve, Math.max(5, rtoe) * 1000));
+        sendProgress(35, `チケット発行完了 (Job ID: ${jobId}, 計算待ち...)`);
+        
+        await new Promise(resolve => setTimeout(resolve, 5000));
 
         let pollCount = 0;
         let isReady = false;
-        let errorCount = 0;
 
         while (Date.now() - startTime < TIMEOUT_MS) {
             pollCount++;
-            let percent = 35 + Math.min((pollCount / 10) * 55, 55); // 40~90%
-            sendProgress(Math.floor(percent), `NCBI計算キューで解析中... (確認 ${pollCount}回目)`);
+            let percent = 35 + Math.min((pollCount / 10) * 55, 55); 
+            sendProgress(Math.floor(percent), `グローバル計算キューで解析中... (確認 ${pollCount}回目)`);
 
-            const checkUrl = `https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Get&FORMAT_OBJECT=SearchInfo&RID=${rid}&_t=${Date.now()}`;
-            let checkText = '';
-            try {
-                const checkResponse = await fetchWithFallback(checkUrl);
-                if (!checkResponse.ok) {
-                    throw new Error(`NCBI API Check Error: ${checkResponse.statusText}`);
-                }
-                checkText = await checkResponse.text();
-                errorCount = 0; // 成功時はリセット
-            } catch (pollErr) {
-                errorCount++;
-                if (errorCount >= 3) {
-                    throw new Error('NCBI APIポーリング連続失敗');
-                }
+            const statusUrl = `https://www.ebi.ac.uk/Tools/services/rest/ncbiblast/status/${jobId}`;
+            const statusResponse = await fetch(statusUrl);
+            if (!statusResponse.ok) throw new Error(`EBI API Status Error`);
+            const statusText = await statusResponse.text();
+
+            if (statusText === 'RUNNING' || statusText === 'PENDING' || statusText === 'STARTED') {
                 await new Promise(resolve => setTimeout(resolve, 5000));
                 continue;
             }
 
-            if (checkText.includes('Status=WAITING')) {
-                await new Promise(resolve => setTimeout(resolve, 10000));
-                continue;
+            if (statusText === 'ERROR' || statusText === 'FAILURE' || statusText === 'NOT_FOUND') {
+                throw new Error(`検索処理が失敗しました (Status: ${statusText})。配列が短すぎる可能性があります。`);
             }
 
-            if (checkText.includes('Status=FAILED')) {
-                throw new Error('NCBI検索処理が失敗しました。');
-            }
-
-            if (checkText.includes('Status=UNKNOWN')) {
-                throw new Error('NCBI検索セッションの有効期限が切れました。');
-            }
-
-            if (checkText.includes('Status=READY')) {
+            if (statusText === 'FINISHED') {
                 isReady = true;
-                if (checkText.includes('ThereAreHits=yes')) {
-                    sendProgress(95, 'アライメントデータを受信・正規化中...');
-                    const getUrl = `https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Get&FORMAT_TYPE=XML&RID=${rid}&_t=${Date.now()}`;
-                    let getResponse = await fetchWithFallback(getUrl);
-                    if (!getResponse.ok) {
-                        throw new Error(`NCBI API Get Results Error: ${getResponse.statusText}`);
-                    }
-
-                    const xmlText = await getResponse.text();
-                    const results = normalizeNcbiXml(xmlText);
-                    sendProgress(100, '完了');
-                    self.postMessage({ mode: 'ncbi', results });
-                    return;
-                } else {
-                    sendProgress(100, '完了');
-                    self.postMessage({ mode: 'ncbi', results: [] });
-                    return;
-                }
+                sendProgress(95, 'アライメントデータを受信・正規化中...');
+                
+                // XML形式で結果を取得
+                const resultUrl = `https://www.ebi.ac.uk/Tools/services/rest/ncbiblast/result/${jobId}/xml`;
+                const resultResponse = await fetch(resultUrl);
+                if (!resultResponse.ok) throw new Error(`EBI API Result Error`);
+                
+                const xmlText = await resultResponse.text();
+                // 既存のNCBI用XMLパーサーで解析 (互換性あり)
+                const results = normalizeNcbiXml(xmlText);
+                
+                sendProgress(100, '完了');
+                self.postMessage({ mode: 'ncbi', results });
+                return;
             }
 
-            await new Promise(resolve => setTimeout(resolve, 10000));
+            await new Promise(resolve => setTimeout(resolve, 5000));
         }
 
         if (!isReady) {
-            const timeoutError = new Error('検索タイムアウト（最大待機時間を超過しました）。');
-            timeoutError.name = 'TimeoutError';
-            throw timeoutError;
+            throw new Error('検索タイムアウト（最大待機時間を超過しました）。');
         }
 
     } catch (err) {
-        let isTimeout = err.name === 'TimeoutError' || (Date.now() - startTime >= TIMEOUT_MS);
-        
-        let errorMsg = `NCBIサーバーへの通信が遮断されました。即座にローカル高精度エンジンへ切り替えます。（詳細: ${err.message}）`;
-        if (isTimeout) {
-            errorMsg = `NCBI APIがタイムアウト（混雑）しました。ローカル検索に切り替えます。`;
-        }
-
+        let errorMsg = `グローバルAPI通信エラーが発生しました。（詳細: ${err.message}）即座にローカル検索へ切り替えます。`;
         self.postMessage({
             error: true,
             fallbackTarget: 'local',
