@@ -401,6 +401,26 @@
 </head>
 <body class="dashboard-mode no-select-ui">
 
+<!-- 📱 スマホアクセス警告＆PC強制レイアウト (JS判定版) -->
+<div id="mobile-warning-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(44, 62, 80, 0.95); z-index: 999999; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; padding: 30px; box-sizing: border-box; backdrop-filter: blur(5px);">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#e74c3c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 60px; height: 60px; margin-bottom: 20px;">
+        <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line>
+    </svg>
+    <h2 style="margin:0 0 10px 0; font-size:24px;">スマートフォン非対応</h2>
+    <p style="font-size: 15px; color: #ecf0f1; line-height: 1.6; margin-bottom: 30px;">
+        この解析ツールは情報量が多いため、<br>PCまたはタブレットでの操作を前提としています。<br>
+        スマートフォンでは文字が極端に小さくなり、<br>正常に操作できない可能性があります。
+    </p>
+    <button onclick="document.getElementById('mobile-warning-overlay').style.display='none'" style="background: transparent; color: #bdc3c7; border: 1px solid #7f8c8d; padding: 10px 20px; border-radius: 4px; font-size: 13px; cursor: pointer;">
+        警告を無視して強制的に開く (非推奨)
+    </button>
+</div>
+<script>
+    if (/Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+        document.getElementById('mobile-warning-overlay').style.display = 'flex';
+    }
+</script>
+
 <div class="sidebar-overlay" onclick="toggleSidebarPin(); triggerHapticFeedback();"></div>
 
 <div class="sidebar">
@@ -756,6 +776,26 @@
       el.classList.remove('show', 'arrow-top', 'arrow-bottom');
     });
   }, true);
+
+  // トースト通知ロジック
+  function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = message;
+    toast.className = 'show ' + type;
+    setTimeout(() => {
+      toast.className = toast.className.replace('show', '').trim();
+    }, 3000);
+  }
+
+  // ネイティブアプリライクUI: 右クリック・長押しメニューの封印
+  document.addEventListener('contextmenu', function(e) {
+    const target = e.target;
+    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+      return; // 入力要素は許可
+    }
+    e.preventDefault();
+  });
 </script>
 
 <script type="text/babel">
@@ -794,7 +834,22 @@
             return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
         }, []);
 
+        // 第7.4項: Session-Persistent Workspace Standard (ハイドレーション)
         useEffect(() => {
+            const savedData = sessionStorage.getItem('bio_edu_workspace_evolution_lab');
+            if (savedData && !window.isResetting) {
+                try {
+                    const parsed = JSON.parse(savedData);
+                    if (parsed.measurements) {
+                        setMeasurements(parsed.measurements);
+                        return;
+                    }
+                } catch (e) {
+                    console.error("Failed to parse workspace data", e);
+                }
+            }
+            
+            // 保存データがない場合の初期化
             const initialData = {};
             SPECIES_LIST.forEach(s => {
                 initialData[s.name] = { fore: "", meta: "", phal: "" };
@@ -803,6 +858,16 @@
             initialData["手羽先(班・クラス平均)"] = { fore: "", meta: "", phal: "" };
             setMeasurements(initialData);
         }, []);
+
+        // 入力変更時の自動シリアライズ
+        useEffect(() => {
+            if (window.isResetting) return;
+            // 測定データが空(初期値そのまま)の時は保存をスキップするか判定
+            if (Object.keys(measurements).length > 0) {
+                const dataToSave = { measurements };
+                sessionStorage.setItem('bio_edu_workspace_evolution_lab', JSON.stringify(dataToSave));
+            }
+        }, [measurements]);
 
         const handleInput = (speciesName, field, value) => {
             setMeasurements(prev => ({
@@ -1367,6 +1432,13 @@
     ・iPad: トップボタン ＋ 音量ボタンを同時押し
   </p>
 </div>
+
+<!-- 認証モジュールの読み込みとグローバル展開 -->
+<script type="module">
+  import { loginWithGoogle, logoutUser } from './auth_sync.js';
+  window.handleGoogleLogin = loginWithGoogle;
+  window.handleLogout = logoutUser;
+</script>
 
 </body>
 </html>
