@@ -22,7 +22,7 @@ function sendProgress(percent, stageText) {
     self.postMessage({ type: 'progress', percent: percent, stageText: stageText });
 }
 
-async function fetchWithFallback(url, options = {}, timeoutMs = 15000) {
+async function fetchWithFallback(url, options = {}, timeoutMs = 5000) {
     // タイムアウト付きのフェッチをラップするヘルパー
     const fetchWithTimeout = async (targetUrl, fetchOpts) => {
         const controller = new AbortController();
@@ -233,12 +233,12 @@ async function runNcbiBlast(query) {
         }
 
     } catch (err) {
-        let isFetchError = err.name === 'TypeError' || (err.message && err.message.includes('Failed to fetch'));
+        let isFetchError = err.name === 'AbortError' || err.name === 'TypeError' || (err.message && err.message.includes('Failed to fetch'));
         let isTimeout = err.name === 'TimeoutError' || (Date.now() - startTime >= 120000);
         
         let errorMsg = `NCBI APIエラーが発生しました。（詳細: ${err.message}）`;
         if (isFetchError) {
-            errorMsg = `通信が遮断されました(CORS等)。プロキシでも解決できませんでした。ローカル検索に切り替えます。（詳細: ${err.message}）`;
+            errorMsg = `NCBI本家サーバーへの直接通信がブラウザの制限(CORS)により遮断されました。ローカル高精度エンジンへ安全に切り替えます。`;
         } else if (isTimeout) {
             errorMsg = `NCBI APIがタイムアウトしました。ローカル検索に切り替えます。`;
         }

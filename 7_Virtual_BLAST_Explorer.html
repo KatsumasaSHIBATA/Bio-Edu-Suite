@@ -1630,6 +1630,22 @@ body {
     let blastWorker = null;
 
     function runVirtualBlast(isFallback = false) {
+        if (!localDB || localDB.length === 0) {
+            if (typeof presetDB !== 'undefined' && presetDB.model) {
+                localDB = presetDB.model.map(item => ({
+                    id: item.accession,
+                    name: item.scientific_name + " (" + item.name + ")",
+                    isMito: determineSourceType(item.gene, 'Genomic/Other'),
+                    seqBase: "部分配列",
+                    seq: item.sequence,
+                    gene: item.gene
+                }));
+                updateDBCount();
+                const infoEl = document.getElementById('currentLoadedDataInfo');
+                if (infoEl) infoEl.innerText = `読み込み中: [自動選択] モデル生物 (${localDB.length}種)`;
+            }
+        }
+
         let rawInput = document.getElementById('queryInput').value;
         let query = rawInput.split('\n').filter(line => !line.startsWith('>')).join('').toUpperCase().replace(/[^ATGC]/g, '');
 
@@ -1679,8 +1695,13 @@ body {
         
         if (progressPanel) {
             progressPanel.style.display = 'block';
-            progressBar.style.width = '0%';
-            progressStatus.textContent = `検索準備中...`;
+            if (isFallback) {
+                progressBar.style.width = '100%';
+                progressStatus.textContent = `ローカルDBで解析中...`;
+            } else {
+                progressBar.style.width = '0%';
+                progressStatus.textContent = `検索準備中...`;
+            }
         }
 
         if (!blastWorker) {
@@ -1700,28 +1721,35 @@ body {
 
                 // 自動フォールバック（堅牢性ガード）
                 if (e.data.fallbackTarget === 'local' && mode === 'ncbi') {
+                    // 1. ハングした可能性のある古いWorkerを完全に強制終了
+                    if (blastWorker) {
+                        blastWorker.terminate();
+                        blastWorker = null;
+                    }
+                    // 2. UIをローカルモードに切り替え
                     const engineSelect = document.getElementById('searchEngine');
                     if (engineSelect) engineSelect.value = 'local';
                     handleEngineChange();
-
-                    mode = 'local';
-                    if (runBtn) {
-                        runBtn.innerHTML = `${spinnerHtml} 検索中... (ローカルへ切替中)`;
+                    
+                    // 3. ローカルDBが空ならモデル生物を自動補給
+                    if (!localDB || localDB.length === 0) {
+                        if (typeof presetDB !== 'undefined' && presetDB.model) {
+                            localDB = presetDB.model.map(item => ({
+                                id: item.accession,
+                                name: item.scientific_name + " (" + item.name + ")",
+                                isMito: determineSourceType(item.gene, 'Genomic/Other'),
+                                seqBase: "部分配列",
+                                seq: item.sequence,
+                                gene: item.gene
+                            }));
+                            updateDBCount();
+                            const infoEl = document.getElementById('currentLoadedDataInfo');
+                            if (infoEl) infoEl.innerText = `読み込み中: [自動選択] モデル生物 (${localDB.length}種)`;
+                        }
                     }
-                    if (progressPanel) {
-                        progressPanel.style.display = 'block';
-                        progressBar.style.width = '0%';
-                        progressStatus.textContent = `ローカルDBでフォールバック検索中...`;
-                    }
-
-                    blastWorker.postMessage({
-                        mode: 'local',
-                        query: query,
-                        localDB: localDB,
-                        match: pMatch,
-                        mismatch: pMismatch,
-                        gap: pGap
-                    });
+                    
+                    // 4. 新しいWorkerインスタンスを再起動してローカル検索を確実に実行
+                    runVirtualBlast(true);
                     return;
                 }
 
