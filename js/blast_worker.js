@@ -22,16 +22,30 @@ function sendProgress(percent, stageText) {
     self.postMessage({ type: 'progress', percent: percent, stageText: stageText });
 }
 
-async function fetchWithFallback(url, options) {
+async function fetchWithFallback(url, options = {}, timeoutMs = 15000) {
+    // タイムアウト付きのフェッチをラップするヘルパー
+    const fetchWithTimeout = async (targetUrl, fetchOpts) => {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+            const response = await fetch(targetUrl, { ...fetchOpts, signal: controller.signal });
+            clearTimeout(id);
+            return response;
+        } catch (err) {
+            clearTimeout(id);
+            throw err;
+        }
+    };
+
     const fetchOptions = { ...options, cache: 'no-store' };
     try {
-        const response = await fetch(url, fetchOptions);
+        const response = await fetchWithTimeout(url, fetchOptions);
         if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
         return response;
     } catch (err) {
-        if (err.name === 'TypeError' || err.message.includes('Failed to fetch')) {
+        if (err.name === 'AbortError' || err.name === 'TypeError' || (err.message && err.message.includes('Failed to fetch'))) {
             const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-            const proxyRes = await fetch(proxyUrl, fetchOptions);
+            const proxyRes = await fetchWithTimeout(proxyUrl, fetchOptions);
             if (!proxyRes.ok) throw new Error(`Proxy HTTP Error: ${proxyRes.status}`);
             return proxyRes;
         }
