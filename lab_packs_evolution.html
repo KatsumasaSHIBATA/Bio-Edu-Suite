@@ -512,11 +512,9 @@
       </div>
       
       <div class="header-right">
-        <button id="accountBtn" class="account-btn" onclick="openAccountSettings(); triggerHapticFeedback();" data-tooltip="アカウント・同期設定">
-          <svg id="accountUserIcon" class="account-user-icon" viewBox="0 0 24 24" style="width: 12px; height: 12px; flex-shrink: 0; margin-right: 2px;">
-            <circle cx="12" cy="12" r="8" fill="currentColor"></circle>
-          </svg>
-          <span id="accountStatusText" class="btn-text" style="font-size: 13px; font-weight: bold; color: #bdc3c7;">未接続（ローカル）</span>
+        <button id="accountBtn" class="account-btn" onclick="openAccountSettings(); triggerHapticFeedback();" data-tooltip="ルーム接続・同期設定">
+          <span id="syncIndicatorDot" style="display: inline-block; width: 9px; height: 9px; border-radius: 50%; background-color: #95a5a6; transition: all 0.3s ease; box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);"></span>
+          <span id="accountStatusText" class="btn-text" style="font-size: 12px; font-weight: bold; color: #bdc3c7; transition: color 0.3s;">未接続（ローカル）</span>
         </button>
       </div>
     </div>
@@ -677,7 +675,9 @@
     showConfirm("すべての入力データおよびローカル保存データを初期化しますか？この操作は取り消せません。", () => {
         window.isResetting = true;
         Storage.prototype.setItem = function() {};
-        localStorage.clear(); sessionStorage.clear(); location.reload();
+        localStorage.clear(); 
+        sessionStorage.clear(); 
+        location.reload();
     }, "実行する");
   }
 
@@ -703,18 +703,161 @@
     document.getElementById('accountModal').style.display = 'none';
   }
 
+  // --- Kahoot方式ルーム同期＆教員プリセットマネージャー (v35.5規格) ---
+  const SESSION_KEY = 'bio_edu_room_session_evolution';
+  const MASTER_TASKS_KEY = 'bio_edu_master_tasks_evolution';
+
+  // セッション状態のUI反映
+  function updateSyncUI(session) {
+    const dot = document.getElementById('syncIndicatorDot');
+    const statusText = document.getElementById('accountStatusText');
+    const loggedOutView = document.getElementById('modalLoggedOutView');
+    const loggedInView = document.getElementById('modalLoggedInView');
+    const roomDisplay = document.getElementById('roomDisplay');
+    const participantDisplay = document.getElementById('participantDisplay');
+    const teacherSec = document.getElementById('teacherPresetSection');
+
+    if (session && session.roomCode) {
+      if (dot) {
+        dot.style.backgroundColor = '#2ecc71';
+        dot.style.boxShadow = '0 0 8px #2ecc71';
+      }
+      if (statusText) {
+        statusText.style.color = '#2ecc71';
+        statusText.textContent = `🟢 ${session.roomCode} (${session.participantId})`;
+      }
+      if (loggedOutView) loggedOutView.style.display = 'none';
+      if (loggedInView) loggedInView.style.display = 'block';
+      if (roomDisplay) roomDisplay.textContent = `ルームコード: ${session.roomCode}`;
+      if (participantDisplay) {
+        participantDisplay.textContent = `参加者ID: ${session.participantId} ${session.isTeacher ? '👑(教員)' : ''}`;
+      }
+      if (teacherSec) {
+        teacherSec.style.display = session.isTeacher ? 'block' : 'none';
+      }
+    } else {
+      if (dot) {
+        dot.style.backgroundColor = '#95a5a6';
+        dot.style.boxShadow = 'none';
+      }
+      if (statusText) {
+        statusText.style.color = '#bdc3c7';
+        statusText.textContent = '未接続（ローカル）';
+      }
+      if (loggedOutView) loggedOutView.style.display = 'block';
+      if (loggedInView) loggedInView.style.display = 'none';
+      if (teacherSec) teacherSec.style.display = 'none';
+    }
+  }
+
+  // 初期化時のセッション復旧
+  document.addEventListener('DOMContentLoaded', () => {
+    try {
+      const saved = localStorage.getItem(SESSION_KEY);
+      if (saved) {
+        const session = JSON.parse(saved);
+        updateSyncUI(session);
+      }
+    } catch(e) {
+      console.error(e);
+    }
+  });
+
+  // ① ルーム入室
   window.handleJoinRoom = function() {
-      alert('UIモックアップのため、同期処理は実行されません。');
-      closeAccountSettings();
+    const roomCodeInput = document.getElementById('roomCodeInput');
+    const participantIdInput = document.getElementById('participantIdInput');
+    const roomCode = roomCodeInput ? roomCodeInput.value.trim().toUpperCase() : '';
+    const participantId = participantIdInput ? participantIdInput.value.trim() : '';
+
+    if (!roomCode || !participantId) {
+      showToast('ルームコードと参加者IDの両方を入力してください', 'warning');
+      return;
+    }
+
+    const isTeacher = participantId.toUpperCase().startsWith('TEACHER');
+    const session = { roomCode, participantId, isTeacher, joinedAt: new Date().toISOString() };
+    
+    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    updateSyncUI(session);
+    closeAccountSettings();
+    showToast(`ルーム [${roomCode}] に接続しました${isTeacher ? ' (教員モード)' : ''}`, 'success');
   };
+
+  // ② ルーム退出
   window.handleLeaveRoom = function() {
-      closeAccountSettings();
+    localStorage.removeItem(SESSION_KEY);
+    updateSyncUI(null);
+    closeAccountSettings();
+    showToast('ルームから退出しました（ローカル作業中）', 'info');
   };
-  window.handleImportPreset = function() {
-      alert('UIモックアップのため、課題読み込みは実行されません。');
-  };
+
+  // ③ 教員専用：現在の画面データを課題プリセットとして発行
   window.handleRegisterCurrentPreset = function() {
-      alert('UIモックアップのため、課題発行は実行されません。');
+    const taskInput = document.getElementById('newMasterTaskCodeInput');
+    const taskCode = taskInput ? taskInput.value.trim().toUpperCase() : '';
+
+    if (!taskCode) {
+      showToast('新課題コード（例: TASK-01）を入力してください', 'warning');
+      return;
+    }
+
+    // 現在のsessionStorageから測定値を取得
+    const saved = sessionStorage.getItem('bio_edu_workspace_evolution_lab');
+    if (!saved) {
+      showToast('保存する測定データがありません', 'warning');
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(saved);
+      const masterTasks = JSON.parse(localStorage.getItem(MASTER_TASKS_KEY) || '{}');
+      masterTasks[taskCode] = {
+        measurements: parsed.measurements,
+        updatedAt: new Date().toISOString()
+      };
+      localStorage.setItem(MASTER_TASKS_KEY, JSON.stringify(masterTasks));
+      
+      if (taskInput) taskInput.value = '';
+      showToast(`課題コード [${taskCode}] を発行・登録しました`, 'success');
+    } catch(e) {
+      showToast('課題発行に失敗しました', 'error');
+    }
+  };
+
+  // ④ 教員マスター課題データの読込
+  window.handleImportPreset = function() {
+    const taskInput = document.getElementById('masterTaskCodeInput');
+    const taskCode = taskInput ? taskInput.value.trim().toUpperCase() : '';
+
+    if (!taskCode) {
+      showToast('課題コードを入力してください', 'warning');
+      return;
+    }
+
+    try {
+      const masterTasks = JSON.parse(localStorage.getItem(MASTER_TASKS_KEY) || '{}');
+      const targetTask = masterTasks[taskCode];
+
+      if (!targetTask || !targetTask.measurements) {
+        showToast(`課題コード [${taskCode}] が見つかりません`, 'error');
+        return;
+      }
+
+      // Reactコンポーネントへイベント通知してテーブルを一括更新
+      window.dispatchEvent(new CustomEvent('bio-edu-apply-preset', {
+        detail: { measurements: targetTask.measurements }
+      }));
+
+      // sessionStorageも更新
+      sessionStorage.setItem('bio_edu_workspace_evolution_lab', JSON.stringify({
+        measurements: targetTask.measurements
+      }));
+
+      closeAccountSettings();
+    } catch(e) {
+      showToast('課題読込に失敗しました', 'error');
+    }
   };
 
   // JS実装: 動的幅算出・フリップ計算付き表示ロジック
@@ -858,6 +1001,19 @@
             initialData["手羽先(班・クラス平均)"] = { fore: "", meta: "", phal: "" };
             setMeasurements(initialData);
         }, []);
+
+        // 教員課題データ・同期データの受信リスナー
+        useEffect(() => {
+            const handlePresetApply = (event) => {
+                if (event.detail && event.detail.measurements) {
+                    setMeasurements(event.detail.measurements);
+                    showToast("課題データをワークシートに適用しました", "success");
+                }
+            };
+            window.addEventListener('bio-edu-apply-preset', handlePresetApply);
+            return () => window.removeEventListener('bio-edu-apply-preset', handlePresetApply);
+        }, []);
+
 
         // 入力変更時の自動シリアライズ
         useEffect(() => {
@@ -1126,7 +1282,7 @@
                                             前腕の長さ
                                         </h3>
                                         <p className="text-[10px] text-slate-600 leading-snug">
-                                            画面上の <span className="font-bold bg-[#bef264] px-1 rounded text-slate-800 border border-slate-300">黄緑</span> または <span className="font-bold bg-[#93c5fd] px-1 rounded text-slate-800 border border-slate-300">水色</span> の長さを測ります。<br/>※2本ある場合は長い方を採用。
+                                            <span className="font-bold bg-[#bef264] px-1 rounded text-slate-800 border border-slate-300">黄緑</span> または <span className="font-bold bg-[#93c5fd] px-1 rounded text-slate-800 border border-slate-300">水色</span> の長さを測ります。<br/>※2本ある場合は長い方を採用。
                                         </p>
                                     </div>
                                     <div className="border border-slate-300 bg-white p-2.5 rounded-lg shadow-sm">
