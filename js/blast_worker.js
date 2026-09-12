@@ -185,7 +185,7 @@ async function runNcbiBlast(query) {
 
         sendProgress(35, `チケット発行完了 (Job ID: ${jobId}, 計算待ち...)`);
         
-        await new Promise(resolve => setTimeout(resolve, 5000));
+        await new Promise(resolve => setTimeout(resolve, 4000));
 
         let pollCount = 0;
         let isReady = false;
@@ -201,25 +201,23 @@ async function runNcbiBlast(query) {
             const statusText = await statusResponse.text();
 
             if (statusText === 'RUNNING' || statusText === 'PENDING' || statusText === 'STARTED') {
-                await new Promise(resolve => setTimeout(resolve, 5000));
+                await new Promise(resolve => setTimeout(resolve, 4000));
                 continue;
             }
 
             if (statusText === 'ERROR' || statusText === 'FAILURE' || statusText === 'NOT_FOUND') {
-                throw new Error(`検索処理が失敗しました (Status: ${statusText})。配列が短すぎる可能性があります。`);
+                throw new Error(`検索処理が失敗しました (Status: ${statusText})。塩基配列が短すぎる可能性があります。`);
             }
 
             if (statusText === 'FINISHED') {
                 isReady = true;
                 sendProgress(95, 'アライメントデータを受信・正規化中...');
                 
-                // XML形式で結果を取得
                 const resultUrl = `https://www.ebi.ac.uk/Tools/services/rest/ncbiblast/result/${jobId}/xml`;
                 const resultResponse = await fetch(resultUrl);
                 if (!resultResponse.ok) throw new Error(`EBI API Result Error`);
                 
                 const xmlText = await resultResponse.text();
-                // 既存のNCBI用XMLパーサーで解析 (互換性あり)
                 const results = normalizeNcbiXml(xmlText);
                 
                 sendProgress(100, '完了');
@@ -227,7 +225,7 @@ async function runNcbiBlast(query) {
                 return;
             }
 
-            await new Promise(resolve => setTimeout(resolve, 5000));
+            await new Promise(resolve => setTimeout(resolve, 4000));
         }
 
         if (!isReady) {

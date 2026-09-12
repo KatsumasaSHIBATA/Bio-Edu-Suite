@@ -1630,24 +1630,37 @@ body {
     let blastWorker = null;
 
     function runVirtualBlast(isFallback = false) {
-        if (!localDB || localDB.length === 0) {
-            if (typeof presetDB !== 'undefined' && presetDB.model) {
-                localDB = presetDB.model.map(item => ({
-                    id: item.accession,
-                    name: item.scientific_name + " (" + item.name + ")",
-                    isMito: determineSourceType(item.gene, 'Genomic/Other'),
-                    seqBase: "部分配列",
-                    seq: item.sequence,
-                    gene: item.gene
-                }));
-                updateDBCount();
-                const infoEl = document.getElementById('currentLoadedDataInfo');
-                if (infoEl) infoEl.innerText = `読み込み中: [自動選択] モデル生物 (${localDB.length}種)`;
-            }
-        }
-
         let rawInput = document.getElementById('queryInput').value;
         let query = rawInput.split('\n').filter(line => !line.startsWith('>')).join('').toUpperCase().replace(/[^ATGC]/g, '');
+
+        if (!localDB || localDB.length === 0) {
+            if (typeof presetDB !== 'undefined') {
+                let marker = 'model';
+                if (isFallback) {
+                    let upperRaw = rawInput.toUpperCase();
+                    if (upperRaw.includes('COI') || upperRaw.includes('COX1')) {
+                        marker = 'animal';
+                    } else if (upperRaw.includes('RBCL') || upperRaw.includes('MATK')) {
+                        marker = 'plant';
+                    } else if (upperRaw.includes('16S')) {
+                        marker = 'bacteria';
+                    }
+                }
+                if (presetDB[marker]) {
+                    localDB = presetDB[marker].map(item => ({
+                        id: item.accession,
+                        name: item.scientific_name + " (" + item.name + ")",
+                        isMito: determineSourceType(item.gene, 'Genomic/Other'),
+                        seqBase: "部分配列",
+                        seq: item.sequence,
+                        gene: item.gene
+                    }));
+                    updateDBCount();
+                    const infoEl = document.getElementById('currentLoadedDataInfo');
+                    if (infoEl) infoEl.innerText = `読み込み中: [自動選択] ${marker} (${localDB.length}種)`;
+                }
+            }
+        }
 
         if (!query || query.length < 5) {
             showToast("解析を実行するには最低5塩基以上のDNA塩基配列を入力してください。", "error");
