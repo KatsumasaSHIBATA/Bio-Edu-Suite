@@ -136,6 +136,23 @@
         th { background-color: #f8f9fa; color: var(--primary); font-weight: bold; }
         tr:hover { background-color: #f8f9fa; cursor: pointer; }
         .hit-row.selected { background-color: #eaf2f8; border-left: 4px solid var(--primary); }
+
+        .result-card table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            table-layout: auto;
+        }
+        .result-card th, .result-card td {
+            padding: 8px 10px;
+            white-space: nowrap; /* 一致率やE-value等の途中改行を物理遮断 */
+            vertical-align: middle;
+        }
+        .result-card th:nth-child(1), .result-card td:nth-child(1) { width: auto; text-align: left; }
+        .result-card th:nth-child(2), .result-card td:nth-child(2) { text-align: center; }
+        .result-card th:nth-child(3), .result-card td:nth-child(3) { text-align: right; }
+        .result-card th:nth-child(4), .result-card td:nth-child(4) { text-align: right; }
+        .result-card th:nth-child(5), .result-card td:nth-child(5) { text-align: right; }
         
         .evalue-good { color: var(--success); font-weight: bold; }
         .evalue-bad { color: var(--danger); font-weight: bold; }
@@ -1016,10 +1033,10 @@ body {
             </div>
 
             <div id="rat_engine" class="rationale-text">
-                <strong>【根拠：解析アルゴリズムとデータベースの仕様】</strong>
-                ・<strong>解析エンジン:</strong> ブラウザ上で高速動作するローカルシミュレーター（Smith-Waterman局所アライメント・アルゴリズム / 完全オフライン対応）を搭載しています。<br>
-                ・<strong>データベース仕様:</strong> 初期状態で「モデル生物」のデータが自動でセットされます。プリセットを切り替えるか、複数の塩基配列が入ったFASTAまたはJSONファイルを下の枠にドロップして読み込んでください。<br>
-                ・自分だけのオリジナルデータベースを作って検索実験ができます。
+                <strong>【解析エンジン：Smith-Watermanアルゴリズム】</strong>
+                ・本シミュレーターは、外部通信を行わない<strong>完全オフライン・高速ローカル計算エンジン</strong>を搭載しています。<br>
+                ・動的計画法（Smith-Waterman法）を用い、入力されたDNA塩基配列とローカル総合データベース（120種以上）の総当たり局所アライメントを0.05秒で即時実行します。<br>
+                ・通信制限や外部サーバーの混雑に左右されず、確実にスコア・一致率・E-valueを算出します。
             </div>
 
             <div style="background: #f8f9fa; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 16px;">
@@ -1115,7 +1132,7 @@ body {
                 <div style="background:#f8f9fa; padding:10px 12px; font-size:13px; font-weight:bold; color:var(--primary); border-bottom:1px solid var(--border-color);">
                     1. Top Hits (スコア順)
                 </div>
-                <div style="overflow-x: auto; max-height:200px; overflow-y:auto;">
+                <div style="overflow-x: auto; max-height:200px; overflow-y:auto; -webkit-overflow-scrolling: touch;">
                     <table>
                         <thead>
                             <tr>
