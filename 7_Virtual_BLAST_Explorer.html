@@ -1009,27 +1009,16 @@ body {
 
             <div style="border-top: 1px dashed var(--border-color); margin: 5px 0;"></div>
 
-            <!-- 解析エンジンUI（ガイドライン第7項 7.6 / 第14項） -->
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <label style="font-size:13px; font-weight:bold; color:var(--primary);">解析エンジン</label>
-            </div>
-            <div style="background: #eaf2f8; border: 1px solid #d6eaf8; border-radius: 4px; padding: 8px 12px; font-size: 12px; color: var(--primary); font-weight: bold; display: flex; align-items: center; gap: 6px;">
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--success);"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-                ローカル高速シミュレーター (Smith-Watermanアルゴリズム / 完全オフライン対応)
-            </div>
-
-            <div style="border-top: 1px dashed var(--border-color); margin: 5px 0;"></div>
-
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <label style="font-size:13px; font-weight:bold; color:var(--primary);">3. 検索対象データベース (Local DB) 
-                    <button class="rationale-btn" onclick="toggleRationale(event, 'rat_db')">?</button>
+                    <button class="rationale-btn" onclick="toggleRationale(event, 'rat_engine')" data-tooltip="解析アルゴリズムとデータベースの仕様">?</button>
                 </label>
             </div>
 
-            <div id="rat_db" class="rationale-text">
-                <strong>【根拠：データベースのカスタマイズ】</strong>
-                ・このアプリは初期状態で「モデル生物」のデータが自動でセットされます。<br>
-                ・プリセットを切り替えるか、複数の塩基配列が入ったFASTAまたはJSONファイルを下の枠にドロップして読み込んでください。<br>
+            <div id="rat_engine" class="rationale-text">
+                <strong>【根拠：解析アルゴリズムとデータベースの仕様】</strong>
+                ・<strong>解析エンジン:</strong> ブラウザ上で高速動作するローカルシミュレーター（Smith-Waterman局所アライメント・アルゴリズム / 完全オフライン対応）を搭載しています。<br>
+                ・<strong>データベース仕様:</strong> 初期状態で「モデル生物」のデータが自動でセットされます。プリセットを切り替えるか、複数の塩基配列が入ったFASTAまたはJSONファイルを下の枠にドロップして読み込んでください。<br>
                 ・自分だけのオリジナルデータベースを作って検索実験ができます。
             </div>
 
