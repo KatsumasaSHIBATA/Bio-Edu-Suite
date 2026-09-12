@@ -44,7 +44,7 @@ async function fetchWithFallback(url, options = {}, timeoutMs = 5000) {
         return response;
     } catch (err) {
         if (err.name === 'AbortError' || err.name === 'TypeError' || (err.message && err.message.includes('Failed to fetch'))) {
-            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+            const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(url);
             const proxyRes = await fetchWithTimeout(proxyUrl, fetchOptions);
             if (!proxyRes.ok) throw new Error(`Proxy HTTP Error: ${proxyRes.status}`);
             return proxyRes;
@@ -148,10 +148,13 @@ async function runNcbiBlast(query) {
         const startTime = Date.now();
         const TIMEOUT_MS = 120000; // 2 minutes
 
-        const putUrl = `https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Put&PROGRAM=blastn&MEGABLAST=on&DATABASE=nt&QUERY=${encodeURIComponent(query)}&_t=${Date.now()}`;
-        const putResponse = await fetchWithFallback(putUrl, {
-            method: 'GET'
-        });
+        const putUrl = `https://blast.ncbi.nlm.nih.gov/Blast.cgi`;
+        const putOptions = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `CMD=Put&PROGRAM=blastn&MEGABLAST=on&DATABASE=nt&QUERY=${encodeURIComponent(query)}`
+        };
+        const putResponse = await fetchWithFallback(putUrl, putOptions);
 
         if (!putResponse.ok) {
             throw new Error(`NCBI API Put Error: ${putResponse.statusText}`);
@@ -174,6 +177,7 @@ async function runNcbiBlast(query) {
 
         let pollCount = 0;
         let isReady = false;
+        let errorCount = 0;
 
         while (Date.now() - startTime < TIMEOUT_MS) {
             pollCount++;
@@ -181,12 +185,22 @@ async function runNcbiBlast(query) {
             sendProgress(Math.floor(percent), `NCBI計算キューで解析中... (確認 ${pollCount}回目)`);
 
             const checkUrl = `https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Get&FORMAT_OBJECT=SearchInfo&RID=${rid}&_t=${Date.now()}`;
-            const checkResponse = await fetchWithFallback(checkUrl);
-            if (!checkResponse.ok) {
-                throw new Error(`NCBI API Check Error: ${checkResponse.statusText}`);
+            let checkText = '';
+            try {
+                const checkResponse = await fetchWithFallback(checkUrl);
+                if (!checkResponse.ok) {
+                    throw new Error(`NCBI API Check Error: ${checkResponse.statusText}`);
+                }
+                checkText = await checkResponse.text();
+                errorCount = 0; // 成功時はリセット
+            } catch (pollErr) {
+                errorCount++;
+                if (errorCount >= 3) {
+                    throw new Error('NCBI APIポーリング連続失敗');
+                }
+                await new Promise(resolve => setTimeout(resolve, 5000));
+                continue;
             }
-
-            const checkText = await checkResponse.text();
 
             if (checkText.includes('Status=WAITING')) {
                 await new Promise(resolve => setTimeout(resolve, 10000));
