@@ -933,7 +933,7 @@ body {
         <div class="card">
           <div class="card-header">
             <div class="card-title-area">
-              <h3 class="card-title">2-A. フライドチキンから辿る哺乳類の腕</h3>
+              <h3 class="card-title">2-A. 手羽先から辿る哺乳類の腕</h3>
               <div class="card-tags">
                 <span class="tag badge-morph">形態</span>
                 <span class="tag badge-gene">遺伝子</span>
@@ -941,28 +941,32 @@ body {
             </div>
           </div>
           <div class="card-body">
-            <div class="scenario-box"><strong>【Mission】</strong>空を飛ぶ鳥（手羽先）、夜空を舞うコウモリ、海を泳ぐイルカ、大地を駆けるウマ。NCBIの遺伝子データが示す「共通のルーツ」と、環境に合わせて前肢の骨格を激変させた「適応放散」の形態データを突き合わせ、進化の軌跡を証明せよ！</div>
+            <div class="scenario-box"><strong>【Mission】</strong>空を飛ぶ鳥（カモメ・ニワトリ）、夜空を舞うコウモリ、海を泳ぐザトウクジラ、大地を駆けるロバ。NCBIの遺伝子データが示す「共通のルーツ」と、環境に合わせて前肢の骨格を激変させた「適応放散」の形態データを突き合わせ、進化の軌跡を証明せよ！</div>
             
             <div class="db-info">
-              <strong>【収録生物種 (DB)】</strong> ニワトリ（手羽先）、コウモリ、イルカ、ウマ、ヒト（比較用）、カエル・トカゲ（外群用）。
+              <strong>【収録生物種 (DB)】</strong> ニワトリ（手羽先）、カモメ、コウモリ、ザトウクジラ、ロバ、ヒト（比較・基準用）、オオサンショウウオ（外群用）。
             </div>
 
             <div class="section-title">実験＆解析パイプライン</div>
             <ul class="step-list">
-              <li><span class="step-highlight">Wet:</span> フライドチキン（手羽先）から肉を落とし、前肢の骨格標本を作製。</li>
-              <li><span class="step-highlight no-wrap">Dry(形態):</span> MorphoSourceから得た各種動物の前肢3D画像と、手羽先の画像にアプリ⑨で「ランドマーク（関節の打点）」を打ち、プロクラステス重ね合わせ（GPA）で形の比率を多変量解析。</li>
-              <li><span class="step-highlight no-wrap">Dry(遺伝子):</span> NCBIから取得した各動物のDNA配列で分子系統樹を作成し、アプリ⑩で形態デンドログラムと突き合わせ（タングルグラム）を行う。</li>
+              <li><span class="step-highlight">Wet:</span> 手羽先から肉を落とし、前肢の骨格標本を作製。</li>
+              <li><span class="step-highlight no-wrap">Dry(形態):</span> 専用の「Morphological Evolution Digital Lab」を開き、各種動物の3D前肢骨格モデルと手羽先標本の各骨の長さを測定・比率化。取得した形態データ（CSV）をダッシュボード経由でアプリ⑩へ持ち込む。</li>
+              <li><span class="step-highlight no-wrap">Dry(遺伝子・統合):</span> NCBIから取得した各動物のDNA配列に基づく分子系統樹を作成。アプリ⑩で形態デンドログラムと突き合わせ（タングルグラム）を行う。</li>
             </ul>
 
             <div class="bench-tip">
-              <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（肉を無視できるランドマーク解析の威力）</strong>
-              肉や皮がついたままの生徒の腕の写真と、骨だけの手羽先標本。輪郭抽出（EFA）では比較できないこれらも、関節部分に点を打つ「ランドマーク解析（GPA）」を用いれば、肉のノイズを完全に無視して「骨の長さのプロポーション」だけを正確に主成分分析（PCA）へかけることができます。
+              <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（肉を無視できる比率化の威力）</strong>
+              肉や皮がついたままの生徒自身の腕の写真と、骨だけの手羽先標本。輪郭での比較は不可能でも、関節の支点を見極めて各部位（前腕・手根・指骨）の長さを測り、その「比率」を算出すれば、肉のノイズや体格の大小を完全に無視して、骨格のプロポーションだけを正確に多変量解析へかけることができます。
             </div>
 
             <div class="action-area">
+              <a href="lab_packs_evolution.html" class="btn-download" style="background-color: #e67e22; border-color: #e67e22;" data-tooltip="3D骨格モデルの比較測定ラボを開く">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                Morphological Lab を開く
+              </a>
               <a href="./cartridges/Cartridge_Chicken_Wing.json" download class="btn-download" data-tooltip="フライドチキンから抽出した骨格座標データベース（JSON）を取得">
                 <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                解析カセットを取得
+                DNAカセットを取得
               </a>
             </div>
           </div>
