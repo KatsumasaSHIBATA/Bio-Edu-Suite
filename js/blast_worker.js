@@ -155,27 +155,38 @@ function smithWaterman(query, subject, match, mismatch, gap) {
 
 async function runNcbiBlast(query) {
     const startTime = Date.now();
-    const TIMEOUT_MS = 120000; // 2 minutes
+    const TIMEOUT_MS = 120000; // 120秒
     try {
         sendProgress(15, 'グローバルサーバー(EBI/NCBI)へ検索リクエスト送信中...');
 
-        // 1. プロキシ不要！ EBI の CORS対応APIへ直接POST
         const runUrl = `https://www.ebi.ac.uk/Tools/services/rest/ncbiblast/run`;
         const params = new URLSearchParams({
-            email: 'bio-edu-suite@example.com',
+            email: 'bio.edu.suite.service@gmail.com',
             program: 'blastn',
             stype: 'dna',
-            database: 'embla', // EBIの標準塩基配列DB (NCBI nt相当)
+            database: 'em_rel_std',
             sequence: query
         });
 
-        const runResponse = await fetch(runUrl, {
-            method: 'POST',
-            body: params
-        });
+        let runResponse;
+        try {
+            runResponse = await fetch(runUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: params.toString()
+            });
+        } catch (e) {
+            runResponse = await fetch(`https://corsproxy.io/?${encodeURIComponent(runUrl)}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: params.toString()
+            });
+        }
 
         if (!runResponse.ok) {
-            throw new Error(`EBI API Run Error: ${runResponse.statusText}`);
+            let errorText = await runResponse.text();
+            errorText = errorText.replace(/<[^>]*>?/gm, '').replace(/\n/g, ' ').replace(/\r/g, ''); // HTML/XMLタグ・改行除去
+            throw new Error(`EBI API Run Error: ${errorText.trim() || runResponse.statusText || 'Unknown Error'}`);
         }
 
         const jobId = await runResponse.text(); // ジョブIDがプレーンテキストで返る
