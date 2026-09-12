@@ -22,8 +22,7 @@ function sendProgress(percent, stageText) {
     self.postMessage({ type: 'progress', percent: percent, stageText: stageText });
 }
 
-async function fetchWithFallback(url, options = {}, timeoutMs = 5000) {
-    // タイムアウト付きのフェッチをラップするヘルパー
+async function fetchWithFallback(url, options = {}, timeoutMs = 8000) {
     const fetchWithTimeout = async (targetUrl, fetchOpts) => {
         const controller = new AbortController();
         const id = setTimeout(() => controller.abort(), timeoutMs);
@@ -38,19 +37,31 @@ async function fetchWithFallback(url, options = {}, timeoutMs = 5000) {
     };
 
     const fetchOptions = { ...options, cache: 'no-store' };
+
+    // 1. 本家への直接アクセス
     try {
         const response = await fetchWithTimeout(url, fetchOptions);
-        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-        return response;
+        if (response.ok) return response;
     } catch (err) {
-        if (err.name === 'AbortError' || err.name === 'TypeError' || (err.message && err.message.includes('Failed to fetch'))) {
-            const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(url);
-            const proxyRes = await fetchWithTimeout(proxyUrl, fetchOptions);
-            if (!proxyRes.ok) throw new Error(`Proxy HTTP Error: ${proxyRes.status}`);
-            return proxyRes;
-        }
-        throw err;
+        // 直接通信失敗時はプロキシ試行へ移行
     }
+
+    // 2. プロキシの試行（無限再帰の完全排除）
+    const proxies = [
+        `https://corsproxy.io/?${encodeURIComponent(url)}`,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
+    ];
+
+    for (let proxyUrl of proxies) {
+        try {
+            const proxyRes = await fetchWithTimeout(proxyUrl, fetchOptions);
+            if (proxyRes.ok) return proxyRes;
+        } catch (err) {
+            continue; // 失敗したら次のプロキシへ
+        }
+    }
+
+    throw new Error('すべての通信経路（直接・プロキシ）が遮断されました。');
 }
 
 function runLocalBlast(query, localDB, pMatch, pMismatch, pGap) {
@@ -143,10 +154,10 @@ function smithWaterman(query, subject, match, mismatch, gap) {
 }
 
 async function runNcbiBlast(query) {
+    const startTime = Date.now();
+    const TIMEOUT_MS = 120000; // 2 minutes
     try {
         sendProgress(15, 'NCBI QBLASTサーバーへ検索リクエスト送信中...');
-        const startTime = Date.now();
-        const TIMEOUT_MS = 120000; // 2 minutes
 
         const putUrl = `https://blast.ncbi.nlm.nih.gov/Blast.cgi`;
         const putOptions = {
@@ -247,14 +258,11 @@ async function runNcbiBlast(query) {
         }
 
     } catch (err) {
-        let isFetchError = err.name === 'AbortError' || err.name === 'TypeError' || (err.message && err.message.includes('Failed to fetch'));
-        let isTimeout = err.name === 'TimeoutError' || (Date.now() - startTime >= 120000);
+        let isTimeout = err.name === 'TimeoutError' || (Date.now() - startTime >= TIMEOUT_MS);
         
-        let errorMsg = `NCBI APIエラーが発生しました。（詳細: ${err.message}）`;
-        if (isFetchError) {
-            errorMsg = `NCBI本家サーバーへの直接通信がブラウザの制限(CORS)により遮断されました。ローカル高精度エンジンへ安全に切り替えます。`;
-        } else if (isTimeout) {
-            errorMsg = `NCBI APIがタイムアウトしました。ローカル検索に切り替えます。`;
+        let errorMsg = `NCBIサーバーへの通信が遮断されました。即座にローカル高精度エンジンへ切り替えます。（詳細: ${err.message}）`;
+        if (isTimeout) {
+            errorMsg = `NCBI APIがタイムアウト（混雑）しました。ローカル検索に切り替えます。`;
         }
 
         self.postMessage({
