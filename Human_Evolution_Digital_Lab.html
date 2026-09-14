@@ -744,6 +744,12 @@
         const [measurements, setMeasurements] = useState({});
         const [copyStatus, setCopyStatus] = useState({});
 
+        // 2D Digitizer states
+        const [uploadedImage, setUploadedImage] = useState(null);
+        const [measureMode, setMeasureMode] = useState('A');
+        const [points, setPoints] = useState([]);
+        const canvasRef = React.useRef(null);
+
         useEffect(() => {
             const handleFullscreenChange = () => {
                 const fsEl = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
@@ -787,6 +793,146 @@
                 ...prev,
                 [speciesName]: { ...prev[speciesName], [field]: value }
             }));
+        };
+
+        // 2D Digitizer effects and handlers
+        useEffect(() => {
+            const handlePaste = (e) => {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                if (e.clipboardData && e.clipboardData.items) {
+                    const items = e.clipboardData.items;
+                    for (let i = 0; i < items.length; i++) {
+                        if (items[i].type.indexOf('image') !== -1) {
+                            const blob = items[i].getAsFile();
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                                setUploadedImage(event.target.result);
+                                setPoints([]);
+                            };
+                            reader.readAsDataURL(blob);
+                            break;
+                        }
+                    }
+                }
+            };
+            document.addEventListener('paste', handlePaste);
+            return () => document.removeEventListener('paste', handlePaste);
+        }, []);
+
+        useEffect(() => {
+            if (!uploadedImage || !canvasRef.current) return;
+            const canvas = canvasRef.current;
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            img.onload = () => {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                
+                ctx.lineWidth = 3;
+                
+                if (measureMode === 'A') {
+                    ctx.strokeStyle = '#f59e0b';
+                    ctx.fillStyle = '#f59e0b';
+                    if (points.length >= 2) {
+                        ctx.beginPath();
+                        ctx.moveTo(points[0].x, points[0].y);
+                        ctx.lineTo(points[1].x, points[1].y);
+                        ctx.stroke();
+                    }
+                    if (points.length >= 4) {
+                        ctx.beginPath();
+                        ctx.moveTo(points[2].x, points[2].y);
+                        ctx.lineTo(points[3].x, points[3].y);
+                        ctx.stroke();
+                    }
+                } else if (measureMode === 'B') {
+                    ctx.strokeStyle = '#10b981';
+                    ctx.fillStyle = '#10b981';
+                    if (points.length >= 2) {
+                        ctx.beginPath();
+                        ctx.moveTo(points[0].x, points[0].y);
+                        ctx.lineTo(points[1].x, points[1].y);
+                        ctx.stroke();
+                    }
+                } else if (measureMode === 'C') {
+                    ctx.strokeStyle = '#f43f5e';
+                    ctx.fillStyle = '#f43f5e';
+                    if (points.length >= 2) {
+                        ctx.beginPath();
+                        ctx.moveTo(points[0].x, points[0].y);
+                        ctx.lineTo(points[1].x, points[1].y);
+                        ctx.stroke();
+                    }
+                }
+                
+                points.forEach(p => {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, Math.max(3, canvas.width / 300), 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.stroke();
+                });
+            };
+            img.src = uploadedImage;
+        }, [uploadedImage, points, measureMode]);
+
+        const handleDrop = (e) => {
+            e.preventDefault();
+            if (e.dataTransfer && e.dataTransfer.files) {
+                const file = e.dataTransfer.files[0];
+                if (file && file.type.indexOf('image') !== -1) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        setUploadedImage(event.target.result);
+                        setPoints([]);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+        };
+
+        const handleDragOver = (e) => {
+            e.preventDefault();
+        };
+
+        const handleCanvasClick = (e) => {
+            if (!canvasRef.current) return;
+            const rect = canvasRef.current.getBoundingClientRect();
+            const scaleX = canvasRef.current.width / rect.width;
+            const scaleY = canvasRef.current.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+            
+            setPoints(prev => {
+                const maxPoints = measureMode === 'A' ? 4 : 2;
+                if (prev.length >= maxPoints) return prev;
+                return [...prev, {x, y}];
+            });
+        };
+
+        const calculateMeasurement = () => {
+            if (measureMode === 'A' && points.length === 4) {
+                const dx1 = points[1].x - points[0].x;
+                const dy1 = points[1].y - points[0].y;
+                const dx2 = points[3].x - points[2].x;
+                const dy2 = points[3].y - points[2].y;
+                let angle1 = Math.atan2(dy1, dx1);
+                let angle2 = Math.atan2(dy2, dx2);
+                let angle = Math.abs((angle1 - angle2) * 180 / Math.PI);
+                if (angle > 90) angle = 180 - angle;
+                return `結果: ${angle.toFixed(1)}度`;
+            } else if ((measureMode === 'B' || measureMode === 'C') && points.length === 2) {
+                const dx = points[1].x - points[0].x;
+                const dy = points[1].y - points[0].y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                return `結果: ${dist.toFixed(1)} px`;
+            }
+            return '';
+        };
+
+        const handleModeChange = (mode) => {
+            setMeasureMode(mode);
+            setPoints([]);
         };
 
         const togglePanel = () => setIsPanelOpen(!isPanelOpen);
@@ -1102,10 +1248,57 @@
                                 </div>
                             </div>
 
-                            {/* Ⅱ. 計測ワークシート */}
+                            {/* Ⅱ. 2Dデジタイザ（画像計測） */}
+                            <div className="p-4 pt-1 flex flex-col gap-3 shrink-0 border-t border-slate-200">
+                                <div className="flex justify-between items-end border-b-2 border-slate-200 pb-1.5">
+                                    <div className="flex items-center gap-2">
+                                        <h2 className="text-[14px] font-bold text-slate-800">Ⅱ. 2Dデジタイザ（画像計測）</h2>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <button className={`btn ${measureMode === 'A' ? 'btn-primary' : 'btn-secondary'} px-2 py-1 text-[10px]`} onClick={() => handleModeChange('A')}>A (顔角: 4点)</button>
+                                        <button className={`btn ${measureMode === 'B' ? 'btn-primary' : 'btn-secondary'} px-2 py-1 text-[10px]`} onClick={() => handleModeChange('B')}>B (脳頭蓋: 2点)</button>
+                                        <button className={`btn ${measureMode === 'C' ? 'btn-primary' : 'btn-secondary'} px-2 py-1 text-[10px]`} onClick={() => handleModeChange('C')}>C (顔面頭蓋: 2点)</button>
+                                        <button className="btn btn-secondary px-2 py-1 text-[10px]" onClick={() => setPoints([])}>クリア</button>
+                                    </div>
+                                </div>
+                                
+                                {!uploadedImage ? (
+                                    <div 
+                                        className="w-full h-[200px] border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center bg-slate-50 text-slate-500 font-bold text-[13px] cursor-pointer hover:bg-slate-100 transition-colors drop-zone paste-area"
+                                        onDrop={handleDrop}
+                                        onDragOver={handleDragOver}
+                                    >
+                                        ここをクリックしてスクショをペースト (Ctrl+V) またはドロップ
+                                    </div>
+                                ) : (
+                                    <div className="w-full flex flex-col gap-2">
+                                        <div 
+                                            className="w-full h-[200px] bg-slate-900 rounded-lg overflow-hidden relative shadow-inner cursor-crosshair flex items-center justify-center drop-zone paste-area"
+                                            onDrop={handleDrop}
+                                            onDragOver={handleDragOver}
+                                        >
+                                            <canvas 
+                                                ref={canvasRef}
+                                                onClick={handleCanvasClick}
+                                                className="max-w-full max-h-full object-contain"
+                                            ></canvas>
+                                        </div>
+                                        <div className="flex justify-between items-center px-2">
+                                            <div className="text-[11px] font-bold text-slate-600">
+                                                {measureMode === 'A' ? 'カンペル平面(2点) → 顔面線(2点) の順にクリック' : '始点と終点の2点をクリック'}
+                                            </div>
+                                            <div className="text-[13px] font-bold text-slate-800">
+                                                {calculateMeasurement() || <span className="text-slate-400">計測中... ({points.length}/{measureMode === 'A' ? 4 : 2})</span>}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Ⅲ. 計測ワークシート */}
                             <div className="p-4 pt-1 flex-1 flex flex-col min-h-[400px]">
                                 <div className="flex justify-between items-end mb-2 border-b-2 border-slate-200 pb-1.5 shrink-0">
-                                    <h2 className="text-[14px] font-bold text-slate-800">Ⅱ. 脳と顔面サイズの比較ワークシート</h2>
+                                    <h2 className="text-[14px] font-bold text-slate-800">Ⅲ. 脳と顔面サイズの比較ワークシート</h2>
                                     <span className="text-[10px] text-slate-500 font-bold bg-slate-200 px-2 py-0.5 rounded">※小数第一位まで</span>
                                 </div>
 
@@ -1272,7 +1465,7 @@
   <p style="margin: 0 0 10px 0;">
     ・3Dモデルをドラッグし、両眼窩や歯列が重なる「完全な真横（プロフィール）」にセットします。<br>
     ・ショートカットキー等でスクリーンショットを撮影します。<br>
-    ・撮影した画像を画像処理アプリや「写真」「ペイント」で開き、分度器ツールや定規で「キャンパー顔角（A）」「脳頭蓋長（B）」「顔面頭蓋長（C）」を計測して入力します。
+    ・撮影した画像をアプリ内の「2Dデジタイザ」にペーストし、クリックでポイントを打って計測します（ImageJ等のプロ用ツールと同様の手法です）。
   </p>
   <strong>【スクリーンショットの撮り方（ショートカット）】</strong>
   <p style="margin: 0;">
