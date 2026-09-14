@@ -2,7 +2,8 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <!-- ガイドライン第5項準拠: PC専用アプリ強制表示 -->
+  <meta name="viewport" content="width=1024, viewport-fit=cover">
   
   <!-- 正規のPWA読み込み -->
   <link rel="manifest" href="manifest.json">
@@ -29,9 +30,24 @@
       background-color: #1a252f;
     }
 
+    html, body {
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+
     body {
       background-color: var(--bg-color);
       animation: pageFadeIn 0.15s ease-out forwards;
+    }
+
+    /* iPad / 非対応ブラウザ向け 疑似全画面スタイル */
+    .pseudo-fullscreen {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100dvh !important;
+      z-index: 99999 !important;
     }
 
     @keyframes pageFadeIn {
@@ -964,8 +980,9 @@
 
         useEffect(() => {
             const handleFullscreenChange = () => {
+                const fsEl = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
                 const rootEl = document.getElementById('root');
-                const isFull = document.fullscreenElement === rootEl;
+                const isFull = fsEl === rootEl;
                 setIsFullscreen(isFull);
                 if (isFull) {
                     setIsPanelOpen(false);
@@ -974,7 +991,11 @@
                 }
             };
             document.addEventListener('fullscreenchange', handleFullscreenChange);
-            return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+            document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+            return () => {
+                document.removeEventListener('fullscreenchange', handleFullscreenChange);
+                document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+            };
         }, []);
 
         // 第7.4項: Session-Persistent Workspace Standard (ハイドレーション)
@@ -1038,14 +1059,45 @@
 
         const toggleFullscreen = () => {
             const rootEl = document.getElementById('root');
-            if (!document.fullscreenElement) {
-                rootEl.requestFullscreen().catch(err => {
-                    console.error(`Error attempting to enable fullscreen: ${err.message}`);
+            const fsEl = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+
+            // ① 疑似全画面モードからの復帰
+            if (rootEl.classList.contains('pseudo-fullscreen')) {
+                rootEl.classList.remove('pseudo-fullscreen');
+                setIsFullscreen(false);
+                setIsPanelOpen(true);
+                return;
+            }
+
+            // ② ネイティブ全画面の解除
+            if (fsEl) {
+                const exitFS = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+                if (exitFS) {
+                    exitFS.call(document).catch(() => {});
+                }
+                setIsFullscreen(false);
+                setIsPanelOpen(true);
+                return;
+            }
+
+            // ③ 全画面の起動（WebKit対応 ＋ iPad用疑似全画面フォールバック）
+            const requestFS = rootEl.requestFullscreen || rootEl.webkitRequestFullscreen || rootEl.mozRequestFullScreen || rootEl.msRequestFullscreen;
+            if (requestFS) {
+                requestFS.call(rootEl).then(() => {
+                    setIsFullscreen(true);
+                    setIsPanelOpen(false);
+                }).catch(err => {
+                    console.warn("Native fullscreen failed, falling back to pseudo-fullscreen:", err);
+                    // iPad等で弾かれた場合は疑似全画面へ
+                    rootEl.classList.add('pseudo-fullscreen');
+                    setIsFullscreen(true);
+                    setIsPanelOpen(false);
                 });
             } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
+                // API自体がない場合は疑似全画面へ
+                rootEl.classList.add('pseudo-fullscreen');
+                setIsFullscreen(true);
+                setIsPanelOpen(false);
             }
         };
 
@@ -1236,16 +1288,16 @@
                                         </div>
                                     </div>
                                     
-                                    <div className="w-[65%] bg-black rounded-lg border border-slate-700 relative overflow-hidden shadow-inner flex items-center justify-center">
-                                        <div className="absolute top-2 left-2 z-20 bg-black/60 backdrop-blur-sm text-slate-200 text-[9px] font-bold px-2 py-1 rounded border border-slate-600">
+                                    <div className="w-[65%] bg-black rounded-lg border border-slate-700 relative overflow-hidden shadow-inner flex items-center justify-center p-1">
+                                        <div className="absolute top-2 left-2 z-20 bg-black/70 backdrop-blur-sm text-slate-200 text-[9px] font-bold px-2 py-1 rounded border border-slate-600">
                                             計測区間の確認（ヒト）
                                         </div>
                                         
-                                        <div className="absolute w-full h-full flex items-center justify-center scale-[1.35] -translate-x-[2%]">
+                                        <div className="relative w-full h-full max-h-[170px] aspect-[16/9] flex items-center justify-center">
                                             <img 
                                                 src="./arm.jpg" 
                                                 alt="ヒトの腕のカラーモデル" 
-                                                className="absolute inset-0 w-full h-full object-contain select-none translate-y-[10px]"
+                                                className="w-full h-full object-contain select-none pointer-events-none"
                                             />
                                             <svg 
                                                 viewBox="0 0 1024 576" 
@@ -1258,17 +1310,17 @@
                                                     </marker>
                                                 </defs>
                                                 
-                                                <line x1="480" y1="150" x2="735" y2="150" stroke="#ffffff" strokeWidth="4" markerStart="url(#arr-neutral)" markerEnd="url(#arr-neutral)" />
-                                                <rect x="582" y="100" width="50" height="40" rx="6" fill="#1e293b" stroke="#ffffff" strokeWidth="2" />
-                                                <text x="607" y="128" textAnchor="middle" fill="#ffffff" fontWeight="bold" fontSize="24">A</text>
+                                                <line x1="475" y1="150" x2="735" y2="150" stroke="#ffffff" strokeWidth="4" markerStart="url(#arr-neutral)" markerEnd="url(#arr-neutral)" />
+                                                <rect x="580" y="95" width="50" height="42" rx="6" fill="#1e293b" stroke="#ffffff" strokeWidth="2" />
+                                                <text x="605" y="125" textAnchor="middle" fill="#ffffff" fontWeight="bold" fontSize="24">A</text>
                                                 
                                                 <line x1="745" y1="150" x2="835" y2="150" stroke="#ffffff" strokeWidth="4" markerStart="url(#arr-neutral)" markerEnd="url(#arr-neutral)" />
-                                                <rect x="765" y="100" width="50" height="40" rx="6" fill="#1e293b" stroke="#ffffff" strokeWidth="2" />
-                                                <text x="790" y="128" textAnchor="middle" fill="#ffffff" fontWeight="bold" fontSize="24">B</text>
+                                                <rect x="765" y="95" width="50" height="42" rx="6" fill="#1e293b" stroke="#ffffff" strokeWidth="2" />
+                                                <text x="790" y="125" textAnchor="middle" fill="#ffffff" fontWeight="bold" fontSize="24">B</text>
                                                 
-                                                <line x1="845" y1="150" x2="940" y2="150" stroke="#ffffff" strokeWidth="4" markerStart="url(#arr-neutral)" markerEnd="url(#arr-neutral)" />
-                                                <rect x="867" y="100" width="50" height="40" rx="6" fill="#1e293b" stroke="#ffffff" strokeWidth="2" />
-                                                <text x="892" y="128" textAnchor="middle" fill="#ffffff" fontWeight="bold" fontSize="24">C</text>
+                                                <line x1="845" y1="150" x2="945" y2="150" stroke="#ffffff" strokeWidth="4" markerStart="url(#arr-neutral)" markerEnd="url(#arr-neutral)" />
+                                                <rect x="870" y="95" width="50" height="42" rx="6" fill="#1e293b" stroke="#ffffff" strokeWidth="2" />
+                                                <text x="895" y="125" textAnchor="middle" fill="#ffffff" fontWeight="bold" fontSize="24">C</text>
                                             </svg>
                                         </div>
                                     </div>
