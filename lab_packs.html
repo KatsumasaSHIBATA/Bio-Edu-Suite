@@ -929,48 +929,58 @@ body {
       </div>
       <div class="pack-grid">
         
-        <!-- 2-A. 形態比較 -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title-area">
-              <h3 class="card-title">2-A. 手羽先から辿る哺乳類の腕</h3>
-              <div class="card-tags">
-                <span class="tag badge-morph">形態</span>
-                <span class="tag badge-gene">遺伝子</span>
-              </div>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="scenario-box"><strong>【Mission】</strong>空を飛ぶ鳥（カモメ・ニワトリ）、夜空を舞うコウモリ、海を泳ぐザトウクジラ、大地を駆けるロバ。NCBIの遺伝子データが示す「共通のルーツ」と、環境に合わせて前肢の骨格を激変させた「適応放散」の形態データを突き合わせ、進化の軌跡を証明せよ！</div>
-            
-            <div class="db-info">
-              <strong>【収録生物種 (DB)】</strong> ニワトリ（手羽先）、カモメ、コウモリ、ザトウクジラ、ロバ、ヒト（比較・基準用）、オオサンショウウオ（外群用）。
-            </div>
+<!-- ================================================================= -->
+<!-- 2-A. 手羽先から辿る哺乳類の腕（改訂版） -->
+<!-- ================================================================= -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-title-area">
+      <h3 class="card-title">2-A. 手羽先から辿る哺乳類の腕</h3>
+      <div class="card-tags">
+        <span class="tag badge-morph">形態</span>
+        <span class="tag badge-gene">遺伝子</span>
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="scenario-box"><strong>【Mission】</strong>空を飛ぶ鳥（カモメ・ニワトリ）、夜空を舞うコウモリ、海を泳ぐザトウクジラ、大地を駆けるロバ。NCBIの遺伝子データが示す「共通のルーツ」と、環境に合わせて前肢の骨格を激変させた「適応放散」の形態データを突き合わせ、進化の軌跡を証明せよ！</div>
+    
+    <div class="db-info">
+      <strong>【収録生物種 (DB)】</strong> ニワトリ（手羽先）、カモメ、コウモリ、ザトウクジラ、ロバ、ヒト（比較・基準用）、オオサンショウウオ（外群用）。
+    </div>
 
-            <div class="section-title">実験＆解析パイプライン</div>
-            <ul class="step-list">
-              <li><span class="step-highlight">Wet:</span> 手羽先から肉を落とし、前肢の骨格標本を作製。</li>
-              <li><span class="step-highlight no-wrap">Dry(形態):</span> 専用の「Morphological Evolution Digital Lab」を開き、各種動物の3D前肢骨格モデルと手羽先標本の各骨の長さを測定・比率化。取得した形態データ（CSV）をダッシュボード経由でアプリ⑩へ持ち込む。</li>
-              <li><span class="step-highlight no-wrap">Dry(遺伝子・統合):</span> NCBIから取得した各動物のDNA配列に基づく分子系統樹を作成。アプリ⑩で形態デンドログラムと突き合わせ（タングルグラム）を行う。</li>
-            </ul>
+    <div class="section-title">実験＆解析パイプライン</div>
+    <ul class="step-list">
+      <li><span class="step-highlight">Wet:</span> 手羽先の生肉からInstaGene法でDNAを抽出（食肉偽装1-Aと同一プロトコル）。抽出待ち（約40分）の間に骨の肉落とし・洗浄と周辺組織（軟骨・骨髄細胞）のギムザ染色観察を並行して実施。</li>
+      <li><span class="step-highlight no-wrap">Dry(形態):</span> 専用の「Morphological Evolution Lab」を開き、各種動物の3D前肢骨格モデルと手羽先標本の各骨の長さを測定・比率化。取得した形態データ（CSV）をダッシュボード経由でアプリ⑩へ持ち込む。</li>
+      <li><span class="step-highlight no-wrap">Dry(遺伝子・統合):</span> 手羽先から抽出・解読された想定のDNA配列と哺乳類のDNAから分子系統樹を作成。アプリ⑩で形態デンドログラムと突き合わせ（タングルグラム）を行う。</li>
+    </ul>
 
-            <div class="bench-tip">
-              <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（肉を無視できる比率化の威力）</strong>
-              肉や皮がついたままの生徒自身の腕の写真と、骨だけの手羽先標本。輪郭での比較は不可能でも、関節の支点を見極めて各部位（前腕・手根・指骨）の長さを測り、その「比率」を算出すれば、肉のノイズや体格の大小を完全に無視して、骨格のプロポーションだけを正確に多変量解析へかけることができます。
-            </div>
+    <div class="primer-box">
+      <strong>【プライマー情報】</strong><br>
+      標的遺伝子: ミトコンドリアDNA COI遺伝子 (約650bp)<br>
+      F (BirdF1): 5'-TTCTCCAACCACAAAGACATTGGCAC-3'<br>
+      R (BirdR1): 5'-ACGTGGGAGATAATTCCEEATCCTG-3'
+      <div class="reference-text">Hebert <i>et al.</i> (2004) PLoS Biol / Ward <i>et al.</i> (2005) Phil Trans R Soc B.</div>
+    </div>
 
-            <div class="action-area">
-              <a href="lab_packs_evolution.html" class="btn-download" style="background-color: #e67e22; border-color: #e67e22;" data-tooltip="3D骨格モデルの比較測定ラボを開く">
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                Morphological Lab を開く
-              </a>
-              <a href="./cartridges/Cartridge_Chicken_Wing.json" download class="btn-download" data-tooltip="フライドチキンから抽出した骨格座標データベース（JSON）を取得">
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                DNAカセットを取得
-              </a>
-            </div>
-          </div>
-        </div>
+    <div class="bench-tip">
+      <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（肉を無視できる比率化の威力）</strong>
+      肉や皮がついたままの生徒自身の腕の写真と、骨だけの手羽先標本。輪郭での比較は不可能でも、関節の支点を見極めて各部位（前腕・手根・指骨）の長さを測り、その「比率」を算出すれば、肉のノイズや体格の大小を完全に無視して、骨格のプロポーションだけを正確に多変量解析へかけることができます。
+    </div>
+
+    <div class="action-area">
+      <a href="lab_packs_evolution.html" class="btn-download" style="background-color: #e67e22; border-color: #e67e22;" data-tooltip="3D骨格モデルの比較測定ラボを開く">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+        Morphological Evolution Lab を開く
+      </a>
+      <a href="./cartridges/Cartridge_Chicken_Wing.json" download class="btn-download" data-tooltip="手羽先の肉片から抽出・解読された想定のDNA配列（COI遺伝子等）データベースを取得">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        DNAカセットを取得
+      </a>
+    </div>
+  </div>
+</div>
 
         <!-- 2-B. 収斂進化 -->
         <div class="card">
@@ -1065,56 +1075,60 @@ body {
           </div>
         </div>
 
-        <!-- 3-B. ルーツ探求 -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title-area">
-              <h3 class="card-title">3-B. 自分のルーツ探求</h3>
-              <div class="card-tags">
-                <span class="tag badge-gene">遺伝子</span>
-                <span class="tag badge-eco">生態</span>
-              </div>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="scenario-box"><strong>【Mission】</strong>自分の細胞からDNAを取り出し、ネアンデルタール人やチンパンジーの塩基配列と比較せよ。さらに自身の顔角データと類人猿の3D頭骨を突き合わせ、人類特有の「脳の拡大と顔の平坦化」の証拠を自らの身体で証明しろ！</div>
-            
-            <div class="db-info">
-              <strong>【収録生物種 (DB)】</strong> 現生人類（ヒト: 生徒自身）、ネアンデルタール人、ホモ・エレクトス、パラントロプス（頑丈型猿人）、アウストラロピテクス（猿人）、チンパンジー、ゴリラ、オランウータン（外群）。
-            </div>
+<!-- ================================================================= -->
+<!-- 3-B. 自分のルーツ探求（改訂版） -->
+<!-- ================================================================= -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-title-area">
+      <h3 class="card-title">3-B. 自分のルーツ探求</h3>
+      <div class="card-tags">
+        <span class="tag badge-gene">遺伝子</span>
+        <span class="tag badge-morph">形態</span>
+        <span class="tag badge-eco">生態</span>
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="scenario-box"><strong>【Mission】</strong>自分の細胞からDNAを取り出し、ネアンデルタール人やチンパンジーの塩基配列と比較せよ。さらに自身の顔角データと化石人類・類人猿の3D頭骨を突き合わせ、人類特有の「脳の拡大と顔の平坦化」の証拠を自らの身体で証明しろ！</div>
+    
+    <div class="db-info">
+      <strong>【収録生物種 (DNAカセット)】</strong> 現生人類（ヒト: 生徒自身）、ネアンデルタール人、デニソワ人、チンパンジー、ボノボ、ゴリラ、オランウータン（全7種＋生徒自身）。<br>
+      <strong>【収録生物種 (3D形態ラボ)】</strong> 現生人類、ネアンデルタール人、ホモ・エレクトス（原人）、パラントロプス（頑丈型猿人）、アウストラロピテクス（猿人）、チンパンジー、ゴリラ、オランウータン（外群）、現生人類（班・クラス平均）。
+    </div>
 
-            <div class="section-title">実験＆解析パイプライン</div>
-            <ul class="step-list">
-              <li><span class="step-highlight">Wet:</span> 口腔粘膜スワブからのDNA抽出。</li>
-              <li><span class="step-highlight no-wrap">Dry(形態):</span> 専用の「Human Evolution Digital Lab」を開き、各種人類・類人猿の3D頭骨モデルと自身の横顔写真からキャンパー顔角や脳頭蓋長・顔面頭蓋長を測定・比率化。取得した形態データ（CSV）をダッシュボード経由でアプリ⑩へ持ち込む。</li>
-              <li><span class="step-highlight no-wrap">Dry(遺伝子):</span> 自身のDNA配列（模擬データ含む）と古代人・類人猿の配列で分子系統樹を描画。タングルグラムで「DNAの近さ」と「頭骨形態の劇的な遠さ」の矛盾を考察する。</li>
-            </ul>
+    <div class="section-title">実験＆解析パイプライン</div>
+    <ul class="step-list">
+      <li><span class="step-highlight">Wet:</span> 口腔粘膜スワブからのDNA抽出（Chelex法）。</li>
+      <li><span class="step-highlight no-wrap">Dry(形態):</span> 専用の「Human Evolution Lab」を開き、RLAアーカイブの3D頭骨モデルと自身の横顔写真から「キャンパー顔角」「脳頭蓋長」「顔面頭蓋長」を測定・比率化。取得した形態CSVをダッシュボード経由でアプリ⑩へ持ち込む。</li>
+      <li><span class="step-highlight no-wrap">Dry(遺伝子・統合):</span> 自身のDNA配列と古代人・類人猿の配列で分子系統樹を描画（※エレクトスやパラントロプスにはDNAが存在しない古遺伝学の壁を体感）。タングルグラムで「DNAの近さ」と「頭骨形態の劇的な遠さ」の矛盾から人類の適応進化を考察する。</li>
+    </ul>
 
-            <div class="primer-box">
-              <strong>【プライマー情報】</strong><br>
-              標的遺伝子: ミトコンドリアDNA cytb遺伝子<br>
-              F: 5'-CCATCCAACATCTCAGCATGATGAAA-3'<br>
-              R: 5'-CCCCTCAGAATGATATTTGTCCTCA-3'
-              <div class="reference-text">Kocher <i>et al.</i> (1989) PNAS.</div>
-            </div>
+    <div class="primer-box">
+      <strong>【プライマー情報】</strong><br>
+      標的遺伝子: ミトコンドリアDNA cytb遺伝子<br>
+      F: 5'-CCATCCAACATCTCAGCATGATGAAA-3'<br>
+      R: 5'-CCCCTCAGAATGATATTTGTCCTCA-3'
+      <div class="reference-text">Kocher <i>et al.</i> (1989) PNAS.</div>
+    </div>
 
-            <div class="bench-tip">
-              <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（倫理的配慮とハイブリッド化）</strong>
-              古代骨からのDNA抽出は教養レベルでは不可能なため、Dry解析で取得した古代人の配列と比較するハイブリッド型とします。また、自分自身の顔やDNAを扱うため、当事者意識が最高潮に達しますが、データの取り扱いには十分な倫理的配慮を行ってください。
-            </div>
+    <div class="bench-tip">
+      <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（進化の壁と統合の意義）</strong>
+      古代骨からのDNA抽出は教養レベルでは不可能なため、Dry解析で取得した古代人の配列と比較するハイブリッド型とします。また、100万年以上前の化石人類（エレクトスやパラントロプス）にはDNAが残存しないため、「DNAがない化石の系統的位置を形態データで補完する」という、古生物学における統合分類学（Integrative Taxonomy）の真髄を体験させることができます。また、自分自身の顔写真やDNAを扱うため、当事者意識が最高潮に達しますが、データの取り扱いには十分な倫理的配慮を行ってください。
+    </div>
 
-            <div class="action-area">
-              <a href="Human_Evolution_Digital_Lab.html" class="btn-download" style="background-color: #e67e22; border-color: #e67e22;" data-tooltip="3D頭骨モデルの比較測定ラボを開く">
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                Human Evolution Lab を開く
-              </a>
-              <a href="./cartridges/Cartridge3_Human_Evolution.json" download class="btn-download" data-tooltip="現生人類や類人猿のデータベース（JSON）を取得">
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                DNAカセットを取得
-              </a>
-            </div>
-          </div>
-        </div>
+    <div class="action-area">
+      <a href="Human_Evolution_Digital_Lab.html" class="btn-download" style="background-color: #e67e22; border-color: #e67e22;" data-tooltip="3D頭骨モデルと横顔写真の比較測定ラボを開く">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+        Human Evolution Lab を開く
+      </a>
+      <a href="./cartridges/Cartridge3_Human_Evolution.json" download class="btn-download" data-tooltip="現生人類や類人猿のミトコンドリアDNAデータベース（JSON）を取得">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        DNAカセットを取得
+      </a>
+    </div>
+  </div>
+</div>
       </div>
 
       <div id="appendix-data">
