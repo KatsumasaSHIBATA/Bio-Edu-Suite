@@ -476,6 +476,10 @@ html, body {
     padding-left: 0 !important;
   }
 }
+    /* タッチデバイス等でアクティブ時に Y軸のtransformが上書きされるバグの修正 */
+    .drawer-toggle-btn:active {
+        transform: translateY(-50%) scale(0.97) !important;
+    }
   </style>
 
 </head>
@@ -784,163 +788,6 @@ html, body {
   function closeAccountSettings() {
     document.getElementById('accountModal').style.display = 'none';
   }
-
-  // --- Kahoot方式ルーム同期＆教員プリセットマネージャー (v35.5規格) ---
-  const SESSION_KEY = 'bio_edu_room_session_evolution';
-  const MASTER_TASKS_KEY = 'bio_edu_master_tasks_evolution';
-
-  // セッション状態のUI反映
-  function updateSyncUI(session) {
-    const icon = document.getElementById('accountUserIcon');
-    const statusText = document.getElementById('accountStatusText');
-    const loggedOutView = document.getElementById('modalLoggedOutView');
-    const loggedInView = document.getElementById('modalLoggedInView');
-    const roomDisplay = document.getElementById('roomDisplay');
-    const participantDisplay = document.getElementById('participantDisplay');
-    const teacherSec = document.getElementById('teacherPresetSection');
-
-    if (session && session.roomCode) {
-      if (icon) {
-        icon.style.color = '#2ecc71';
-        icon.style.stroke = '#2ecc71';
-      }
-      if (statusText) {
-        statusText.style.color = '#2ecc71';
-        statusText.textContent = `🟢 ${session.roomCode} (${session.participantId})`;
-      }
-      if (loggedOutView) loggedOutView.style.display = 'none';
-      if (loggedInView) loggedInView.style.display = 'block';
-      if (roomDisplay) roomDisplay.textContent = `ルームコード: ${session.roomCode}`;
-      if (participantDisplay) {
-        participantDisplay.textContent = `参加者ID: ${session.participantId} ${session.isTeacher ? '👑(教員)' : ''}`;
-      }
-      if (teacherSec) {
-        teacherSec.style.display = session.isTeacher ? 'block' : 'none';
-      }
-    } else {
-      if (icon) {
-        icon.style.color = '#bdc3c7';
-        icon.style.stroke = '#bdc3c7';
-      }
-      if (statusText) {
-        statusText.style.color = '#bdc3c7';
-        statusText.textContent = '未接続（ローカル）';
-      }
-      if (loggedOutView) loggedOutView.style.display = 'block';
-      if (loggedInView) loggedInView.style.display = 'none';
-      if (teacherSec) teacherSec.style.display = 'none';
-    }
-  }
-
-  // 初期化時のセッション復旧
-  document.addEventListener('DOMContentLoaded', () => {
-    try {
-      const saved = localStorage.getItem(SESSION_KEY);
-      if (saved) {
-        const session = JSON.parse(saved);
-        updateSyncUI(session);
-      }
-    } catch(e) {
-      console.error(e);
-    }
-  });
-
-  // ① ルーム入室
-  window.handleJoinRoom = function() {
-    const roomCodeInput = document.getElementById('roomCodeInput');
-    const participantIdInput = document.getElementById('participantIdInput');
-    const roomCode = roomCodeInput ? roomCodeInput.value.trim().toUpperCase() : '';
-    const participantId = participantIdInput ? participantIdInput.value.trim() : '';
-
-    if (!roomCode || !participantId) {
-      showToast('ルームコードと参加者IDの両方を入力してください', 'warning');
-      return;
-    }
-
-    const isTeacher = participantId.toUpperCase().startsWith('TEACHER');
-    const session = { roomCode, participantId, isTeacher, joinedAt: new Date().toISOString() };
-    
-    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-    updateSyncUI(session);
-    closeAccountSettings();
-    showToast(`ルーム [${roomCode}] に接続しました${isTeacher ? ' (教員モード)' : ''}`, 'success');
-  };
-
-  // ② ルーム退出
-  window.handleLeaveRoom = function() {
-    localStorage.removeItem(SESSION_KEY);
-    updateSyncUI(null);
-    closeAccountSettings();
-    showToast('ルームから退出しました（ローカル作業中）', 'info');
-  };
-
-  // ③ 教員専用：現在の画面データを課題プリセットとして発行
-  window.handleRegisterCurrentPreset = function() {
-    const taskInput = document.getElementById('newMasterTaskCodeInput');
-    const taskCode = taskInput ? taskInput.value.trim().toUpperCase() : '';
-
-    if (!taskCode) {
-      showToast('新課題コード（例: TASK-01）を入力してください', 'warning');
-      return;
-    }
-
-    // 現在のsessionStorageから測定値を取得
-    const saved = sessionStorage.getItem('bio_edu_workspace_evolution_lab');
-    if (!saved) {
-      showToast('保存する測定データがありません', 'warning');
-      return;
-    }
-
-    try {
-      const parsed = JSON.parse(saved);
-      const masterTasks = JSON.parse(localStorage.getItem(MASTER_TASKS_KEY) || '{}');
-      masterTasks[taskCode] = {
-        measurements: parsed.measurements,
-        updatedAt: new Date().toISOString()
-      };
-      localStorage.setItem(MASTER_TASKS_KEY, JSON.stringify(masterTasks));
-      
-      if (taskInput) taskInput.value = '';
-      showToast(`課題コード [${taskCode}] を発行・登録しました`, 'success');
-    } catch(e) {
-      showToast('課題発行に失敗しました', 'error');
-    }
-  };
-
-  // ④ 教員マスター課題データの読込
-  window.handleImportPreset = function() {
-    const taskInput = document.getElementById('masterTaskCodeInput');
-    const taskCode = taskInput ? taskInput.value.trim().toUpperCase() : '';
-
-    if (!taskCode) {
-      showToast('課題コードを入力してください', 'warning');
-      return;
-    }
-
-    try {
-      const masterTasks = JSON.parse(localStorage.getItem(MASTER_TASKS_KEY) || '{}');
-      const targetTask = masterTasks[taskCode];
-
-      if (!targetTask || !targetTask.measurements) {
-        showToast(`課題コード [${taskCode}] が見つかりません`, 'error');
-        return;
-      }
-
-      // Reactコンポーネントへイベント通知してテーブルを一括更新
-      window.dispatchEvent(new CustomEvent('bio-edu-apply-preset', {
-        detail: { measurements: targetTask.measurements }
-      }));
-
-      // sessionStorageも更新
-      sessionStorage.setItem('bio_edu_workspace_evolution_lab', JSON.stringify({
-        measurements: targetTask.measurements
-      }));
-
-      closeAccountSettings();
-    } catch(e) {
-      showToast('課題読込に失敗しました', 'error');
-    }
-  };
 
   // JS実装: 動的幅算出・フリップ計算付き表示ロジック
   function toggleRationale(event, id) {
@@ -1319,7 +1166,7 @@ html, body {
                         
                         <button 
                             onClick={togglePanel}
-                            className="absolute top-1/2 -right-8 w-8 h-16 bg-slate-800 text-white rounded-r-lg flex items-center justify-center shadow-[5px_0_10px_rgba(0,0,0,0.2)] -translate-y-1/2 hover:bg-slate-700 transition-colors border border-l-0 border-slate-600 z-40"
+                            className="drawer-toggle-btn absolute top-1/2 -right-8 w-8 h-16 bg-slate-800 text-white rounded-r-lg flex items-center justify-center shadow-[5px_0_10px_rgba(0,0,0,0.2)] -translate-y-1/2 hover:bg-slate-700 transition-colors border border-l-0 border-slate-600 z-40"
                         >
                             <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
                         </button>
@@ -1359,7 +1206,7 @@ html, body {
                                             計測区間の確認（ヒト）
                                         </div>
                                         
-                                        <div className="relative w-full h-full max-h-[170px] aspect-[16/9] flex items-center justify-center">
+                                        <div className="absolute w-full h-full flex items-center justify-center scale-[1.15] origin-center">
                                             <img 
                                                 src="./arm.jpg" 
                                                 alt="ヒトの腕のカラーモデル" 
@@ -1707,11 +1554,54 @@ html, body {
   </p>
 </div>
 
-<!-- 認証モジュールの読み込みとグローバル展開 -->
+<!-- Firebase 認証・クラウド同期（ガイドライン第7項） -->
 <script type="module">
-  import { loginWithGoogle, logoutUser } from './auth_sync.js';
-  window.handleGoogleLogin = loginWithGoogle;
-  window.handleLogout = logoutUser;
+    import { joinRoom, leaveRoom, importMasterPreset, registerMasterPreset } from './auth_sync.js';
+    window.handleJoinRoom = function() {
+        const rEl = document.getElementById('roomCodeInput');
+        const pEl = document.getElementById('participantIdInput');
+        const r = rEl ? rEl.value.trim() : '';
+        const p = pEl ? pEl.value.trim() : '';
+        if (!r || !p) {
+            if (typeof showToast === 'function') showToast('ルームコードと参加者IDを入力してください', 'warning');
+            return;
+        }
+        joinRoom(r, p);
+        if (typeof closeAccountSettings === 'function') closeAccountSettings();
+    };
+    window.handleLeaveRoom = function() {
+        leaveRoom();
+        if (typeof closeAccountSettings === 'function') closeAccountSettings();
+    };
+    window.handleImportPreset = function() {
+        const tEl = document.getElementById('masterTaskCodeInput');
+        const t = tEl ? tEl.value.trim() : '';
+        if (!t) {
+            if (typeof showToast === 'function') showToast('課題コードを入力してください', 'warning');
+            return;
+        }
+        importMasterPreset(t);
+    };
+    window.handleRegisterCurrentPreset = function() {
+        const tEl = document.getElementById('newMasterTaskCodeInput');
+        const t = tEl ? tEl.value.trim() : '';
+        if (!t) {
+            if (typeof showToast === 'function') showToast('発行する課題コードを入力してください', 'warning');
+            return;
+        }
+        // 現在のセッションデータを収集
+        const sessionSnap = {};
+        for (let i = 0; i < sessionStorage.length; i++) {
+            const k = sessionStorage.key(i);
+            if (k) sessionSnap[k] = sessionStorage.getItem(k);
+        }
+        const payload = {
+            sessionData: sessionSnap,
+            appName: document.title,
+            registeredAt: Date.now()
+        };
+        registerMasterPreset(t, payload);
+    };
 </script>
 
 </body>
