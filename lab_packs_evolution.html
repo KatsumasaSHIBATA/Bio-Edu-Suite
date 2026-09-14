@@ -412,10 +412,74 @@
     .rationale-text::before { content: ''; position: absolute; border-width: 7px; border-style: solid; left: calc(var(--arrow-left, 50%) - 1px); }
     .rationale-text.arrow-top::before { top: -14px; border-color: transparent transparent var(--warning) transparent; }
     .rationale-text.arrow-bottom::before { bottom: -14px; border-color: var(--warning) transparent transparent transparent; }
+
+/* ===================================================================
+   【添付アプリ完全準拠】スマホ表示・レスポンシブ補正規格
+   =================================================================== */
+html, body {
+  -webkit-text-size-adjust: 100% !important;
+  text-size-adjust: 100% !important;
+}
+
+/* 3Dアプリ専用：外枠の縦スクロールを物理遮断し、画面内に100%ピタッと収める */
+.content-area {
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding-bottom: 0 !important;
+}
+
+@media (max-width: 1024px) {
+  .header-container .header {
+    padding: 10px 15px !important;
+    min-height: 56px !important;
+  }
+  .header-container .header h1 {
+    font-size: 16px !important;
+  }
+  .header-container .header p {
+    font-size: 10px !important;
+  }
+  .mobile-hamburger {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+  .account-btn {
+    padding: 4px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    justify-content: center !important;
+  }
+  .account-btn .btn-text {
+    display: none !important;
+  }
+  .account-user-icon {
+    width: 22px !important;
+    height: 22px !important;
+    margin-right: 0 !important;
+  }
+  .sidebar {
+    width: 280px !important;
+    left: -280px !important;
+  }
+  .sidebar.open {
+    left: 0 !important;
+  }
+  .main-wrapper {
+    padding-left: 0 !important;
+    height: 100dvh !important;
+  }
+  body.has-pinned-sidebar .main-wrapper {
+    padding-left: 0 !important;
+  }
+}
   </style>
 
 </head>
-<body class="dashboard-mode no-select-ui">
+<body class="app-mode no-select-ui">
 
 <!-- 📱 スマホアクセス警告＆PC強制レイアウト (JS判定版) -->
 <div id="mobile-warning-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(44, 62, 80, 0.95); z-index: 999999; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; padding: 30px; box-sizing: border-box; backdrop-filter: blur(5px);">
@@ -528,9 +592,11 @@
       </div>
       
       <div class="header-right">
-        <button id="accountBtn" class="account-btn" onclick="openAccountSettings(); triggerHapticFeedback();" data-tooltip="ルーム接続・同期設定">
-          <span id="syncIndicatorDot" style="display: inline-block; width: 9px; height: 9px; border-radius: 50%; background-color: #95a5a6; transition: all 0.3s ease; box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);"></span>
-          <span id="accountStatusText" class="btn-text" style="font-size: 12px; font-weight: bold; color: #bdc3c7; transition: color 0.3s;">未接続（ローカル）</span>
+        <button id="accountBtn" class="account-btn" onclick="openAccountSettings(); triggerHapticFeedback();" data-tooltip="アカウント・同期設定">
+          <svg id="accountUserIcon" class="account-user-icon" viewBox="0 0 24 24" style="width: 12px; height: 12px; flex-shrink: 0; margin-right: 2px;">
+            <circle cx="12" cy="12" r="8" fill="currentColor"></circle>
+          </svg>
+          <span id="accountStatusText" class="btn-text" style="font-size: 13px; font-weight: bold; color: #bdc3c7;">未接続（ローカル）</span>
         </button>
       </div>
     </div>
@@ -725,7 +791,7 @@
 
   // セッション状態のUI反映
   function updateSyncUI(session) {
-    const dot = document.getElementById('syncIndicatorDot');
+    const icon = document.getElementById('accountUserIcon');
     const statusText = document.getElementById('accountStatusText');
     const loggedOutView = document.getElementById('modalLoggedOutView');
     const loggedInView = document.getElementById('modalLoggedInView');
@@ -734,9 +800,9 @@
     const teacherSec = document.getElementById('teacherPresetSection');
 
     if (session && session.roomCode) {
-      if (dot) {
-        dot.style.backgroundColor = '#2ecc71';
-        dot.style.boxShadow = '0 0 8px #2ecc71';
+      if (icon) {
+        icon.style.color = '#2ecc71';
+        icon.style.stroke = '#2ecc71';
       }
       if (statusText) {
         statusText.style.color = '#2ecc71';
@@ -752,9 +818,9 @@
         teacherSec.style.display = session.isTeacher ? 'block' : 'none';
       }
     } else {
-      if (dot) {
-        dot.style.backgroundColor = '#95a5a6';
-        dot.style.boxShadow = 'none';
+      if (icon) {
+        icon.style.color = '#bdc3c7';
+        icon.style.stroke = '#bdc3c7';
       }
       if (statusText) {
         statusText.style.color = '#bdc3c7';
@@ -1249,7 +1315,7 @@
                     </div>
 
                     {/* スライド式入力パネル（ドロワー） - 全画面時は隠れる */}
-                    <div className={`absolute top-0 left-0 h-full w-1/2 min-w-[500px] bg-slate-50 border-r border-slate-300 shadow-[15px_0_30px_rgba(0,0,0,0.3)] z-30 flex flex-col transition-transform duration-300 ease-in-out overflow-visible ${isPanelOpen && !isFullscreen ? 'translate-x-0' : '-translate-x-full'}`}>
+                    <div className={`absolute top-0 left-0 h-full w-1/2 min-w-[380px] max-w-[calc(100%-48px)] bg-slate-50 border-r border-slate-300 shadow-[15px_0_30px_rgba(0,0,0,0.3)] z-30 flex flex-col transition-transform duration-300 ease-in-out overflow-visible ${isPanelOpen && !isFullscreen ? 'translate-x-0' : '-translate-x-full'}`}>
                         
                         <button 
                             onClick={togglePanel}
