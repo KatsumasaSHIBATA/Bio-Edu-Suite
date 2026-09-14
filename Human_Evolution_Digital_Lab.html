@@ -988,56 +988,74 @@
                                             計測ラインの引き方（例: 現生人類）
                                         </div>
                                         
-                                        {/* 画像をSVG内部に直接埋め込み、1920x1080の絶対座標系で完全にロックする */}
+                                        {/* viewBoxを頭骨の存在領域(480 120 1050 780)に絞り込み、左右の黒帯を完全排除して精密フィット */}
                                         <div className="svg-container">
-                                            <svg viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid meet">
-                                                <image href="./skull.jpg" x="0" y="0" width="1920" height="1080" preserveAspectRatio="xMidYMid meet" opacity="0.95" />
-
-                                                {/* 解剖学的ランドマーク */}
-                                                {/* 眉間 (Glabella) */}
-                                                <circle cx="730" cy="360" r="16" fill="#cbd5e1" stroke="#334155" strokeWidth="4"/>
-                                                <text x="560" y="340" fill="#f8fafc" fontSize="40" fontWeight="bold" filter="url(#solid-bg)">眉間</text>
-                                                
-                                                {/* 前歯 (Prosthion) */}
-                                                <circle cx="660" cy="750" r="16" fill="#cbd5e1" stroke="#334155" strokeWidth="4"/>
-                                                <text x="490" y="790" fill="#f8fafc" fontSize="40" fontWeight="bold" filter="url(#solid-bg)">前歯</text>
-                                                
-                                                {/* 耳の穴 (Porion) */}
-                                                <circle cx="1220" cy="550" r="16" fill="#cbd5e1" stroke="#334155" strokeWidth="4"/>
-                                                {/* 鼻の下 (Subnasale) */}
-                                                <circle cx="680" cy="660" r="16" fill="#cbd5e1" stroke="#334155" strokeWidth="4"/>
-                                                {/* 後頭部 (Opisthocranion) */}
-                                                <circle cx="1550" cy="380" r="16" fill="#cbd5e1" stroke="#334155" strokeWidth="4"/>
-
-                                                {/* 計測線 A: 顔角 (オレンジ) */}
-                                                <line x1="450" y1="707" x2="1300" y2="534" stroke="#f59e0b" strokeWidth="8" strokeDasharray="20 10"/>
-                                                <line x1="768" y1="150" x2="633" y2="900" stroke="#f59e0b" strokeWidth="8"/>
-                                                <path d="M 550 686 Q 600 550 708 480" fill="none" stroke="#f59e0b" strokeWidth="8"/>
-                                                <rect x="445" y="515" width="70" height="70" rx="12" fill="#fef3c7" stroke="#f59e0b" strokeWidth="4"/>
-                                                <text x="480" y="565" fill="#d97706" fontSize="45" fontWeight="bold" textAnchor="middle">A</text>
-
-                                                {/* 計測線 B: 脳頭蓋長 (エメラルド) */}
-                                                <line x1="730" y1="360" x2="1550" y2="380" stroke="#10b981" strokeWidth="10" markerStart="url(#dot-b)" markerEnd="url(#dot-b)"/>
-                                                <rect x="1115" y="240" width="70" height="70" rx="12" fill="#d1fae5" stroke="#10b981" strokeWidth="4"/>
-                                                <text x="1150" y="290" fill="#059669" fontSize="45" fontWeight="bold" textAnchor="middle">B</text>
-
-                                                {/* 計測線 C: 顔面頭蓋長 (ローズ) */}
-                                                <line x1="730" y1="360" x2="660" y2="750" stroke="#f43f5e" strokeWidth="10" markerStart="url(#dot-c)" markerEnd="url(#dot-c)"/>
-                                                <rect x="760" y="550" width="70" height="70" rx="12" fill="#ffe4e6" stroke="#f43f5e" strokeWidth="4"/>
-                                                <text x="795" y="600" fill="#e11d48" fontSize="45" fontWeight="bold" textAnchor="middle">C</text>
-
+                                            <svg viewBox="480 120 1050 780" preserveAspectRatio="xMidYMid meet">
                                                 <defs>
-                                                    <marker id="dot-b" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4">
+                                                    <marker id="dot-b" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6">
                                                         <circle cx="5" cy="5" r="5" fill="#10b981"/>
                                                     </marker>
-                                                    <marker id="dot-c" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4">
+                                                    <marker id="dot-c" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6">
                                                         <circle cx="5" cy="5" r="5" fill="#f43f5e"/>
                                                     </marker>
-                                                    <filter id="solid-bg" x="-10%" y="-10%" width="120%" height="120%">
-                                                        <feFlood floodColor="#000000" floodOpacity="0.6"/>
+                                                    <filter id="label-bg" x="-20%" y="-20%" width="140%" height="140%">
+                                                        <feFlood floodColor="#0f172a" floodOpacity="0.75"/>
                                                         <feComposite in="SourceGraphic"/>
                                                     </filter>
                                                 </defs>
+
+                                                {/* 背景頭骨画像 (原寸1920x1080) */}
+                                                <image href="./skull.jpg" x="0" y="0" width="1920" height="1080" preserveAspectRatio="xMidYMid meet" opacity="0.95" />
+
+                                                {/* ========================================================== */}
+                                                {/* 計測線 A: キャンパー顔角 (オレンジ) */}
+                                                {/* カンペル平面: 耳の穴(1045, 505) 〜 鼻の下(660, 585) */}
+                                                {/* ========================================================== */}
+                                                <line x1="500" y1="618" x2="1160" y2="480" stroke="#f59e0b" strokeWidth="6" strokeDasharray="16 8"/>
+                                                
+                                                {/* 顔面線: 眉間(685, 375) 〜 前歯(640, 675) */}
+                                                <line x1="700" y1="275" x2="625" y2="775" stroke="#f59e0b" strokeWidth="6"/>
+                                                
+                                                {/* 顔角の円弧 (角度を示すアーク) */}
+                                                <path d="M 650 608 A 70 70 0 0 0 710 575" fill="none" stroke="#f59e0b" strokeWidth="6"/>
+                                                <rect x="525" y="525" width="56" height="56" rx="10" fill="#fef3c7" stroke="#f59e0b" strokeWidth="3"/>
+                                                <text x="553" y="566" fill="#d97706" fontSize="38" fontWeight="bold" textAnchor="middle">A</text>
+
+                                                {/* ========================================================== */}
+                                                {/* 計測線 B: 脳頭蓋長 (エメラルド) */}
+                                                {/* 眉間(685, 375) 〜 後頭部(1410, 360) */}
+                                                {/* ========================================================== */}
+                                                <line x1="685" y1="375" x2="1410" y2="360" stroke="#10b981" strokeWidth="8" markerStart="url(#dot-b)" markerEnd="url(#dot-b)"/>
+                                                <rect x="1020" y="270" width="56" height="56" rx="10" fill="#d1fae5" stroke="#10b981" strokeWidth="3"/>
+                                                <text x="1048" y="311" fill="#059669" fontSize="38" fontWeight="bold" textAnchor="middle">B</text>
+
+                                                {/* ========================================================== */}
+                                                {/* 計測線 C: 顔面頭蓋長 (ローズ) */}
+                                                {/* 眉間(685, 375) 〜 前歯(640, 675) */}
+                                                {/* ========================================================== */}
+                                                <line x1="685" y1="375" x2="640" y2="675" stroke="#f43f5e" strokeWidth="8" markerStart="url(#dot-c)" markerEnd="url(#dot-c)"/>
+                                                <rect x="690" y="475" width="56" height="56" rx="10" fill="#ffe4e6" stroke="#f43f5e" strokeWidth="3"/>
+                                                <text x="718" y="516" fill="#e11d48" fontSize="38" fontWeight="bold" textAnchor="middle">C</text>
+
+                                                {/* ========================================================== */}
+                                                {/* 解剖学的ランドマーク (実測ポイントのプロット) */}
+                                                {/* ========================================================== */}
+                                                {/* 眉間 (Glabella) */}
+                                                <circle cx="685" cy="375" r="10" fill="#f1f5f9" stroke="#0f172a" strokeWidth="3"/>
+                                                <text x="560" y="380" fill="#ffffff" fontSize="30" fontWeight="bold" filter="url(#label-bg)">眉間</text>
+
+                                                {/* 前歯 (Prosthion) */}
+                                                <circle cx="640" cy="675" r="10" fill="#f1f5f9" stroke="#0f172a" strokeWidth="3"/>
+                                                <text x="520" y="680" fill="#ffffff" fontSize="30" fontWeight="bold" filter="url(#label-bg)">前歯</text>
+
+                                                {/* 鼻の下 (Subnasale) */}
+                                                <circle cx="660" cy="585" r="8" fill="#f59e0b" stroke="#ffffff" strokeWidth="2.5"/>
+
+                                                {/* 耳の穴 (Porion) */}
+                                                <circle cx="1045" cy="505" r="8" fill="#f59e0b" stroke="#ffffff" strokeWidth="2.5"/>
+
+                                                {/* 後頭部 (Opisthocranion) */}
+                                                <circle cx="1410" cy="360" r="10" fill="#10b981" stroke="#ffffff" strokeWidth="3"/>
                                             </svg>
                                         </div>
                                     </div>
