@@ -400,8 +400,8 @@
         display: none !important;
       }
       .account-user-icon {
-        width: 22px !important;
-        height: 22px !important;
+        width: 12px !important;
+        height: 12px !important;
         margin-right: 0 !important;
       }
     }
@@ -1018,7 +1018,7 @@
                                                 
                                                 {/* 顔角の円弧 (角度を示すアーク) */}
                                                 <path d="M 650 608 A 70 70 0 0 0 710 575" fill="none" stroke="#f59e0b" strokeWidth="6"/>
-                                                <rect x="525" y="525" width="56" height="56" rx="10" fill="#fef3c7" stroke="#f59e0b" strokeWidth="3"/>
+                                                <circle cx="553" cy="553" r="28" fill="#fef3c7" stroke="#f59e0b" strokeWidth="3"/>
                                                 <text x="553" y="566" fill="#d97706" fontSize="38" fontWeight="bold" textAnchor="middle">A</text>
 
                                                 {/* ========================================================== */}
@@ -1026,7 +1026,7 @@
                                                 {/* 眉間(685, 375) 〜 後頭部(1410, 360) */}
                                                 {/* ========================================================== */}
                                                 <line x1="685" y1="375" x2="1410" y2="360" stroke="#10b981" strokeWidth="8" markerStart="url(#dot-b)" markerEnd="url(#dot-b)"/>
-                                                <rect x="1020" y="270" width="56" height="56" rx="10" fill="#d1fae5" stroke="#10b981" strokeWidth="3"/>
+                                                <circle cx="1048" cy="298" r="28" fill="#d1fae5" stroke="#10b981" strokeWidth="3"/>
                                                 <text x="1048" y="311" fill="#059669" fontSize="38" fontWeight="bold" textAnchor="middle">B</text>
 
                                                 {/* ========================================================== */}
@@ -1034,7 +1034,7 @@
                                                 {/* 眉間(685, 375) 〜 前歯(640, 675) */}
                                                 {/* ========================================================== */}
                                                 <line x1="685" y1="375" x2="640" y2="675" stroke="#f43f5e" strokeWidth="8" markerStart="url(#dot-c)" markerEnd="url(#dot-c)"/>
-                                                <rect x="690" y="475" width="56" height="56" rx="10" fill="#ffe4e6" stroke="#f43f5e" strokeWidth="3"/>
+                                                <circle cx="718" cy="503" r="28" fill="#ffe4e6" stroke="#f43f5e" strokeWidth="3"/>
                                                 <text x="718" y="516" fill="#e11d48" fontSize="38" fontWeight="bold" textAnchor="middle">C</text>
 
                                                 {/* ========================================================== */}
@@ -1297,7 +1297,18 @@
             if (typeof showToast === 'function') showToast('発行する課題コードを入力してください', 'warning');
             return;
         }
-        registerMasterPreset(t);
+        // 現在のセッションデータを収集
+        const sessionSnap = {};
+        for (let i = 0; i < sessionStorage.length; i++) {
+            const k = sessionStorage.key(i);
+            if (k) sessionSnap[k] = sessionStorage.getItem(k);
+        }
+        const payload = {
+            sessionData: sessionSnap,
+            appName: document.title,
+            registeredAt: Date.now()
+        };
+        registerMasterPreset(t, payload);
     };
 </script>
 
