@@ -1444,7 +1444,7 @@ html, body {
                                                 <button className={`btn ${measureMode === 'A' ? 'btn-primary' : 'btn-secondary'} px-2 py-1 text-[10px]`} onClick={() => handleModeChange('A')}>A (前腕: 2点)</button>
                                                 <button className={`btn ${measureMode === 'B' ? 'btn-primary' : 'btn-secondary'} px-2 py-1 text-[10px]`} onClick={() => handleModeChange('B')}>B (手根・中手: 2点)</button>
                                                 <button className={`btn ${measureMode === 'C' ? 'btn-primary' : 'btn-secondary'} px-2 py-1 text-[10px]`} onClick={() => handleModeChange('C')}>C (指骨: 2点)</button>
-                                                <button className="btn btn-secondary px-2 py-1 text-[10px]" onClick={() => setPoints([])}>クリア</button>
+                                                <button className="btn btn-secondary px-2 py-1 text-[10px]" onClick={() => { setPoints([]); setUploadedImage(null); }}>クリア</button>
                                             </div>
                                         </div>
                                         
