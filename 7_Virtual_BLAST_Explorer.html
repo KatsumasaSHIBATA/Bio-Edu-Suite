@@ -1104,9 +1104,8 @@ body {
                 ・NCBI (National Center for Biotechnology Information) のデータベースから、指定したAccession No.の塩基配列データをインターネット経由で直接ダウンロードし、ローカルデータベースに追加します。
             </div>
 
-            <div style="display:flex; gap:10px; margin-top:15px;">
+            <div style="margin-top:15px;">
                 <button id="runBlastBtn" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 14px;" onclick="runVirtualBlast()" data-tooltip="データベースと照合し、最も相同性の高い生物種を検索します"><svg class="btn-icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> 解析を実行</button>
-                <button id="runNcbiBlastBtn" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 14px;" onclick="runNcbiBlast()" data-tooltip="NCBIサーバーと通信し、最新のオンライン検索を実行します">🌐 NCBIオンライン検索</button>
             </div>
 
         </div>
@@ -1813,104 +1812,7 @@ body {
         showToast("解析が完了しました（全生物種 照合完了）");
     }
 
-    let blastWorker = null;
 
-    function runNcbiBlast() {
-        try {
-            let rawInput = document.getElementById('queryInput').value;
-            let query = rawInput.split('\n').filter(line => !line.startsWith('>')).join('').toUpperCase().replace(/[^ATGC]/g, '');
-
-            if (!query || query.length < 5) {
-                showToast("解析を実行するには最低5塩基以上のDNA塩基配列を入力してください。", "error");
-                return;
-            }
-
-            const runBtn = document.getElementById('runBlastBtn');
-            const ncbiBtn = document.getElementById('runNcbiBlastBtn');
-            const progressPanel = document.getElementById('blastProgressPanel');
-            const progressStatus = document.getElementById('blastProgressStatus');
-            const progressBar = document.getElementById('blastProgressBar');
-
-            if (runBtn) runBtn.disabled = true;
-            if (ncbiBtn) ncbiBtn.disabled = true;
-            
-            if (progressPanel) progressPanel.style.display = 'block';
-            if (progressStatus) progressStatus.innerText = '検索準備中...';
-            if (progressBar) progressBar.style.width = '0%';
-
-            if (blastWorker) {
-                blastWorker.terminate();
-            }
-
-            blastWorker = new Worker('js/blast_worker.js');
-
-            blastWorker.onmessage = function(e) {
-                const data = e.data;
-                if (data.type === 'progress') {
-                    if (progressStatus) progressStatus.innerText = data.message;
-                    if (progressBar) progressBar.style.width = data.progress + '%';
-                } else if (data.type === 'complete') {
-                    currentResults = data.results;
-                    
-                    if (currentResults.length === 0) {
-                        showToast("検索結果が見つかりませんでした。ローカル検索を試行します。", "warning");
-                        if (progressPanel) progressPanel.style.display = 'none';
-                        if (runBtn) runBtn.disabled = false;
-                        if (ncbiBtn) ncbiBtn.disabled = false;
-                        runVirtualBlast();
-                        return;
-                    }
-
-                    const directLink = document.getElementById('ncbiDirectLink');
-                    if (directLink) directLink.href = 'https://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=blastn&PAGE_TYPE=BlastSearch&LINK_LOC=blasthome&QUERY=' + encodeURIComponent(query);
-                    const linkPanel = document.getElementById('ncbiLinkPanel');
-                    if (linkPanel) linkPanel.style.display = 'block';
-
-                    renderHitsTable();
-                    showToast("NCBIサーバーからの検索結果を取得しました。");
-                    
-                    resetBtns();
-                } else if (data.type === 'error') {
-                    console.error("Worker Error:", data.message);
-                    fallbackToLocal();
-                }
-            };
-
-            blastWorker.onerror = function(err) {
-                console.error("Worker Execution Error:", err);
-                fallbackToLocal();
-            };
-
-            blastWorker.postMessage({ query: query });
-            
-            function fallbackToLocal() {
-                if (progressPanel) progressPanel.style.display = 'none';
-                if (runBtn) runBtn.disabled = false;
-                if (ncbiBtn) ncbiBtn.disabled = false;
-                showToast("オンライン検索に接続できませんでした。ローカル検索へ切り替えます", "error");
-                runVirtualBlast();
-            }
-            
-            function resetBtns() {
-                if (runBtn) runBtn.disabled = false;
-                if (ncbiBtn) ncbiBtn.disabled = false;
-                if (progressPanel) {
-                    // アニメーションのため少し待ってから消す
-                    setTimeout(() => { progressPanel.style.display = 'none'; }, 1000);
-                }
-            }
-        } catch (err) {
-            console.error("runNcbiBlast Exception:", err);
-            const progressPanel = document.getElementById('blastProgressPanel');
-            if (progressPanel) progressPanel.style.display = 'none';
-            const runBtn = document.getElementById('runBlastBtn');
-            const ncbiBtn = document.getElementById('runNcbiBlastBtn');
-            if (runBtn) runBtn.disabled = false;
-            if (ncbiBtn) ncbiBtn.disabled = false;
-            showToast("オンライン検索に接続できませんでした。ローカル検索へ切り替えます", "error");
-            runVirtualBlast();
-        }
-    }
 
     function renderHitsTable() {
         let tbody = document.getElementById('hitsTableBody');
