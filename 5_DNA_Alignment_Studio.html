@@ -1297,6 +1297,7 @@ body {
     let currentMouseX = 0;
     let autoScrollFrame = null;
     let isHighlightActive = false;
+    let isAligning = false;
 
     // ハプティクスフィードバック共通関数
     function triggerHapticFeedback() {
@@ -1615,9 +1616,31 @@ function closeFeedbackForm() {
         });
         document.addEventListener('scroll', () => { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; }, true);
     }
+
+    // ナビゲーション遷移インターセプト（ガイドライン第7項 7.4③ 準拠）
+    function initNavInterception() {
+        document.querySelectorAll('.sidebar .nav-menu a.nav-item').forEach(link => {
+            link.addEventListener('click', (e) => {
+                if (isAligning) {
+                    e.preventDefault();
+                    const targetUrl = link.href;
+                    showConfirm(
+                        "現在処理中です。アプリを移動すると進行中の処理はキャンセルされ元の状態に戻ります。移動しますか？",
+                        () => {
+                            isAligning = false;
+                            window.location.href = targetUrl;
+                        },
+                        "移動する",
+                        "処理の中断確認"
+                    );
+                }
+            });
+        });
+    }
     
     window.addEventListener('DOMContentLoaded', () => {
         initTooltips();
+        initNavInterception();
         
         const bulkDataJSON = sessionStorage.getItem('bio_edu_bulk_data');
         if (bulkDataJSON) {
@@ -2049,12 +2072,13 @@ function closeFeedbackForm() {
     }
 
     function runMSA() {
+        isAligning = true;
         let targetSeqs = sequences.filter(s => !s.isFPrimerFasta && !s.isRPrimerFasta && s.isSelected !== false);
-        if(targetSeqs.length < 2) { showToast("比較する塩基配列を2つ以上選択してください。", "warning"); return; }
+        if(targetSeqs.length < 2) { showToast("比較する塩基配列を2つ以上選択してください。", "warning"); isAligning = false; return; }
         let seqStrs = targetSeqs.map(s => s.data.join('').replace(/-/g, ''));
         let maxLen = Math.max(...seqStrs.map(s => s.length));
         
-        if(maxLen > 2000) { showToast("塩基配列が長すぎます。多重整列を実行する前にカットしてください。", "error"); return; }
+        if(maxLen > 2000) { showToast("塩基配列が長すぎます。多重整列を実行する前にカットしてください。", "error"); isAligning = false; return; }
         document.getElementById('statusText').innerText = "ステータス: 簡易アライメントを計算中...";
 
         setTimeout(() => {
@@ -2105,12 +2129,14 @@ function closeFeedbackForm() {
             document.getElementById('btnExportFasta').disabled = false; document.getElementById('btnExportClustal').disabled = false; 
             document.getElementById('btnCopyFasta').disabled = false; document.getElementById('btnCopyClustal').disabled = false; 
             document.getElementById('btnConserved').disabled = false;
+            isAligning = false;
         }, 50);
     }
 
     async function runAdvancedMSA(toolName) {
+        isAligning = true;
         let targetSeqs = sequences.filter(s => !s.isFPrimerFasta && !s.isRPrimerFasta && s.isSelected !== false);
-        if(targetSeqs.length < 2) { showToast("比較する塩基配列を2つ以上選択してください。", "warning"); return; }
+        if(targetSeqs.length < 2) { showToast("比較する塩基配列を2つ以上選択してください。", "warning"); isAligning = false; return; }
         
         let inputFasta = "";
         targetSeqs.forEach((s, idx) => {
@@ -2194,6 +2220,7 @@ function closeFeedbackForm() {
             showToast("エラーが発生しました: " + error.message, "error");
             document.getElementById('statusText').innerText = `ステータス: ${algoNameForStatus}計算に失敗しました。`;
         } finally {
+            isAligning = false;
             updateMSAButtonState();
             if (sequences.filter(s => s.data.includes('-')).length > 0) {
                 document.getElementById('btnResetMSA').disabled = false;
