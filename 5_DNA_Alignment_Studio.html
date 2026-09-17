@@ -861,6 +861,24 @@ body {
             #teacherPresetSection .flex-row input { flex: 1 1 auto !important; width: 100% !important; }
             #teacherPresetSection .flex-row .btn { flex: 0 0 auto !important; width: auto !important; }
         }
+
+        /* ステータスバー用 脈動パルスインジケーター (案1・案3ハイブリッド) */
+        .status-pulse-dot {
+            display: inline-block;
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background-color: var(--warning, #f39c12);
+            margin-right: 8px;
+            vertical-align: middle;
+            box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.7);
+            animation: statusPulseAnim 1.3s infinite cubic-bezier(0.66, 0, 0, 1);
+        }
+        @keyframes statusPulseAnim {
+            0% { transform: scale(0.92); box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.85); }
+            70% { transform: scale(1.15); box-shadow: 0 0 0 8px rgba(243, 156, 18, 0); }
+            100% { transform: scale(0.92); box-shadow: 0 0 0 0 rgba(243, 156, 18, 0); }
+        }
     </style>
 
 </head>
@@ -1270,6 +1288,16 @@ body {
 <div id="toast"></div>
 
 <script>
+    function updateStatus(text, isLoading = false) {
+        const st = document.getElementById('statusText');
+        if (!st) return;
+        if (isLoading) {
+            st.innerHTML = `<span class="status-pulse-dot"></span>ステータス: ${text}`;
+        } else {
+            st.innerText = `ステータス: ${text}`;
+        }
+    }
+
     let sequences = []; 
     let selectedRow = -1; 
     let selectedCol = -1; 
@@ -1364,6 +1392,7 @@ function closeFeedbackForm() {
     // ==========================================
     async function runEbiApiMSA(fastaText, userEmail, toolName) {
         const baseUrl = `https://www.ebi.ac.uk/Tools/services/rest/${toolName}`;
+        const algoLabel = toolName === 'mafft' ? 'MAFFT' : 'Clustal Omega';
 
         const submitParams = new URLSearchParams();
         submitParams.append("email", userEmail);     
@@ -1375,7 +1404,7 @@ function closeFeedbackForm() {
             submitParams.append("outfmt", "fa"); 
         }
 
-        console.log(`EBIサーバー(${toolName})へ計算依頼を送信中...`);
+        updateStatus(`[1/3] EBIサーバーへ ${algoLabel} 計算依頼を送信中...`, true);
         
         const submitResponse = await fetch(`${baseUrl}/run`, {
             method: "POST",
@@ -1392,8 +1421,14 @@ function closeFeedbackForm() {
         const jobId = await submitResponse.text();
         console.log(`受付完了。JobID: ${jobId} / 計算待ち...`);
 
+        let elapsedSec = 0;
+        updateStatus(`[2/3] EBIスーパーコンピュータで ${algoLabel} 計算中 (約${elapsedSec}秒経過)...`, true);
+
         while (true) {
             await new Promise(resolve => setTimeout(resolve, 3000)); 
+            elapsedSec += 3;
+            updateStatus(`[2/3] EBIスーパーコンピュータで ${algoLabel} 計算中 (約${elapsedSec}秒経過)...`, true);
+
             const statusResponse = await fetch(`${baseUrl}/status/${jobId}`);
             const status = await statusResponse.text();
 
@@ -1403,7 +1438,7 @@ function closeFeedbackForm() {
             }
         }
 
-        console.log("計算完了。結果を取得します。");
+        updateStatus(`[3/3] 計算完了。結果データを取得中...`, true);
         let resultResponse;
         
         if (toolName === 'mafft') {
@@ -2065,13 +2100,13 @@ function closeFeedbackForm() {
         const selectedAlgo = document.getElementById('msaAlgorithm').value;
         
         if (selectedAlgo === 'simple') {
-            runMSA(); 
+            await runMSA(); 
         } else if (selectedAlgo === 'mafft' || selectedAlgo === 'clustalo') {
             await runAdvancedMSA(selectedAlgo); 
         }
     }
 
-    function runMSA() {
+    async function runMSA() {
         isAligning = true;
         let targetSeqs = sequences.filter(s => !s.isFPrimerFasta && !s.isRPrimerFasta && s.isSelected !== false);
         if(targetSeqs.length < 2) { showToast("比較する塩基配列を2つ以上選択してください。", "warning"); isAligning = false; return; }
@@ -2079,65 +2114,77 @@ function closeFeedbackForm() {
         let maxLen = Math.max(...seqStrs.map(s => s.length));
         
         if(maxLen > 2000) { showToast("塩基配列が長すぎます。多重整列を実行する前にカットしてください。", "error"); isAligning = false; return; }
-        document.getElementById('statusText').innerText = "ステータス: 簡易アライメントを計算中...";
+        
         const msaAlgo = document.getElementById('msaAlgorithm');
         if (msaAlgo) msaAlgo.disabled = true;
-        document.getElementById('btnRunMSA').disabled = true;
+        const btnRun = document.getElementById('btnRunMSA');
+        if (btnRun) { btnRun.disabled = true; btnRun.innerHTML = '<span class="loader"></span> 計算中...'; }
         document.getElementById('btnResetMSA').disabled = true;
 
-        setTimeout(() => {
-            let refSeq = seqStrs[0];
-            let alignedSeqs = [refSeq];
-            
-            for(let k=1; k<seqStrs.length; k++) {
-                let targetSeq = seqStrs[k];
-                let [newRef, newTarget, ops] = alignPairNW(refSeq, targetSeq);
-                let updatedAligned = [];
-                for(let p=0; p<alignedSeqs.length; p++) {
-                    let oldSeq = alignedSeqs[p]; let newSeq = ""; let oldPtr = 0;
-                    for(let op of ops) {
-                        if(op === 1 || op === 2) { newSeq += oldSeq[oldPtr]; oldPtr++; } else if(op === 3) { newSeq += '-'; }
-                    }
-                    updatedAligned.push(newSeq);
+        updateStatus("[1/3] 簡易アライメントを準備中...", true);
+        await new Promise(resolve => setTimeout(resolve, 30));
+
+        let refSeq = seqStrs[0];
+        let alignedSeqs = [refSeq];
+        const totalPairs = seqStrs.length - 1;
+        
+        for(let k=1; k<seqStrs.length; k++) {
+            const currentSeqName = targetSeqs[k].name;
+            updateStatus(`[2/3] 塩基配列を順次ペアワイズ整列中 (${k}/${totalPairs}: ${currentSeqName})...`, true);
+            await new Promise(resolve => setTimeout(resolve, 0)); // UI再描画を開放してパルスを動かす
+
+            let targetSeq = seqStrs[k];
+            let [newRef, newTarget, ops] = alignPairNW(refSeq, targetSeq);
+            let updatedAligned = [];
+            for(let p=0; p<alignedSeqs.length; p++) {
+                let oldSeq = alignedSeqs[p]; let newSeq = ""; let oldPtr = 0;
+                for(let op of ops) {
+                    if(op === 1 || op === 2) { newSeq += oldSeq[oldPtr]; oldPtr++; } else if(op === 3) { newSeq += '-'; }
                 }
-                alignedSeqs = updatedAligned; alignedSeqs.push(newTarget); refSeq = newRef;
+                updatedAligned.push(newSeq);
             }
+            alignedSeqs = updatedAligned; alignedSeqs.push(newTarget); refSeq = newRef;
+        }
 
-            let tIdx = 0; let finalAlignLen = alignedSeqs[0].length;
-            for(let i=0; i<sequences.length; i++) {
-                if(!sequences[i].isFPrimerFasta && !sequences[i].isRPrimerFasta && sequences[i].isSelected !== false) {
-                    sequences[i].data = alignedSeqs[tIdx].split(''); tIdx++;
-                }
+        updateStatus("[3/3] 整列結果をグリッドへ反映・スコア計算中...", true);
+        await new Promise(resolve => setTimeout(resolve, 0));
+
+        let tIdx = 0; let finalAlignLen = alignedSeqs[0].length;
+        for(let i=0; i<sequences.length; i++) {
+            if(!sequences[i].isFPrimerFasta && !sequences[i].isRPrimerFasta && sequences[i].isSelected !== false) {
+                sequences[i].data = alignedSeqs[tIdx].split(''); tIdx++;
             }
+        }
 
-            let fPrimer = document.getElementById('pF').value.toUpperCase().replace(/[^A-Z]/g, '');
-            let rPrimer = document.getElementById('pR').value.toUpperCase().replace(/[^A-Z]/g, '');
-            let rPrimerRC = reverseComplement(rPrimer);
+        let fPrimer = document.getElementById('pF').value.toUpperCase().replace(/[^A-Z]/g, '');
+        let rPrimer = document.getElementById('pR').value.toUpperCase().replace(/[^A-Z]/g, '');
+        let rPrimerRC = reverseComplement(rPrimer);
 
-            sequences.forEach(s => {
-                if(s.isFPrimerFasta && fPrimer.length > 0) {
-                    let padding = Array(Math.max(0, finalAlignLen - fPrimer.length)).fill('-');
-                    s.data = fPrimer.split('').concat(padding); s.fStart = 0; s.fEnd = fPrimer.length;
-                } else if(s.isRPrimerFasta && rPrimerRC.length > 0) {
-                    let padding = Array(Math.max(0, finalAlignLen - rPrimerRC.length)).fill('-');
-                    s.data = padding.concat(rPrimerRC.split('')); s.rStart = padding.length; s.rEnd = finalAlignLen;
-                }
-            });
+        sequences.forEach(s => {
+            if(s.isFPrimerFasta && fPrimer.length > 0) {
+                let padding = Array(Math.max(0, finalAlignLen - fPrimer.length)).fill('-');
+                s.data = fPrimer.split('').concat(padding); s.fStart = 0; s.fEnd = fPrimer.length;
+            } else if(s.isRPrimerFasta && rPrimerRC.length > 0) {
+                let padding = Array(Math.max(0, finalAlignLen - rPrimerRC.length)).fill('-');
+                s.data = padding.concat(rPrimerRC.split('')); s.rStart = padding.length; s.rEnd = finalAlignLen;
+            }
+        });
 
-            updateMutationsAndRender(); saveState(); document.getElementById('btnResetMSA').disabled = false;
-            
-            const finalScore = calculateAlignmentScore();
-            document.getElementById('statusText').innerText = 
-                `ステータス: 簡易アライメント完了！変異と保存領域を確認してください。 [ Alignment Score: ${finalScore} ]`;
-            
-            document.getElementById('btnExportFasta').disabled = false; document.getElementById('btnExportClustal').disabled = false; 
-            document.getElementById('btnCopyFasta').disabled = false; document.getElementById('btnCopyClustal').disabled = false; 
-            document.getElementById('btnConserved').disabled = false;
-            const msaAlgo = document.getElementById('msaAlgorithm');
-            if (msaAlgo) msaAlgo.disabled = false;
-            isAligning = false;
-            updateMSAButtonState();
-        }, 50);
+        updateMutationsAndRender(); saveState(); document.getElementById('btnResetMSA').disabled = false;
+        
+        const finalScore = calculateAlignmentScore();
+        updateStatus(`🟢 簡易アライメント完了！変異と保存領域を確認してください。 [ Alignment Score: ${finalScore} ]`, false);
+        
+        document.getElementById('btnExportFasta').disabled = false; document.getElementById('btnExportClustal').disabled = false; 
+        document.getElementById('btnCopyFasta').disabled = false; document.getElementById('btnCopyClustal').disabled = false; 
+        document.getElementById('btnConserved').disabled = false;
+        
+        if (msaAlgo) msaAlgo.disabled = false;
+        if (btnRun) {
+            btnRun.innerHTML = '<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> 実行';
+        }
+        isAligning = false;
+        updateMSAButtonState();
     }
 
     async function runAdvancedMSA(toolName) {
@@ -2151,10 +2198,11 @@ function closeFeedbackForm() {
         });
 
         let algoNameForStatus = toolName === 'mafft' ? 'MAFFT' : 'Clustal Omega';
-        document.getElementById('statusText').innerText = `ステータス: EBIスーパーコンピュータで ${algoNameForStatus} 計算中... (数秒〜数十秒)`;
+        updateStatus(`EBIスーパーコンピュータで ${algoNameForStatus} 計算中... (数秒〜数十秒)`, true);
         const msaAlgo = document.getElementById('msaAlgorithm');
         if (msaAlgo) msaAlgo.disabled = true;
-        document.getElementById('btnRunMSA').disabled = true;
+        const btnRun = document.getElementById('btnRunMSA');
+        if (btnRun) { btnRun.disabled = true; btnRun.innerHTML = '<span class="loader"></span> 計算中...'; }
         document.getElementById('btnResetMSA').disabled = true;
 
         try {
@@ -2218,8 +2266,7 @@ function closeFeedbackForm() {
             const finalScore = calculateAlignmentScore();
             let algoName = toolName === 'mafft' ? 'MAFFT' : 'Clustal Omega';
             
-            document.getElementById('statusText').innerText = 
-                `ステータス: ${algoName} による高精度アライメント完了！ [ Alignment Score: ${finalScore} ]`;
+            updateStatus(`🟢 ${algoName} による高精度アライメント完了！ [ Alignment Score: ${finalScore} ]`, false);
             showToast(`${algoName} によるアライメントが完了しました！`, "success");
 
             unlockStep(3);
@@ -2227,7 +2274,7 @@ function closeFeedbackForm() {
         } catch (error) {
             console.error(`${algoNameForStatus}エラー:`, error);
             showToast("エラーが発生しました: " + error.message, "error");
-            document.getElementById('statusText').innerText = `ステータス: ${algoNameForStatus}計算に失敗しました。`;
+            updateStatus(`${algoNameForStatus}計算に失敗しました。`, false);
 
             const errMsg = (error && error.message) ? error.message : "";
             if (errMsg.toLowerCase().includes('fetch') || errMsg.includes('NetworkError')) {
@@ -2244,6 +2291,10 @@ function closeFeedbackForm() {
             isAligning = false;
             const msaAlgo = document.getElementById('msaAlgorithm');
             if (msaAlgo) msaAlgo.disabled = false;
+            const btnRun = document.getElementById('btnRunMSA');
+            if (btnRun) {
+                btnRun.innerHTML = '<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> 実行';
+            }
             updateMSAButtonState();
             if (sequences.filter(s => s.data.includes('-')).length > 0) {
                 document.getElementById('btnResetMSA').disabled = false;
