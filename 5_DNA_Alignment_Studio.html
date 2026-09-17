@@ -2781,8 +2781,7 @@ function closeFeedbackForm() {
        =================================================================== */
 
     // 離脱時に現在の作業内容を退避する
-    document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState !== 'hidden') return;
+    function saveWorkspaceDraft() {
         try {
             if (!sequences || sequences.length === 0) {
                 sessionStorage.removeItem('bio_edu_autosave_app5');
@@ -2790,10 +2789,12 @@ function closeFeedbackForm() {
             }
             const pFEl = document.getElementById('pF');
             const pREl = document.getElementById('pR');
+            const exportBtn = document.getElementById('btnExportFasta');
             sessionStorage.setItem('bio_edu_autosave_app5', JSON.stringify({
                 savedAt: Date.now(),
                 pF: pFEl ? pFEl.value : '',
                 pR: pREl ? pREl.value : '',
+                isExportUnlocked: exportBtn ? !exportBtn.disabled : false,
                 // data は配列のままだと肥大するため文字列化して保存する
                 sequences: sequences.map(s => ({
                     id: s.id,
@@ -2808,7 +2809,14 @@ function closeFeedbackForm() {
             // 容量超過などで保存できなくても、離脱そのものは妨げない
             console.warn('一時保存に失敗しました:', e);
         }
+    }
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+            saveWorkspaceDraft();
+        }
     });
+    window.addEventListener('pagehide', saveWorkspaceDraft);
 
     // 起動時に退避データを書き戻す
     function restoreFromAutosave() {
@@ -2841,6 +2849,14 @@ function closeFeedbackForm() {
         renderEditorAsync();
         unlockStep(2);
         setRoute('A');
+        const hasGap = sequences.some(s => s.data.includes('-'));
+        if (saved.isExportUnlocked || hasGap) {
+            unlockStep(3);
+        }
+        if (hasGap) {
+            const btnReset = document.getElementById('btnResetMSA');
+            if (btnReset) btnReset.disabled = false;
+        }
         saveState();
         showToast(`前回の作業データ（${sequences.length}件）を復元しました`, "info");
     }
