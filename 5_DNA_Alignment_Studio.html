@@ -2228,6 +2228,18 @@ function closeFeedbackForm() {
             console.error(`${algoNameForStatus}エラー:`, error);
             showToast("エラーが発生しました: " + error.message, "error");
             document.getElementById('statusText').innerText = `ステータス: ${algoNameForStatus}計算に失敗しました。`;
+
+            const errMsg = (error && error.message) ? error.message : "";
+            if (errMsg.toLowerCase().includes('fetch') || errMsg.includes('NetworkError')) {
+                showConfirm(
+                    "外部サーバー（EBI）と通信できませんでした（ローカルファイル実行や学校ネットワークによる通信制限の可能性があります）。\n\nブラウザ内蔵の「簡易MSA」で多重整列を実行しますか？",
+                    () => {
+                        const msaAlgo = document.getElementById('msaAlgorithm');
+                        if (msaAlgo) msaAlgo.value = 'simple';
+                        runMSA();
+                    }
+                );
+            }
         } finally {
             isAligning = false;
             const msaAlgo = document.getElementById('msaAlgorithm');
