@@ -1721,7 +1721,7 @@ function closeFeedbackForm() {
     function updateMSAButtonState() {
         const selectedCount = sequences.filter(s => s.isSelected !== false && !s.isFPrimerFasta && !s.isRPrimerFasta).length;
         const btnRunMSA = document.getElementById('btnRunMSA');
-        if (btnRunMSA) btnRunMSA.disabled = selectedCount < 2;
+        if (btnRunMSA) btnRunMSA.disabled = isAligning || selectedCount < 2;
     }
 
     const dropZone = document.getElementById('dropZone');
@@ -2080,6 +2080,10 @@ function closeFeedbackForm() {
         
         if(maxLen > 2000) { showToast("塩基配列が長すぎます。多重整列を実行する前にカットしてください。", "error"); isAligning = false; return; }
         document.getElementById('statusText').innerText = "ステータス: 簡易アライメントを計算中...";
+        const msaAlgo = document.getElementById('msaAlgorithm');
+        if (msaAlgo) msaAlgo.disabled = true;
+        document.getElementById('btnRunMSA').disabled = true;
+        document.getElementById('btnResetMSA').disabled = true;
 
         setTimeout(() => {
             let refSeq = seqStrs[0];
@@ -2129,7 +2133,10 @@ function closeFeedbackForm() {
             document.getElementById('btnExportFasta').disabled = false; document.getElementById('btnExportClustal').disabled = false; 
             document.getElementById('btnCopyFasta').disabled = false; document.getElementById('btnCopyClustal').disabled = false; 
             document.getElementById('btnConserved').disabled = false;
+            const msaAlgo = document.getElementById('msaAlgorithm');
+            if (msaAlgo) msaAlgo.disabled = false;
             isAligning = false;
+            updateMSAButtonState();
         }, 50);
     }
 
@@ -2145,6 +2152,8 @@ function closeFeedbackForm() {
 
         let algoNameForStatus = toolName === 'mafft' ? 'MAFFT' : 'Clustal Omega';
         document.getElementById('statusText').innerText = `ステータス: EBIスーパーコンピュータで ${algoNameForStatus} 計算中... (数秒〜数十秒)`;
+        const msaAlgo = document.getElementById('msaAlgorithm');
+        if (msaAlgo) msaAlgo.disabled = true;
         document.getElementById('btnRunMSA').disabled = true;
         document.getElementById('btnResetMSA').disabled = true;
 
@@ -2221,6 +2230,8 @@ function closeFeedbackForm() {
             document.getElementById('statusText').innerText = `ステータス: ${algoNameForStatus}計算に失敗しました。`;
         } finally {
             isAligning = false;
+            const msaAlgo = document.getElementById('msaAlgorithm');
+            if (msaAlgo) msaAlgo.disabled = false;
             updateMSAButtonState();
             if (sequences.filter(s => s.data.includes('-')).length > 0) {
                 document.getElementById('btnResetMSA').disabled = false;
