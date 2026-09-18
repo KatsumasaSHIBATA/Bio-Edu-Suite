@@ -189,6 +189,9 @@ SVGはネイティブ絵文字と異なり色を持たないため、アイコ�
 
 * **\[実行\] ボタン (▶︎)**: `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`  
 * **\[データ読込 / ドラッグ＆ドロップ\] エリア**: `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>`
+* **[コピー] ボタン (Copy / 二重シート型)**: `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`
+* **[保存 / ダウンロード] ボタン (Save / フロッピー型)**: `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>`
+
 
 **【各フェーズのヘッダー公式SVG (v32.0 固定版)】** 各アプリのヘッダー `<h1>` 内で使用するSVGアイコンは、Phaseごとに以下のものを**一字一句違わず**使用すること。 また、SVGが親要素の影響を受けて巨大化しレイアウトが崩れるのを防ぐため、必ずCSSに `.header-icon { width: 24px; height: 24px; flex-shrink: 0; }` を定義しておくこと。
 
