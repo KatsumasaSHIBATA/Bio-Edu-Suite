@@ -795,7 +795,58 @@ body {
             #teacherPresetSection .flex-row input { flex: 1 1 auto !important; width: 100% !important; }
             #teacherPresetSection .flex-row .btn { flex: 0 0 auto !important; width: auto !important; }
         }
-    </style>
+    /* --- UNIFIED DISABLED BUTTON MASTER CSS START --- */
+/* 操作不可ボタンの完全無効化規格（ガイドライン第11項②） */
+button:disabled,
+.btn:disabled,
+input[type="button"]:disabled,
+input[type="submit"]:disabled,
+.sidebar-action-btn:disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+    filter: grayscale(50%) !important;
+    box-shadow: none !important;
+    transform: none !important;
+    pointer-events: auto !important;
+}
+/* ホバー・アクティブ時の意図せぬ変色・沈み込みの物理遮断 */
+button:disabled:hover,
+.btn:disabled:hover,
+input[type="button"]:disabled:hover,
+input[type="submit"]:disabled:hover,
+button:disabled:active,
+.btn:disabled:active,
+input[type="button"]:disabled:active,
+input[type="submit"]:disabled:active {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+    filter: grayscale(50%) !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+/* ステータス連動型ボタンのマスター規格（ガイドライン第9項②） */
+.btn-dynamic:disabled {
+    background-color: var(--card-bg) !important;
+    color: var(--text-muted) !important;
+    border: 1px solid var(--border-color) !important;
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+.btn-dynamic:not(:disabled) {
+    background-color: var(--success);
+    color: white;
+    border-color: var(--success);
+    opacity: 1;
+    cursor: pointer;
+}
+.btn-dynamic:not(:disabled):hover {
+    filter: brightness(1.05);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+/* --- UNIFIED DISABLED BUTTON MASTER CSS END --- */
+</style>
 
 </head>
 <body class="app-mode no-select-ui">
