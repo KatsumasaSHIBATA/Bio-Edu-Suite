@@ -11,7 +11,7 @@ ARCHIVE_DIR = SCRIPTS_DIR / "archive"
 
 WHITELIST_EXACT = {
     "index.html", "lab_packs.html", "auth_sync.js", "preset_db.js",
-    ".clinerules", "manifest.json", "cleanup_audit.py"
+    ".clinerules", "manifest.json", "cleanup_audit.py", "integration_test_suite.py"
 }
 WHITELIST_DIRS = {
     "docs", "lib", "js"
@@ -71,7 +71,7 @@ def find_targets():
                     continue
                     
             # Scripts dir: old scripts
-            if root_path == SCRIPTS_DIR and file.endswith(".py") and file != "cleanup_audit.py":
+            if root_path == SCRIPTS_DIR and file.endswith(".py") and file not in ("cleanup_audit.py", "integration_test_suite.py"):
                 to_archive.append(file_path)
                 
     return to_delete, to_archive
