@@ -1,12 +1,13 @@
-/* js/session_workspace.js - Bio-Edu Suite Session Workspace Runtime (v35.2) */
+/* js/session_workspace.js - Bio-Edu Suite Session-Persistent Workspace Runtime (v35.4) */
 (function() {
     const PATH = window.location.pathname;
     const APP_FILE = PATH.split('/').pop() || 'index.html';
     const KEY_PREFIX = 'bio_edu_ws_' + APP_FILE;
 
-    // --- 1. 共通セッションストレージAPI ---
+    // --- 1. 共通セッションストレージAPI (手動バケツリレー境界を死守し個別アプリ内に限定) ---
     window.BioEduWorkspace = {
         save: function(key, data) {
+            if (window.isResetting) return;
             try {
                 sessionStorage.setItem(KEY_PREFIX + '_' + key, JSON.stringify(data));
             } catch (e) {
@@ -21,14 +22,23 @@
                 return null;
             }
         },
+        remove: function(key) {
+            try {
+                sessionStorage.removeItem(KEY_PREFIX + '_' + key);
+            } catch (e) {}
+        },
         clear: function() {
             window.isResetting = true;
-            Storage.prototype.setItem = function() {};
-            Object.keys(sessionStorage).forEach(k => {
-                if (k.startsWith('bio_edu_ws_')) {
-                    sessionStorage.removeItem(k);
-                }
-            });
+            try {
+                Storage.prototype.setItem = function() {};
+                Object.keys(sessionStorage).forEach(k => {
+                    if (k.startsWith('bio_edu_ws_')) {
+                        sessionStorage.removeItem(k);
+                    }
+                });
+            } catch (e) {
+                console.warn('[Workspace] Clear failed:', e);
+            }
         }
     };
 
@@ -179,7 +189,43 @@
         });
     }
 
-    // --- 4. 全アプリ共通：標準フォーム要素（textarea / input）の自律保護 ---
+    // --- 4. 全アプリ共通：標準フォーム要素の自律保護（150ms デバウンス ＆ ハイドレーション） ---
+    let debounceTimer = null;
+
+    function captureDomSnapshot() {
+        const inputs = document.querySelectorAll('textarea, input, select');
+        const snap = {};
+        inputs.forEach(el => {
+            if (!el.id || el.closest('#confirmModal') || el.closest('#accountModal') || el.closest('#feedbackModal') || el.id === 'pdbId') {
+                return;
+            }
+            if (el.type === 'file' || el.type === 'password' || el.type === 'button' || el.type === 'submit') {
+                return;
+            }
+            if (el.type === 'checkbox' || el.type === 'radio') {
+                snap[el.id] = { checked: el.checked, value: el.value, type: el.type };
+            } else {
+                snap[el.id] = { value: el.value, type: el.type };
+            }
+        });
+        return snap;
+    }
+
+    function saveWorkspaceSnapshot() {
+        if (window.isResetting) return;
+        const snap = captureDomSnapshot();
+        window.BioEduWorkspace.save('dom_inputs', snap);
+        triggerCloudSync();
+    }
+
+    function debouncedSave() {
+        if (window.isResetting || window.__bio_restoring_state) return;
+        if (debounceTimer) clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            saveWorkspaceSnapshot();
+        }, 150);
+    }
+
     function triggerCloudSync() {
         if (window.BioEduAuthSync && typeof window.BioEduAuthSync.saveCurrentWorkspace === 'function') {
             const data = {};
@@ -194,33 +240,53 @@
         }
     }
 
+    // 150ms デバウンスによる入力変更監視
+    document.addEventListener('input', (e) => {
+        if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT')) {
+            debouncedSave();
+        }
+    }, { passive: true });
+
+    document.addEventListener('change', (e) => {
+        if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT')) {
+            debouncedSave();
+        }
+    }, { passive: true });
+
+    // 画面離脱・非表示時の瞬間保存
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
-            const inputs = document.querySelectorAll('textarea, input[type="text"], input[type="number"], select');
-            const snap = {};
-            inputs.forEach(el => {
-                if (el.id && !el.closest('#confirmModal') && !el.closest('#accountModal') && el.id !== 'pdbId') {
-                    snap[el.id] = el.value;
-                }
-            });
-            window.BioEduWorkspace.save('dom_inputs', snap);
-            triggerCloudSync();
+            saveWorkspaceSnapshot();
         }
     });
 
-    window.addEventListener('pagehide', triggerCloudSync);
+    window.addEventListener('pagehide', () => {
+        saveWorkspaceSnapshot();
+    });
 
+    // 起動時ハイドレーション（UIステート復元・サイレント再計算）
     window.addEventListener('DOMContentLoaded', () => {
         const snap = window.BioEduWorkspace.load('dom_inputs');
         if (snap) {
+            window.__bio_restoring_state = true;
             Object.keys(snap).forEach(id => {
                 const el = document.getElementById(id);
-                if (el && (!el.value || el.value.trim() === '')) {
-                    el.value = snap[id];
-                    el.dispatchEvent(new Event('input', { bubbles: true }));
-                    el.dispatchEvent(new Event('change', { bubbles: true }));
+                if (!el) return;
+                const record = snap[id];
+                if (typeof record === 'object' && record !== null) {
+                    if (record.type === 'checkbox' || record.type === 'radio') {
+                        el.checked = record.checked;
+                    } else if (record.value !== undefined) {
+                        el.value = record.value;
+                    }
+                } else if (typeof record === 'string') {
+                    el.value = record;
                 }
+                // サイレント再計算・再描画トリガー
+                el.dispatchEvent(new Event('input', { bubbles: true }));
+                el.dispatchEvent(new Event('change', { bubbles: true }));
             });
+            window.__bio_restoring_state = false;
         }
 
         // 初期化ボタンが押された時のみセッションストレージを完全破棄
