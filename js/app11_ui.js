@@ -21,14 +21,37 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!trimmed || trimmed.startsWith('#')) continue; // メタデータ行・コメント行を完全無視
             // カンマ、タブ、スペースで区切る
             const parts = trimmed.split(/[\t, ]+/);
-            // 数値に変換可能なものだけを抽出する
-            let vector = parts.map(Number).filter(n => !isNaN(n));
-            if (vector.length > 0) {
-                data.push(vector);
+            if (parts.length < 2) continue;
+            const id = parts[0];
+            // 数値に変換可能なものだけを抽出する (2列目以降)
+            const values = parts.slice(1).map(Number);
+            if (values.some(n => isNaN(n))) continue; // ヘッダー行などの非数値行をスキップ
+            if (values.length > 0) {
+                data.push({ id: id, values: values });
             }
         }
         return data;
     }
+
+    // メタデータ自動検知（イベントリスナー追加）
+    function setupMetadataDetector(inputElement) {
+        if (!inputElement) return;
+        const checkMetadata = (e) => {
+            const text = e.target.value;
+            if (text.includes('# source: App_8')) {
+                showToast('アプリ⑧の系統樹データを受信しました');
+            } else if (text.includes('# source: App_5')) {
+                showToast('アプリ⑤のアライメントデータを受信しました');
+            } else if (text.includes('# source: App_9')) {
+                showToast('アプリ⑨の形態PCAデータを受信しました');
+            }
+        };
+        inputElement.addEventListener('input', checkMetadata);
+        inputElement.addEventListener('paste', checkMetadata);
+    }
+
+    setupMetadataDetector(mutationInput);
+    setupMetadataDetector(variationInput);
 
     // 距離マトリクスから下三角要素（対角線を除く）のペアを抽出
     function extractPairs(matrixA, matrixB) {
@@ -54,18 +77,38 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        const mutData = parseData(mutText);
-        const varData = parseData(varText);
+        const mutDataRaw = parseData(mutText);
+        const varDataRaw = parseData(varText);
 
-        if (mutData.length < 3 || varData.length < 3) {
+        if (mutDataRaw.length < 3 || varDataRaw.length < 3) {
             showSmartAlert("Mantel検定を実行するには、少なくとも3個体以上のデータが必要です。");
             return;
         }
 
-        if (mutData.length !== varData.length) {
-            showSmartAlert(`データ数が一致しません。\n突然変異データ: ${mutData.length}個\n変異データ: ${varData.length}個`);
+        // サンプルIDによる内部結合（Inner Join）と欠損サンプルのアラート提示
+        const mutMap = new Map(mutDataRaw.map(d => [d.id, d.values]));
+        const varMap = new Map(varDataRaw.map(d => [d.id, d.values]));
+
+        const mutIds = new Set(mutMap.keys());
+        const varIds = new Set(varMap.keys());
+
+        const missingInVar = [...mutIds].filter(id => !varIds.has(id));
+        const missingInMut = [...varIds].filter(id => !mutIds.has(id));
+        const allMissing = [...new Set([...missingInVar, ...missingInMut])];
+
+        if (allMissing.length > 0) {
+            showSmartAlert(`以下のサンプルのデータが不足しているため解析から除外されました: ${allMissing.join(', ')}`);
+        }
+
+        const commonIds = [...mutIds].filter(id => varIds.has(id)).sort();
+
+        if (commonIds.length < 3) {
+            showSmartAlert(`共通する有効なサンプルが ${commonIds.length} 個しかありません。Mantel検定には少なくとも3個体以上の共通サンプルが必要です。`);
             return;
         }
+
+        const mutData = commonIds.map(id => mutMap.get(id));
+        const varData = commonIds.map(id => varMap.get(id));
 
         try {
             // --- 追加: 入力データのプロット ---
