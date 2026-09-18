@@ -1644,6 +1644,7 @@ input[type="submit"]:disabled:active {
     const alertBox = document.getElementById('mutationAlertContainer');
     if (mutPositions.length > 0) {
       localStorage.setItem('bio_edu_suite_mutations', JSON.stringify(mutPositions));
+      localStorage.setItem('bio_edu_suite_mutations_timestamp', Date.now().toString());
       localStorage.setItem('bio_edu_suite_mutation_payload', JSON.stringify(mutationPayload));
       sessionStorage.setItem('bio_edu_suite_mutation_payload', JSON.stringify(mutationPayload));
       alertBox.style.display = 'block';

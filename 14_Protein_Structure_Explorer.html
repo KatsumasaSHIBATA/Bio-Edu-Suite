@@ -1424,8 +1424,8 @@ input[type="submit"]:disabled:active {
       const timestamp = localStorage.getItem('bio_edu_suite_mutations_timestamp');
       const now = new Date().getTime();
 
-      if (data && timestamp) {
-        if (now - parseInt(timestamp) > 3600000) { // 1時間(3600000ms)経過
+      if (data) {
+        if (timestamp && (now - parseInt(timestamp) > 3600000)) { // 1時間(3600000ms)経過時のみ破棄
           localStorage.removeItem('bio_edu_suite_mutations');
           localStorage.removeItem('bio_edu_suite_mutations_timestamp');
           localStorage.removeItem('bio_edu_suite_mutation_payload');
@@ -1735,6 +1735,12 @@ input[type="submit"]:disabled:active {
      document.getElementById('dataInfo').innerText = "単一表示モード";
  }
  extractSequenceAndChains();
+
+ // 連携データまたは入力済み残基番号が存在する場合、PDB描画完了時に自動ハイライトをキック
+ const resInput = document.getElementById('residueList');
+ if (resInput && resInput.value.trim() !== '') {
+   highlightFromInput();
+ }
 
  viewer.setClickable({}, true, function(atom) {
  if(!atom.resi) return;
@@ -2204,11 +2210,15 @@ input[type="submit"]:disabled:active {
  }
 
  function highlightFromInput() {
- document.getElementById('residueList').value.split(',').forEach(n => {
- let num = parseInt(n.trim());
- if(!isNaN(num)) selectedResidues.push({resi: num, chain: undefined});
- });
- updateVisuals();
+   const inputVal = document.getElementById('residueList').value;
+   if (!inputVal) return;
+   inputVal.split(',').forEach(n => {
+     let num = parseInt(n.trim());
+     if(!isNaN(num) && !selectedResidues.some(r => r.resi === num)) {
+       selectedResidues.push({resi: num, chain: undefined});
+     }
+   });
+   updateVisuals();
  }
 
  function clearHighlights() { selectedResidues = []; updateVisuals(); }
