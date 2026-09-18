@@ -1445,6 +1445,32 @@ function closeAccountSettings() { document.getElementById('accountModal').style.
 * **保存（🟩 Success）**: \[FASTA保存\] \[CLUSTAL保存\] 等。左に保存用SVGアイコンを配置。  
 * **コピー（⬜ Secondary）**: \[FASTAコピー\] 等。左にクリップボード用SVGアイコンを配置。  
 * **ステータス連動型ボタン（動的発色）**: 解析完了後などに「押せるようになったこと」を強調したいボタン（例：\[系統樹(Newick)をコピー\]）は、無効時（`:disabled`）は背景を白（Secondary）としてホバー時の色変化を完全に無効化し、有効時（`:not(:disabled)`）にのみ背景を緑（Success）などに発色させる専用スタイルを適用すること。
+  * **ステータス連動型ボタンのマスターCSS実装規格**:
+    無効時はSecondary（白/グレー）を維持し、有効時のみ発色させる挙動を全アプリで完全に統一するため、以下のCSS構造を標準とする。
+    ```css
+    /* 動的発色ボタンの基本（無効時） */
+    .btn-dynamic:disabled {
+        background-color: var(--card-bg) !important;
+        color: var(--text-muted) !important;
+        border: 1px solid var(--border-color) !important;
+        opacity: 0.6;
+        cursor: not-allowed !important;
+        box-shadow: none !important;
+        transform: none !important;
+    }
+    /* 動的発色ボタンの有効時（:not(:disabled)） */
+    .btn-dynamic:not(:disabled) {
+        background-color: var(--success); /* 役割に応じた色 */
+        color: white;
+        border-color: var(--success);
+        opacity: 1;
+        cursor: pointer;
+    }
+    .btn-dynamic:not(:disabled):hover {
+        filter: brightness(1.05);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    ```
 
 **③ より高度な解析ツールへ枠**
 
@@ -1534,6 +1560,9 @@ UI要素間のマージンやパディングは、視覚的リズムを整える
 * **ホバー（:hover）**: ユーザーに「押せる」ことを伝えるため、ホバー時にのみ微細な影（例: box-shadow: 0 2px 4px rgba(0,0,0,0.1);）と僅かな明るさの変化（filter: brightness(1.05);）を許可する。  
 * **アクティブ（:active）**: クリック時の沈み込みとして transform: scale(0.98); を適用する。  
 * **無効化（:disabled）**: 操作不可状態は opacity: 0.6; cursor: not-allowed; filter: grayscale(50%); box-shadow: none; とし、ホバーエフェクトを無効化する。
+  * **無効化（:disabled）の絶対規格**: 操作不可状態のボタンが、予期せぬホバー効果（:hover）やアクティブ効果（:active）の影響を一切受けないよう、詳細度を高めた以下のCSS仕様を全アプリで強制適用する。
+    `opacity: 0.5; cursor: not-allowed !important; filter: grayscale(50%); box-shadow: none !important; transform: none !important;`
+    ※ これにより、無効時の不要な沈み込みや影の出現を物理的に遮断する。
 
 **③ 入力フォーム（Input / Select）のフォーカスとフィット規定**
 
