@@ -132,6 +132,9 @@ AIによる多重直接編集によるトークン枯渇・コンテキスト破
 2. Clineが `scripts/` 配下に「多重挿入防止（冪等性）」を備えた処理スクリプト（例: `scripts/update_features.py`）を1ファイル作成する。
 3. Clineがターミナルで `python3 scripts/update_features.py` を実行する。
 4. Clineが `git diff` および `git status` で差分を検証し、意図通りの変更が行われたことを確認して完了する。
+5. **自律クリーンアップとアーカイブ退避の実行**:
+   - 差分検証がPASSした後、Clineはターミナルで直ちに `python3 scripts/cleanup_audit.py --apply` を実行する。
+   - 今回作成・実行した一括処理スクリプト（`scripts/update_XXXX.py` 等）が安全に `scripts/archive/` へ自動退避され、作業空間がクリーンな状態に復帰したことを確認して完了とする。
 
 ---
 
