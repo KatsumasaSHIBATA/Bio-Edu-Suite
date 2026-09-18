@@ -1164,6 +1164,7 @@ input[type="submit"]:disabled:active {
  追加
  </button>
  </div>
+            <div id="mutation_payload_info" class="dynamic-hint" style="display:none; margin-top:8px;"></div>
  <button id="btnEnv" class="btn btn-toggle btn-full-width" onclick="showEnvironmentAroundMutations()" data-tooltip="選択した突然変異部位の周囲5Åの構造を抽出し、結合状態をピンポイントで確認します">
  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
  <span class="btn-text">周辺5Å: OFF</span>
@@ -1416,34 +1417,63 @@ input[type="submit"]:disabled:active {
  themeWarningColor = getComputedStyle(document.documentElement).getPropertyValue('--warning').trim();
  });
 
- window.onload = function() {
- setTimeout(() => {
- const data = localStorage.getItem('bio_edu_suite_mutations');
- const timestamp = localStorage.getItem('bio_edu_suite_mutations_timestamp');
- const now = new Date().getTime();
- 
- if (data && timestamp) {
- if (now - parseInt(timestamp) > 3600000) { // 1時間(3600000ms)経過
- localStorage.removeItem('bio_edu_suite_mutations');
- localStorage.removeItem('bio_edu_suite_mutations_timestamp');
- showToast("前回のデータから1時間以上経過したため、古いデモデータを自動破棄しました。", "warning");
- } else {
- // データ同期 (値のセットのみ)
- try {
- let mutations = JSON.parse(data);
- if (Array.isArray(mutations)) {
- document.getElementById('residueList').value = mutations.join(', ');
- } else {
- document.getElementById('residueList').value = data; 
- }
- } catch(e) {
- document.getElementById('residueList').value = data; 
- }
- showToast("アプリ⑤または⑫で特定した突然変異部位のデータを受信・同期しました。「追加」ボタンを押してマッピングしてください。", "info");
- }
- }
- }, 500);
- };
+  window.onload = function() {
+    setTimeout(() => {
+      const data = localStorage.getItem('bio_edu_suite_mutations');
+      const payloadData = localStorage.getItem('bio_edu_suite_mutation_payload') || sessionStorage.getItem('bio_edu_suite_mutation_payload');
+      const timestamp = localStorage.getItem('bio_edu_suite_mutations_timestamp');
+      const now = new Date().getTime();
+
+      if (data && timestamp) {
+        if (now - parseInt(timestamp) > 3600000) { // 1時間(3600000ms)経過
+          localStorage.removeItem('bio_edu_suite_mutations');
+          localStorage.removeItem('bio_edu_suite_mutations_timestamp');
+          localStorage.removeItem('bio_edu_suite_mutation_payload');
+          sessionStorage.removeItem('bio_edu_suite_mutation_payload');
+          showToast("前回のデータから1時間以上経過したため、古いデモデータを自動破棄しました。", "warning");
+        } else {
+          // データ同期
+          try {
+            let mutations = JSON.parse(data);
+            if (Array.isArray(mutations)) {
+              document.getElementById('residueList').value = mutations.join(', ');
+            } else {
+              document.getElementById('residueList').value = data;
+            }
+          } catch(e) {
+            document.getElementById('residueList').value = data;
+          }
+          showToast("突然変異部位のデータを受信・同期しました。", "info");
+
+          // ペイロード（物性変化メタデータ）の展開
+          if (payloadData) {
+            try {
+              const payload = JSON.parse(payloadData);
+              let feedbackHtml = `<strong>【突然変異の物性変化メタデータ】</strong><br>`;
+              payload.forEach(m => {
+                let propChange = m.wtProp === m.mutProp ? `性質維持 (${m.wtProp})` : `<strong>性質変化 (${m.wtProp} ➔ ${m.mutProp})</strong>`;
+                feedbackHtml += `残基 ${m.pos}: ${m.wt} ➔ ${m.mut} [${propChange}]<br>`;
+              });
+              feedbackHtml += `この物性変化が、タンパク質の3D構造や立体機能にどう影響するか観察してください。`;
+              
+              const hintDiv = document.getElementById('mutation_payload_info');
+              if (hintDiv) {
+                hintDiv.innerHTML = feedbackHtml;
+                hintDiv.style.display = 'block';
+              }
+            } catch(e) {
+              console.error("Payload parse error", e);
+            }
+          }
+
+          // 自動ハイライトの実行
+          if (typeof highlightFromInput === 'function') {
+            highlightFromInput();
+          }
+        }
+      }
+    }, 500);
+  };
 
  function toggleRationale(event, id) {
  event.stopPropagation();
