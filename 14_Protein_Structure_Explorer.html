@@ -1451,8 +1451,8 @@ input[type="submit"]:disabled:active {
               const payload = JSON.parse(payloadData);
               let feedbackHtml = `<strong>【突然変異の物性変化メタデータ】</strong><br>`;
               payload.forEach(m => {
-                let propChange = m.wtProp === m.mutProp ? `性質維持 (${m.wtProp})` : `<strong>性質変化 (${m.wtProp} ➔ ${m.mutProp})</strong>`;
-                feedbackHtml += `残基 ${m.pos}: ${m.wt} ➔ ${m.mut} [${propChange}]<br>`;
+                let propChange = m.wt_property === m.mut_property ? `性質維持 (${m.wt_property})` : `<strong>性質変化 (${m.wt_property} ➔ ${m.mut_property})</strong>`;
+                feedbackHtml += `残基 ${m.position}: ${m.wt_amino_acid} ➔ ${m.mut_amino_acid} [${propChange}]<br>`;
               });
               feedbackHtml += `この物性変化が、タンパク質の3D構造や立体機能にどう影響するか観察してください。`;
               

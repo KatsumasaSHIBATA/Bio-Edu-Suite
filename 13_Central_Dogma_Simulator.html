@@ -1573,7 +1573,6 @@ input[type="submit"]:disabled:active {
     
     let mutPositions = [];
     let mutationPayload = [];
-    let mutationPayload = [];
     let limit = Math.min(rnaMut.length, 3000);
 
     for(let i=0; i < limit - 2; i+=3) {
@@ -1589,10 +1588,20 @@ input[type="submit"]:disabled:active {
       
       // 突然変異判定 (PDF規格準拠)
       let isMutated = (currentMRNAs.length > 1 && aaMut !== aaWT && aaWT !== 'X' && aaMut !== 'X');
-      
-      if (isMutated) mutPositions.push(pos);
 
       let aaData = aminoAcids[aaMut] || { code3: 'Unk', name: 'Unknown', property: '不明', groupClass: 'aa-unknown' };
+
+      if (isMutated) {
+           mutPositions.push(pos);
+           const dWT = aminoAcids[aaWT] || { code3: 'Unk', property: '不明' };
+           mutationPayload.push({
+               position: pos,
+               wt_amino_acid: dWT.code3,
+               wt_property: dWT.property,
+               mut_amino_acid: aaData.code3,
+               mut_property: aaData.property
+           });
+      }
 
       let div = document.createElement('div');
       let className = `codon-box ${aaData.groupClass}`;
