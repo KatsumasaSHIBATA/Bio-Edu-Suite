@@ -18,6 +18,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/numeric/1.2.6/numeric.min.js"></script>
+    <script src="lib/bio_math_engine.js"></script>
     <style>
         /* テーマカラー規格（ガイドライン第3項） */
         :root {
@@ -1044,10 +1045,24 @@ input[type="submit"]:disabled:active {
     <!-- 左ペイン: 制御パラメータ -->
     <div class="card" style="align-self: start;">
         <div class="card-header">
-            <span>Ⅰ. データ結合と設定</span>
+            <span>Ⅰ. データ入力と設定</span>
         </div>
         <div class="card-body">
             
+            <!-- 【追加】第18.3項に基づくモード切替ラジオUI -->
+            <div class="algo-selector" style="margin-bottom: 20px;">
+                <label>
+                    <input type="radio" name="analysis_mode" value="mode_gxe" checked onchange="switchApp12Mode()">
+                    <span>G×E 相互作用解析 (AMMI)</span>
+                </label>
+                <label>
+                    <input type="radio" name="analysis_mode" value="mode_diallel" onchange="switchApp12Mode()">
+                    <span>ダイアレル交配分析 (Griffing法)</span>
+                </label>
+            </div>
+
+            <!-- === G×E 相互作用解析パネル === -->
+            <div id="panel-gxe-controls">
             <div class="settings-group">
                 <h4>
                     <span>1. データ結合とマッピング</span>
@@ -1135,6 +1150,45 @@ input[type="submit"]:disabled:active {
                 </strong><br>
                 環境データを測る際、『温度』や『日照』だけでなく、『土壌のpH』や『水質』など、目に見えにくい要因が生物の形に決定的な影響を与えていることが多いです。突然変異（塩基配列の変化）によって生じた変異（多様性）と区別するためにも、育成メタデータをどれだけ正確に記録するかが統計遺伝学の命となります。
             </div>
+            </div><!-- /#panel-gxe-controls -->
+
+            <!-- === ダイアレル交配分析パネル (追加) === -->
+            <div id="panel-diallel-controls" style="display: none;">
+                <div class="settings-group">
+                    <h4>
+                        <span>1. ダイアレル交配マトリクス (TSV)</span>
+                        <button class="rationale-btn" onclick="toggleRationale(event, 'pop-diallel')">?</button>
+                    </h4>
+                    
+                    <div id="pop-diallel" class="rationale-text popover-panel">
+                        <strong>【根拠：Griffing Method 2 とは？】</strong><br>
+                        ・ダイアレル分析は、複数の親系統を総当たりで交配（F1）させ、その結果から親系統自身のポテンシャル（<strong>一般組合せ能力：GCA＝相加的効果</strong>）と、特定の組み合わせでのみ発揮される特異的な効果（<strong>特定組合せ能力：SCA＝顕性効果</strong>）を分離する手法です。<br>
+                        ・Method 2は、片交配（片方の親を母、もう一方を父とする組み合わせのみ）と親自身（自殖）を含めるデザインです。<br>
+                        ・Baker比率（GCAとSCAの分散比）は、後代の形質が相加的効果（固定可能）か顕性効果（F1のみで最大化）のどちらに依存しているかを示す重要指標です。
+                    </div>
+
+                    <div class="input-group">
+                        <label>片交配マトリクス (n × n)</label>
+                        <div id="drop-zone-diallel" class="drop-zone">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                            <span>ここをクリック、またはTSVをドラッグ＆ドロップ</span>
+                            <input type="file" id="file-input-diallel" accept=".csv, .tsv, .txt" style="display: none;">
+                        </div>
+                        <textarea id="diallel-input" rows="8" class="paste-area" placeholder="P1, P2, P3...
+P1, 100, 120, 110
+P2,  , 90, 130
+P3,  ,   , 95
+(親×親のマトリクスTSVをペースト)"></textarea>
+                    </div>
+
+                    <div style="margin-top: 15px;">
+                        <button id="runDiallelBtn" class="btn btn-primary" style="width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; font-weight: bold; padding: 10px;" onclick="runDiallelAnalysis()">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                            ダイアレル解析を実行
+                        </button>
+                    </div>
+                </div>
+            </div><!-- /#panel-diallel-controls -->
 
         </div>
     </div>
@@ -1145,6 +1199,8 @@ input[type="submit"]:disabled:active {
             <span>Ⅱ. 解析結果 ＆ ビジュアライゼーション</span>
         </div>
         <div class="card-body" style="background:var(--bg-color); padding:15px; display: flex; flex-direction: column; gap: 15px;">
+            <!-- === G×E 相互作用解析結果パネル === -->
+            <div id="panel-gxe-results" style="display: flex; flex-direction: column; gap: 15px; width: 100%;">
             
             <!-- 学術的アシストパネル（実験デザイン不一致時の警告・誘導） -->
             <div id="gxe-assist-container" style="display: none;"></div>
@@ -1260,6 +1316,81 @@ input[type="submit"]:disabled:active {
                     </div>
                 </details>
             </div>
+            </div><!-- /#panel-gxe-results -->
+
+            <!-- === ダイアレル交配分析結果パネル (追加) === -->
+            <div id="panel-diallel-results" style="display: none; flex-direction: column; gap: 15px; width: 100%;">
+                
+                <div class="settings-group" style="margin-bottom: 0; display: flex; flex-direction: column;">
+                    <h4>
+                        <span>2. 一般組合せ能力 (GCA: 相加的効果)</span>
+                    </h4>
+                    <div id="d3-diallel-gca" style="width: 100%; height: 240px; border: 1px solid var(--border-color); border-radius: 4px; background: #fafbfc; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center;">
+                        <span style="color: #7f8c8d; font-weight: bold;">データを入力して解析を実行してください...</span>
+                    </div>
+                </div>
+
+                <div class="settings-group" style="margin-bottom: 0; display: flex; flex-direction: column;">
+                    <h4>
+                        <span>3. 特定組合せ能力 (SCA: 顕性効果) ヒートマップ</span>
+                    </h4>
+                    <div id="d3-diallel-sca" style="width: 100%; height: 260px; border: 1px solid var(--border-color); border-radius: 4px; background: #fafbfc; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center;">
+                        <span style="color: #7f8c8d; font-weight: bold;">データを入力して解析を実行してください...</span>
+                    </div>
+                </div>
+
+                <div class="settings-group" style="margin-bottom: 0;">
+                    <h4>
+                        <span>4. ダイアレル分散分析表 (ANOVA) & Baker比率</span>
+                        <div style="display: flex; gap: 8px;">
+                            <button id="btn-save-diallel-csv" class="btn btn-secondary" disabled onclick="downloadDiallelCSV()" style="font-size: 11px; padding: 4px 8px;">CSV保存</button>
+                        </div>
+                    </h4>
+                    <div class="table-container" style="max-height: 250px; overflow-y: auto; background: var(--card-bg); border-radius: 4px; border: 1px solid var(--border-color);">
+                        <table id="diallel-anova-table" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>要因 (Source)</th>
+                                    <th>自由度 (df)</th>
+                                    <th>平方和 (SS)</th>
+                                    <th>平均平方 (MS)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">データ待機中</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="baker-ratio-container" style="margin-top: 10px; font-size: 13px; font-weight: bold; color: var(--primary);"></div>
+                </div>
+
+                <div class="settings-group" style="margin-bottom: 0;">
+                    <h4>
+                        <span>5. ヘテロシス (Heterosis) 評価</span>
+                    </h4>
+                    <div class="table-container" style="max-height: 200px; overflow-y: auto; background: var(--card-bg); border-radius: 4px; border: 1px solid var(--border-color);">
+                        <table id="diallel-heterosis-table" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>交配組合せ (F1)</th>
+                                    <th>中親ヘテロシス (MPH)</th>
+                                    <th>高親ヘテロシス (HPH)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">データ待機中</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                    <button id="btn-save-diallel-png" class="btn btn-success" disabled onclick="downloadDiallelPNG()" data-tooltip="描画された結果をPNG画像としてダウンロードします">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                        PNG保存
+                    </button>
+                </div>
+            </div><!-- /#panel-diallel-results -->
 
         </div>
     </div>
@@ -2452,6 +2583,323 @@ input[type="submit"]:disabled:active {
         toast.className = className;
         setTimeout(() => { toast.classList.remove("show"); }, 3000);
     }
+    // === ダイアレル交配分析用ロジック ===
+    let diallelState = {
+        hasRun: false,
+        results: null,
+        parentNames: [],
+        matrix: []
+    };
+
+    function switchApp12Mode() {
+        const mode = document.querySelector('input[name="analysis_mode"]:checked').value;
+        if (mode === 'mode_gxe') {
+            document.getElementById('panel-gxe-controls').style.display = 'block';
+            document.getElementById('panel-gxe-results').style.display = 'flex';
+            document.getElementById('panel-diallel-controls').style.display = 'none';
+            document.getElementById('panel-diallel-results').style.display = 'none';
+        } else {
+            document.getElementById('panel-gxe-controls').style.display = 'none';
+            document.getElementById('panel-gxe-results').style.display = 'none';
+            document.getElementById('panel-diallel-controls').style.display = 'block';
+            document.getElementById('panel-diallel-results').style.display = 'flex';
+        }
+    }
+
+    function parseDiallelInput(text) {
+        const lines = text.trim().split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        if (lines.length < 2) throw new Error("データが不足しています。");
+        const sep = lines[0].includes('\t') ? '\t' : (lines[0].includes(',') ? ',' : ' ');
+        const parentNames = lines[0].split(sep).map(s => s.trim()).filter(s => s.length > 0);
+        
+        if (parentNames[0].toLowerCase() === 'parent' || parentNames[0].toLowerCase() === 'cross' || parentNames[0] === '') {
+            parentNames.shift();
+        }
+
+        const n = parentNames.length;
+        let matrix = Array(n).fill(null).map(() => Array(n).fill(null));
+
+        for (let i = 1; i < lines.length; i++) {
+            const row = lines[i].split(sep).map(s => s.trim()).filter(s => s.length > 0);
+            let vals = row;
+            if (row.length > n && isNaN(parseFloat(row[0]))) {
+                vals = row.slice(1);
+            } else if (row.length === n + 1 && isNaN(parseFloat(row[0]))) {
+                vals = row.slice(1);
+            }
+            
+            for (let j = 0; j < vals.length; j++) {
+                if (i - 1 < n && j < n) {
+                    const val = parseFloat(vals[j]);
+                    matrix[i - 1][j] = isNaN(val) ? null : val;
+                }
+            }
+        }
+        return { parentNames, matrix };
+    }
+
+    function runDiallelAnalysis() {
+        try {
+            const text = document.getElementById('diallel-input').value;
+            if (!text) throw new Error("ダイアレルマトリクスが入力されていません。");
+            const { parentNames, matrix } = parseDiallelInput(text);
+            
+            if (typeof computeDiallelAnalysis !== 'function') {
+                throw new Error("ダイアレル計算エンジン（lib/bio_math_engine.js）が読み込まれていません。");
+            }
+            
+            const results = computeDiallelAnalysis(matrix, parentNames);
+            
+            diallelState.results = results;
+            diallelState.parentNames = parentNames;
+            diallelState.matrix = matrix;
+            diallelState.hasRun = true;
+
+            renderDiallelGCA();
+            renderDiallelSCA();
+            renderDiallelANOVA();
+            renderDiallelHeterosis();
+
+            document.getElementById('btn-save-diallel-csv').disabled = false;
+            document.getElementById('btn-save-diallel-png').disabled = false;
+            showToast("ダイアレル解析が完了しました", "success");
+        } catch (e) {
+            console.error(e);
+            showToast("エラー: " + e.message, "error");
+        }
+    }
+    function renderDiallelGCA() {
+        const container = document.getElementById('d3-diallel-gca');
+        if (!container) return;
+        container.innerHTML = '';
+        const data = diallelState.results.gcaEffects || diallelState.results.gca || [];
+        const parents = diallelState.parentNames;
+
+        const margin = {top: 20, right: 20, bottom: 40, left: 50},
+              width = container.clientWidth - margin.left - margin.right,
+              height = container.clientHeight - margin.top - margin.bottom;
+
+        const svg = d3.select(container).append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        const x = d3.scaleBand().range([0, width]).domain(parents).padding(0.2);
+        const values = data.map(d => typeof d === 'object' && d !== null ? d.effect : d);
+        const maxAbs = d3.max(values, d => Math.abs(d)) || 1;
+        const y = d3.scaleLinear().domain([-maxAbs * 1.2, maxAbs * 1.2]).range([height, 0]);
+
+        svg.append("g")
+            .attr("transform", `translate(0,${y(0)})`)
+            .call(d3.axisBottom(x).tickSizeOuter(0));
+
+        svg.append("g").call(d3.axisLeft(y));
+
+        svg.selectAll(".bar")
+            .data(values)
+            .enter().append("rect")
+            .attr("class", "bar")
+            .attr("x", (d, i) => x(parents[i]))
+            .attr("width", x.bandwidth())
+            .attr("y", d => d < 0 ? y(0) : y(d))
+            .attr("height", d => Math.abs(y(d) - y(0)))
+            .attr("fill", d => d < 0 ? "#e74c3c" : "#3498db");
+    }
+
+    function renderDiallelSCA() {
+        const container = document.getElementById('d3-diallel-sca');
+        if (!container) return;
+        container.innerHTML = '';
+        const rawSca = diallelState.results.scaEffects || diallelState.results.sca || [];
+        const parents = diallelState.parentNames;
+        const n = parents.length;
+
+        let scaMatrix = Array(n).fill(null).map(() => Array(n).fill(null));
+        if (Array.isArray(rawSca) && rawSca.length > 0 && typeof rawSca[0] === 'object' && 'parent1' in rawSca[0]) {
+            rawSca.forEach(item => {
+                const i = parents.indexOf(item.parent1);
+                const j = parents.indexOf(item.parent2);
+                if (i >= 0 && j >= 0) {
+                    scaMatrix[i][j] = item.effect;
+                    scaMatrix[j][i] = item.effect;
+                }
+            });
+        } else if (Array.isArray(rawSca)) {
+            scaMatrix = rawSca;
+        }
+
+        const margin = {top: 30, right: 30, bottom: 40, left: 50},
+              width = container.clientWidth - margin.left - margin.right,
+              height = container.clientHeight - margin.top - margin.bottom;
+
+        const svg = d3.select(container).append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        const x = d3.scaleBand().range([0, width]).domain(parents).padding(0.05);
+        const y = d3.scaleBand().range([height, 0]).domain([...parents].reverse()).padding(0.05);
+
+        let flatSCA = [];
+        for (let i = 0; i < n; i++) {
+            for (let j = 0; j < n; j++) {
+                if (scaMatrix[i][j] !== null && scaMatrix[i][j] !== undefined) flatSCA.push(scaMatrix[i][j]);
+            }
+        }
+        const maxSCA = d3.max(flatSCA, d => Math.abs(d)) || 1;
+        
+        const colorScale = (val) => {
+            const norm = val / maxSCA; 
+            if (norm > 0) return `rgba(52, 152, 219, ${Math.min(1, Math.max(0.15, norm))})`;
+            return `rgba(231, 76, 60, ${Math.min(1, Math.max(0.15, -norm))})`;
+        };
+
+        svg.append("g")
+            .attr("transform", `translate(0,${height})`)
+            .call(d3.axisBottom(x));
+
+        svg.append("g").call(d3.axisLeft(y));
+
+        for (let i = 0; i < n; i++) {
+            for (let j = 0; j < n; j++) {
+                if (scaMatrix[i][j] !== null && scaMatrix[i][j] !== undefined) {
+                    svg.append("rect")
+                        .attr("x", x(parents[j]))
+                        .attr("y", y(parents[i]))
+                        .attr("width", x.bandwidth())
+                        .attr("height", y.bandwidth())
+                        .style("fill", colorScale(scaMatrix[i][j]));
+                    
+                    svg.append("text")
+                        .attr("x", x(parents[j]) + x.bandwidth() / 2)
+                        .attr("y", y(parents[i]) + y.bandwidth() / 2)
+                        .attr("dy", ".35em")
+                        .attr("text-anchor", "middle")
+                        .style("fill", "#000")
+                        .style("font-size", "10px")
+                        .style("font-weight", "bold")
+                        .text(scaMatrix[i][j].toFixed(2));
+                }
+            }
+        }
+    }
+    function renderDiallelANOVA() {
+        const tbody = document.querySelector('#diallel-anova-table tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        const anova = diallelState.results.anova;
+        
+        const gcaData = anova.GCA || anova.gca || { df: '-', ss: 0, ms: 0 };
+        const scaData = anova.SCA || anova.sca || { df: '-', ss: 0, ms: 0 };
+        const errData = anova.Error || anova.error || { df: '-', ss: 0, ms: 0 };
+        const totData = anova.Total || anova.total || { df: '-', ss: 0, ms: '-' };
+
+        const rows = [
+            { source: 'GCA (相加的効果)', ...gcaData },
+            { source: 'SCA (顕性効果)', ...scaData },
+            { source: 'Error (誤差)', ...errData },
+            { source: 'Total (全体)', ...totData }
+        ];
+
+        rows.forEach(r => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${r.source}</td>
+                <td>${r.df}</td>
+                <td>${typeof r.ss === 'number' ? r.ss.toFixed(2) : r.ss}</td>
+                <td>${typeof r.ms === 'number' ? r.ms.toFixed(2) : '-'}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        const baker = diallelState.results.bakerRatio || 0;
+        const bakerEl = document.getElementById('baker-ratio-container');
+        if (bakerEl) bakerEl.innerText = `Baker比率 (2×MS_GCA / (2×MS_GCA + MS_SCA)): ${baker.toFixed(3)}`;
+    }
+
+    function renderDiallelHeterosis() {
+        const tbody = document.querySelector('#diallel-heterosis-table tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        const h = diallelState.results.heterosis;
+        if (!h || h.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">データなし</td></tr>';
+            return;
+        }
+
+        h.forEach(item => {
+            const tr = document.createElement('tr');
+            const crossName = item.cross || (item.parent1 && item.parent2 ? `${item.parent1} × ${item.parent2}` : '-');
+            const mphVal = typeof item.midParent === 'number' ? item.midParent : (typeof item.mph === 'number' ? item.mph : 0);
+            const hphVal = typeof item.highParent === 'number' ? item.highParent : (typeof item.hph === 'number' ? item.hph : (typeof item.highParentHeterosis === 'number' ? item.highParentHeterosis : 0));
+            tr.innerHTML = `
+                <td>${crossName}</td>
+                <td>${mphVal >= 0 ? '+' : ''}${mphVal.toFixed(2)}%</td>
+                <td>${hphVal >= 0 ? '+' : ''}${hphVal.toFixed(2)}%</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function downloadDiallelCSV() {
+        if (!diallelState.hasRun) return;
+        const csv = ["要因,自由度,平方和,平均平方"];
+        const anova = diallelState.results.anova;
+        const gcaData = anova.GCA || anova.gca;
+        const scaData = anova.SCA || anova.sca;
+        const errData = anova.Error || anova.error;
+        const totData = anova.Total || anova.total;
+
+        csv.push(`"GCA (相加的効果)",${gcaData.df},${gcaData.ss.toFixed(4)},${gcaData.ms ? gcaData.ms.toFixed(4) : '-'}`);
+        csv.push(`"SCA (顕性効果)",${scaData.df},${scaData.ss.toFixed(4)},${scaData.ms ? scaData.ms.toFixed(4) : '-'}`);
+        csv.push(`"Error (誤差)",${errData.df},${errData.ss.toFixed(4)},${errData.ms ? errData.ms.toFixed(4) : '-'}`);
+        csv.push(`"Total (全体)",${totData.df},${totData.ss.toFixed(4)},-`);
+        
+        const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv.join('\n')], {type: 'text/csv;charset=utf-8;'});
+        const url = URL.createObjectURL(blob);
+        const a_el = document.createElement('a');
+        a_el.href = url;
+        a_el.download = `BioEdu_Diallel_ANOVA_${getYYYYMMDD()}.csv`;
+        a_el.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function downloadDiallelPNG() {
+        showToast("ダイアレル結果のPNG保存は各グラフSVGのエクスポート機能より実行可能です", "info");
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const dropZone = document.getElementById('drop-zone-diallel');
+        const fileInput = document.getElementById('file-input-diallel');
+        const textArea = document.getElementById('diallel-input');
+        
+        if (dropZone && fileInput && textArea) {
+            dropZone.addEventListener('click', () => fileInput.click());
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                if (e.dataTransfer.files.length) {
+                    const reader = new FileReader();
+                    reader.onload = (evt) => { textArea.value = evt.target.result; };
+                    reader.readAsText(e.dataTransfer.files[0]);
+                }
+            });
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length) {
+                    const reader = new FileReader();
+                    reader.onload = (evt) => { textArea.value = evt.target.result; };
+                    reader.readAsText(e.target.files[0]);
+                }
+            });
+        }
+    });
 
     window.onload = function() {
         initTooltips(); 
