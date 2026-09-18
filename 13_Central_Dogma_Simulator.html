@@ -2139,7 +2139,7 @@ function closeFeedbackForm() {
             return;
         }
         // 現在の画面のテキストエリアおよびセッションデータを収集
-        const activeTextarea = document.querySelector('textarea.paste-area, textarea#dnaInput, textarea#fastaInput, textarea#chain-code-input, textarea#pasteArea');
+        const activeTextarea = document.querySelector('textarea.paste-area, textarea#dnaInput, textarea#fastaInput, textarea#chain-code-input, textarea#pasteArea, input#pdbId');
         const seq = activeTextarea ? activeTextarea.value.trim() : '';
         const sessionSnap = {};
         for (let i = 0; i < sessionStorage.length; i++) {

@@ -186,7 +186,7 @@ export async function importMasterPreset(taskCode) {
       const data = snap.data();
       if (data.payload) {
         // ① アクティブなテキストエリアへ展開
-        const activeTextarea = document.querySelector('textarea.paste-area, textarea#dnaInput, textarea#fastaInput, textarea#chain-code-input, textarea#pasteArea');
+        const activeTextarea = document.querySelector('textarea.paste-area, textarea#dnaInput, textarea#fastaInput, textarea#chain-code-input, textarea#pasteArea, input#pdbId');
         if (activeTextarea && data.payload.sequence) {
           activeTextarea.value = data.payload.sequence;
           activeTextarea.dispatchEvent(new Event('input', { bubbles: true }));
@@ -198,6 +198,7 @@ export async function importMasterPreset(taskCode) {
             sessionStorage.setItem(k, data.payload.sessionData[k]);
           });
         }
+        window.dispatchEvent(new CustomEvent('bio_edu_preset_loaded', { detail: { taskCode: cleanCode, payload: data.payload } }));
         if (typeof showToast === 'function') showToast(`課題「${cleanCode}」を展開しました`, "success");
       }
     } else {

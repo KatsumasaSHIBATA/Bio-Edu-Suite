@@ -1914,13 +1914,16 @@ input[type="submit"]:disabled:active {
             if (typeof showToast === 'function') showToast('発行する課題コードを入力してください', 'warning');
             return;
         }
-        // 現在のセッションデータを収集
+        // 現在の画面のテキストエリアおよびセッションデータを収集
+        const activeTextarea = document.querySelector('textarea.paste-area, textarea#dnaInput, textarea#fastaInput, textarea#chain-code-input, textarea#pasteArea, input#pdbId');
+        const seq = activeTextarea ? activeTextarea.value.trim() : '';
         const sessionSnap = {};
         for (let i = 0; i < sessionStorage.length; i++) {
             const k = sessionStorage.key(i);
             if (k) sessionSnap[k] = sessionStorage.getItem(k);
         }
         const payload = {
+            sequence: seq,
             sessionData: sessionSnap,
             appName: document.title,
             registeredAt: Date.now()
