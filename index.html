@@ -1329,17 +1329,7 @@ input[type="submit"]:disabled:active {
   </div>
   
   <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
-          .then(registration => {
-            console.log('ServiceWorker registration successful with scope: ', registration.scope);
-          })
-          .catch(err => {
-            console.log('ServiceWorker registration failed: ', err);
-          });
-      });
-    }
+
 
     const STORAGE_KEY = 'bio_edu_samples';
     let samples = [];
@@ -1348,7 +1338,7 @@ input[type="submit"]:disabled:active {
     // IndexedDB ユーティリティ (ハイブリッド構成用)
     // ==========================================
     const DB_NAME = 'BioEdu_IndexedDB';
-    const DB_VERSION = 1;
+    const DB_VERSION = 2;
     const STORE_SAMPLES = 'sample_binaries';
     const STORE_BULK = 'bulk_transfer_queue';
     let dbPromise = null;
@@ -2457,5 +2447,6 @@ function closeFeedbackForm() {
 
   <!-- /* [Bio-Edu Suite v35.1] Session-Persistent Workspace Standard */ -->
   <script src="js/session_workspace.js"></script>
+  <script src="js/pwa_updater.js"></script>
 </body>
 </html>

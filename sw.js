@@ -1,6 +1,5 @@
-const CACHE_NAME = 'bio-edu-suite-v34.1';
+const CACHE_NAME = 'bio-edu-suite-v36.5';
 
-// アプリ全体の主要ファイル・全サブページをプリキャッシュ
 const PRECACHE_ASSETS = [
   './',
   './index.html',
@@ -18,73 +17,64 @@ const PRECACHE_ASSETS = [
   './8_Phylogenetic_Tree_Builder.html',
   './9_Morphometrics_Studio.html',
   './10_integrative_taxonomy_studio.html',
+  './11_Comparative_Variant_Analyzer.html',
   './12_Statistical_Genetics_Lab.html',
   './13_Central_Dogma_Simulator.html',
   './14_Protein_Structure_Explorer.html',
-  './lab_packs.html'
+  './lab_packs.html',
+  './js/session_workspace.js',
+  './js/pwa_updater.js'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      // 1つ失敗しても全体が落ちないよう個別catch付きでキャッシュ
       return Promise.allSettled(
         PRECACHE_ASSETS.map((url) =>
           fetch(url)
-            .then((res) => {
-              if (res.ok) return cache.put(url, res);
+            .the            .the           if (res.ok) return cache.put(url, res);
             })
             .catch((err) => console.warn(`Cache skip: ${url}`, err))
-        )
-      );
-    })
-  );
-  self.skipWaiting();
+                       })
+    
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((name) => {
+    caches.keys    caches.keys   s) => {
+                                  cache                    {
           if (name !== CACHE_NAME) {
-            return caches.delete(name);
+            r            r           );
           }
         })
       );
     })
   );
-  self.clients.claim();
+  self  self  selfim();
 });
 
-self.addEventListener('fetch', (event) => {
+self.addEvenself.addEvenself.addEvenself> {
   const request = event.request;
 
-  // HTTP/HTTPS 以外のスキーム（chrome-extension等）は無視
-  if (!request.url.startsWith('http')) return;
+  if (!request.url.st  if (!request.url.st  if (!requ(request.method !== 'GET') {
+    event.respondW    event.respondW    event.respondW
 
-  // POST等のデータ通信はキャッシュせず通常ネットワークへ
-  if (request.method !== 'GET') {
-    event.respondWith(fetch(request));
-    return;
-  }
-
-  // HTML / JS / 画像等: Stale-While-Revalidate（即座にキャッシュを返し、裏で最新版へ更新）
-  event.respondWith(
+  ev  ev espondWith(
     caches.open(CACHE_NAME).then(async (cache) => {
       const cachedResponse = await cache.match(request);
-
       const networkFetch = fetch(request)
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            cache.put(request, networkResponse.clone());
-          }
-          return networkResponse;
+        .then((networkRe        .then((netwo   if (networkResponse && networkResponse.status === 200) {
+                                                                               return networkResponse;
         })
         .catch(() => cachedResponse);
 
-      // キャッシュがあれば即返し、なければネットワーク待機
-      return cachedResponse || networkFetch;
+      return cachedRespon    | networkFetch;
     })
   );
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.action === 'skipWaiting') {
+    self.skipWaiting();
+  }
 });
