@@ -1738,18 +1738,35 @@ function closeFeedbackForm() {
                         if (sample.dnaData) {
                             let lines = sample.dnaData.split('\n');
                             let seq = "";
-                            let headerName = sample.name;
                             
-                            if (lines.length > 0 && lines[0].startsWith('>')) {
-                                headerName = lines[0].substring(1).trim();
+                            // dnaData の先頭行に古いFASTAヘッダー（>...）が含まれていれば除去
+                            if (lines.length > 0 && lines[0].trim().startsWith('>')) {
                                 seq = lines.slice(1).join('').toUpperCase().replace(/[^A-Z-]/g, '');
                             } else {
                                 seq = lines.join('').toUpperCase().replace(/[^A-Z-]/g, '');
                             }
 
+                            // 生物名は Dashboard から渡された sample.name を最優先保護
+                            let displayName = sample.name ? sample.name.trim() : "";
+                            let specimenId = sample.id ? sample.id.trim() : "";
+
+                            // もし sample.name が空、または「Unknown_Sample」の場合は lines[0] からサルベージ
+                            if (!displayName || displayName === "Unknown_Sample") {
+                                if (lines.length > 0 && lines[0].trim().startsWith('>')) {
+                                    displayName = lines[0].trim().substring(1).split('|')[0].trim();
+                                }
+                            }
+
+                            // displayName 自体に「ID_名前」が含まれている場合は分離
+                            const match = displayName.match(/^(\d{8}_\d{6})_(.+)$/);
+                            if (match) {
+                                if (!specimenId) specimenId = match[1];
+                                displayName = match[2];
+                            }
+
                             sequences.push({
-                                id: sample.id, 
-                                name: headerName,
+                                id: specimenId, 
+                                name: displayName || "Sequence",
                                 data: seq.split(''),
                                 isFPrimerFasta: false,
                                 isRPrimerFasta: false,
@@ -1849,23 +1866,50 @@ function closeFeedbackForm() {
 
     function parseFasta(text, defaultName) {
         const lines = text.split('\n');
-        let currentName = "", currentSeq = "";
+        let currentHeader = "", currentSeq = "";
+
+        const pushSeq = (header, seqStr) => {
+            if (!seqStr) return;
+            let id = null;
+            let name = header || defaultName;
+            
+            // パイプメタデータ等の除去
+            name = name.split('|')[0].trim();
+
+            // 「ID_名前」パターンの分解
+            const match = name.match(/^(\d{8}_\d{6})_(.+)$/);
+            if (match) {
+                id = match[1];
+                name = match[2];
+            } else if (/^\d{8}_\d{6}$/.test(name)) {
+                id = name;
+            }
+
+            sequences.push({
+                id: id,
+                name: name,
+                data: seqStr.split(''),
+                isFPrimerFasta: false,
+                isRPrimerFasta: false,
+                isSelected: true
+            });
+        };
+
         lines.forEach(line => {
             line = line.trim();
             if (line.startsWith('>')) {
-                if (currentName) {
-                    sequences.push({ id: null, name: currentName, data: currentSeq.split(''), isFPrimerFasta: false, isRPrimerFasta: false, isSelected: true });
+                if (currentHeader || currentSeq) {
+                    pushSeq(currentHeader, currentSeq);
                 }
-                currentName = line.substring(1).trim();
+                currentHeader = line.substring(1).trim();
                 currentSeq = "";
             } else { 
                 currentSeq += line.toUpperCase().replace(/[^A-Z-]/g, ''); 
             }
         });
-        if (currentName) {
-            sequences.push({ id: null, name: currentName, data: currentSeq.split(''), isFPrimerFasta: false, isRPrimerFasta: false, isSelected: true });
-        } else if (currentSeq) {
-            sequences.push({ id: null, name: defaultName, data: currentSeq.split(''), isFPrimerFasta: false, isRPrimerFasta: false, isSelected: true });
+
+        if (currentHeader || currentSeq) {
+            pushSeq(currentHeader, currentSeq);
         }
     }
 
@@ -2761,13 +2805,30 @@ function closeFeedbackForm() {
     }
 
     function getFastaHeader(s) {
-        const id = s.id ? s.id.trim().replace(/,/g, '') : "";
-        const cleanName = s.name ? s.name.trim().replace(/,/g, '').replace(/\s+/g, '_') : "";
+        let id = s.id ? s.id.trim().replace(/,/g, '') : "";
+        let cleanName = s.name ? s.name.trim().replace(/,/g, '').replace(/\s+/g, '_') : "";
+
+        // パイプやメタデータ注釈の除去
+        cleanName = cleanName.split('|')[0].trim();
+
+        // cleanName が「ID_名前」形式になっている場合を分解
+        const match = cleanName.match(/^(\d{8}_\d{6})_(.+)$/);
+        if (match) {
+            if (!id) id = match[1];
+            cleanName = match[2];
+        }
+
+        // cleanName 自体が単なるID（数字列）で、別個に id もある場合の二重化阻止
+        if (/^\d{8}_\d{6}$/.test(cleanName)) {
+            if (id && id !== cleanName) {
+                // どちらか一方のみを採用
+                cleanName = "";
+            } else if (id === cleanName) {
+                cleanName = "";
+            }
+        }
 
         if (id && cleanName) {
-            // 二重化防止：すでに名前にIDが含まれている場合はそのまま使用
-            if (cleanName.includes(id)) return `>${cleanName}`;
-            if (id.includes(cleanName)) return `>${id}`;
             return `>${id}_${cleanName}`;
         }
         if (id) return `>${id}`;
