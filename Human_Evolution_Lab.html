@@ -795,6 +795,9 @@ input[type="submit"]:disabled:active {
         const [measurements, setMeasurements] = useState({});
         const [copyStatus, setCopyStatus] = useState({});
 
+        // 第7.4項: Session-Persistent Workspace Standard (ハイドレーション判定用ref)
+        const isHydrated = React.useRef(false);
+
         // 2D Digitizer states
         const [uploadedImage, setUploadedImage] = useState(null);
         const [measureMode, setMeasureMode] = useState('A');
@@ -834,26 +837,54 @@ input[type="submit"]:disabled:active {
             };
         }, []);
 
+        // 第7.4項: Session-Persistent Workspace Standard (ハイドレーション)
         useEffect(() => {
             const savedData = sessionStorage.getItem('bio_edu_workspace_human_evolution');
             if (savedData && !window.isResetting) {
                 try {
                     const parsed = JSON.parse(savedData);
-                    if (parsed.measurements) { setMeasurements(parsed.measurements); return; }
-                } catch (e) { console.error(e); }
+                    if (parsed.measurements) {
+                        setMeasurements(parsed.measurements);
+                    }
+                    if (parsed.uploadedImage) {
+                        setUploadedImage(parsed.uploadedImage);
+                    }
+                    if (parsed.measureMode) {
+                        setMeasureMode(parsed.measureMode);
+                    }
+                    if (parsed.points) {
+                        setPoints(parsed.points);
+                    }
+                    isHydrated.current = true;
+                    if (parsed.measurements) return;
+                } catch (e) {
+                    console.error("Failed to parse workspace data", e);
+                }
             }
             const initialData = {};
             SPECIES_LIST.forEach(s => { initialData[s.name] = { angle: "", cranium: "", face: "" }; });
             initialData["自分・班の平均"] = { angle: "", cranium: "", face: "" };
             setMeasurements(initialData);
+            isHydrated.current = true;
         }, []);
 
+        // 入力およびデジタイザ状態変更時の自動シリアライズ（第7.4項準拠）
         useEffect(() => {
-            if (window.isResetting) return;
-            if (Object.keys(measurements).length > 0) {
-                sessionStorage.setItem('bio_edu_workspace_human_evolution', JSON.stringify({ measurements }));
+            if (!isHydrated.current || window.isResetting) return;
+            if (Object.keys(measurements).length > 0 || uploadedImage) {
+                const dataToSave = {
+                    measurements,
+                    uploadedImage,
+                    measureMode,
+                    points
+                };
+                try {
+                    sessionStorage.setItem('bio_edu_workspace_human_evolution', JSON.stringify(dataToSave));
+                } catch (e) {
+                    console.warn("Storage quota exceeded or error while saving workspace:", e);
+                }
             }
-        }, [measurements]);
+        }, [measurements, uploadedImage, measureMode, points]);
 
         const handleInput = (speciesName, field, value) => {
             setMeasurements(prev => ({
