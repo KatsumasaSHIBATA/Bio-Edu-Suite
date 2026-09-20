@@ -16,7 +16,6 @@
     <link rel="apple-touch-icon" href="icon-192.png">
     <title>⑩ Integrative Taxonomy Studio | Bio-Edu Suite</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="lib/bio_math_engine.js"></script>
     <style>
         :root {
             --phase-color: #8e44ad;
@@ -1639,6 +1638,160 @@ input[type="submit"]:disabled:active {
         img.src = url;
     }
 
+    // ==========================================
+    // Cluster & Parse Logic (Self-Contained Fallback Engine)
+    // ==========================================
+    function performClustering(dataMatrix, sampleNames, distType = 'euclidean', linkType = 'upgma') {
+        const n = dataMatrix.length;
+        if (n < 2) throw new Error("クラスタリングには少なくとも2つのサンプルが必要です");
+
+        // 距離計算関数
+        function calcDist(v1, v2) {
+            if (distType === 'manhattan') {
+                let sum = 0;
+                for (let i = 0; i < v1.length; i++) sum += Math.abs(v1[i] - v2[i]);
+                return sum;
+            } else if (distType === 'canberra') {
+                let sum = 0;
+                for (let i = 0; i < v1.length; i++) {
+                    const denom = Math.abs(v1[i]) + Math.abs(v2[i]);
+                    if (denom > 0) sum += Math.abs(v1[i] - v2[i]) / denom;
+                }
+                return sum;
+            } else {
+                // euclidean
+                let sum = 0;
+                for (let i = 0; i < v1.length; i++) sum += (v1[i] - v2[i]) ** 2;
+                return Math.sqrt(sum);
+            }
+        }
+
+        // 初期クラスタ作成
+        let clusters = [];
+        for (let i = 0; i < n; i++) {
+            clusters.push({
+                id: i,
+                name: sampleNames[i],
+                height: 0,
+                size: 1,
+                left: null,
+                right: null,
+                vector: [...dataMatrix[i]]
+            });
+        }
+
+        // 初期距離行列の構築
+        let distMatrix = Array.from({ length: n }, () => new Array(n).fill(0));
+        for (let i = 0; i < n; i++) {
+            for (let j = i + 1; j < n; j++) {
+                const d = calcDist(dataMatrix[i], dataMatrix[j]);
+                distMatrix[i][j] = d;
+                distMatrix[j][i] = d;
+            }
+        }
+
+        let active = new Set(Array.from({ length: n }, (_, i) => i));
+
+        // 階層併合ループ (Lance-Williams 法)
+        while (active.size > 1) {
+            let minDist = Infinity;
+            let bestI = -1, bestJ = -1;
+
+            const activeList = Array.from(active);
+            for (let idx1 = 0; idx1 < activeList.length; idx1++) {
+                const i = activeList[idx1];
+                for (let idx2 = idx1 + 1; idx2 < activeList.length; idx2++) {
+                    const j = activeList[idx2];
+                    if (distMatrix[i][j] < minDist) {
+                        minDist = distMatrix[i][j];
+                        bestI = i;
+                        bestJ = j;
+                    }
+                }
+            }
+
+            if (bestI === -1 || bestJ === -1) break;
+
+            const cA = clusters[bestI];
+            const cB = clusters[bestJ];
+            const newSize = cA.size + cB.size;
+
+            // 新クラスタの重心ベクトル計算
+            const newVector = [];
+            for (let k = 0; k < cA.vector.length; k++) {
+                newVector.push((cA.vector[k] * cA.size + cB.vector[k] * cB.size) / newSize);
+            }
+
+            // 分岐の高さ（枝長計算用）
+            let clusterHeight = minDist;
+            if (linkType === 'upgma') {
+                clusterHeight = minDist / 2;
+            } else if (linkType === 'ward') {
+                clusterHeight = minDist;
+            }
+
+            // 単調増加性の保護（親ノードの高さが子ノードを下回らないようにする）
+            const minChildHeight = Math.max(cA.height, cB.height);
+            if (clusterHeight <= minChildHeight) {
+                clusterHeight = minChildHeight + 0.0001;
+            }
+
+            const newCluster = {
+                id: clusters.length,
+                name: '',
+                height: clusterHeight,
+                size: newSize,
+                left: cA,
+                right: cB,
+                vector: newVector
+            };
+
+            const newId = clusters.length;
+            clusters.push(newCluster);
+
+            // 新クラスタと既存クラスタ間の距離更新
+            const newDistRow = [];
+            for (let k = 0; k < clusters.length; k++) {
+                if (!active.has(k) || k === bestI || k === bestJ) {
+                    newDistRow.push(0);
+                    continue;
+                }
+                const cK = clusters[k];
+                let d = 0;
+                if (linkType === 'single') {
+                    d = Math.min(distMatrix[bestI][k], distMatrix[bestJ][k]);
+                } else if (linkType === 'complete') {
+                    d = Math.max(distMatrix[bestI][k], distMatrix[bestJ][k]);
+                } else if (linkType === 'ward') {
+                    const nA = cA.size, nB = cB.size, nK = cK.size;
+                    const dAK2 = (distMatrix[bestI][k]) ** 2;
+                    const dBK2 = (distMatrix[bestJ][k]) ** 2;
+                    const dAB2 = minDist ** 2;
+                    const d2 = ((nA + nK) * dAK2 + (nB + nK) * dBK2 - nK * dAB2) / (nA + nB + nK);
+                    d = Math.sqrt(Math.max(0, d2));
+                } else {
+                    // UPGMA (群平均法)
+                    d = (cA.size * distMatrix[bestI][k] + cB.size * distMatrix[bestJ][k]) / newSize;
+                }
+                newDistRow.push(d);
+            }
+
+            distMatrix.push(newDistRow);
+            for (let k = 0; k < clusters.length - 1; k++) {
+                distMatrix[k].push(newDistRow[k]);
+            }
+
+            active.delete(bestI);
+            active.delete(bestJ);
+            active.add(newId);
+        }
+
+        const lastId = Array.from(active)[0];
+        return clusters[lastId];
+    }
+    window.performClustering = performClustering;
+
+
     function clusterToNewick(node, parentHeight = null) {
         if (!node.left && !node.right) {
             let dist = parentHeight !== null ? parentHeight : 0;
@@ -1679,39 +1832,77 @@ input[type="submit"]:disabled:active {
     }
 
     function parseNewickString(s) {
+        if (!s || typeof s !== 'string') return { name: "root" };
+        let str = s.trim();
+        if (str.endsWith(';')) str = str.slice(0, -1).trim();
+
+        // 開きカッコと閉じカッコの数をカウントして自動補正（Auto-Balance）
+        const openCount = (str.match(/\(/g) || []).length;
+        const closeCount = (str.match(/\)/g) || []).length;
+        if (openCount < closeCount) {
+            str = '('.repeat(closeCount - openCount) + str;
+        } else if (openCount > closeCount) {
+            str = str + ')'.repeat(openCount - closeCount);
+        }
+
         let ancestors = [];
         let tree = {};
-        let tokens = s.split(/\s*(;|\(|\)|,|:)\s*/);
+        let tokens = str.split(/\s*(;|\(|\)|,|:)\s*/);
+
         for (let i = 0; i < tokens.length; i++) {
             let token = tokens[i];
+            if (!token) continue;
+
             switch (token) {
                 case '(':
                     let subtree = {};
-                    tree.children = [subtree];
+                    if (!tree.children) tree.children = [];
+                    tree.children.push(subtree);
                     ancestors.push(tree);
                     tree = subtree;
                     break;
                 case ',':
+                    let parent = ancestors[ancestors.length - 1];
+                    if (!parent) {
+                        // カッコの外でカンマが来た場合の安全ルート作成
+                        parent = { children: [tree] };
+                        ancestors.push(parent);
+                    }
                     let subtree2 = {};
-                    ancestors[ancestors.length - 1].children.push(subtree2);
+                    parent.children.push(subtree2);
                     tree = subtree2;
                     break;
                 case ')':
-                    tree = ancestors.pop();
+                    if (ancestors.length > 0) {
+                        tree = ancestors.pop();
+                    }
                     break;
                 case ':':
                     break;
                 default:
-                    let x = tokens[i - 1];
-                    if (x === ':' || x === '') {
-                        if (x === ':') tree.length = parseFloat(token);
-                    } else if (token && token !== ';') {
+                    let prevToken = tokens[i - 1];
+                    if (prevToken === ':') {
+                        tree.length = parseFloat(token);
+                    } else if (token !== ';') {
                         tree.name = token;
                     }
+                    break;
             }
         }
+
+        // 最上位のルートを安全に返却
+        while (ancestors.length > 0) {
+            tree = ancestors.pop();
+        }
+
+        // 単一ノードしか子がない余分な外枠を展開
+        while (tree.children && tree.children.length === 1 && !tree.name) {
+            tree = tree.children[0];
+        }
+
         return tree;
     }
+    window.parseNewick = parseNewickString;
 
     // ==========================================
     // Global State
