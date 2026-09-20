@@ -1332,6 +1332,7 @@ input[type="submit"]:disabled:active {
 
 
     const STORAGE_KEY = 'bio_edu_samples';
+    const SESSION_WORKSPACE_KEY = 'bio_edu_workspace_dashboard_samples'; // セッション完全保持用キー
     let samples = [];
 
     // ==========================================
@@ -1551,11 +1552,24 @@ function closeFeedbackForm() {
     }
 
     function loadSamples() {
-      const data = localStorage.getItem(STORAGE_KEY);
-
-      if (data !== null) {
+      // 1. 同一セッション内で作業中（別アプリからの戻り等）の場合は、sessionStorage を最優先で読み込む
+      const sessionData = sessionStorage.getItem(SESSION_WORKSPACE_KEY);
+      if (sessionData !== null) {
         try {
-          samples = JSON.parse(data);
+          samples = JSON.parse(sessionData);
+          if (!Array.isArray(samples)) throw new Error("Invalid session data");
+          runImageSelfHealingPatch();
+          return; // セッションデータが有効ならここで終了（localStorageは見ない）
+        } catch(e) {
+          console.warn('Failed to parse session data, falling back to localStorage', e);
+        }
+      }
+
+      // 2. セッションデータがない場合（新規タブで開いた時など）は localStorage を読み込む
+      const localData = localStorage.getItem(STORAGE_KEY);
+      if (localData !== null) {
+        try {
+          samples = JSON.parse(localData);
           if (!Array.isArray(samples)) {
             samples = getDefaultFinchSamples();
             saveToStorage();
@@ -1566,7 +1580,7 @@ function closeFeedbackForm() {
         }
         runImageSelfHealingPatch();
       } else {
-        // 初回起動時、または「データを初期化」で localStorage.clear() された直後のみプリセットを展開
+        // 3. どちらも完全に空（初回起動、または初期化直後）の場合はプリセットを展開
         samples = getDefaultFinchSamples();
         saveToStorage();
         runImageSelfHealingPatch();
@@ -1639,10 +1653,13 @@ function closeFeedbackForm() {
     }
 
     function saveToStorage() {
+      // localStorage と sessionStorage (専用キー) の両方に確実に同期保存する
       localStorage.setItem(STORAGE_KEY, JSON.stringify(samples));
       try {
-        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(samples));
-      } catch(e) {}
+        sessionStorage.setItem(SESSION_WORKSPACE_KEY, JSON.stringify(samples));
+      } catch(e) {
+        console.warn('Failed to save to sessionStorage', e);
+      }
     }
 
     function generateBaseId() {
@@ -2148,10 +2165,10 @@ function closeFeedbackForm() {
       showConfirm(`${label}を削除します。この操作は取り消せません。よろしいですか？`, () => {
         samples = samples.filter(s => s.id !== id);
         deleteFromIndexedDB(STORE_SAMPLES, id).catch(e => console.error(e));
+        
+        // saveToStorage 内で localStorage と sessionStorage(SESSION_WORKSPACE_KEY) の両方が確実に上書きされる
         saveToStorage();
-        try {
-          sessionStorage.setItem(STORAGE_KEY, JSON.stringify(samples));
-        } catch(e) {}
+        
         renderSamples();
         showToast("サンプルを削除しました", "success");
       });
@@ -2378,6 +2395,11 @@ function closeFeedbackForm() {
                     }
                 });
                 sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+                
+                // アプリ遷移直前の最新サンプル状態を確実にセッションへ保存
+                if (typeof saveToStorage === 'function') {
+                    saveToStorage();
+                }
             } catch (e) {
                 console.warn('UIステートのシリアライズに失敗しました:', e);
             }
