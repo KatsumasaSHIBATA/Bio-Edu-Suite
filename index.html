@@ -1974,9 +1974,35 @@ function closeFeedbackForm() {
 
       let csv = "";
       selectedSamples.forEach(s => {
-        // ユーザーがカンマ区切りで入力した計測値に、先頭にサンプルIDを結合して1行とする
-        csv += `${s.id}, ${s.morphData}\n`;
+        if (!s.morphData || s.morphData.trim() === "") return;
+
+        // morphData から数値トークンのみを抽出（先頭に生物名が含まれている場合の二重化防止）
+        const tokens = s.morphData.split(/[,\t]+/).map(t => t.trim()).filter(t => t !== "");
+        let firstNumIdx = -1;
+        for (let i = 0; i < tokens.length; i++) {
+          if (!isNaN(parseFloat(tokens[i])) && isFinite(tokens[i])) {
+            firstNumIdx = i;
+            break;
+          }
+        }
+
+        const numericValues = firstNumIdx !== -1 ? tokens.slice(firstNumIdx) : [];
+        if (numericValues.length === 0) return;
+
+        // 統一規格識別子 (SampleID_生物名) のサニタイズ生成（カンマ排除、二重化防止）
+        let identifier = s.id ? s.id.trim().replace(/,/g, '') : "";
+        const cleanName = s.name ? s.name.trim().replace(/,/g, '').replace(/\s+/g, '_') : "";
+        if (cleanName && !identifier.includes(cleanName)) {
+          identifier = identifier ? `${identifier}_${cleanName}` : cleanName;
+        }
+
+        csv += `${identifier}, ${numericValues.join(', ')}\n`;
       });
+
+      if (csv === "") {
+        showToast("有効な計測数値を含むサンプルが選択されていません", "warning");
+        return;
+      }
 
       if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(csv).then(() => {
