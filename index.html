@@ -1552,86 +1552,45 @@ function closeFeedbackForm() {
     }
 
     function loadSamples() {
-      // 1. 同一セッション内で作業中（別アプリからの戻り等）の場合は、sessionStorage を最優先で読み込む
+      let loaded = null;
       const sessionData = sessionStorage.getItem(SESSION_WORKSPACE_KEY);
       if (sessionData !== null) {
         try {
-          samples = JSON.parse(sessionData);
-          if (!Array.isArray(samples)) throw new Error("Invalid session data");
-          runImageSelfHealingPatch();
-          return; // セッションデータが有効ならここで終了（localStorageは見ない）
-        } catch(e) {
-          console.warn('Failed to parse session data, falling back to localStorage', e);
+          const parsed = JSON.parse(sessionData);
+          if (Array.isArray(parsed)) loaded = parsed;
+        } catch(e) {}
+      }
+
+      if (!loaded) {
+        const localData = localStorage.getItem(STORAGE_KEY);
+        if (localData !== null) {
+          try {
+            const parsed = JSON.parse(localData);
+            if (Array.isArray(parsed)) loaded = parsed;
+          } catch(e) {}
         }
       }
 
-      // 2. セッションデータがない場合（新規タブで開いた時など）は localStorage を読み込む
-      const localData = localStorage.getItem(STORAGE_KEY);
-      if (localData !== null) {
-        try {
-          samples = JSON.parse(localData);
-          if (!Array.isArray(samples)) {
-            samples = getDefaultFinchSamples();
-            saveToStorage();
-          }
-        } catch(e) {
-          samples = getDefaultFinchSamples();
-          saveToStorage();
-        }
-        runImageSelfHealingPatch();
+      // 完全に空、またはプリセットが巻き添えで消えている場合はプリセットを復旧
+      const defaultPresets = getDefaultFinchSamples();
+      if (!loaded || loaded.length === 0) {
+        samples = defaultPresets;
       } else {
-        // 3. どちらも完全に空（初回起動、または初期化直後）の場合はプリセットを展開
-        samples = getDefaultFinchSamples();
-        saveToStorage();
-        runImageSelfHealingPatch();
+        // プリセット4種が存在するか確認し、消えていれば自動復旧してユーザーの追加データと合体
+        samples = loaded;
+        const presetIds = defaultPresets.map(p => p.id);
+        const hasAnyPreset = samples.some(s => presetIds.includes(s.id));
+        if (!hasAnyPreset) {
+          samples = [...defaultPresets, ...samples];
+        }
       }
+
+      saveToStorage();
     }
 
-    // 【パッチ】画像リンク切れ対策用・自動Base64化＆ダミー生成リカバリーロジック
     function runImageSelfHealingPatch() {
-      let requiresSave = false;
-      let processedCount = 0;
-      const targetSamples = samples.filter(s => s.image_data && s.image_data.startsWith('images/'));
-      
-      if(targetSamples.length === 0) return;
-
-      targetSamples.forEach(sample => {
-        const img = new Image();
-        img.crossOrigin = 'Anonymous'; // 汚染キャンバス回避用
-        
-        img.onload = () => {
-          try {
-            const canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0);
-            sample.image_data = canvas.toDataURL('image/jpeg', 0.8);
-            requiresSave = true;
-          } catch (e) {
-            console.warn("Base64 auto-conversion failed (likely CORS issue), retaining original image path:", e);
-          }
-          checkFinish();
-        };
-        
-        img.onerror = () => {
-          // 画像が存在しない(404等)場合はアプリ⑨で表示できるようダミー画像を生成・保存
-          console.warn("Image not found, generating dummy placeholder for:", sample.name);
-          sample.image_data = generateDummyBase64(sample.name);
-          requiresSave = true;
-          checkFinish();
-        };
-        
-        img.src = sample.image_data;
-      });
-
-      function checkFinish() {
-        processedCount++;
-        if (processedCount === targetSamples.length && requiresSave) {
-          saveToStorage();
-          renderSamples(); // 非同期で更新
-        }
-      }
+      // プリセット画像のBase64化によるストレージ容量パンク（5MB上限突破）を防止するため完全停止
+      return;
     }
 
     // プレースホルダー画像をCanvasで動的生成するヘルパー関数
@@ -1743,7 +1702,7 @@ function closeFeedbackForm() {
         img.onload = function() {
           let width = img.width;
           let height = img.height;
-          const max_side = 1200;
+          const max_side = 400; // 1200から400へ変更（容量パンク防止）
           if (width > height) {
             if (width > max_side) { height = Math.round(height * (max_side / width)); width = max_side; }
           } else {
@@ -1755,7 +1714,7 @@ function closeFeedbackForm() {
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
           
-          const base64 = canvas.toDataURL('image/jpeg', 0.8);
+          const base64 = canvas.toDataURL('image/jpeg', 0.6); // 品質を0.6に最適化
           document.getElementById('imageDataBase64').value = base64;
           document.getElementById('imageDropText').innerText = file.name + " (最適化済)";
           
@@ -2395,7 +2354,8 @@ function closeFeedbackForm() {
                 const inputs = document.querySelectorAll('input, textarea, select');
                 const draft = {};
                 inputs.forEach(el => {
-                    if (el.id && !el.closest('#confirmModal') && !el.closest('#accountModal')) {
+                    // confirmModal, accountModal に加え、巨大データを抱える sampleModal を除外してセッション容量を保護
+                    if (el.id && !el.closest('#confirmModal') && !el.closest('#accountModal') && !el.closest('#sampleModal')) {
                         if (el.type === 'checkbox' || el.type === 'radio') {
                             draft[el.id] = el.checked;
                         } else if (el.type !== 'file' && el.type !== 'password') {
@@ -2405,7 +2365,6 @@ function closeFeedbackForm() {
                 });
                 sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
                 
-                // アプリ遷移直前の最新サンプル状態を確実にセッションへ保存
                 if (typeof saveToStorage === 'function') {
                     saveToStorage();
                 }
