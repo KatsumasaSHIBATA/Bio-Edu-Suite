@@ -1654,11 +1654,18 @@ function closeFeedbackForm() {
 
     function saveToStorage() {
       // localStorage と sessionStorage (専用キー) の両方に確実に同期保存する
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(samples));
       try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(samples));
+      } catch(e) { console.warn('Failed to save to localStorage', e); }
+      
+      try {
+        // メモリの一時的な二重消費によるQuotaオーバーを防ぐため、書き込み前に一度破棄する
+        sessionStorage.removeItem(SESSION_WORKSPACE_KEY);
         sessionStorage.setItem(SESSION_WORKSPACE_KEY, JSON.stringify(samples));
       } catch(e) {
-        console.warn('Failed to save to sessionStorage', e);
+        console.warn('Failed to save to sessionStorage. Fallback to localStorage on next load.', e);
+        // 保存に失敗した場合、古いデータが残ってゾンビ復活するのを防ぐため、確実にセッションキーを消去する
+        sessionStorage.removeItem(SESSION_WORKSPACE_KEY);
       }
     }
 
@@ -2163,10 +2170,12 @@ function closeFeedbackForm() {
       const target = samples.find(s => s.id === id);
       const label = target && target.name ? `「${target.name}」` : "このサンプル";
       showConfirm(`${label}を削除します。この操作は取り消せません。よろしいですか？`, () => {
+        // 非同期実行中のインデックスズレによるプリセット巻き添え消失を防ぐため、IDベースの filter で安全に削除する
         samples = samples.filter(s => s.id !== id);
+        
         deleteFromIndexedDB(STORE_SAMPLES, id).catch(e => console.error(e));
         
-        // saveToStorage 内で localStorage と sessionStorage(SESSION_WORKSPACE_KEY) の両方が確実に上書きされる
+        // 削除後の新しい配列を確実に保存（sessionStorage失敗時は自動破棄＆localStorageへフォールバックされる）
         saveToStorage();
         
         renderSamples();
@@ -2431,6 +2440,14 @@ function closeFeedbackForm() {
             if (document.visibilityState === 'hidden') {
                 serializeUIState();
             }
+        });
+        
+        // モバイルSafari等の確実な離脱検知のため追加
+        window.addEventListener('pagehide', () => {
+            serializeUIState();
+        });
+        window.addEventListener('beforeunload', () => {
+            serializeUIState();
         });
 
         if (document.readyState === 'loading') {
