@@ -1552,28 +1552,35 @@ function closeFeedbackForm() {
 
     function loadSamples() {
       const data = localStorage.getItem(STORAGE_KEY);
+      const schemaVersion = localStorage.getItem('bio_edu_samples_version');
+      const CURRENT_VERSION = 'v2026_finch_r1';
+
       if (data) {
         try {
           samples = JSON.parse(data);
-          const isOld = samples.some(s => 
-            !s.id || 
-            s.id.includes('_WT_') || 
-            s.id.includes('_MUT_') || 
-            s.id.includes('_OUTGROUP_') || 
-            !s.envNote || 
-            !s.envNote.includes('【原著論文】')
-          );
-          if (isOld || samples.length === 0) {
-            samples = getDefaultFinchSamples();
+          // スキーマバージョン未設定（旧環境からの初回移行）時のみ安全にマイグレーション
+          if (schemaVersion !== CURRENT_VERSION) {
+            const userSamples = samples.filter(s => 
+              s.id && 
+              !s.id.startsWith('SPECIMEN-') && 
+              !s.id.includes('_WT_') && 
+              !s.id.includes('_MUT_') && 
+              !s.id.includes('_OUTGROUP_')
+            );
+            const defaultSamples = getDefaultFinchSamples();
+            samples = userSamples.length > 0 ? [...defaultSamples, ...userSamples] : defaultSamples;
+            localStorage.setItem('bio_edu_samples_version', CURRENT_VERSION);
             saveToStorage();
           }
         } catch(e) {
           samples = getDefaultFinchSamples();
+          localStorage.setItem('bio_edu_samples_version', CURRENT_VERSION);
           saveToStorage();
         }
         runImageSelfHealingPatch();
       } else {
         samples = getDefaultFinchSamples();
+        localStorage.setItem('bio_edu_samples_version', CURRENT_VERSION);
         saveToStorage();
         runImageSelfHealingPatch();
       }
