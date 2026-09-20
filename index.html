@@ -2269,8 +2269,9 @@ function closeFeedbackForm() {
     }, true);
   </script>
   
-  <script type="module">
+    <script type="module">
         import { joinRoom, leaveRoom, importMasterPreset, registerMasterPreset } from './auth_sync.js';
+        
         window.handleJoinRoom = function() {
             const rEl = document.getElementById('roomCodeInput');
             const pEl = document.getElementById('participantIdInput');
@@ -2283,19 +2284,49 @@ function closeFeedbackForm() {
             joinRoom(r, p);
             if (typeof closeAccountSettings === 'function') closeAccountSettings();
         };
+
         window.handleLeaveRoom = function() {
             leaveRoom();
             if (typeof closeAccountSettings === 'function') closeAccountSettings();
         };
-        window.handleImportPreset = function() {
+
+        // 【改善】async/await と即時再描画・モーダル自動閉鎖を実装
+        window.handleImportPreset = async function() {
             const tEl = document.getElementById('masterTaskCodeInput');
             const t = tEl ? tEl.value.trim() : '';
             if (!t) {
                 if (typeof showToast === 'function') showToast('課題コードを入力してください', 'warning');
                 return;
             }
-            importMasterPreset(t);
+            
+            try {
+                // 1. クラウドからの読み込み完了を待機
+                await importMasterPreset(t);
+            } catch (err) {
+                console.error('Failed to import preset:', err);
+            }
+
+            // 2. 読み込み完了後、設定モーダルを自動で閉じる
+            if (typeof closeAccountSettings === 'function') closeAccountSettings();
+
+            // 3. イベント受信漏れを防ぐため、sessionStorage から即座に画面へ反映（フェイルセーフ）
+            setTimeout(() => {
+                try {
+                    const raw = sessionStorage.getItem(SESSION_WORKSPACE_KEY) || sessionStorage.getItem('bio_edu_workspace_dashboard_samples');
+                    if (raw) {
+                        const parsed = JSON.parse(raw);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            samples = parsed;
+                            saveToStorage();
+                            renderSamples();
+                        }
+                    }
+                } catch(e) {
+                    console.warn('Direct session fallback failed:', e);
+                }
+            }, 150);
         };
+
         window.handleRegisterCurrentPreset = function() {
             const tEl = document.getElementById('newMasterTaskCodeInput');
             const t = tEl ? tEl.value.trim() : '';
@@ -2304,7 +2335,6 @@ function closeFeedbackForm() {
                 return;
             }
             
-            // 現在画面のサンプル配列を取得（画面が空ならビルトインのフィンチ4種を自動採用する安全策）
             const targetSamples = (Array.isArray(samples) && samples.length > 0) ? samples : getDefaultFinchSamples();
             
             const sessionSnap = {};
@@ -2323,23 +2353,33 @@ function closeFeedbackForm() {
             registerMasterPreset(t, payload);
         };
 
-        // 【最重要】生徒側・読込時のカスタムイベント受信リスナー（一瞬で画面復元）
+        // 【最重要】生徒側・全方位対応カスタムイベント受信リスナー
         window.addEventListener('bio_edu_preset_loaded', (e) => {
             try {
-                const payload = e.detail;
-                let imported = null;
-                if (payload && Array.isArray(payload.samples)) {
-                    imported = payload.samples;
-                } else if (payload && payload.sessionData && payload.sessionData[SESSION_WORKSPACE_KEY]) {
-                    imported = JSON.parse(payload.sessionData[SESSION_WORKSPACE_KEY]);
+                const d = e.detail;
+                let raw = null;
+
+                if (d) {
+                    if (Array.isArray(d)) raw = d;
+                    else if (Array.isArray(d.samples)) raw = d.samples;
+                    else if (d.payload && Array.isArray(d.payload.samples)) raw = d.payload.samples;
+                    else if (d.sessionData && (d.sessionData[SESSION_WORKSPACE_KEY] || d.sessionData['bio_edu_workspace_dashboard_samples'])) {
+                        raw = d.sessionData[SESSION_WORKSPACE_KEY] || d.sessionData['bio_edu_workspace_dashboard_samples'];
+                    } else if (d.payload && d.payload.sessionData && (d.payload.sessionData[SESSION_WORKSPACE_KEY] || d.payload.sessionData['bio_edu_workspace_dashboard_samples'])) {
+                        raw = d.payload.sessionData[SESSION_WORKSPACE_KEY] || d.payload.sessionData['bio_edu_workspace_dashboard_samples'];
+                    }
                 }
 
-                if (Array.isArray(imported) && imported.length > 0) {
-                    samples = imported;
-                    saveToStorage();
-                    renderSamples();
-                    if (typeof showToast === 'function') {
-                        showToast(`課題マスターから ${imported.length} 件のサンプルを展開しました`, 'success');
+                if (!raw) {
+                    raw = sessionStorage.getItem(SESSION_WORKSPACE_KEY) || sessionStorage.getItem('bio_edu_workspace_dashboard_samples');
+                }
+
+                if (raw) {
+                    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        samples = parsed;
+                        saveToStorage();
+                        renderSamples();
                     }
                 }
             } catch (err) {
