@@ -1552,35 +1552,22 @@ function closeFeedbackForm() {
 
     function loadSamples() {
       const data = localStorage.getItem(STORAGE_KEY);
-      const schemaVersion = localStorage.getItem('bio_edu_samples_version');
-      const CURRENT_VERSION = 'v2026_finch_r1';
 
-      if (data) {
+      if (data !== null) {
         try {
           samples = JSON.parse(data);
-          // スキーマバージョン未設定（旧環境からの初回移行）時のみ安全にマイグレーション
-          if (schemaVersion !== CURRENT_VERSION) {
-            const userSamples = samples.filter(s => 
-              s.id && 
-              !s.id.startsWith('SPECIMEN-') && 
-              !s.id.includes('_WT_') && 
-              !s.id.includes('_MUT_') && 
-              !s.id.includes('_OUTGROUP_')
-            );
-            const defaultSamples = getDefaultFinchSamples();
-            samples = userSamples.length > 0 ? [...defaultSamples, ...userSamples] : defaultSamples;
-            localStorage.setItem('bio_edu_samples_version', CURRENT_VERSION);
+          if (!Array.isArray(samples)) {
+            samples = getDefaultFinchSamples();
             saveToStorage();
           }
         } catch(e) {
           samples = getDefaultFinchSamples();
-          localStorage.setItem('bio_edu_samples_version', CURRENT_VERSION);
           saveToStorage();
         }
         runImageSelfHealingPatch();
       } else {
+        // 初回起動時、または「データを初期化」で localStorage.clear() された直後のみプリセットを展開
         samples = getDefaultFinchSamples();
-        localStorage.setItem('bio_edu_samples_version', CURRENT_VERSION);
         saveToStorage();
         runImageSelfHealingPatch();
       }
@@ -1653,6 +1640,9 @@ function closeFeedbackForm() {
 
     function saveToStorage() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(samples));
+      try {
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(samples));
+      } catch(e) {}
     }
 
     function generateBaseId() {
@@ -2158,7 +2148,12 @@ function closeFeedbackForm() {
       showConfirm(`${label}を削除します。この操作は取り消せません。よろしいですか？`, () => {
         samples = samples.filter(s => s.id !== id);
         deleteFromIndexedDB(STORE_SAMPLES, id).catch(e => console.error(e));
-        saveToStorage(); renderSamples(); showToast("サンプルを削除しました", "success");
+        saveToStorage();
+        try {
+          sessionStorage.setItem(STORAGE_KEY, JSON.stringify(samples));
+        } catch(e) {}
+        renderSamples();
+        showToast("サンプルを削除しました", "success");
       });
     }
 
