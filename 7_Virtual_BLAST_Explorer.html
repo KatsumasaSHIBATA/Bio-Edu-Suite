@@ -1124,7 +1124,7 @@ input[type="submit"]:disabled:active {
                         <span id="dbCountText" style="font-size: 13px; font-weight: bold; color: var(--success); display: flex; align-items: center; gap: 6px;"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--success);"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg> 現在の登録生物種: 0 種</span>
                         <div style="display: flex; gap: 8px;">
                             <button class="btn btn-sm" style="background: #fdfefe;" onclick="toggleDBList(event)" data-tooltip="現在のデータベースの中身を確認します">一覧を見る</button>
-                            <button class="btn btn-sm btn-danger" onclick="resetLocalDB()" data-tooltip="データベースを空にします（NCBI単体検索用）">リセット</button>
+                            <button class="btn btn-sm" style="background: #fdfefe;" onclick="resetLocalDB()" data-tooltip="データベースを初期状態（全生物種 総合データベース）に戻します">リセット</button>
                         </div>
                     </div>
                 </div>
@@ -1516,10 +1516,7 @@ input[type="submit"]:disabled:active {
     }
 
     function resetLocalDB() {
-        localDB = [];
-        updateDBCount();
-        document.getElementById('currentLoadedDataInfo').innerText = `読み込み中: [空のデータベース] (0種)`;
-        showToast(`データベースをリセットしました。NCBIから直接検索できます。`, "warning");
+        loadAllCombinedDB();
     }
 
     function loadAllCombinedDB(silent = false) {
