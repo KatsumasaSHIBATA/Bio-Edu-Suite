@@ -1,5 +1,5 @@
 /**
- * Bio-Edu Suite: PWA Header Update Button Module (Plan A)
+ * Bio-Edu Suite: PWA Header Update Button Module (Chrome Style)
  * Guideline: 15.5 (Non-blocking PWA Update Notification)
  */
 class PWAUpdater {
@@ -12,82 +12,100 @@ class PWAUpdater {
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js').then(reg => {
-                    // ① 既に待機中の新バージョンが存在する場合
                     if (reg.waiting && navigator.serviceWorker.controller) {
                         this.newWorker = reg.waiting;
                         this.showUpdateHeaderButton();
                     }
 
-                    // ② 新規インストールを検知した場合
                     reg.addEventListener('updatefound', () => {
                         this.newWorker = reg.installing;
                         if (!this.newWorker) return;
                         this.newWorker.addEventListener('statechange', () => {
-                                                         'installed' && navigator.serviceWorker.controller) {
-                                this.showUpdateHeade                                       }
+                            if (this.newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                this.showUpdateHeaderButton();
+                            }
                         });
-                                             // 更新チェックの実行
-                    reg                    reg                    reg                sole.error('PWA registration failed:', err));
+                    });
+
+                    reg.update().catch(() => {});
+                }).catch(err => console.error('PWA registration failed:', err));
 
                 let refreshing = false;
                 navigator.serviceWorker.addEventListener('controllerchange', () => {
-                                                               refreshing = true;
-                        windo             load();
+                    if (!refreshing) {
+                        refreshing = true;
+                        window.location.reload();
                     }
                 });
             });
         }
     }
 
+    showUpdateHeaderButton() {
+        if (document.getElementById('pwa-header-update-btn')) return;
 
-   }
-  }
-  });
-});
-}
-  windo             load();
- .getElementBy .getElementBy .getElementBy .getElementBy .get/ ボタン用CSSの動的注入
         const style = document.createElement('style');
         style.textContent = `
             #pwa-header-update-btn {
-                background: linear-gradient(135deg, #27ae60, #2ecc71) !important;
+                background-color: #1abc9c !important;
                 color: #ffffff !important;
-                border: none !important;
+                border: 1px solid rgba(255, 255, 255, 0.2) !important;
                 padding: 6px 14px !important;
                 border-radius: 20px !important;
-                font-size: 12px !i                font-size: 12px !i                font-size: 12px !i                font-size: 12px !i                font-sizeline-flex !important;
-                align-i                align-i                align-i                align-i            -shadow: 0 2px 8px rgba(39, 174, 96, 0.4) !important;
-                animation: pwaPulseGlow 2s infinite ease-in-out;
-                margin-right: 12px !imp    nt;
+                font-size: 12px !important;
+                font-weight: bold !important;
+                cursor: pointer !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                gap: 6px !important;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+                animation: pwaChromePulse 2.5s infinite ease-in-out;
+                margin-right: 12px !important;
                 white-space: nowrap !important;
-                transition: transform 0.15s eas                transition: transform 0.15s eas                transition: transform 0.15s                    transition: transform 0.15s ea     filter: brightness(1.1) !important                t transform: scale(1.                transition: transform 0.15s eas                transitio{
-                transform: scale(0.96) !important;
+                transition: transform 0.15s ease, filter 0.2s ease !important;
+                vertical-align: middle;
             }
-            @keyframes pwaPulseGlow {
-                0%, 100% { box-shadow: 0 2px 8px rgba(39, 174, 96, 0.4); }
-                                                                                                                                                                                            padding: 6px 10px !important;
+            #pwa-header-update-btn:hover {
+                filter: brightness(1.1) !important;
+                transform: scale(1.02) !important;
+            }
+            #pwa-header-update-btn:active {
+                transform: scale(0.97) !important;
+            }
+            @keyframes pwaChromePulse {
+                0%, 100% { box-shadow: 0 2px 8px rgba(26, 188, 156, 0.3); }
+                50% { box-shadow: 0 2px 14px rgba(26, 188, 156, 0.7); }
+            }
+            @media (max-width: 768px) {
+                #pwa-header-update-btn {
+                    padding: 5px 10px !important;
                     font-size: 11px !important;
                     margin-right: 6px !important;
                 }
-                                                                              di                                           }
-                                           d(style);
+                #pwa-header-update-btn .btn-text-chrome {
+                    display: none;
+                }
+            }
+        `;
+        document.head.appendChild(style);
 
-        // ボタン要素の生成
         const btn = document.createElement('button');
         btn.id = 'pwa-header-update-btn';
         btn.setAttribute('data-tooltip', '新しいバージョンが利用可能です。クリックして即時更新');
         btn.innerHTML = `
-            <svg width="14" height="14" viewBox="0             <svg width="14" height="14" viewBooke-w    ="2.5" str            <svg widthroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            <span class="btn-text-update">更新あり</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <span class="btn-text-chrome">新しいバージョンをご利用いただけます</span>
         `;
 
-        // クリック時 -> skipWaiting を Service Worker に指示
         btn.addEventListener('click', () => {
             btn.innerHTML = `更新中...`;
             btn.style.pointerEvents = 'none';
             if (this.newWorker) {
                 this.newWorker.postMessage({ action: 'skipWaiting' });
-                                                ��右側スロット（.header-right 内の #account                                            untBtn = d  ument.getElementById('accountBtn');
+            }
+        });
+
+        const accountBtn = document.getElementById('accountBtn');
         const headerRight = document.querySelector('.header-right');
 
         if (accountBtn && accountBtn.parentNode) {

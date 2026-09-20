@@ -32,43 +32,54 @@ self.addEventListener('install', (event) => {
       return Promise.allSettled(
         PRECACHE_ASSETS.map((url) =>
           fetch(url)
-            .the            .the           if (res.ok) return cache.put(url, res);
+            .then((res) => {
+              if (res.ok) return cache.put(url, res);
             })
             .catch((err) => console.warn(`Cache skip: ${url}`, err))
-                       })
-    
+        )
+      );
+    })
+  );
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys    caches.keys   s) => {
-                                  cache                    {
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((name) => {
           if (name !== CACHE_NAME) {
-            r            r           );
+            return caches.delete(name);
           }
         })
       );
     })
   );
-  self  self  selfim();
+  self.clients.claim();
 });
 
-self.addEvenself.addEvenself.addEvenself> {
+self.addEventListener('fetch', (event) => {
   const request = event.request;
 
-  if (!request.url.st  if (!request.url.st  if (!requ(request.method !== 'GET') {
-    event.respondW    event.respondW    event.respondW
+  if (!request.url.startsWith('http')) return;
 
-  ev  ev espondWith(
+  if (request.method !== 'GET') {
+    event.respondWith(fetch(request));
+    return;
+  }
+
+  event.respondWith(
     caches.open(CACHE_NAME).then(async (cache) => {
       const cachedResponse = await cache.match(request);
       const networkFetch = fetch(request)
-        .then((networkRe        .then((netwo   if (networkResponse && networkResponse.status === 200) {
-                                                                               return networkResponse;
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            cache.put(request, networkResponse.clone());
+          }
+          return networkResponse;
         })
         .catch(() => cachedResponse);
 
-      return cachedRespon    | networkFetch;
+      return cachedResponse || networkFetch;
     })
   );
 });
