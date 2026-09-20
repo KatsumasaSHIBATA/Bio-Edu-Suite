@@ -956,6 +956,7 @@ input[type="submit"]:disabled:active {
         const canvasRef = useRef(null);
         const fileInputRef = React.useRef(null);
         const [isDraggingOver, setIsDraggingOver] = useState(false);
+        const isHydrated = useRef(false);
 
         const loadImageFile = (file) => {
             if (!file || !file.type.startsWith('image/')) {
@@ -1165,8 +1166,18 @@ input[type="submit"]:disabled:active {
                     const parsed = JSON.parse(savedData);
                     if (parsed.measurements) {
                         setMeasurements(parsed.measurements);
-                        return;
                     }
+                    if (parsed.uploadedImage) {
+                        setUploadedImage(parsed.uploadedImage);
+                    }
+                    if (parsed.measureMode) {
+                        setMeasureMode(parsed.measureMode);
+                    }
+                    if (parsed.points) {
+                        setPoints(parsed.points);
+                    }
+                    isHydrated.current = true;
+                    if (parsed.measurements) return;
                 } catch (e) {
                     console.error("Failed to parse workspace data", e);
                 }
@@ -1180,6 +1191,7 @@ input[type="submit"]:disabled:active {
             initialData["ヒト(班・クラス平均)"] = { fore: "", meta: "", phal: "" };
             initialData["手羽先(班・クラス平均)"] = { fore: "", meta: "", phal: "" };
             setMeasurements(initialData);
+            isHydrated.current = true;
         }, []);
 
         // 教員課題データ・同期データの受信リスナー
@@ -1195,15 +1207,23 @@ input[type="submit"]:disabled:active {
         }, []);
 
 
-        // 入力変更時の自動シリアライズ
+        // 入力およびデジタイザ状態変更時の自動シリアライズ（第7.4項準拠）
         useEffect(() => {
-            if (window.isResetting) return;
-            // 測定データが空(初期値そのまま)の時は保存をスキップするか判定
-            if (Object.keys(measurements).length > 0) {
-                const dataToSave = { measurements };
-                sessionStorage.setItem('bio_edu_workspace_evolution_lab', JSON.stringify(dataToSave));
+            if (!isHydrated.current || window.isResetting) return;
+            if (Object.keys(measurements).length > 0 || uploadedImage) {
+                const dataToSave = {
+                    measurements,
+                    uploadedImage,
+                    measureMode,
+                    points
+                };
+                try {
+                    sessionStorage.setItem('bio_edu_workspace_evolution_lab', JSON.stringify(dataToSave));
+                } catch (e) {
+                    console.warn("Storage quota exceeded or error while saving workspace:", e);
+                }
             }
-        }, [measurements]);
+        }, [measurements, uploadedImage, measureMode, points]);
 
         const handleInput = (speciesName, field, value) => {
             setMeasurements(prev => ({
