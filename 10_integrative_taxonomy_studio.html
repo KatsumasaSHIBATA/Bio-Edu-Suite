@@ -1655,6 +1655,29 @@ input[type="submit"]:disabled:active {
         return String(id).toLowerCase().replace(/[\s_]/g, '');
     }
 
+    function isIdOrNameMatched(nameA, nameB) {
+        if (!nameA || !nameB) return false;
+        const normA = normalizeId(nameA);
+        const normB = normalizeId(nameB);
+        if (normA === normB) return true;
+        
+        // 8桁日付+6桁時刻のID部分（例: 20260920153043）を抽出して突合
+        const idA = normA.match(/\d{8}\d{6}/);
+        const idB = normB.match(/\d{8}\d{6}/);
+        if (idA && idB && idA[0] === idB[0]) return true;
+
+        // 生物名（shortLabel）部分を抽出して突合
+        const shortA = normalizeId(getShortLabel(nameA));
+        const shortB = normalizeId(getShortLabel(nameB));
+        if (shortA && shortB && shortA === shortB) return true;
+
+        // 前方一致・内包判定
+        if (normA.length > 3 && normB.length > 3) {
+            if (normA.includes(normB) || normB.includes(normA)) return true;
+        }
+        return false;
+    }
+
     function parseNewickString(s) {
         let ancestors = [];
         let tree = {};
@@ -1732,57 +1755,75 @@ input[type="submit"]:disabled:active {
 
         // ハイブリッド自動判定と動的パースロジック
         if (cleanHybridVal) {
-            if (cleanHybridVal.startsWith('(') || cleanHybridVal.endsWith(';')) {
+            const isNewick = cleanHybridVal.startsWith('(') || cleanHybridVal.endsWith(';');
+            if (isNewick) {
                 // Newick形式と判定
                 newickMorphStr = cleanHybridVal;
-            } else if (cleanHybridVal.includes(',') && !cleanHybridVal.includes('(')) {
-                // CSV形式（計測データ）と判定し、方向に応じたパースを実行
+            } else if (cleanHybridVal.includes(',') || cleanHybridVal.includes('\t')) {
+                // CSV/TSV形式（計測データ）と判定し、方向に応じたパースを実行
                 let sampleNames = [];
                 let dataMatrix = [];
-                const lines = cleanHybridVal.trim().split('\n').map(l => l.split(/[,\t\s]+/).filter(s => s !== ""));
+                const lines = cleanHybridVal.trim().split('\n').filter(l => l.trim().length > 0);
                 const dataDirection = document.getElementById('data-direction').value;
                 
                 if (lines.length > 0) {
                     if (dataDirection === 'row') {
-                        // 行がサンプル: 1列目がサンプルID、2列目以降がデータ
+                        // 行がサンプル: 最初の数値カラムを自動検出し、手前の全カラムを識別子・生物名として合成
                         for (let i = 0; i < lines.length; i++) {
-                            const parts = lines[i];
-                            if (parts.length < 2) continue;
-                            const id = parts[0].trim();
+                            const rawParts = lines[i].split(/[,\t]+/).map(s => s.trim()).filter(s => s !== "");
+                            if (rawParts.length < 2) continue;
+
+                            // 最初の数値カラムの位置を探索
+                            let firstNumIdx = -1;
+                            for (let j = 1; j < rawParts.length; j++) {
+                                if (!isNaN(parseFloat(rawParts[j])) && isFinite(rawParts[j])) {
+                                    firstNumIdx = j;
+                                    break;
+                                }
+                            }
+
+                            if (firstNumIdx === -1) continue;
+
+                            // 数値より手前の文字列を識別子として結合（例: 20260920_153043 と オオサンショウウオ を合成）
+                            const idParts = rawParts.slice(0, firstNumIdx);
+                            const id = idParts.join('_');
+
+                            // firstNumIdx 以降の数値を抽出
                             let values = [];
                             let isValid = true;
-                            for (let j = 1; j < parts.length; j++) {
-                                const val = parseFloat(parts[j].trim());
+                            for (let j = firstNumIdx; j < rawParts.length; j++) {
+                                const val = parseFloat(rawParts[j]);
                                 if (isNaN(val)) {
                                     isValid = false;
                                     break;
                                 }
                                 values.push(val);
                             }
-                            if (isValid) {
+                            if (isValid && values.length > 0) {
                                 sampleNames.push(id);
                                 dataMatrix.push(values);
                             }
                         }
                     } else {
                         // 列がサンプル: 1行目がサンプルID、2行目以降がデータ
-                        const headers = lines[0].map(s => s.trim());
+                        const rawLines = lines.map(l => l.split(/[,\t]+/).map(s => s.trim()).filter(s => s !== ""));
+                        const headers = rawLines[0];
                         for (let j = 0; j < headers.length; j++) {
                             sampleNames.push(headers[j]);
                             dataMatrix.push([]);
                         }
-                        for (let i = 1; i < lines.length; i++) {
-                            const parts = lines[i];
+                        for (let i = 1; i < rawLines.length; i++) {
+                            const parts = rawLines[i];
                             for (let j = 0; j < headers.length; j++) {
                                 if (j < parts.length) {
-                                     dataMatrix[j].push(parseFloat(parts[j].trim()));
+                                     dataMatrix[j].push(parseFloat(parts[j]));
                                 }
                             }
                         }
                         // データクリーニング (NaNを含むサンプルを除外)
                         let validSampleNames = [];
                         let validDataMatrix = [];
-                        for(let i=0; i<sampleNames.length; i++) {
+                        for(let i = 0; i < sampleNames.length; i++) {
                             if(dataMatrix[i].length > 0 && dataMatrix[i].every(v => !isNaN(v))) {
                                 validSampleNames.push(sampleNames[i]);
                                 validDataMatrix.push(dataMatrix[i]);
@@ -2118,10 +2159,8 @@ input[type="submit"]:disabled:active {
             const tangleData = [];
             if (pairMappings && pairMappings.length > 0) {
                 pairMappings.forEach((mapping) => {
-                    const molName = normalizeId(mapping.left);
-                    const morphName = normalizeId(mapping.right);
-                    const molIdx = molLeaves.findIndex(m => m.data.name && normalizeId(m.data.name) === molName);
-                    const morphIdx = morphLeaves.findIndex(m => m.data.name && normalizeId(m.data.name) === morphName);
+                    const molIdx = molLeaves.findIndex(m => m.data.name && isIdOrNameMatched(m.data.name, mapping.left));
+                    const morphIdx = morphLeaves.findIndex(m => m.data.name && isIdOrNameMatched(m.data.name, mapping.right));
                     if (molIdx !== -1 && morphIdx !== -1) {
                         tangleData.push({ mol: molLeaves[molIdx], morph: morphLeaves[morphIdx], molIndex: molIdx, morphIndex: morphIdx, isCrossing: false });
                     }
@@ -2129,8 +2168,7 @@ input[type="submit"]:disabled:active {
             } else {
                 molLeaves.forEach((molLeaf, idx) => {
                     if (!molLeaf.data.name) return;
-                    const molName = normalizeId(molLeaf.data.name);
-                    const morphIdx = morphLeaves.findIndex(m => m.data.name && normalizeId(m.data.name) === molName);
+                    const morphIdx = morphLeaves.findIndex(m => m.data.name && isIdOrNameMatched(molLeaf.data.name, m.data.name));
                     if (morphIdx !== -1) {
                         tangleData.push({ mol: molLeaf, morph: morphLeaves[morphIdx], molIndex: idx, morphIndex: morphIdx, isCrossing: false });
                     }
@@ -2780,7 +2818,7 @@ input[type="submit"]:disabled:active {
         if (hybridInput) {
             hybridInput.addEventListener('input', (e) => {
                 const val = e.target.value.trim();
-                const isCSV = val.length > 0 && !val.startsWith('(') && val.includes(',');
+                const isCSV = val.length > 0 && !val.startsWith('(') && !val.endsWith(';') && (val.includes(',') || val.includes('\t'));
                 
                 ['data-direction', 'dist-type', 'link-type'].forEach(id => {
                     const el = document.getElementById(id);
@@ -3075,7 +3113,7 @@ function closeFeedbackForm() {
             // 3. CSV判定連動（セレクトボックスのdisabled解除）
             if (state.morphVal) {
                 const val = state.morphVal.trim();
-                const isCSV = val.length > 0 && !val.startsWith('(') && val.includes(',');
+                const isCSV = val.length > 0 && !val.startsWith('(') && !val.endsWith(';') && (val.includes(',') || val.includes('\t'));
                 ['data-direction', 'dist-type', 'link-type'].forEach(id => {
                     const el = document.getElementById(id);
                     if (el) el.disabled = !isCSV;
