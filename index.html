@@ -1575,6 +1575,48 @@ function closeFeedbackForm() {
       renderSamples();
     }
 
+    // 【教員マスター読込・画面即時展開リスナー】メインスコープ内で安全に実行
+    window.addEventListener('bio_edu_preset_loaded', (e) => {
+      try {
+        const d = e.detail;
+        let target = null;
+
+        // 1. イベントの detail から直接抽出
+        if (d) {
+          if (Array.isArray(d)) target = d;
+          else if (Array.isArray(d.samples)) target = d.samples;
+          else if (d.payload && Array.isArray(d.payload.samples)) target = d.payload.samples;
+          else if (d.payload && d.payload.sessionData) {
+            const raw = d.payload.sessionData[SESSION_WORKSPACE_KEY] || d.payload.sessionData['bio_edu_workspace_dashboard_samples'];
+            if (raw) target = typeof raw === 'string' ? JSON.parse(raw) : raw;
+          } else if (d.sessionData) {
+            const raw = d.sessionData[SESSION_WORKSPACE_KEY] || d.sessionData['bio_edu_workspace_dashboard_samples'];
+            if (raw) target = typeof raw === 'string' ? JSON.parse(raw) : raw;
+          }
+        }
+
+        // 2. イベントから取れない場合は sessionStorage の書き込み結果からフォールバック抽出
+        if (!target) {
+          const raw = sessionStorage.getItem(SESSION_WORKSPACE_KEY) || sessionStorage.getItem('bio_edu_workspace_dashboard_samples');
+          if (raw) target = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        }
+
+        // 3. サンプル配列が取得できたら即座に画面へ反映
+        if (Array.isArray(target) && target.length > 0) {
+          samples = target;
+          saveToStorage();
+          renderSamples();
+          if (typeof showToast === 'function') {
+            showToast(`課題マスターから ${samples.length} 件のサンプルを展開しました`, "success");
+          }
+        } else {
+          console.warn('有効なサンプル配列を展開できませんでした:', d);
+        }
+      } catch (err) {
+        console.error('Preset hydration error:', err);
+      }
+    });
+
     function runImageSelfHealingPatch() {
       // プリセット画像のBase64化によるストレージ容量パンク（5MB上限突破）を防止するため完全停止
       return;
@@ -2290,7 +2332,6 @@ function closeFeedbackForm() {
             if (typeof closeAccountSettings === 'function') closeAccountSettings();
         };
 
-        // 【改善】async/await と即時再描画・モーダル自動閉鎖を実装
         window.handleImportPreset = async function() {
             const tEl = document.getElementById('masterTaskCodeInput');
             const t = tEl ? tEl.value.trim() : '';
@@ -2300,31 +2341,12 @@ function closeFeedbackForm() {
             }
             
             try {
-                // 1. クラウドからの読み込み完了を待機
                 await importMasterPreset(t);
             } catch (err) {
                 console.error('Failed to import preset:', err);
             }
 
-            // 2. 読み込み完了後、設定モーダルを自動で閉じる
             if (typeof closeAccountSettings === 'function') closeAccountSettings();
-
-            // 3. イベント受信漏れを防ぐため、sessionStorage から即座に画面へ反映（フェイルセーフ）
-            setTimeout(() => {
-                try {
-                    const raw = sessionStorage.getItem(SESSION_WORKSPACE_KEY) || sessionStorage.getItem('bio_edu_workspace_dashboard_samples');
-                    if (raw) {
-                        const parsed = JSON.parse(raw);
-                        if (Array.isArray(parsed) && parsed.length > 0) {
-                            samples = parsed;
-                            saveToStorage();
-                            renderSamples();
-                        }
-                    }
-                } catch(e) {
-                    console.warn('Direct session fallback failed:', e);
-                }
-            }, 150);
         };
 
         window.handleRegisterCurrentPreset = function() {
@@ -2352,40 +2374,6 @@ function closeFeedbackForm() {
             };
             registerMasterPreset(t, payload);
         };
-
-        // 【最重要】生徒側・全方位対応カスタムイベント受信リスナー
-        window.addEventListener('bio_edu_preset_loaded', (e) => {
-            try {
-                const d = e.detail;
-                let raw = null;
-
-                if (d) {
-                    if (Array.isArray(d)) raw = d;
-                    else if (Array.isArray(d.samples)) raw = d.samples;
-                    else if (d.payload && Array.isArray(d.payload.samples)) raw = d.payload.samples;
-                    else if (d.sessionData && (d.sessionData[SESSION_WORKSPACE_KEY] || d.sessionData['bio_edu_workspace_dashboard_samples'])) {
-                        raw = d.sessionData[SESSION_WORKSPACE_KEY] || d.sessionData['bio_edu_workspace_dashboard_samples'];
-                    } else if (d.payload && d.payload.sessionData && (d.payload.sessionData[SESSION_WORKSPACE_KEY] || d.payload.sessionData['bio_edu_workspace_dashboard_samples'])) {
-                        raw = d.payload.sessionData[SESSION_WORKSPACE_KEY] || d.payload.sessionData['bio_edu_workspace_dashboard_samples'];
-                    }
-                }
-
-                if (!raw) {
-                    raw = sessionStorage.getItem(SESSION_WORKSPACE_KEY) || sessionStorage.getItem('bio_edu_workspace_dashboard_samples');
-                }
-
-                if (raw) {
-                    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
-                    if (Array.isArray(parsed) && parsed.length > 0) {
-                        samples = parsed;
-                        saveToStorage();
-                        renderSamples();
-                    }
-                }
-            } catch (err) {
-                console.error('Failed to hydrate master preset samples:', err);
-            }
-        });
     </script>
 
 <script>
