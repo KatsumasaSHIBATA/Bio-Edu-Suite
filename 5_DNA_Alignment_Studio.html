@@ -2761,10 +2761,18 @@ function closeFeedbackForm() {
     }
 
     function getFastaHeader(s) {
-        if (s.id && s.id.trim() !== "") {
-            return `>${s.id}`;
+        const id = s.id ? s.id.trim().replace(/,/g, '') : "";
+        const cleanName = s.name ? s.name.trim().replace(/,/g, '').replace(/\s+/g, '_') : "";
+
+        if (id && cleanName) {
+            // 二重化防止：すでに名前にIDが含まれている場合はそのまま使用
+            if (cleanName.includes(id)) return `>${cleanName}`;
+            if (id.includes(cleanName)) return `>${id}`;
+            return `>${id}_${cleanName}`;
         }
-        return `>${s.name}`;
+        if (id) return `>${id}`;
+        if (cleanName) return `>${cleanName}`;
+        return `>Sequence`;
     }
 
     function exportFastaAll() {
@@ -2792,7 +2800,7 @@ function closeFeedbackForm() {
         // v34.3.7: 識別子の区切りにタブを使うと名前の長さで桁がずれるため、
         //          出力対象（選択中）の識別子の最大長 + 4 を固定幅としてスペース右埋めする
         const outIds = sequences.filter(s => s.isSelected !== false)
-                                .map(s => (s.id && s.id.trim() !== "") ? s.id : s.name);
+                                .map(s => getFastaHeader(s).substring(1));
         const padSize = (outIds.length ? Math.max(...outIds.map(x => x.length)) : 0) + 4;
         
         let baseCounts = new Array(sequences.length).fill(0);
@@ -2810,7 +2818,7 @@ function closeFeedbackForm() {
                     let b = s.data[i + j] || '-'; seqPart += b; if (b !== '-') baseCounts[sIdx]++;
                 }
                 
-                let identifier = (s.id && s.id.trim() !== "") ? s.id : s.name;
+                let identifier = getFastaHeader(s).substring(1);
                 output += `${identifier.padEnd(padSize, ' ')}${seqPart}\t${baseCounts[sIdx]}\n`;
             }
             
@@ -2970,7 +2978,7 @@ function closeFeedbackForm() {
         // v34.3.7: 識別子の区切りにタブを使うと名前の長さで桁がずれるため、
         //          出力対象（選択中）の識別子の最大長 + 4 を固定幅としてスペース右埋めする
         const outIds = sequences.filter(s => s.isSelected !== false)
-                                .map(s => (s.id && s.id.trim() !== "") ? s.id : s.name);
+                                .map(s => getFastaHeader(s).substring(1));
         const padSize = (outIds.length ? Math.max(...outIds.map(x => x.length)) : 0) + 4;
 
         let baseCounts = new Array(sequences.length).fill(0);
@@ -2982,7 +2990,7 @@ function closeFeedbackForm() {
                 let s = sequences[sIdx]; if (s.isSelected === false) continue;
                 hasSelected = true; let seqPart = "";
                 for (let j = 0; j < blockLen; j++) { let b = s.data[i + j] || '-'; seqPart += b; if (b !== '-') baseCounts[sIdx]++; }
-                let identifier = (s.id && s.id.trim() !== "") ? s.id : s.name;
+                let identifier = getFastaHeader(s).substring(1);
                 output += `${identifier.padEnd(padSize, ' ')}${seqPart}\t${baseCounts[sIdx]}\n`;
             }
             let consLine = ' '.repeat(padSize);   // v34.3.7: タブではなく識別子欄と同じ幅のスペースで桁を合わせる
