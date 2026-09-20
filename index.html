@@ -1333,6 +1333,7 @@ input[type="submit"]:disabled:active {
 
     const STORAGE_KEY = 'bio_edu_samples';
     const SESSION_WORKSPACE_KEY = 'bio_edu_workspace_dashboard_samples'; // セッション完全保持用キー
+
     let samples = [];
 
     // ==========================================
@@ -1553,39 +1554,25 @@ function closeFeedbackForm() {
 
     function loadSamples() {
       let loaded = null;
-      const sessionData = sessionStorage.getItem(SESSION_WORKSPACE_KEY);
-      if (sessionData !== null) {
+      try {
+        const sessionData = sessionStorage.getItem(SESSION_WORKSPACE_KEY);
+        if (sessionData !== null) {
+          loaded = JSON.parse(sessionData);
+        }
+      } catch(e) {}
+
+      if (loaded === null) {
         try {
-          const parsed = JSON.parse(sessionData);
-          if (Array.isArray(parsed)) loaded = parsed;
+          const localData = localStorage.getItem(STORAGE_KEY);
+          if (localData !== null) {
+            loaded = JSON.parse(localData);
+          }
         } catch(e) {}
       }
 
-      if (!loaded) {
-        const localData = localStorage.getItem(STORAGE_KEY);
-        if (localData !== null) {
-          try {
-            const parsed = JSON.parse(localData);
-            if (Array.isArray(parsed)) loaded = parsed;
-          } catch(e) {}
-        }
-      }
-
-      // 完全に空、またはプリセットが巻き添えで消えている場合はプリセットを復旧
-      const defaultPresets = getDefaultFinchSamples();
-      if (!loaded || loaded.length === 0) {
-        samples = defaultPresets;
-      } else {
-        // プリセット4種が存在するか確認し、消えていれば自動復旧してユーザーの追加データと合体
-        samples = loaded;
-        const presetIds = defaultPresets.map(p => p.id);
-        const hasAnyPreset = samples.some(s => presetIds.includes(s.id));
-        if (!hasAnyPreset) {
-          samples = [...defaultPresets, ...samples];
-        }
-      }
-
-      saveToStorage();
+      // ストレージが空なら空（[]）を正とし、いかなる自動補完も行わない
+      samples = (Array.isArray(loaded)) ? loaded : [];
+      renderSamples();
     }
 
     function runImageSelfHealingPatch() {
@@ -1612,20 +1599,14 @@ function closeFeedbackForm() {
     }
 
     function saveToStorage() {
-      // localStorage と sessionStorage (専用キー) の両方に確実に同期保存する
+      const serialized = JSON.stringify(samples);
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(samples));
-      } catch(e) { console.warn('Failed to save to localStorage', e); }
-      
+        localStorage.setItem(STORAGE_KEY, serialized);
+      } catch(e) { console.warn('Failed to save localStorage', e); }
+
       try {
-        // メモリの一時的な二重消費によるQuotaオーバーを防ぐため、書き込み前に一度破棄する
-        sessionStorage.removeItem(SESSION_WORKSPACE_KEY);
-        sessionStorage.setItem(SESSION_WORKSPACE_KEY, JSON.stringify(samples));
-      } catch(e) {
-        console.warn('Failed to save to sessionStorage. Fallback to localStorage on next load.', e);
-        // 保存に失敗した場合、古いデータが残ってゾンビ復活するのを防ぐため、確実にセッションキーを消去する
-        sessionStorage.removeItem(SESSION_WORKSPACE_KEY);
-      }
+        sessionStorage.setItem(SESSION_WORKSPACE_KEY, serialized);
+      } catch(e) { console.warn('Failed to save sessionStorage', e); }
     }
 
     function generateBaseId() {
@@ -2124,19 +2105,18 @@ function closeFeedbackForm() {
     }
 
     function deleteSample(id, event) {
-      if(event) event.stopPropagation();
+      if (event) event.stopPropagation();
 
       const target = samples.find(s => s.id === id);
       const label = target && target.name ? `「${target.name}」` : "このサンプル";
       showConfirm(`${label}を削除します。この操作は取り消せません。よろしいですか？`, () => {
-        // 非同期実行中のインデックスズレによるプリセット巻き添え消失を防ぐため、IDベースの filter で安全に削除する
+        // 該当IDを配列から完全に除外
         samples = samples.filter(s => s.id !== id);
         
         deleteFromIndexedDB(STORE_SAMPLES, id).catch(e => console.error(e));
         
-        // 削除後の新しい配列を確実に保存（sessionStorage失敗時は自動破棄＆localStorageへフォールバックされる）
+        // ストレージへ即座に上書き保存
         saveToStorage();
-        
         renderSamples();
         showToast("サンプルを削除しました", "success");
       });
@@ -2290,56 +2270,83 @@ function closeFeedbackForm() {
   </script>
   
   <script type="module">
-    import { joinRoom, leaveRoom, importMasterPreset, registerMasterPreset } from './auth_sync.js';
-    window.handleJoinRoom = function() {
-        const rEl = document.getElementById('roomCodeInput');
-        const pEl = document.getElementById('participantIdInput');
-        const r = rEl ? rEl.value.trim() : '';
-        const p = pEl ? pEl.value.trim() : '';
-        if (!r || !p) {
-            if (typeof showToast === 'function') showToast('ルームコードと参加者IDを入力してください', 'warning');
-            return;
-        }
-        joinRoom(r, p);
-        if (typeof closeAccountSettings === 'function') closeAccountSettings();
-    };
-    window.handleLeaveRoom = function() {
-        leaveRoom();
-        if (typeof closeAccountSettings === 'function') closeAccountSettings();
-    };
-    window.handleImportPreset = function() {
-        const tEl = document.getElementById('masterTaskCodeInput');
-        const t = tEl ? tEl.value.trim() : '';
-        if (!t) {
-            if (typeof showToast === 'function') showToast('課題コードを入力してください', 'warning');
-            return;
-        }
-        importMasterPreset(t);
-    };
-    window.handleRegisterCurrentPreset = function() {
-        const tEl = document.getElementById('newMasterTaskCodeInput');
-        const t = tEl ? tEl.value.trim() : '';
-        if (!t) {
-            if (typeof showToast === 'function') showToast('発行する課題コードを入力してください', 'warning');
-            return;
-        }
-        // 現在の画面のテキストエリアおよびセッションデータを収集
-        const activeTextarea = document.querySelector('textarea.paste-area, textarea#dnaInput, textarea#fastaInput, textarea#chain-code-input, textarea#pasteArea, input#pdbId');
-        const seq = activeTextarea ? activeTextarea.value.trim() : '';
-        const sessionSnap = {};
-        for (let i = 0; i < sessionStorage.length; i++) {
-            const k = sessionStorage.key(i);
-            if (k) sessionSnap[k] = sessionStorage.getItem(k);
-        }
-        const payload = {
-            sequence: seq,
-            sessionData: sessionSnap,
-            appName: document.title,
-            registeredAt: Date.now()
+        import { joinRoom, leaveRoom, importMasterPreset, registerMasterPreset } from './auth_sync.js';
+        window.handleJoinRoom = function() {
+            const rEl = document.getElementById('roomCodeInput');
+            const pEl = document.getElementById('participantIdInput');
+            const r = rEl ? rEl.value.trim() : '';
+            const p = pEl ? pEl.value.trim() : '';
+            if (!r || !p) {
+                if (typeof showToast === 'function') showToast('ルームコードと参加者IDを入力してください', 'warning');
+                return;
+            }
+            joinRoom(r, p);
+            if (typeof closeAccountSettings === 'function') closeAccountSettings();
         };
-        registerMasterPreset(t, payload);
-    };
-</script>
+        window.handleLeaveRoom = function() {
+            leaveRoom();
+            if (typeof closeAccountSettings === 'function') closeAccountSettings();
+        };
+        window.handleImportPreset = function() {
+            const tEl = document.getElementById('masterTaskCodeInput');
+            const t = tEl ? tEl.value.trim() : '';
+            if (!t) {
+                if (typeof showToast === 'function') showToast('課題コードを入力してください', 'warning');
+                return;
+            }
+            importMasterPreset(t);
+        };
+        window.handleRegisterCurrentPreset = function() {
+            const tEl = document.getElementById('newMasterTaskCodeInput');
+            const t = tEl ? tEl.value.trim() : '';
+            if (!t) {
+                if (typeof showToast === 'function') showToast('発行する課題コードを入力してください', 'warning');
+                return;
+            }
+            
+            // 現在画面のサンプル配列を取得（画面が空ならビルトインのフィンチ4種を自動採用する安全策）
+            const targetSamples = (Array.isArray(samples) && samples.length > 0) ? samples : getDefaultFinchSamples();
+            
+            const sessionSnap = {};
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const k = sessionStorage.key(i);
+                if (k) sessionSnap[k] = sessionStorage.getItem(k);
+            }
+            sessionSnap[SESSION_WORKSPACE_KEY] = JSON.stringify(targetSamples);
+
+            const payload = {
+                samples: targetSamples,
+                sessionData: sessionSnap,
+                appName: document.title,
+                registeredAt: Date.now()
+            };
+            registerMasterPreset(t, payload);
+        };
+
+        // 【最重要】生徒側・読込時のカスタムイベント受信リスナー（一瞬で画面復元）
+        window.addEventListener('bio_edu_preset_loaded', (e) => {
+            try {
+                const payload = e.detail;
+                let imported = null;
+                if (payload && Array.isArray(payload.samples)) {
+                    imported = payload.samples;
+                } else if (payload && payload.sessionData && payload.sessionData[SESSION_WORKSPACE_KEY]) {
+                    imported = JSON.parse(payload.sessionData[SESSION_WORKSPACE_KEY]);
+                }
+
+                if (Array.isArray(imported) && imported.length > 0) {
+                    samples = imported;
+                    saveToStorage();
+                    renderSamples();
+                    if (typeof showToast === 'function') {
+                        showToast(`課題マスターから ${imported.length} 件のサンプルを展開しました`, 'success');
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to hydrate master preset samples:', err);
+            }
+        });
+    </script>
 
 <script>
     /* ===================================================================
@@ -2446,7 +2453,6 @@ function closeFeedbackForm() {
 
 
   <!-- /* [Bio-Edu Suite v35.1] Session-Persistent Workspace Standard */ -->
-  <script src="js/session_workspace.js"></script>
   <script src="js/pwa_updater.js"></script>
 </body>
 </html>
