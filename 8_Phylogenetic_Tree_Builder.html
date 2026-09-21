@@ -1638,11 +1638,17 @@ input[type="submit"]:disabled:active {
                 <select id="outgroupSelect" class="btn btn-sm" style="margin-left: 10px; width: auto;" onchange="changeOutgroup()" disabled data-tooltip="指定した種を外群(一番古い分岐)として根元に再配置します">
                     <option value="">外群指定(自動)</option>
                 </select>
+                <button class="rationale-btn" onclick="toggleRationale(event, 'rat_rotate_tree')" style="margin-left: 2px;" data-tooltip="枝の回転（モビール性）についての解説">?</button>
             </span>
             <div id="rat_tree_result" class="rationale-text">
                 <strong>【根拠：系統樹の解釈】</strong>
                 ・構築された系統樹は、生物間の進化的関係を表す仮説です。<br>
                 ・枝の分岐パターン（トポロジー）と、枝の長さ（進化的な変化量や時間）から、共通祖先からの分化の道筋を読み取ります。
+            </div>
+            <div id="rat_rotate_tree" class="rationale-text">
+                <strong>【根拠：枝の回転（モビール性）】</strong><br>
+                ・系統樹の分岐点は、モビールのように自由に回転させることができます。<br>
+                ・分岐点（橙色の丸）をクリックすると枝が上下反転します。生物の上下の表示順序が変わっても、共通祖先からの類縁関係（トポロジー）は全く同一であることを体験してみましょう。
             </div>
         </div>
         <div class="card-body" style="background:var(--bg-color); padding:16px;">
