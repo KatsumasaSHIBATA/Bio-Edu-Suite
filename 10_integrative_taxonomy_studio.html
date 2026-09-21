@@ -180,7 +180,7 @@
 
         .form-select { border: 1px solid var(--border-color); border-radius: 4px; padding: 8px 12px; font-size: 13px; color: var(--text-main); outline: none; background: #fff; cursor: pointer; transition: 0.2s; width: fit-content; }
         .form-select:focus { border-color: var(--phase-color); box-shadow: 0 0 0 2px rgba(142, 68, 173, 0.2); }
-        .form-select:disabled { background: #f8f9fa; cursor: not-allowed; opacity: 0.7; }
+        .form-select:disabled { background-color: #ffffff !important; color: #bdc3c7 !important; border: 1px solid #d5dbdb !important; cursor: not-allowed !important; opacity: 0.8 !important; box-shadow: none !important; }
 
         /* Viewer Layout */
         .viewer-container { display: flex; gap: 24px; min-height: 500px; }
@@ -941,7 +941,17 @@ body {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
 }
 /* 無効時（disabled：解析実行ボタンと完全同一の白背景・薄グレー枠・淡文字・not-allowed） */
-#untangleBtn:disabled {
+#untangleBtn:disabled,
+#outgroupSelect10:disabled {
+    background-color: #ffffff !important;
+    color: #bdc3c7 !important;
+    border: 1px solid #d5dbdb !important;
+    cursor: not-allowed !important;
+    opacity: 0.8 !important;
+    box-shadow: none !important;
+    filter: none !important;
+    transform: none !important;
+}
     background-color: #ffffff !important;
     color: #bdc3c7 !important;
     border: 1px solid #d5dbdb !important;
@@ -971,6 +981,8 @@ body {
 /* 操作不可ボタンの完全無効化規格（ガイドライン第11項②） */
 button:disabled,
 .btn:disabled,
+select:disabled,
+.form-select:disabled,
 input[type="button"]:disabled,
 input[type="submit"]:disabled,
 .sidebar-action-btn:disabled {
@@ -984,10 +996,14 @@ input[type="submit"]:disabled,
 /* ホバー・アクティブ時の意図せぬ変色・沈み込みの物理遮断 */
 button:disabled:hover,
 .btn:disabled:hover,
+select:disabled:hover,
+.form-select:disabled:hover,
 input[type="button"]:disabled:hover,
 input[type="submit"]:disabled:hover,
 button:disabled:active,
 .btn:disabled:active,
+select:disabled:active,
+.form-select:disabled:active,
 input[type="button"]:disabled:active,
 input[type="submit"]:disabled:active {
     opacity: 0.5 !important;
@@ -1314,7 +1330,7 @@ input[type="submit"]:disabled:active {
                     <button class="rationale-btn" onclick="toggleRationale(event, 'rat_tangle')">?</button>
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px;">
-                    <select id="outgroupSelect10" class="form-select" style="padding: 4px 8px; font-size: 12px; min-height: 32px; height: 32px; box-sizing: border-box; width: auto;" onchange="handleOutgroupChange10()" disabled data-tooltip="指定した種を外群(根元)として両系統樹を再ルーティングします">
+                    <select id="outgroupSelect10" class="form-select" style="padding: 4px 10px; font-size: 12px; min-height: 32px; height: 32px; box-sizing: border-box; width: auto;" onchange="handleOutgroupChange10()" disabled data-tooltip="指定した種を外群(根元)として両系統樹を再ルーティングします">
                         <option value="">外群指定(自動)</option>
                     </select>
                     <button class="rationale-btn" onclick="toggleRationale(event, 'rat_outgroup10')" style="margin-left: -2px;" data-tooltip="外群指定と枝の回転についての解説">?</button>

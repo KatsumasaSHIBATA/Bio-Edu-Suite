@@ -1303,6 +1303,8 @@ body {
 /* 操作不可ボタンの完全無効化規格（ガイドライン第11項②） */
 button:disabled,
 .btn:disabled,
+select:disabled,
+.form-select:disabled,
 input[type="button"]:disabled,
 input[type="submit"]:disabled,
 .sidebar-action-btn:disabled {
@@ -1316,10 +1318,14 @@ input[type="submit"]:disabled,
 /* ホバー・アクティブ時の意図せぬ変色・沈み込みの物理遮断 */
 button:disabled:hover,
 .btn:disabled:hover,
+select:disabled:hover,
+.form-select:disabled:hover,
 input[type="button"]:disabled:hover,
 input[type="submit"]:disabled:hover,
 button:disabled:active,
 .btn:disabled:active,
+select:disabled:active,
+.form-select:disabled:active,
 input[type="button"]:disabled:active,
 input[type="submit"]:disabled:active {
     opacity: 0.5 !important;
