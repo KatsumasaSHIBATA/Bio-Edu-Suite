@@ -2050,6 +2050,14 @@ AI（Gemini / Cline）を活用した持続可能な開発・運用の実現、A
     13. **検証後ネクストアクション3分岐規格（Post-Verification 3-Way Action Protocol）**:
         - 司令塔が出力するすべての指示書末尾には、動作確認後の明確な行動指針（Case A: Git Commit & Push / Case B: ログ丸ごとリカバリー / Case C: git restore による即時白紙撤回）を必ず付記し、破壊の連鎖や作業の迷いを物理遮断すること。
 
+
+### 17.5 Google AI Studioクレジット安全運用およびCLAUDE.md配備規律
+14. **Google AI Studioクレジット安全運用規格**:
+    - Google AI Studioを利用する際は、意図せぬ課金やAPI暴走を防ぐため、コンソール上で必ず**上限予算設定（Usage Limits / Budget Alerts）**を有効化すること。
+    - APIキーを発行する際は権限を最小限に絞り、プロジェクト外への流出を物理的に防ぐ厳格な管理を行うこと。
+15. **CLAUDE.md配備規律**:
+    - プロジェクトルート直下に極小・高密度な実行ルールを記した `CLAUDE.md` を常時配備し、Claude Code等の外部エージェント稼働時においても本ガイドラインおよびワークフローの絶対ガードレールが自動ロードされるようにすること。
+
     - コア資産（全14アプリHTML、`lib/`、`js/`、`docs/`、設定ファイル群）はホワイトリストにより完全保護（Zero-Modification死守）とし、本番コードへの一切の副作用を遮断する。
 
 ## 第18項 ダイアレル交配分析（Diallel Analysis）・G×Eモデル拡張規格 (v36.0 制定)
