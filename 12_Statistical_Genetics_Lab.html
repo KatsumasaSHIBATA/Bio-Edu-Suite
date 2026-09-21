@@ -3229,6 +3229,10 @@ function closeFeedbackForm() {
             origConfirm();
         };
     }
+    // [Bio-Edu Suite v36.2] Universal Cloud Hydration (Scoped)
+    window.addEventListener('bio_edu_cloud_synced', () => { if (typeof restoreApp12Session === 'function') restoreApp12Session(); });
+    window.addEventListener('bio_edu_preset_loaded', () => { if (typeof restoreApp12Session === 'function') restoreApp12Session(); });
+
 })();
 </script>
 

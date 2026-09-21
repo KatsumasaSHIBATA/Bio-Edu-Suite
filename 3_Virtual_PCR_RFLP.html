@@ -2317,6 +2317,10 @@ function closeFeedbackForm() {
         } else {
             hydrateUIState();
         }
+    // [Bio-Edu Suite v36.2] Universal Cloud Hydration (Scoped)
+    window.addEventListener('bio_edu_cloud_synced', () => { if (typeof hydrateUIState === 'function') hydrateUIState(); });
+    window.addEventListener('bio_edu_preset_loaded', () => { if (typeof hydrateUIState === 'function') hydrateUIState(); });
+
     })();
 
 

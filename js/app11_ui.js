@@ -399,3 +399,27 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
     }
 });
+// [Bio-Edu Suite v36.2] Universal Cloud Hydration
+(function() {
+    const tryRestore = () => {
+        try {
+            if (typeof None === 'function') {
+                None();
+                return;
+            }
+            // グローバル登録された復元関数のフォールバック探索
+            const possibleFns = ['restoreWorkspace', 'restoreState', 'restoreSession', 'initWorkspace'];
+            for (const fn of possibleFns) {
+                if (typeof window[fn] === 'function') {
+                    window[fn]();
+                    return;
+                }
+            }
+        } catch (e) {
+            console.warn('[SyncHydration] Restore warning:', e);
+        }
+    };
+
+    window.addEventListener('bio_edu_cloud_synced', tryRestore);
+    window.addEventListener('bio_edu_preset_loaded', tryRestore);
+})();
