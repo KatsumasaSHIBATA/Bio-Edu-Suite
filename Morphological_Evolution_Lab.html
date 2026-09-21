@@ -1262,16 +1262,31 @@ input[type="submit"]:disabled:active {
             isHydrated.current = true;
         }, []);
 
-        // 教員課題データ・同期データの受信リスナー
+        // [Bio-Edu Suite v36.2] Morphological Evolution Cloud Hydration
         useEffect(() => {
-            const handlePresetApply = (event) => {
-                if (event.detail && event.detail.measurements) {
-                    setMeasurements(event.detail.measurements);
-                    showToast("課題データをワークシートに適用しました", "success");
+            const handleCloudSync = () => {
+                try {
+                    const savedData = sessionStorage.getItem('bio_edu_workspace_evolution_lab');
+                    if (savedData) {
+                        const parsed = JSON.parse(savedData);
+                        if (parsed.measurements) setMeasurements(parsed.measurements);
+                        if (parsed.uploadedImage) setUploadedImage(parsed.uploadedImage);
+                        if (parsed.measureMode) setMeasureMode(parsed.measureMode);
+                        if (parsed.points) setPoints(parsed.points);
+                        if (typeof showToast === 'function') showToast("最新の前肢骨格データを同期しました", "info");
+                    }
+                } catch (err) {
+                    console.warn("Cloud sync hydration error:", err);
                 }
             };
-            window.addEventListener('bio-edu-apply-preset', handlePresetApply);
-            return () => window.removeEventListener('bio-edu-apply-preset', handlePresetApply);
+            window.addEventListener('bio_edu_cloud_synced', handleCloudSync);
+            window.addEventListener('bio_edu_preset_loaded', handleCloudSync);
+            window.addEventListener('bio-edu-apply-preset', handleCloudSync);
+            return () => {
+                window.removeEventListener('bio_edu_cloud_synced', handleCloudSync);
+                window.removeEventListener('bio_edu_preset_loaded', handleCloudSync);
+                window.removeEventListener('bio-edu-apply-preset', handleCloudSync);
+            };
         }, []);
 
 
@@ -1287,6 +1302,7 @@ input[type="submit"]:disabled:active {
                 };
                 try {
                     sessionStorage.setItem('bio_edu_workspace_evolution_lab', JSON.stringify(dataToSave));
+                window.dispatchEvent(new CustomEvent('bio_edu_request_save'));
                 } catch (e) {
                     console.warn("Storage quota exceeded or error while saving workspace:", e);
                 }

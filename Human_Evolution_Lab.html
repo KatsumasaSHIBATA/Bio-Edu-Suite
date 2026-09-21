@@ -880,6 +880,7 @@ input[type="submit"]:disabled:active {
                 };
                 try {
                     sessionStorage.setItem('bio_edu_workspace_human_evolution', JSON.stringify(dataToSave));
+                window.dispatchEvent(new CustomEvent('bio_edu_request_save'));
                 } catch (e) {
                     console.warn("Storage quota exceeded or error while saving workspace:", e);
                 }
@@ -892,6 +893,31 @@ input[type="submit"]:disabled:active {
                 [speciesName]: { ...prev[speciesName], [field]: value }
             }));
         };
+
+        // [Bio-Edu Suite v36.2] Human Evolution Cloud Hydration
+        useEffect(() => {
+            const handleCloudSync = () => {
+                try {
+                    const savedData = sessionStorage.getItem('bio_edu_workspace_human_evolution');
+                    if (savedData) {
+                        const parsed = JSON.parse(savedData);
+                        if (parsed.measurements) setMeasurements(parsed.measurements);
+                        if (parsed.uploadedImage) setUploadedImage(parsed.uploadedImage);
+                        if (parsed.measureMode) setMeasureMode(parsed.measureMode);
+                        if (parsed.points) setPoints(parsed.points);
+                        if (typeof showToast === 'function') showToast("最新の頭骨計測データを同期しました", "info");
+                    }
+                } catch (err) {
+                    console.warn("Cloud sync hydration error:", err);
+                }
+            };
+            window.addEventListener('bio_edu_cloud_synced', handleCloudSync);
+            window.addEventListener('bio_edu_preset_loaded', handleCloudSync);
+            return () => {
+                window.removeEventListener('bio_edu_cloud_synced', handleCloudSync);
+                window.removeEventListener('bio_edu_preset_loaded', handleCloudSync);
+            };
+        }, []);
 
         // 2D Digitizer effects and handlers
         useEffect(() => {

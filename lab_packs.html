@@ -1589,6 +1589,7 @@ function closeFeedbackForm() {
                     }
                 });
                 sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+                window.dispatchEvent(new CustomEvent('bio_edu_request_save'));
             } catch (e) {
                 console.warn('UIステートのシリアライズに失敗しました:', e);
             }
@@ -1627,6 +1628,15 @@ function closeFeedbackForm() {
         } else {
             hydrateUIState();
         }
+
+        // [Bio-Edu Suite v36.2] Lab Packs Cloud Hydration
+        window.addEventListener('bio_edu_cloud_synced', () => {
+            if (typeof hydrateUIState === 'function') hydrateUIState();
+        });
+        window.addEventListener('bio_edu_preset_loaded', () => {
+            if (typeof hydrateUIState === 'function') hydrateUIState();
+        });
+
     })();
 </script>
 <script>
