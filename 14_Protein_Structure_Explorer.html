@@ -1437,7 +1437,7 @@ input[type="submit"]:disabled:active {
           localStorage.removeItem('bio_edu_suite_mutations_timestamp');
           localStorage.removeItem('bio_edu_suite_mutation_payload');
           sessionStorage.removeItem('bio_edu_suite_mutation_payload');
-          showToast("前回のデータから1時間以上経過したため、古いデモデータを自動破棄しました。", "warning");
+          // デモデータパージ機能の通知を撤廃（完全空箱化）
         } else {
           // データ同期
           try {
