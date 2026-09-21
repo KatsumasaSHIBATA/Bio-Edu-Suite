@@ -258,6 +258,24 @@ function startRoomListener() {
 async function syncFromCloud() {
   if (!isConnected || !auth.currentUser) return;
   try {
+    // 教員モード（isTeacher = true）かつローカルの sessionStorage 内に作業データが既に存在する場合、
+    // クラウドからのダウンロード（巻き戻し）を遮断し、教員ローカルの最新状態をクラウドへ即座に確定保存して早期リターンする
+    let hasLocalWork = false;
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const k = sessionStorage.key(i);
+      if (k && (k.startsWith('bio_edu_ws_') || k.startsWith('bio_edu_draft_') || k.startsWith('bio_edu_autosave_') || k.startsWith('bio_edu_workspace_'))) {
+        if (sessionStorage.getItem(k)) {
+          hasLocalWork = true;
+          break;
+        }
+      }
+    }
+
+    if (isTeacher && hasLocalWork) {
+      await saveCurrentWorkspace();
+      return;
+    }
+
     const roomRef = doc(db, "rooms", currentRoomCode);
     const docRef = doc(db, `rooms/${currentRoomCode}/participants`, currentParticipantId);
 
@@ -314,6 +332,9 @@ export async function saveCurrentWorkspace() {
     console.warn("Cloud sync write error:", e);
   }
 }
+
+// グローバル window オブジェクトへ saveCurrentWorkspace を公開し、他スクリプトから遅延なく即時保存を呼び出せるようにする
+window.saveCurrentWorkspace = saveCurrentWorkspace;
 
 export { app, auth, db };
 // [Bio-Edu Suite v36.2] 各アプリからの即時保存要求リスナー

@@ -1681,8 +1681,12 @@ function closeFeedbackForm() {
         sessionStorage.setItem(SESSION_WORKSPACE_KEY, serialized);
       } catch(e) { console.warn('Failed to save sessionStorage', e); }
 
-      // ダッシュボード固有：状態変更時に即時クラウド同期（教員・生徒共通のUX堅牢化）
-      import('./auth_sync.js').then(module => module.saveCurrentWorkspace()).catch(e => console.warn('Sync dispatch error:', e));
+      // ダッシュボード固有：状態変更時に即時クラウド同期（window.saveCurrentWorkspace が存在する場合は優先して即時同期キック）
+      if (typeof window.saveCurrentWorkspace === 'function') {
+        window.saveCurrentWorkspace();
+      } else {
+        import('./auth_sync.js').then(module => module.saveCurrentWorkspace()).catch(e => console.warn('Sync dispatch error:', e));
+      }
     }
 
     function generateBaseId() {
@@ -2217,7 +2221,8 @@ function closeFeedbackForm() {
         
         deleteFromIndexedDB(STORE_SAMPLES, id).catch(e => console.error(e));
         
-        // ストレージへ即座に上書き保存
+        // 確実に最新の更新後配列を sessionStorage へ即座に同期させ、ストレージ保存・クラウド即時保存を担保
+        sessionStorage.setItem(SESSION_WORKSPACE_KEY, JSON.stringify(samples));
         saveToStorage();
         renderSamples();
         showToast("サンプルを削除しました", "success");
