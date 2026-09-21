@@ -1199,6 +1199,10 @@ input[type="submit"]:disabled:active {
             setPoints([]);
             setMeasureMode(null);
             setIsDigitizerExpanded(false);
+            setUploadedImage(null);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
         };
 
 
@@ -1808,6 +1812,7 @@ input[type="submit"]:disabled:active {
                                                                 <span className="whitespace-nowrap text-[9px] font-normal text-slate-400 mt-0.5 scale-90 origin-center">薄ピンクの関節先</span>
                                                             </div>
                                                             <div className="w-12"></div>
+                                                            <div className="w-11 shrink-0"></div>
                                                         </div>
                                                     </th>
                                                     <th className="px-2 py-2 font-bold text-center w-[90px] align-top text-[11px] leading-tight pt-3">データ転送</th>
@@ -1851,14 +1856,16 @@ input[type="submit"]:disabled:active {
                                                                 <input type="number" step="0.1" value={data.phal || ""} onChange={(e) => handleInput(species.name, 'phal', e.target.value)}
                                                                     className="w-14 bg-slate-50 border border-slate-300 text-slate-800 text-center text-[12px] rounded focus:ring-1 focus:ring-emerald-400 focus:outline-none py-0.5 transition-all" />
                                                                 <div className="w-12 text-[12px] text-emerald-600 font-mono-code font-bold leading-none">{ratioPhal}</div>
+                                                                <div className="w-11 shrink-0 flex items-center">
                                                                     {!isNaN(metaVal) && !isNaN(phalVal) && (metaVal + phalVal > 0) && (
                                                                         <span 
-                                                                            className="text-[9px] font-mono-code text-indigo-600 bg-indigo-50 border border-indigo-200 rounded px-1 mt-0.5 whitespace-nowrap scale-90 origin-left"
+                                                                            className="text-[9px] font-mono-code text-indigo-600 bg-indigo-50 border border-indigo-200 rounded px-1 whitespace-nowrap scale-90 origin-left"
                                                                             title="手先(B+C)に対する指骨(C)の比率"
                                                                         >
                                                                             指:{((phalVal / (metaVal + phalVal)) * 100).toFixed(0)}%
                                                                         </span>
                                                                     )}
+                                                                </div>
                                                             </div>
                                                         </td>
                                                         <td className="px-2 py-1.5 text-center">
@@ -1916,15 +1923,17 @@ input[type="submit"]:disabled:active {
                                                             <input type="number" step="0.1" value={avgData.phal || ""} onChange={(e) => handleInput(avgName, 'phal', e.target.value)}
                                                                 className="w-14 bg-white border border-amber-400 shadow-inner text-amber-900 text-center text-[12px] font-bold rounded focus:ring-1 focus:ring-amber-500 focus:outline-none py-0.5" />
                                                             <div className="w-12 text-[12px] text-amber-600 font-mono-code font-bold leading-none">{aRatioPhal}</div>
+                                                            <div className="w-11 shrink-0 flex items-center">
+                                                                {!isNaN(aMetaVal) && !isNaN(aPhalVal) && (aMetaVal + aPhalVal > 0) && (
+                                                                    <span 
+                                                                        className="text-[9px] font-mono-code text-indigo-600 bg-indigo-50 border border-indigo-200 rounded px-1 whitespace-nowrap scale-90 origin-left"
+                                                                        title="手先(B+C)に対する指骨(C)の比率"
+                                                                    >
+                                                                        指:{((aPhalVal / (aMetaVal + aPhalVal)) * 100).toFixed(0)}%
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                         </div>
-                                                                    {!isNaN(aMetaVal) && !isNaN(aPhalVal) && (aMetaVal + aPhalVal > 0) && (
-                                                                        <span 
-                                                                            className="text-[9px] font-mono-code text-indigo-600 bg-indigo-50 border border-indigo-200 rounded px-1 mt-0.5 whitespace-nowrap scale-90 origin-left"
-                                                                            title="手先(B+C)に対する指骨(C)の比率"
-                                                                        >
-                                                                            指:{((aPhalVal / (aMetaVal + aPhalVal)) * 100).toFixed(0)}%
-                                                                        </span>
-                                                                    )}
                                                     </td>
                                                     <td className="px-2 py-1.5 text-center">
                                                         <button 
@@ -1981,6 +1990,16 @@ input[type="submit"]:disabled:active {
                                                             <input type="number" step="0.1" value={chickData.phal || ""} onChange={(e) => handleInput(chickName, 'phal', e.target.value)}
                                                                 className="w-14 bg-white border border-orange-300 shadow-inner text-orange-900 text-center text-[12px] font-bold rounded focus:ring-1 focus:ring-orange-400 focus:outline-none py-0.5" />
                                                             <div className="w-12 text-[12px] text-orange-600 font-mono-code font-bold leading-none">{cRatioPhal}</div>
+                                                            <div className="w-11 shrink-0 flex items-center">
+                                                                {!isNaN(cMetaVal) && !isNaN(cPhalVal) && (cMetaVal + cPhalVal > 0) && (
+                                                                    <span 
+                                                                        className="text-[9px] font-mono-code text-indigo-600 bg-indigo-50 border border-indigo-200 rounded px-1 whitespace-nowrap scale-90 origin-left"
+                                                                        title="手先(B+C)に対する指骨(C)の比率"
+                                                                    >
+                                                                        指:{((cPhalVal / (cMetaVal + cPhalVal)) * 100).toFixed(0)}%
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </td>
                                                     <td className="px-2 py-1.5 text-center">
@@ -1995,14 +2014,6 @@ input[type="submit"]:disabled:active {
                                                             {copyStatus[chickName] || "コピー"}
                                                         </button>
                                                     </td>
-                                                                    {!isNaN(cMetaVal) && !isNaN(cPhalVal) && (cMetaVal + cPhalVal > 0) && (
-                                                                        <span 
-                                                                            className="text-[9px] font-mono-code text-indigo-600 bg-indigo-50 border border-indigo-200 rounded px-1 mt-0.5 whitespace-nowrap scale-90 origin-left"
-                                                                            title="手先(B+C)に対する指骨(C)の比率"
-                                                                        >
-                                                                            指:{((cPhalVal / (cMetaVal + cPhalVal)) * 100).toFixed(0)}%
-                                                                        </span>
-                                                                    )}
                                                 </tr>
                                                 );
                                             })()}
