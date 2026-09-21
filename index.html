@@ -1649,6 +1649,9 @@ function closeFeedbackForm() {
       try {
         sessionStorage.setItem(SESSION_WORKSPACE_KEY, serialized);
       } catch(e) { console.warn('Failed to save sessionStorage', e); }
+
+      // ダッシュボード固有：状態変更時に即時クラウド同期（教員・生徒共通のUX堅牢化）
+      import('./auth_sync.js').then(module => module.saveCurrentWorkspace()).catch(e => console.warn('Sync dispatch error:', e));
     }
 
     function generateBaseId() {
