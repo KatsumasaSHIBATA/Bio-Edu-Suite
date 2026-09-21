@@ -3,6 +3,12 @@
 本ガイドラインは、Bio-Edu Suite内の全アプリケーションにおける視覚的な一貫性（UI）、操作感の統一（UX）、データ連携、および日本学術会議の公式資料「高等学校の生物教育における重要用語の選定について（2025年版）」に完全に準拠した教育的価値を担保するための「共通規格書（絶対の法律）」です。
 
 ## **【改訂・サルベージ履歴】**
+* **v36.2 (2026-09-21):** 教員モードにおける即時同期（Teacher Instant Sync & Broadcast）および全アプリ共通クラウド同期ハイドレーション規格の法制化。
+  - [教員ステートの即時ブロードキャスト（Teacher Live Broadcast）]: 教員端末（`isTeacher = true`）の作業空間（アプリ⑧の系統樹・距離行列・パラメータ、アプリ⑦の登録カセット・DB・検索結果等の完全ステート）を、`rooms/{roomCode}` ドキュメント（`teacherLiveState`）へ自動同期し、ルーム入室中の生徒端末へリアルタイムおよび入室時に即時展開する規格を制定。
+  - [全アプリ共通クラウド同期イベント（bio_edu_cloud_synced）リスナー実装義務]: クラウド同期受信時に発火される `bio_edu_cloud_synced` イベントを全アプリで受信し、`sessionStorage` 復元関数および描画関数を直ちにキックして画面描画を完全同期させるパイプラインを義務化。
+  - [リッチデータ構造体の完全シリアライズ義務]: 単なる主要テキストエリア（塩基配列・アミノ酸配列）のみの同期を禁止し、アプリ⑧のクラスタ構造（`clusters`）・Newick・距離行列や、アプリ⑦のローカルDB（`localDB`）・検索結果配列など、描画を構成する全オブジェクトを完全シリアライズして同期対象に含めることを法制化。
+
+
 * **v36.1 (2026-09-20):** 検証後ネクストアクション3分岐規格（Post-Verification 3-Way Action Standard）およびモデル・チャット継続規律の法制化。
   - [3分岐アクションの標準化]: 司令塔が出力するすべての実装・改修指示書の末尾に、動作検証後のステート遷移（Case A: 完全動作時のCommit & Push、Case B: 不具合時の生ログ丸ごとリカバリー、Case C: 致命的崩壊時のRollback白紙撤回）の明示を義務化。
   - [Web側生ログ丸ごと受容特例の制定]: ユーザーの手作業フリクションを根絶するため、不具合発生時におけるスタックトレースやエラー箇所の切り抜き探索を不要とし、Web版Geminiへのエラーログ・Cline報告書全文の直接貼付・テキスト添付を正式許可。司令塔側が自律的に根本原因を特定し、極小トークン指示書へ蒸留する。
@@ -1220,6 +1226,30 @@ Bio-Edu SuiteはMPA（マルチページアプリケーション）構造を採�
      * `appName`: 発行元アプリケーションのタイトル（`document.title`）。
      * `registeredAt`: 発行時のエポックミリ秒（`Date.now()`）。
    - **ハイドレーション＆イベントディスパッチ**: 生徒側の `importMasterPreset` 実行時は、`sessionStorage` へのデータ復元および主要入力要素への値の流し込みを行った直後、`input` / `change` イベントとともにカスタムイベント `window.dispatchEvent(new CustomEvent('bio_edu_preset_loaded', { detail: payload }))` を送出し、各アプリ固有の再計算・再描画関数を確実にキックすること。
+
+
+
+### 7.5.1 教員モード即時同期・リアルタイムブロードキャスト規格（Teacher Instant Sync & Live Broadcast Standard）
+1. **教員ライブステート（Teacher Live State）の自動ブロードキャスト**:
+   - 参加者IDの先頭が「`TEACHER`」で入室した教員端末（`isTeacher = true`）において、データの解析実行・パラメータ変更・作業状態更新が行われた際、`auth_sync.js` は教員端末の `sessionStorage` スナップショットを `rooms/{currentRoomCode}` ドキュメント内の `teacherLiveState` フィールドへ自動同期（保存）する。
+2. **生徒入室時の自動ハイドレーション＆リアルタイム追従**:
+   - 生徒端末が入室（`joinRoom`）した際、該当ルームに `teacherLiveState` が存在する場合は、教員が直前まで作成した完全な作業空間（アプリ⑧の系統樹・距離行列、アプリ⑦のDBカセット・検索結果等）を生徒端末の `sessionStorage` に自動展開する。
+   - 展開完了直後に `bio_edu_cloud_synced` カスタムイベントをディスパッチし、生徒側の画面を教員と同じ解析完了状態へ即時再描画する。
+3. **全14アプリにおけるクラウド同期イベント（bio_edu_cloud_synced）リスナー実装義務**:
+   - 単に DOM の `value` を書き換えるだけでは D3.js や Canvas の描画関数は発火しないため、全アプリにおいて以下のイベントリスナー実装を義務付ける。
+     ```javascript
+     window.addEventListener('bio_edu_cloud_synced', () => {
+         if (typeof restoreWorkspace === 'function') {
+             restoreWorkspace();
+         }
+     });
+     ```
+   - ハイドレーション中は不要な再保存ループを防ぐため、初期化ガードフラグ（`isHydrating = true`）を立てた状態でサイレントに再描画を実行すること。
+4. **リッチデータ構造体（非テキスト情報）の完全シリアライズ義務**:
+   - 主要テキストエリア（DNA/mRNAの塩基配列等）のみを同期対象とすることを禁止する。
+   - アプリ⑧: `clusters`（系統樹ノード階層）、`distanceMatrix`（距離行列）、`algo`（アルゴリズム）、`bootstrap`（ブートストラップ回数）、`outgroup`（外群設定）、`newick`（Newick文字列）
+   - アプリ⑦: `localDB`（登録カセット・生物種データベース）、`currentResults`（BLAST相同性検索結果）、スコアリングパラメータ（Match/Mismatch/Gap）
+   - 上記のデータ構造体を確実に `sessionStorage`（および Firestore）へ完全シリアライズし、入室した全端末で寸分違わぬ同一のグラフ・系統樹・テーブルを描画させること。
 
 
 ### 7.6 外部解析APIとのハイブリッド・デュアルエンジン規格（BLAST検索等）
