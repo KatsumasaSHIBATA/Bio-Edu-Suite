@@ -125,6 +125,7 @@ export function joinRoom(roomCode, participantId) {
   currentParticipantId = participantId.trim();
   isConnected = true;
   isTeacher = currentParticipantId.toUpperCase().startsWith("TEACHER");
+  sessionStorage.setItem('bio_edu_just_joined', 'true');
 
   localStorage.setItem('bio_edu_room_code', currentRoomCode);
   localStorage.setItem('bio_edu_participant_id', currentParticipantId);
@@ -258,40 +259,31 @@ function startRoomListener() {
 async function syncFromCloud() {
   if (!isConnected || !auth.currentUser) return;
   try {
-    // 教員モード（isTeacher = true）の判定時、ローカルの sessionStorage 内に
-    // 'bio_edu_workspace_dashboard_samples' が存在し、パース可能なデータが存在している場合は
-    // クラウドからの上書き（巻き戻し）を遮断して saveCurrentWorkspace() を実行して早期リターンする。
-    let hasDashboardSamples = false;
-    try {
-      const ds = sessionStorage.getItem('bio_edu_workspace_dashboard_samples');
-      if (ds) {
-        const parsed = JSON.parse(ds);
-        if (Array.isArray(parsed) && parsed.length >= 0) {
-          hasDashboardSamples = true;
-        }
-      }
-    } catch(e) {}
-
-    let hasLocalWork = hasDashboardSamples;
-    if (!hasLocalWork) {
-      for (let i = 0; i < sessionStorage.length; i++) {
-        const k = sessionStorage.key(i);
-        if (k && (k.startsWith('bio_edu_ws_') || k.startsWith('bio_edu_draft_') || k.startsWith('bio_edu_autosave_') || k.startsWith('bio_edu_workspace_'))) {
-          if (sessionStorage.getItem(k)) {
-            hasLocalWork = true;
-            break;
-          }
+    // 【同一セッション内ステート保護】ローカルに作業中データが存在する場合の調停
+    let hasLocalWork = false;
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const k = sessionStorage.key(i);
+      if (k && (k.startsWith('bio_edu_ws_') || k.startsWith('bio_edu_draft_') || k.startsWith('bio_edu_autosave_') || k.startsWith('bio_edu_workspace_'))) {
+        const val = sessionStorage.getItem(k);
+        if (val && val !== '[]' && val !== '{}' && val !== '""') {
+          hasLocalWork = true;
+          break;
         }
       }
     }
 
-    if (isTeacher && hasLocalWork) {
+    // 初回入室直後フラグの確認（入室直後はクラウドからの初回展開を優先し、以降のアプリ間遷移ではローカル最新を維持）
+    const isJustJoined = sessionStorage.getItem('bio_edu_just_joined') === 'true';
+    if (isJustJoined) {
+      sessionStorage.removeItem('bio_edu_just_joined');
+    }
+
+    // 教員モード、または生徒モードでアプリ間遷移時（!isJustJoined）にローカル作業が存在する場合、
+    // クラウドからの過去スナップショットダウンロード（巻き戻し・復活バグ）を遮断し、ローカルを確定保存
+    if (hasLocalWork && (isTeacher || !isJustJoined)) {
       await saveCurrentWorkspace();
       return;
     }
-
-    const roomRef = doc(db, "rooms", currentRoomCode);
-    const docRef = doc(db, `rooms/${currentRoomCode}/participants`, currentParticipantId);
 
     const [roomSnap, userSnap] = await Promise.all([getDoc(roomRef), getDoc(docRef)]);
     let targetWorkspace = null;

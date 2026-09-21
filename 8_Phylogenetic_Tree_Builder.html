@@ -2360,5 +2360,22 @@ if ('serviceWorker' in navigator) {
     });
 }
 </script>
+
+  <!-- [Bio-Edu Suite v36.2] 全アプリ共通クラウド同期ハイドレーションリスナー -->
+  <script>
+    window.addEventListener('bio_edu_cloud_synced', () => {
+      try {
+        if (typeof restoreWorkspace === 'function') {
+          restoreWorkspace();
+        } else if (typeof hydrateUIState === 'function') {
+          hydrateUIState();
+        } else if (typeof loadSavedState === 'function') {
+          loadSavedState();
+        }
+      } catch (err) {
+        console.warn('Auto hydration on cloud sync failed:', err);
+      }
+    });
+  </script>
 </body>
 </html>
