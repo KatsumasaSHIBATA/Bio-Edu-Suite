@@ -258,15 +258,29 @@ function startRoomListener() {
 async function syncFromCloud() {
   if (!isConnected || !auth.currentUser) return;
   try {
-    // 教員モード（isTeacher = true）かつローカルの sessionStorage 内に作業データが既に存在する場合、
-    // クラウドからのダウンロード（巻き戻し）を遮断し、教員ローカルの最新状態をクラウドへ即座に確定保存して早期リターンする
-    let hasLocalWork = false;
-    for (let i = 0; i < sessionStorage.length; i++) {
-      const k = sessionStorage.key(i);
-      if (k && (k.startsWith('bio_edu_ws_') || k.startsWith('bio_edu_draft_') || k.startsWith('bio_edu_autosave_') || k.startsWith('bio_edu_workspace_'))) {
-        if (sessionStorage.getItem(k)) {
-          hasLocalWork = true;
-          break;
+    // 教員モード（isTeacher = true）の判定時、ローカルの sessionStorage 内に
+    // 'bio_edu_workspace_dashboard_samples' が存在し、パース可能なデータが存在している場合は
+    // クラウドからの上書き（巻き戻し）を遮断して saveCurrentWorkspace() を実行して早期リターンする。
+    let hasDashboardSamples = false;
+    try {
+      const ds = sessionStorage.getItem('bio_edu_workspace_dashboard_samples');
+      if (ds) {
+        const parsed = JSON.parse(ds);
+        if (Array.isArray(parsed) && parsed.length >= 0) {
+          hasDashboardSamples = true;
+        }
+      }
+    } catch(e) {}
+
+    let hasLocalWork = hasDashboardSamples;
+    if (!hasLocalWork) {
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const k = sessionStorage.key(i);
+        if (k && (k.startsWith('bio_edu_ws_') || k.startsWith('bio_edu_draft_') || k.startsWith('bio_edu_autosave_') || k.startsWith('bio_edu_workspace_'))) {
+          if (sessionStorage.getItem(k)) {
+            hasLocalWork = true;
+            break;
+          }
         }
       }
     }

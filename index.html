@@ -1576,15 +1576,33 @@ function closeFeedbackForm() {
         } catch(e) {}
       }
 
-      // ストレージが空なら空（[]）を正とし、いかなる自動補完も行わない
-      samples = (Array.isArray(loaded)) ? loaded : [];
-      
+      const isCleared = localStorage.getItem('bio_edu_samples_cleared') === 'true';
+
+      if (Array.isArray(loaded)) {
+        samples = loaded;
+      } else if (isCleared) {
+        samples = [];
+      } else {
+        samples = getDefaultFinchSamples();
+        saveToStorage();
+      }
+
       // 起動直後からセッションワークスペースに保持させて同期対象とする
       try {
         sessionStorage.setItem(SESSION_WORKSPACE_KEY, JSON.stringify(samples));
       } catch(e) {}
       
       renderSamples();
+    }
+
+    function restoreDefaultSamples() {
+      localStorage.removeItem('bio_edu_samples_cleared');
+      samples = getDefaultFinchSamples();
+      saveToStorage();
+      renderSamples();
+      if (typeof showToast === 'function') {
+        showToast("初期サンプル（4種）を復元しました", "success");
+      }
     }
 
     // 【クラウド同期受信リスナー】クラウドから最新ワークスペースが復元されたら即時画面更新
@@ -1812,9 +1830,13 @@ function closeFeedbackForm() {
 
       if (samples.length === 0) {
         grid.innerHTML = `
-          <div class="empty-state" style="grid-column: 1 / -1;">
-            <span style="font-size: 40px; display:block; margin-bottom:10px; color:#bdc3c7;">[ Empty ]</span>
-            <p>「＋ 登録」から、採集したデータを入力してみましょう。</p>
+          <div class="empty-state" style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;">
+            <span style="font-size: 40px; display:block; margin-bottom:0; color:#bdc3c7;">[ Empty ]</span>
+            <p style="margin: 0;">「＋ 登録」から、採集したデータを入力してみましょう。</p>
+            <button class="btn" onclick="restoreDefaultSamples(); triggerHapticFeedback();" style="background: var(--phase-color); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
+              <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              初期サンプル（ダーウィンフィンチ4種）を復元
+            </button>
           </div>
         `;
         return;
@@ -2219,6 +2241,10 @@ function closeFeedbackForm() {
         // 該当IDを配列から完全に除外
         samples = samples.filter(s => s.id !== id);
         
+        if (samples.length === 0) {
+          localStorage.setItem('bio_edu_samples_cleared', 'true');
+        }
+
         deleteFromIndexedDB(STORE_SAMPLES, id).catch(e => console.error(e));
         
         // 確実に最新の更新後配列を sessionStorage へ即座に同期させ、ストレージ保存・クラウド即時保存を担保
