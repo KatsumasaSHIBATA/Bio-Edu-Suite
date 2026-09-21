@@ -3004,7 +3004,7 @@ input[type="submit"]:disabled:active {
     document.addEventListener('DOMContentLoaded', () => {
         initTooltips();
         
-        // ハイブリッド入力のスマートUX (CSV判定でselect活性化)
+        // ハイブリッド入力のスマートUX (CSV判定でselect活性化 ＋ 行列方向の自動選択)
         const hybridInput = document.getElementById('hybrid-morph-input');
         if (hybridInput) {
             hybridInput.addEventListener('input', (e) => {
@@ -3015,6 +3015,15 @@ input[type="submit"]:disabled:active {
                     const el = document.getElementById(id);
                     if (el) el.disabled = !isCSV;
                 });
+
+                // 1行目の第2カラムが数値の場合、自動で「行がサンプル (row)」に切り替える
+                if (isCSV) {
+                    const firstLineTokens = val.split('\n')[0].split(/[,\t]+/).map(s => s.trim());
+                    if (firstLineTokens.length >= 2 && !isNaN(parseFloat(firstLineTokens[1])) && isFinite(firstLineTokens[1])) {
+                        const dirSelect = document.getElementById('data-direction');
+                        if (dirSelect) dirSelect.value = 'row';
+                    }
+                }
             });
         }
         
