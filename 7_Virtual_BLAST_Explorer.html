@@ -1554,6 +1554,7 @@ input[type="submit"]:disabled:active {
 
         if (!silent) {
             showToast(`全生物種 総合データベース（${localDB.length}種）を読み込みました。`);
+        if (typeof window.saveApp7Session === "function") window.saveApp7Session();
         }
     }
 
@@ -1586,6 +1587,7 @@ input[type="submit"]:disabled:active {
         updateDBCount();
         document.getElementById('currentLoadedDataInfo').innerText = `読み込み中: [プリセット] ${text} (${localDB.length}種)`;
         showToast(`プリセットを「${text}」に切り替えました。`);
+        if (typeof window.saveApp7Session === "function") window.saveApp7Session();
     }
 
     const queryDropZone = document.getElementById('queryDropZone');
@@ -1857,6 +1859,9 @@ input[type="submit"]:disabled:active {
             runBtn.innerHTML = originalBtnHtml;
         }
 
+        if (typeof window.saveApp7Session === 'function') {
+            window.saveApp7Session();
+        }
         showToast("解析が完了しました（全生物種 照合完了）");
     }
 
@@ -2307,6 +2312,7 @@ function closeFeedbackForm() {
                 };
 
                 sessionStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state));
+                window.dispatchEvent(new CustomEvent('bio_edu_request_save'));
             } catch (e) {
                 console.warn('[AutoSave] App7 save failed:', e);
             }
@@ -2394,8 +2400,19 @@ function closeFeedbackForm() {
         window.addEventListener('pagehide', saveApp7Session);
 
         // ロード完了後に確実に復元
+        window.saveApp7Session = saveApp7Session;
+        window.restoreApp7Session = restoreApp7Session;
+
         window.addEventListener('load', () => {
             setTimeout(restoreApp7Session, 120);
+        });
+
+        // [Bio-Edu Suite v36.2] App7 Cloud Hydration Listener
+        window.addEventListener('bio_edu_cloud_synced', () => {
+            restoreApp7Session();
+        });
+        window.addEventListener('bio_edu_preset_loaded', () => {
+            restoreApp7Session();
         });
 
         const origConfirm = window.confirmDataReset;

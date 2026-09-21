@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, enableIndexedDbPersistence, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, enableIndexedDbPersistence, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAFJ8dH4K50MCLAkHgaS6pqdvsTNUzAzHk",
@@ -24,6 +24,7 @@ let currentRoomCode = localStorage.getItem('bio_edu_room_code') || "";
 let currentParticipantId = localStorage.getItem('bio_edu_participant_id') || "";
 let isConnected = !!(currentRoomCode && currentParticipantId);
 let isTeacher = currentParticipantId.toUpperCase().startsWith("TEACHER");
+let unsubscribeRoomListener = null; // [Bio-Edu Suite v36.2] Teacher Live Sync
 
 export function renderAuthStatus() {
   const icon = document.getElementById("accountUserIcon");
@@ -138,6 +139,7 @@ export function joinRoom(roomCode, participantId) {
   if (auth.currentUser) {
     syncFromCloud();
   }
+  startRoomListener();
 }
 
 export function leaveRoom() {
@@ -149,6 +151,11 @@ export function leaveRoom() {
 
   localStorage.removeItem('bio_edu_room_code');
   localStorage.removeItem('bio_edu_participant_id');
+
+  if (typeof unsubscribeRoomListener === 'function') {
+    unsubscribeRoomListener();
+    unsubscribeRoomListener = null;
+  }
 
   renderAuthStatus();
 
@@ -217,23 +224,59 @@ export async function importMasterPreset(taskCode) {
   }
 }
 
+// [Bio-Edu Suite v36.2] Teacher Live Sync & Hydration Engine
+function startRoomListener() {
+  if (!isConnected || !auth.currentUser || isTeacher) return;
+  if (typeof unsubscribeRoomListener === 'function') {
+    unsubscribeRoomListener();
+  }
+  try {
+    const roomRef = doc(db, "rooms", currentRoomCode);
+    unsubscribeRoomListener = onSnapshot(roomRef, (snap) => {
+      if (!snap.exists()) return;
+      const data = snap.data();
+      if (data && data.teacherLiveState) {
+        let changed = false;
+        Object.keys(data.teacherLiveState).forEach((k) => {
+          if (sessionStorage.getItem(k) !== data.teacherLiveState[k]) {
+            sessionStorage.setItem(k, data.teacherLiveState[k]);
+            changed = true;
+          }
+        });
+        if (changed) {
+          window.dispatchEvent(new CustomEvent('bio_edu_cloud_synced', { detail: data.teacherLiveState }));
+        }
+      }
+    }, (err) => {
+      console.warn("Room listener warning:", err);
+    });
+  } catch (e) {
+    console.warn("Start room listener error:", e);
+  }
+}
+
 async function syncFromCloud() {
   if (!isConnected || !auth.currentUser) return;
   try {
+    const roomRef = doc(db, "rooms", currentRoomCode);
     const docRef = doc(db, `rooms/${currentRoomCode}/participants`, currentParticipantId);
-    const snap = await getDoc(docRef);
-    if (snap.exists()) {
-      const remoteData = snap.data();
-      if (remoteData && remoteData.workspace) {
-        Object.keys(remoteData.workspace).forEach((k) => {
-          sessionStorage.setItem(k, remoteData.workspace[k]);
-        });
-        // 画面再描画・ハイドレーションイベントを送出
-        window.dispatchEvent(new CustomEvent('bio_edu_cloud_synced', { detail: remoteData.workspace }));
-        if (typeof showToast === 'function') showToast("クラウドから最新の作業状態を復元しました", "info");
-      }
+
+    const [roomSnap, userSnap] = await Promise.all([getDoc(roomRef), getDoc(docRef)]);
+    let targetWorkspace = null;
+
+    if (userSnap.exists() && userSnap.data()?.workspace && Object.keys(userSnap.data().workspace).length > 0) {
+      targetWorkspace = userSnap.data().workspace;
+    } else if (!isTeacher && roomSnap.exists() && roomSnap.data()?.teacherLiveState) {
+      targetWorkspace = roomSnap.data().teacherLiveState;
+    }
+
+    if (targetWorkspace) {
+      Object.keys(targetWorkspace).forEach((k) => {
+        sessionStorage.setItem(k, targetWorkspace[k]);
+      });
+      window.dispatchEvent(new CustomEvent('bio_edu_cloud_synced', { detail: targetWorkspace }));
+      if (typeof showToast === 'function') showToast("最新の作業状態を同期しました", "info");
     } else {
-      // クラウドにデータがまだ存在しない（初回入室時）場合、現在のローカル作業状態を即時クラウドへ初期送信
       await saveCurrentWorkspace();
     }
   } catch (e) {
@@ -255,9 +298,15 @@ export async function saveCurrentWorkspace() {
     }
     if (Object.keys(snap).length === 0) return;
 
-    // 親ドキュメント（rooms/{roomCode}）を実体化してコンソール視認性を担保
+    // 親ドキュメント（rooms/{roomCode}）を実体化して教員ステートをブロードキャスト
     const roomRef = doc(db, "rooms", currentRoomCode);
-    await setDoc(roomRef, { roomCode: currentRoomCode, lastActive: Date.now() }, { merge: true });
+    const roomPayload = { roomCode: currentRoomCode, lastActive: Date.now() };
+    if (isTeacher) {
+      roomPayload.teacherLiveState = snap;
+      roomPayload.teacherId = currentParticipantId;
+      roomPayload.teacherUpdatedAt = Date.now();
+    }
+    await setDoc(roomRef, roomPayload, { merge: true });
 
     const docRef = doc(db, `rooms/${currentRoomCode}/participants`, currentParticipantId);
     await setDoc(docRef, { workspace: snap, participantId: currentParticipantId, isTeacher: isTeacher, lastUpdated: Date.now() }, { merge: true });
@@ -267,3 +316,12 @@ export async function saveCurrentWorkspace() {
 }
 
 export { app, auth, db };
+// [Bio-Edu Suite v36.2] 各アプリからの即時保存要求リスナー
+let saveDebounceTimer = null;
+window.addEventListener('bio_edu_request_save', () => {
+  if (!isConnected || !auth.currentUser) return;
+  clearTimeout(saveDebounceTimer);
+  saveDebounceTimer = setTimeout(() => {
+    saveCurrentWorkspace();
+  }, 250);
+});
