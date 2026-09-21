@@ -205,6 +205,7 @@
             transform: translateY(0); 
             pointer-events: auto; 
         }
+        .rationale-text b { color: #d35400; font-weight: bold; }
         .rationale-text strong { 
             color: #d35400; 
             display: inline-block; 
@@ -1527,8 +1528,9 @@ input[type="submit"]:disabled:active {
             </div>
 
             <div id="rat_bootstrap" class="rationale-text">
-                <strong>【根拠：ブートストラップ解析とは？】</strong><br>
-                ・作成した系統樹の<strong>「各分岐の信頼性（確からしさ）」</strong>をパーセンテージで評価する手法です。入力された塩基配列・アミノ酸配列データから「ランダムに列を抽出し直した仮想データ」を何十〜何百回も作り、毎回系統樹を再計算します。「何度計算し直しても同じ分岐が現れるか？」を数えることで、偶然のノイズに強い堅牢な分岐（例: 100%）か、揺らぎやすい分岐（例: 50%）かを判定します。
+                <strong>【根拠：ブートストラップ解析とは？】</strong>
+
+                ・作成した系統樹の<b>「各分岐の信頼性（確からしさ）」</b>をパーセンテージで評価する手法です。入力された塩基配列・アミノ酸配列データから「ランダムに列を抽出し直した仮想データ」を何十〜何百回も作り、毎回系統樹を再計算します。「何度計算し直しても同じ分岐が現れるか？」を数えることで、偶然のノイズに強い堅牢な分岐（例: 100%）か、揺らぎやすい分岐（例: 50%）かを判定します。
             </div>
 
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; margin-bottom:8px;">
@@ -1546,7 +1548,8 @@ input[type="submit"]:disabled:active {
             <textarea id="fastaInput" class="paste-area" placeholder="アライメント済みの塩基配列またはアミノ酸配列（FASTA形式）を入力"></textarea>
 
             <div id="rat_seq_type" class="rationale-text">
-                <strong>【根拠：塩基配列とアミノ酸配列の使い分け】</strong><br>
+                <strong>【根拠：塩基配列とアミノ酸配列の使い分け】</strong>
+
                 ・比較する分類群同士の系統的な距離（何億年前に枝分かれしたか）によって、適切な配列データは異なります。もし作成した系統樹が「現在の分類学（教科書の知識）」と大きく矛盾する場合、DNAの塩基置換速度が速すぎて「多重置換（ノイズ）」が起きている可能性があります。その場合は、より変化の遅い「アミノ酸配列」を使って再度計算してみましょう。
             </div>
 
@@ -1565,13 +1568,15 @@ input[type="submit"]:disabled:active {
             </div>
 
             <div id="rat_algo_diff" class="rationale-text">
-                <strong>【根拠：距離法と形質状態法の違い】</strong><br>
+                <strong>【根拠：距離法と形質状態法の違い】</strong>
+
                 ・UPGMAやNJ法は、配列全体の違いを「1つの距離（数値）」にまとめてから計算するため高速です。一方、MP法やML法は、DNAの「1文字1文字の変化」を直接評価するため、計算は重いですがより詳細な進化のシナリオを描けます。
             </div>
 
             <div id="rat_matrix" class="rationale-text">
-                <strong>【根拠：距離行列とは？】</strong><br>
-                ・解析ソフトは、まず「AとBは何文字違うか？」という総当たりで比較を行い、配列の違いの割合を表にした<strong>「距離行列」</strong>を作ります。共通祖先から分岐してからの時間が長いほど、塩基配列やアミノ酸配列の違い（距離）は大きくなるという前提です。
+                <strong>【根拠：距離行列とは？】</strong>
+
+                ・解析ソフトは、まず「AとBは何文字違うか？」という総当たりで比較を行い、配列の違いの割合を表にした<b>「距離行列」</b>を作ります。共通祖先から分岐してからの時間が長いほど、塩基配列やアミノ酸配列の違い（距離）は大きくなるという前提です。
             </div>
 
             <div style="border-top: 1px dashed var(--border-color); margin: 16px 0;"></div>
@@ -1588,9 +1593,10 @@ input[type="submit"]:disabled:active {
             </div>
 
             <div id="rat_upgma" class="rationale-text">
-                <strong>【根拠：結合アルゴリズムの違い】</strong><br>
-                ・<strong>平均距離法 (UPGMA法):</strong> 塩基置換速度が一定であると仮定し、単純な平均距離で更新します。共通祖先からの距離が全て揃います。<br>
-                ・<strong>近隣結合法 (NJ法):</strong> 「Q行列」という補正を行い、系統ごとに異なる塩基置換速度を考慮して計算します。<br>
+                <strong>【根拠：結合アルゴリズムの違い】</strong>
+
+                ・<b>平均距離法 (UPGMA法):</b> 塩基置換速度が一定であると仮定し、単純な平均距離で更新します。共通祖先からの距離が全て揃います。<br>
+                ・<b>近隣結合法 (NJ法):</b> 「Q行列」という補正を行い、系統ごとに異なる塩基置換速度を考慮して計算します。<br>
                 ・実際の紙での計算と同じように、計算済みのペアは斜線で消し、新しいグループをまとめて行列を更新していきます。
             </div>
             
@@ -1613,7 +1619,8 @@ input[type="submit"]:disabled:active {
                     <button class="rationale-btn" onclick="toggleRationale(event, 'rat_character_state')" style="margin-left: 5px;">?</button>
                 </h3>
                 <div id="rat_character_state" class="rationale-text">
-                    <strong>【根拠：形質状態法とは】</strong><br>
+                    <strong>【根拠：形質状態法とは】</strong>
+
                     ・距離法（UPGMA/NJ）のように配列全体の違いを1つの『距離』に丸めるのではなく、塩基配列の『1文字1文字（座位）』の進化の歴史を直接評価する手法群です。
                 </div>
                 <p style="margin-bottom: 12px;">距離行列を使わずに、実際の塩基配列データからどのように系統樹が選ばれるのか、その『裏側の仕組み』を体験してみましょう。</p>
@@ -1646,7 +1653,8 @@ input[type="submit"]:disabled:active {
                 ・枝の分岐パターン（トポロジー）と、枝の長さ（進化的な変化量や時間）から、共通祖先からの分化の道筋を読み取ります。
             </div>
             <div id="rat_rotate_tree" class="rationale-text">
-                <strong>【根拠：枝の回転（モビール性）】</strong><br>
+                <strong>【根拠：枝の回転（モビール性）】</strong>
+
                 ・系統樹の分岐点は、モビールのように自由に回転させることができます。<br>
                 ・分岐点（橙色の丸）をクリックすると枝が上下反転します。生物の上下の表示順序が変わっても、共通祖先からの類縁関係（トポロジー）は全く同一であることを体験してみましょう。
             </div>
@@ -1789,9 +1797,10 @@ input[type="submit"]:disabled:active {
             </div>
 
             <div id="rat_step1_why" class="rationale-text">
-                <strong>【根拠：なぜ特定の突然変異だけを探すの？】</strong><br>
-                ・実際の塩基配列には非常に多くの突然変異がありますが、<strong>「1つの生物だけが異なる突然変異」は、どの系統樹でも1回の置換で説明できてしまうため、系統の枝分かれ（トポロジー）を決定する情報になりません。</strong><br>
-                ・最大節約法において本当に重要なのは、<strong>「2つの種と、別の2つの種で共通している塩基の違い（例：A,A,T,T など）」</strong>です。これを学術的に<strong>「情報をもつ座位（Informative sites）」</strong>と呼びます。
+                <strong>【根拠：なぜ特定の突然変異だけを探すの？】</strong>
+
+                ・実際の塩基配列には非常に多くの突然変異がありますが、<b>「1つの生物だけが異なる突然変異」は、どの系統樹でも1回の置換で説明できてしまうため、系統の枝分かれ（トポロジー）を決定する情報になりません。</b><br>
+                ・最大節約法において本当に重要なのは、<b>「2つの種と、別の2つの種で共通している塩基の違い（例：A,A,T,T など）」</b>です。これを学術的に<b>「情報をもつ座位（Informative sites）」</b>と呼びます。
             </div>
             
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
@@ -1822,7 +1831,8 @@ input[type="submit"]:disabled:active {
             </div>
 
             <div id="rat_step2_help" class="rationale-text">
-                <strong>【手順：有根系統樹（逆三角形）の解き方】</strong><br>
+                <strong>【手順：有根系統樹（逆三角形）の解き方】</strong>
+
                 ・一番左の生物を<b>外群（進化的に離れた分類群）</b>として固定し、そこから右へ分岐していく教科書通りのモデルです。（※一番左の灰色の枝は共通祖先延いては内群の根元と同じ意味になるため固定されています）。<br>
                 ・各系統樹の<b>緑色の線（枝）をクリック</b>すると、突然変異マーク（色付きの棒と座位番号）を配置・削除できます。<br>
                 ・目標は、<b>「すべての生物（葉）の塩基の違いを、最も少ない突然変異の回数で説明すること」</b>です。<br>
@@ -1914,11 +1924,12 @@ input[type="submit"]:disabled:active {
             </div>
 
             <div id="rat_ml_step1" class="rationale-text">
-                <strong>【根拠：遷移と置換（塩基置換）】</strong><br>
-                ・<strong>遷移 (Transition)</strong>：プリン塩基同士 (A↔G) または ピリミジン塩基同士 (C↔T) の化学的性質が似た者同士の突然変異。DNAの構造が歪みにくいため、<strong>自然界で非常に起こりやすい</strong>です。<br>
-                ・<strong>置換 (Transversion)</strong>：プリン塩基とピリミジン塩基の間 (A↔C, A↔T, G↔C, G↔T) の突然変異。構造が大きく変わるため、<strong>起こりにくい</strong>です。<br>
+                <strong>【根拠：遷移と置換（塩基置換）】</strong>
+
+                ・<b>遷移 (Transition)</b>：プリン塩基同士 (A↔G) または ピリミジン塩基同士 (C↔T) の化学的性質が似た者同士の突然変異。DNAの構造が歪みにくいため、<b>自然界で非常に起こりやすい</b>です。<br>
+                ・<b>置換 (Transversion)</b>：プリン塩基とピリミジン塩基の間 (A↔C, A↔T, G↔C, G↔T) の突然変異。構造が大きく変わるため、<b>起こりにくい</b>です。<br>
                 ※PDFの重要用語規格に基づき、トランスバージョンは「置換（塩基置換）」と表記しています。<br>
-                <strong>・なぜ遷移と置換を分けて考える必要があるのか？</strong><br>
+                <b>・なぜ遷移と置換を分けて考える必要があるのか？</b><br>
                 自然界では遷移の方が起こりやすいため、それを計算に組み込むことで、より現実に即した進化の確率（尤度）を求めることができるためです。
             </div>
 
@@ -1963,9 +1974,10 @@ input[type="submit"]:disabled:active {
             </div>
 
             <div id="rat_ml_step2" class="rationale-text">
-                <strong>【根拠：進化モデルと尤度】</strong><br>
-                ・<strong>JC69モデル</strong>：A, T, G, C 全ての塩基置換が同じ確率で起こると仮定する最もシンプルなモデル。遷移と置換を区別しないため、スコアに差が出にくいです。<br>
-                ・<strong>K80モデル</strong>：実際のDNAに合わせて「遷移」が「置換」より起こりやすいと仮定したモデル。これを選ぶと、遷移（A↔G, C↔T）だけで説明できる樹形の確率（尤度）が跳ね上がります。
+                <strong>【根拠：進化モデルと尤度】</strong>
+
+                ・<b>JC69モデル</b>：A, T, G, C 全ての塩基置換が同じ確率で起こると仮定する最もシンプルなモデル。遷移と置換を区別しないため、スコアに差が出にくいです。<br>
+                ・<b>K80モデル</b>：実際のDNAに合わせて「遷移」が「置換」より起こりやすいと仮定したモデル。これを選ぶと、遷移（A↔G, C↔T）だけで説明できる樹形の確率（尤度）が跳ね上がります。
             </div>
 
             <div style="background: #fdfefe; border: 1px solid var(--phase-color); border-radius: 6px; padding: 12px; margin-bottom: 16px; text-align:center;">
@@ -2000,7 +2012,8 @@ input[type="submit"]:disabled:active {
             </div>
 
             <div id="rat_ml_step3" class="rationale-text">
-                <strong>【根拠：山登り法と最尤推定】</strong><br>
+                <strong>【根拠：山登り法と最尤推定】</strong>
+
                 最尤法では、樹形の枝分かれの形（トポロジー）だけでなく、「どれくらいの時間が経ったか（枝の長さ）」というパラメータも確率計算に影響します。短すぎても長すぎても現在の塩基配列になる確率は下がるため、コンピュータは微分や山登り法といった数学的手法を使って、尤度が最大になる頂点（最適解）を探索しています。
             </div>
 

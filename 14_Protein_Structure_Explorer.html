@@ -147,7 +147,8 @@
  .rationale-text { position: fixed; background: #fef9e7; border: 1px solid var(--warning); padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: max-content; max-width: min(320px, calc(100vw - 24px)); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; }
  .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
  /* ガイドライン準拠: strongタグは見出し専用とし、単独行にする */
- .rationale-text strong { color: #d35400; display: block; margin-bottom: 4px; font-size: 12px; }
+ .rationale-text b { color: #d35400; font-weight: bold; }
+        .rationale-text strong { color: #d35400; display: block; margin-bottom: 4px; font-size: 12px; }
  /* 吹き出しの尻尾 */
  .rationale-text::after { content: ''; position: absolute; border-width: 6px; border-style: solid; left: var(--arrow-left, 50%); }
  .rationale-text.arrow-top::after { top: -12px; border-color: transparent transparent #fef9e7 transparent; }

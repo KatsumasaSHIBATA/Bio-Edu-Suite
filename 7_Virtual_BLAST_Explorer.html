@@ -89,6 +89,7 @@
 
         .rationale-text { position: fixed; background: #fef9e7; border: 1px solid var(--warning); padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: max-content; max-width: min(320px, calc(100vw - 24px)); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; }
         .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
+        .rationale-text b { color: #d35400; font-weight: bold; }
         .rationale-text strong { color: #d35400; display: block; margin-bottom: 4px; font-size: 12px; }
         
         .rationale-text::after { content: ''; position: absolute; border-width: 6px; border-style: solid; left: var(--arrow-left, 50%); }
@@ -1085,7 +1086,7 @@ input[type="submit"]:disabled:active {
 
             <div id="rat_engine" class="rationale-text">
                 <strong>【解析エンジン：Smith-Watermanアルゴリズム】</strong>
-                ・本シミュレーターは、外部通信を行わない<strong>完全オフライン・高速ローカル計算エンジン</strong>を搭載しています。<br>
+                ・本シミュレーターは、外部通信を行わない<b>完全オフライン・高速ローカル計算エンジン</b>を搭載しています。<br>
                 ・動的計画法（Smith-Waterman法）を用い、入力されたDNA塩基配列とローカル総合データベース（120種以上）の総当たり局所アライメントを0.05秒で即時実行します。<br>
                 ・通信制限や外部サーバーの混雑に左右されず、確実にスコア・一致率・E-valueを算出します。
             </div>

@@ -128,6 +128,7 @@
         .rationale-btn:hover { transform: scale(1.1); filter: brightness(1.2); }
         .rationale-text { position: fixed; background: #fef9e7; border: 1px solid var(--warning); padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: max-content; max-width: min(320px, calc(100vw - 24px)); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; }
         .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
+        .rationale-text b { color: #d35400; font-weight: bold; }
         .rationale-text strong { color: #d35400; font-size: 12px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 4px; }
         
         .rationale-text::after { content: ''; position: absolute; border-width: 6px; border-style: solid; left: var(--arrow-left, 50%); }
@@ -1155,7 +1156,8 @@ input[type="submit"]:disabled:active {
                     生のチェーンコードから積分計算でフーリエ係数(a, b, c, d)を算出し、主成分分析(PCA)で次元縮約を行います。第1調和楕円に基づく数学的に厳密な標準化により、純粋な「形の変異」だけを抽出します。
                 </div>
                 <div id="rat_efa" class="rationale-text">
-                    <strong>【根拠：対称・非対称の分離による厳密な評価】</strong><br>
+                    <strong>【根拠：対称・非対称の分離による厳密な評価】</strong>
+
                     ・ダイコンの根形のように表裏がない対象物の場合、撮影時の「置き方」による曲がりがノイズになります。<br>
                     ・フーリエ係数を「対称 (a, d)」と「非対称 (b, c)」に分けてPCAにかけることで、「太さ・とまり具合」と「曲がり」を独立して評価できます。
                 </div>
@@ -1166,7 +1168,8 @@ input[type="submit"]:disabled:active {
                         <span>1. 画像から輪郭を抽出 (オートトレース)</span>
                         <div class="rationale-wrapper"><button class="rationale-btn" onclick="toggleRationale(event, 'rat_imgproc')">?</button>
                             <div id="rat_imgproc" class="rationale-text">
-                                <strong>【根拠：画像処理による自動抽出】</strong><br>
+                                <strong>【根拠：画像処理による自動抽出】</strong>
+
                                 ・ブラウザ上で画像をグレースケール化し、指定した閾値で二値化（白黒化）します。<br>
                                 ・Moore-Neighborアルゴリズムにより境界ピクセルを追跡し、Freeman Chain Codeを自動生成します。
                             </div>
@@ -1223,7 +1226,8 @@ input[type="submit"]:disabled:active {
                         <label style="font-size:11px; font-weight:bold; color:#2c3e50;">調和数:</label>
                         <div class="rationale-wrapper"><button class="rationale-btn" onclick="toggleRationale(event, 'rat_harmonics')">?</button>
                             <div id="rat_harmonics" class="rationale-text">
-                                <strong>【根拠：調和数 (Harmonics)】</strong><br>
+                                <strong>【根拠：調和数 (Harmonics)】</strong>
+
                                 ・抽出した輪郭をいくつの楕円の足し合わせで近似するかの数です。<br>
                                 ・数が多いほど元の複雑な形を精密に再現できますが、多すぎると画像のギザギザ（ノイズ）まで拾ってしまいます。<br>
                                 ・生物の全体的な形状を比較する場合、通常は 20〜30 程度で十分な精度が得られます。
@@ -1237,9 +1241,10 @@ input[type="submit"]:disabled:active {
                         <label style="font-size:11px; font-weight:bold; color:#2c3e50;">PCA対象成分:</label>
                         <div class="rationale-wrapper"><button class="rationale-btn" onclick="toggleRationale(event, 'rat_pca_feature')">?</button>
                             <div id="rat_pca_feature" class="rationale-text">
-                                <strong>【根拠：PCA対象成分の選択】</strong><br>
+                                <strong>【根拠：PCA対象成分の選択】</strong>
+
                                 ・計算された4つの楕円フーリエ係数 (a, b, c, d) のうち、主成分分析 (PCA) の対象とする係数を選択します。<br>
-                                ・<strong>対称の変異のみ (a, d)</strong>: 写真の撮り方による曲がりなどの非対称な成分 (b, c) を除外し、純粋な「太さ」や「長さ」といった対称的な形の違いだけを比較したい場合に有効です。
+                                ・<b>対称の変異のみ (a, d)</b>: 写真の撮り方による曲がりなどの非対称な成分 (b, c) を除外し、純粋な「太さ」や「長さ」といった対称的な形の違いだけを比較したい場合に有効です。
                             </div>
                         </div>
                     </div>
@@ -1268,7 +1273,8 @@ input[type="submit"]:disabled:active {
                 </div>
                 
                 <div id="rat-gpa-all" class="rationale-text">
-                    <strong>【根拠：なぜ重心を合わせるのか】</strong><br>
+                    <strong>【根拠：なぜ重心を合わせるのか】</strong>
+
                     ・対象物の「位置（座標上のズレ）」を排除するためです。<br>
                     ・すべてのサンプルの重心を原点 (0, 0) に移動させることで、純粋な「形」だけを比較する準備が整います。<br>
                     <strong style="margin-top: 8px;">【根拠：重心サイズ (Centroid Size)】</strong><br>
@@ -1344,7 +1350,8 @@ input[type="submit"]:disabled:active {
                         逆フーリエ変換 形状シミュレータ
                         <div class="rationale-wrapper"><button class="rationale-btn" onclick="toggleRationale(event, 'rat_prinprint')">?</button>
                             <div id="rat_prinprint" class="rationale-text">
-                                <strong>【根拠：形状の復元】</strong><br>
+                                <strong>【根拠：形状の復元】</strong>
+
                                 ・主成分スコアから逆にフーリエ係数を計算し、輪郭を描き直します。<br>
                                 ・灰色の点線は全体の「平均形状」を表し、青い線が現在のスライダー（またはクリックした個体）の形状です。<br>
                                 ・集団内に存在する微細な「変異」が直感的に分かります。
@@ -1377,7 +1384,8 @@ input[type="submit"]:disabled:active {
                         <button class="rationale-btn" onclick="toggleRationale(event, 'rat_pca_space_a')">?</button>
                     </span>
                     <div id="rat_pca_space_a" class="rationale-text" style="z-index: 9001;">
-                        <strong>【根拠：PCAによる形態空間の可視化】</strong><br>
+                        <strong>【根拠：PCAによる形態空間の可視化】</strong>
+
                         ・抽出された数十個の形状データを、分散が最大となる軸（第1主成分と第2主成分）に圧縮して2次元平面にプロットしています。<br>
                         ・近くにプロットされた個体ほど「形が似ている」ことを意味し、集団全体の変異（多様性）の広がりが一目で分かります。
                     </div>
@@ -1404,7 +1412,8 @@ input[type="submit"]:disabled:active {
                             TPS 変位グリッド・シミュレータ
                             <div class="rationale-wrapper"><button class="rationale-btn" onclick="toggleRationale(event, 'rat_tps')">?</button>
                                 <div id="rat_tps" class="rationale-text">
-                                    <strong>【根拠：変位グリッド (Deformation Grid)】</strong><br>
+                                    <strong>【根拠：変位グリッド (Deformation Grid)】</strong>
+
                                     ・ダーシー・トムソンの『生物の形態と進化』の理論を数学的に視覚化したものです。<br>
                                     ・方眼の歪みを見ることで、全体的な「伸び縮み」や、局所的な「曲がり」といった形の変異の方向性が、数字の羅列よりも直感的に理解できます。
                                 </div>
@@ -1440,7 +1449,8 @@ input[type="submit"]:disabled:active {
                         <button class="rationale-btn" onclick="toggleRationale(event, 'rat_pca_space_c')">?</button>
                     </span>
                     <div id="rat_pca_space_c" class="rationale-text" style="z-index: 9001;">
-                        <strong>【根拠：PCAによる形態空間の可視化】</strong><br>
+                        <strong>【根拠：PCAによる形態空間の可視化】</strong>
+
                         ・GPAによって位置・回転・大きさが補正された純粋な「形の違い」を、分散が最大となる軸に圧縮して2次元平面にプロットしています。<br>
                         ・近くにプロットされた個体ほど「形が似ている」ことを意味し、集団全体の変異（多様性）の広がりが一目で分かります。
                     </div>

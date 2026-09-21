@@ -129,6 +129,7 @@
         
         .rationale-text { position: fixed; background: #fef9e7; border: 1px solid var(--warning); padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: max-content; max-width: min(320px, calc(100vw - 24px)); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform: 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; }
         .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
+        .rationale-text b { color: #d35400; font-weight: bold; }
         .rationale-text strong { color: #d35400; display: block; margin-bottom: 4px; font-size: 12px; }
         .rationale-text::after { content: ''; position: absolute; border-width: 6px; border-style: solid; left: var(--arrow-left, 50%); }
         .rationale-text.arrow-top::after { top: -12px; border-color: transparent transparent #fef9e7 transparent; }
@@ -1328,9 +1329,10 @@ input[type="submit"]:disabled:active {
                 ・線が交差（クロス）している部分は『見た目は似ているが遺伝的には遠い（収斂進化）』、あるいは『見た目は違うが遺伝的には近い』といった、進化のダイナミズムや隠蔽種（Cryptic species）の存在を示唆しています。
             </div>
             <div id="rat_outgroup10" class="rationale-text">
-                <strong>【根拠：外群の指定と枝の回転】</strong><br>
-                ・<strong>外群の指定:</strong> 外群（Outgroup）を設定することで系統樹の根（共通祖先）が定まり、進化の方向性が定まります。分子・形態の両系統樹で共通の外群を設定して比較しましょう。<br>
-                ・<strong>枝の回転（モビール操作）:</strong> 系統樹の分岐点（丸いノード）を直接クリックすると、その枝が上下反転します。左右それぞれのツリーを自由に回転させて、交差がどうしても残る真の不一致を探索しましょう。
+                <strong>【根拠：外群の指定と枝の回転】</strong>
+
+                ・<b>外群の指定：</b> 外群（Outgroup）を設定することで系統樹の根（共通祖先）が定まり、進化の方向性が定まります。分子・形態の両系統樹で共通の外群を設定して比較しましょう。<br>
+                ・<b>枝の回転（モビール操作）：</b> 系統樹の分岐点（丸いノード）を直接クリックすると、その枝が上下反転します。左右それぞれのツリーを自由に回転させて、交差がどうしても残る真の不一致を探索しましょう。
             </div>
             <div class="card-body" style="padding: 0; display: flex; flex-direction: column;">
                 <div id="tree-svg-container" style="width: 100%; height: 500px; background: #fff; position: relative;">

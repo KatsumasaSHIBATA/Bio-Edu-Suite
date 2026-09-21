@@ -142,6 +142,7 @@
         .rationale-btn:hover { transform: scale(1.1); filter: brightness(1.2); }
         .rationale-text { position: fixed; background: #fef9e7; border: 1px solid var(--warning); padding: 12px; border-radius: 6px; font-size: 11px; color: #7e5109; line-height: 1.5; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9000; width: max-content; max-width: min(320px, calc(100vw - 24px)); opacity: 0; visibility: hidden; transition: opacity 0.2s, transform 0.2s; transform: translateY(-10px); margin: 0; pointer-events: none; box-sizing: border-box; }
         .rationale-text.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
+        .rationale-text b { color: #d35400; font-weight: bold; }
         .rationale-text strong { color: #d35400; display: block; margin-bottom: 4px; font-size: 12px; }
         .rationale-text::after { content: ''; position: absolute; border-width: 6px; border-style: solid; left: var(--arrow-left, 50%); }
         .rationale-text.arrow-top::after { top: -12px; border-color: transparent transparent #fef9e7 transparent; }
@@ -1161,8 +1162,9 @@ input[type="submit"]:disabled:active {
                     </h4>
                     
                     <div id="pop-diallel" class="rationale-text popover-panel">
-                        <strong>【根拠：Griffing Method 2 とは？】</strong><br>
-                        ・ダイアレル分析は、複数の親系統を総当たりで交配（F1）させ、その結果から親系統自身のポテンシャル（<strong>一般組合せ能力：GCA＝相加的効果</strong>）と、特定の組み合わせでのみ発揮される特異的な効果（<strong>特定組合せ能力：SCA＝顕性効果</strong>）を分離する手法です。<br>
+                        <strong>【根拠：Griffing Method 2 とは？】</strong>
+
+                        ・ダイアレル分析は、複数の親系統を総当たりで交配（F1）させ、その結果から親系統自身のポテンシャル（<b>一般組合せ能力：GCA＝相加的効果</b>）と、特定の組み合わせでのみ発揮される特異的な効果（<b>特定組合せ能力：SCA＝顕性効果</b>）を分離する手法です。<br>
                         ・Method 2は、片交配（片方の親を母、もう一方を父とする組み合わせのみ）と親自身（自殖）を含めるデザインです。<br>
                         ・Baker比率（GCAとSCAの分散比）は、後代の形質が相加的効果（固定可能）か顕性効果（F1のみで最大化）のどちらに依存しているかを示す重要指標です。
                     </div>
@@ -1435,29 +1437,34 @@ P3,  ,   , 95
 
 <!-- Rationale Popover Elements (v33.4準拠 見出し・中黒箇条書き) -->
 <div id="pop-data" class="rationale-text">
-    <strong>【根拠：データセットの構築とマッピング】</strong><br>
+    <strong>【根拠：データセットの構築とマッピング】</strong>
+
     ・ダッシュボードで記録した「環境データ」と、画像解析から得た「形態データ」の2つの異なる表を、共通の Sample_ID を使って結合（Join）します。<br>
     ・結合後、野外で採取した『系統・個体群』などのどの列を『遺伝子型（G）の要因』とし、どの列を『環境（E）』として扱うか、そして何を『結果（表現型）』として解析するのかを自分で指定（マッピング）します。<br>
     ・データの構造を正しく定義し、「原因」と「結果」をコンピュータに指示することは、すべての統計解析における最も重要な基礎プロセスです。<br><br>
-    <strong>【根拠：GxEの重要性】</strong><br>
+    <strong>【根拠：GxEの重要性】</strong>
+
     ・生物の形（表現型）は、『遺伝』＋『環境』＋『遺伝と環境の相互作用(GxE)』で決まります。<br>
     ・見た目に変異があるからといってすぐに別種（塩基配列などの遺伝情報が異なる）と決めつけず、AMMIモデル等の数学的処理により環境要因を取り除くことが、分類学や統計遺伝学において重要です。
 </div>
 
 <div id="pop-biplot" class="rationale-text">
-    <strong>【根拠：AMMIモデルによる可視化】</strong><br>
+    <strong>【根拠：AMMIモデルによる可視化】</strong>
+
     ・主成分分析を用いて、遺伝子型と環境の交互作用を2次元平面にプロットします。<br>
     ・これにより、特定の環境に適応した遺伝子型を視覚的に特定し、変異（多様性）を評価することができます。
 </div>
 
 <div id="pop-reaction-norm" class="rationale-text">
-    <strong>【根拠：相互作用の視覚化】</strong><br>
+    <strong>【根拠：相互作用の視覚化】</strong>
+
     ・線が平行であれば環境の影響のみ（GxEなし）を意味します。<br>
     ・線が交差したり傾きが大きく異なる場合は、遺伝と環境の相互作用（GxE）が存在することを直感的に示します。
 </div>
 
 <div id="pop-anova" class="rationale-text">
-    <strong>【根拠：分散分析 (ANOVA)】</strong><br>
+    <strong>【根拠：分散分析 (ANOVA)】</strong>
+
     ・表現型のばらつきを「遺伝子型」「環境」「それらの交互作用」の要因に分解し、統計的な有意性を評価します。<br>
     ・IPCA1とIPCA2は、交互作用の変動を説明するための主成分軸として機能します。
 </div>
