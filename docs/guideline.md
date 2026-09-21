@@ -1,8 +1,13 @@
-# **🎨 Bio-Edu Suite 統合UI/UX・開発ガイドライン (v35.9_2026-09-19:最新版)**
+# **🎨 Bio-Edu Suite 統合UI/UX・開発ガイドライン (v36.3_2026-09-22:最新版)**
 
 本ガイドラインは、Bio-Edu Suite内の全アプリケーションにおける視覚的な一貫性（UI）、操作感の統一（UX）、データ連携、および日本学術会議の公式資料「高等学校の生物教育における重要用語の選定について（2025年版）」に完全に準拠した教育的価値を担保するための「共通規格書（絶対の法律）」です。
 
 ## **【改訂・サルベージ履歴】**
+* **v36.3 (2026-09-22):** 非アクティブUI/UX（セレクト・ボタン完全同期）、ポップオーバー内マークアップ規格、および標準SVGセマンティクス完全固定化の法制化。
+  - [非アクティブUIの完全同一化]: `select:disabled` および `.form-select:disabled` を UNIFIED DISABLED MASTER CSS に完全包摂し、ボタンと寸分違わぬ白背景(#ffffff)・淡グレー枠(#d5dbdb)・淡グレー文字(#bdc3c7)・`cursor: not-allowed` を義務化。
+  - [ポップオーバー内マークアップ規格]: 見出し直後の不要な `<br>` を撤廃し、箇条書き内のインライン強調には `<strong>` ではなく `<b>` を使用することで不自然な改行・空行を物理遮断。
+  - [標準SVGセマンティクス固定化]: 保存/ダウンロード（フロッピー型）、コピー（二重シート型）、データ読込（ドキュメント＋矢印型）の用途を厳格に分離・固定化。
+
 * **v36.2 (2026-09-21):** 教員モードにおける即時同期（Teacher Instant Sync & Broadcast）および全アプリ共通クラウド同期ハイドレーション規格の法制化。
   - [教員ステートの即時ブロードキャスト（Teacher Live Broadcast）]: 教員端末（`isTeacher = true`）の作業空間（アプリ⑧の系統樹・距離行列・パラメータ、アプリ⑦の登録カセット・DB・検索結果等の完全ステート）を、`rooms/{roomCode}` ドキュメント（`teacherLiveState`）へ自動同期し、ルーム入室中の生徒端末へリアルタイムおよび入室時に即時展開する規格を制定。
   - [全アプリ共通クラウド同期イベント（bio_edu_cloud_synced）リスナー実装義務]: クラウド同期受信時に発火される `bio_edu_cloud_synced` イベントを全アプリで受信し、`sessionStorage` 復元関数および描画関数を直ちにキックして画面描画を完全同期させるパイプラインを義務化。
@@ -235,9 +240,9 @@ SVGはネイティブ絵文字と異なり色を持たないため、アイコ�
 **③ アクション・操作用 SVGの完全固定化 (v32.0 規定)**
 
 * **\[実行\] ボタン (▶︎)**: `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`  
-* **\[データ読込 / ドラッグ＆ドロップ\] エリア**: `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>`
-* **[コピー] ボタン (Copy / 二重シート型)**: `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`
-* **[保存 / ダウンロード] ボタン (Save / フロッピー型)**: `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>`
+* **\[データ読込 / ドラッグ＆ドロップ\] エリア（ドキュメント＋矢印型）**: 配列データやFASTAファイル、LIMSデータのインポート用途に厳格に固定。 `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>`
+* **[コピー] ボタン (Copy / 二重シート型)**: クリップボードへのデータ書き出し（テキスト・配列コピー）専用に固定。他の用途への流用を禁止。 `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`
+* **[保存 / ダウンロード] ボタン (Save / フロッピー型)**: ファイルエクスポート（FASTA、CSV、JSON、画像保存）専用に固定。他のアイコン（例：クラウド保存や単なるディスクレスアイコン）への置換を禁止。 `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>`
 
 
 **【各フェーズのヘッダー公式SVG (v32.0 固定版)】** 各アプリのヘッダー `<h1>` 内で使用するSVGアイコンは、Phaseごとに以下のものを**一字一句違わず**使用すること。 また、SVGが親要素の影響を受けて巨大化しレイアウトが崩れるのを防ぐため、必ずCSSに `.header-icon { width: 24px; height: 24px; flex-shrink: 0; }` を定義しておくこと。
@@ -855,6 +860,8 @@ function confirmDataReset() {
 マウスホバー (:hover) はタッチデバイスで機能しないため**使用禁止**。必ずクリック駆動とし、見切れ防止のフリップ計算と、要素の幅（offsetWidth）を用いた親要素追従の安全な計算ロジック（固定幅廃止）を実装すること。吹き出しの「尻尾（.pop-arrow）」をCSSで追加する。
 
 **【テキスト・書式規定 (v31.0 改定)】**
+* **[ポップオーバー内マークアップ規格 (v36.3 追記)]**: 見出し直後の不要な `<br>` タグや空行を挿入してはならない（CSS側の `margin-bottom: 4px;` で制御するため物理遮断する）。また、箇条書きの項目内や文中のインライン強調には `<strong>` を使用してはならず、不自然な改行や空行の発生を物理遮断するため必ず `<b>` タグを使用すること。
+
 
 * **配色とフォント**: 背景は薄い黄色（\#fef9e7）、文字色は可読性の高いダークブラウン（\#7e5109）、サイズは 11px に完全統一する（※以下のCSSで定義済み）。  
 * **見出しの記述と装飾（柔軟性の許可）**: ポップオーバー内の見出し（小見出し含む）は、出現する行数や位置を問わず、必ず \<strong\> タグを使用し、テキストを「【】（隅付き括弧）」で括って記述すること。これにより、CSSでアクセントのオレンジ（\#d35400 / 12px）が自動適用され、情報の区切りが明確になる。  
@@ -1654,6 +1661,8 @@ UI要素間のマージンやパディングは、視覚的リズムを整える
   * **無効化（:disabled）の絶対規格**: 操作不可状態のボタンが、予期せぬホバー効果（:hover）やアクティブ効果（:active）の影響を一切受けないよう、詳細度を高めた以下のCSS仕様を全アプリで強制適用する。
     `opacity: 0.5; cursor: not-allowed !important; filter: grayscale(50%); box-shadow: none !important; transform: none !important;`
     ※ これにより、無効時の不要な沈み込みや影の出現を物理的に遮断する。
+  * **無効化（:disabled）の共通マスター規格（v36.3 追記）**: `select:disabled` および `.form-select:disabled` をボタン等の無効化マスター規格（UNIFIED DISABLED MASTER CSS）に完全包摂し、ボタンと寸分違わぬ白背景（`background-color: #ffffff !important`）、淡グレー枠（`border: 1px solid #d5dbdb !important`）、淡グレー文字（`color: #bdc3c7 !important`）、および `cursor: not-allowed !important;` を義務化する。
+
 
 **③ 入力フォーム（Input / Select）のフォーカスとフィット規定**
 
