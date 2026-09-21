@@ -3322,5 +3322,22 @@ function closeFeedbackForm() {
 
   <!-- /* [Bio-Edu Suite v35.1] Session-Persistent Workspace Standard */ -->
   <script src="js/session_workspace.js"></script>
+<!-- Bio-Edu Suite Context Menu Guard (Guideline 10.1) -->
+<script id="bio-edu-contextmenu-guard">
+document.addEventListener('contextmenu', function(e) {
+    if (e.target.closest('input, textarea, [contenteditable="true"]')) {
+        return;
+    }
+    e.preventDefault();
+}, { passive: false });
+</script>
+<!-- Bio-Edu Suite Service Worker Registration (Guideline 15.5) -->
+<script id="bio-edu-sw-register">
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('./sw.js').catch(function() {});
+    });
+}
+</script>
 </body>
 </html>

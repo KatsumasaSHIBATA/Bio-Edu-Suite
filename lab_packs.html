@@ -1687,5 +1687,13 @@ function closeFeedbackForm() {
 
   <!-- /* [Bio-Edu Suite v35.1] Session-Persistent Workspace Standard */ -->
   <script src="js/session_workspace.js"></script>
+<!-- Bio-Edu Suite Service Worker Registration (Guideline 15.5) -->
+<script id="bio-edu-sw-register">
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('./sw.js').catch(function() {});
+    });
+}
+</script>
 </body>
 </html>
