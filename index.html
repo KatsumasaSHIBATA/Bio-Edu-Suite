@@ -1572,8 +1572,33 @@ function closeFeedbackForm() {
 
       // ストレージが空なら空（[]）を正とし、いかなる自動補完も行わない
       samples = (Array.isArray(loaded)) ? loaded : [];
+      
+      // 起動直後からセッションワークスペースに保持させて同期対象とする
+      try {
+        sessionStorage.setItem(SESSION_WORKSPACE_KEY, JSON.stringify(samples));
+      } catch(e) {}
+      
       renderSamples();
     }
+
+    // 【クラウド同期受信リスナー】クラウドから最新ワークスペースが復元されたら即時画面更新
+    window.addEventListener('bio_edu_cloud_synced', (e) => {
+      try {
+        const workspace = e.detail;
+        if (workspace && workspace[SESSION_WORKSPACE_KEY]) {
+          const remoteSamples = JSON.parse(workspace[SESSION_WORKSPACE_KEY]);
+          if (Array.isArray(remoteSamples)) {
+            samples = remoteSamples;
+            try {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(samples));
+            } catch(err) {}
+            renderSamples();
+          }
+        }
+      } catch (err) {
+        console.warn('Cloud sync hydration error:', err);
+      }
+    });
 
     // 【教員マスター読込・画面即時展開リスナー】メインスコープ内で安全に実行
     window.addEventListener('bio_edu_preset_loaded', (e) => {

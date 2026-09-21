@@ -105,6 +105,11 @@ export function renderAuthStatus() {
 onAuthStateChanged(auth, (user) => {
   if (!user) {
     signInAnonymously(auth).catch((e) => console.warn("匿名認証待機:", e));
+  } else {
+    // 認証完了時、すでに入室情報があればクラウド同期を実行
+    if (isConnected) {
+      syncFromCloud();
+    }
   }
   renderAuthStatus();
 });
@@ -130,7 +135,9 @@ export function joinRoom(roomCode, participantId) {
     showToast(`${roleMsg}ルーム「${currentRoomCode}」に入室しました`, "success");
   }
 
-  syncFromCloud();
+  if (auth.currentUser) {
+    syncFromCloud();
+  }
 }
 
 export function leaveRoom() {
@@ -221,8 +228,13 @@ async function syncFromCloud() {
         Object.keys(remoteData.workspace).forEach((k) => {
           sessionStorage.setItem(k, remoteData.workspace[k]);
         });
+        // 画面再描画・ハイドレーションイベントを送出
+        window.dispatchEvent(new CustomEvent('bio_edu_cloud_synced', { detail: remoteData.workspace }));
         if (typeof showToast === 'function') showToast("クラウドから最新の作業状態を復元しました", "info");
       }
+    } else {
+      // クラウドにデータがまだ存在しない（初回入室時）場合、現在のローカル作業状態を即時クラウドへ初期送信
+      await saveCurrentWorkspace();
     }
   } catch (e) {
     console.warn("Cloud sync read error:", e);
@@ -243,8 +255,12 @@ export async function saveCurrentWorkspace() {
     }
     if (Object.keys(snap).length === 0) return;
 
+    // 親ドキュメント（rooms/{roomCode}）を実体化してコンソール視認性を担保
+    const roomRef = doc(db, "rooms", currentRoomCode);
+    await setDoc(roomRef, { roomCode: currentRoomCode, lastActive: Date.now() }, { merge: true });
+
     const docRef = doc(db, `rooms/${currentRoomCode}/participants`, currentParticipantId);
-    await setDoc(docRef, { workspace: snap, lastUpdated: Date.now() }, { merge: true });
+    await setDoc(docRef, { workspace: snap, participantId: currentParticipantId, isTeacher: isTeacher, lastUpdated: Date.now() }, { merge: true });
   } catch (e) {
     console.warn("Cloud sync write error:", e);
   }
