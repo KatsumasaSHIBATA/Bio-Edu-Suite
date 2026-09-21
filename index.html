@@ -1178,7 +1178,7 @@ input[type="submit"]:disabled:active {
           <label>画像データ（形態解析用）</label>
           <div style="display: flex; gap: 10px; align-items: stretch;">
             <div class="drop-zone" id="imageDropZone" onclick="document.getElementById('imageInput').click(); triggerHapticFeedback();" style="flex: 1;">
-              <svg class="btn-icon" style="margin:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+              <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
               <p id="imageDropText">ここをクリック、または 画像データ をドラッグ＆ドロップ</p>
               <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageFile(event)">
             </div>
@@ -1203,7 +1203,7 @@ input[type="submit"]:disabled:active {
         <div class="form-group">
           <label>未処理塩基配列データ (.ab1等)</label>
           <div class="drop-zone" id="ab1DropZone" onclick="document.getElementById('ab1Input').click(); triggerHapticFeedback();">
-            <svg class="btn-icon" style="margin:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
             <p id="ab1DropText">ここをクリック、または .ab1 ファイル をドラッグ＆ドロップ</p>
             <input type="file" id="ab1Input" accept=".ab1,.scf" style="display: none;" onchange="handleAb1File(event)">
           </div>
