@@ -1308,18 +1308,29 @@ input[type="submit"]:disabled:active {
         <!-- Ⅱ. タングルグラム (分子 vs 形態 / 宿主 vs 寄生虫) -->
         <div class="card viewer-pane" id="tangle-card">
             <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; min-height: 58px; height: 58px; box-sizing: border-box;">
-                <div>
-                    Ⅱ. タングルグラム (分子 vs 形態 / 宿主 vs 寄生虫)
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <span>Ⅱ. タングルグラム (分子 vs 形態 / 宿主 vs 寄生虫)</span>
                     <button class="rationale-btn" onclick="toggleRationale(event, 'rat_tangle')">?</button>
                 </div>
-                <button id="untangleBtn" class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px; min-height: 32px; height: 32px; box-sizing: border-box;" onclick="handleUntangle()" aria-label="もつれ解消" disabled>
-                    もつれ解消
-                </button>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <select id="outgroupSelect10" class="form-select" style="padding: 4px 8px; font-size: 12px; min-height: 32px; height: 32px; box-sizing: border-box; width: auto;" onchange="handleOutgroupChange10()" disabled data-tooltip="指定した種を外群(根元)として両系統樹を再ルーティングします">
+                        <option value="">外群指定(自動)</option>
+                    </select>
+                    <button class="rationale-btn" onclick="toggleRationale(event, 'rat_outgroup10')" style="margin-left: -2px;" data-tooltip="外群指定と枝の回転についての解説">?</button>
+                    <button id="untangleBtn" class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px; min-height: 32px; height: 32px; box-sizing: border-box;" onclick="handleUntangle()" aria-label="もつれ解消" disabled>
+                        もつれ解消
+                    </button>
+                </div>
             </div>
             <div id="rat_tangle" class="rationale-text">
                 <strong>【根拠：タングルグラムと系統の不一致】</strong>
                 ・左の分子系統樹（DNA）と右の形態系統樹（見た目）を比較します。<br>
                 ・線が交差（クロス）している部分は『見た目は似ているが遺伝的には遠い（収斂進化）』、あるいは『見た目は違うが遺伝的には近い』といった、進化のダイナミズムや隠蔽種（Cryptic species）の存在を示唆しています。
+            </div>
+            <div id="rat_outgroup10" class="rationale-text">
+                <strong>【根拠：外群の指定と枝の回転】</strong><br>
+                ・<strong>外群の指定:</strong> 外群（Outgroup）を設定することで系統樹の根（共通祖先）が定まり、進化の方向性が定まります。分子・形態の両系統樹で共通の外群を設定して比較しましょう。<br>
+                ・<strong>枝の回転（モビール操作）:</strong> 系統樹の分岐点（丸いノード）を直接クリックすると、その枝が上下反転します。左右それぞれのツリーを自由に回転させて、交差がどうしても残る真の不一致を探索しましょう。
             </div>
             <div class="card-body" style="padding: 0; display: flex; flex-direction: column;">
                 <div id="tree-svg-container" style="width: 100%; height: 500px; background: #fff; position: relative;">
@@ -1916,6 +1927,147 @@ input[type="submit"]:disabled:active {
     let globalTreeRoot = null; 
     let morphStartCoeffs = null;
     let isUntangled = false;
+    let originalMolTreeData = null;
+    let originalMorphTreeData = null;
+    let currentSelectedOutgroup = "";
+
+    function cloneTreeData(node) {
+        if (!node) return null;
+        let copy = { name: node.name, length: node.length };
+        if (node.children) {
+            copy.children = node.children.map(c => cloneTreeData(c));
+        }
+        return copy;
+    }
+
+    function rerootTreeData(rootNode, outgroupName) {
+        if (!rootNode || !outgroupName) return rootNode;
+        let idCounter = 0;
+        let nodeMap = new Map();
+
+        function buildGraph(node) {
+            if (!node) return null;
+            let gNode = {
+                id: ++idCounter,
+                name: node.name || '',
+                length: node.length !== undefined ? node.length : null,
+                neighbors: [],
+                isLeaf: !node.children || node.children.length === 0
+            };
+            nodeMap.set(gNode.id, gNode);
+            if (node.children) {
+                for (let child of node.children) {
+                    let gChild = buildGraph(child);
+                    gNode.neighbors.push(gChild);
+                    gChild.neighbors.push(gNode);
+                }
+            }
+            return gNode;
+        }
+        buildGraph(rootNode);
+
+        let targetGNode = null;
+        for (let gNode of nodeMap.values()) {
+            if (gNode.isLeaf && isIdOrNameMatched(gNode.name, outgroupName)) {
+                targetGNode = gNode;
+                break;
+            }
+        }
+        if (!targetGNode || targetGNode.neighbors.length === 0) return rootNode;
+
+        let parentGNode = targetGNode.neighbors[0];
+
+        function buildSubtree(curr, fromGNode) {
+            let newNode = { name: curr.name, length: curr.length };
+            let children = [];
+            for (let nb of curr.neighbors) {
+                if (nb.id !== fromGNode.id) {
+                    children.push(buildSubtree(nb, curr));
+                }
+            }
+            if (children.length > 0) newNode.children = children;
+            return newNode;
+        }
+
+        let newRoot = {
+            name: "",
+            children: [
+                { name: targetGNode.name, length: targetGNode.length },
+                buildSubtree(parentGNode, targetGNode)
+            ]
+        };
+
+        function collapseUnaryNodes(n) {
+            if (!n || !n.children) return n;
+            n.children = n.children.map(c => collapseUnaryNodes(c));
+            if (n.children.length === 1 && !n.name) {
+                return n.children[0];
+            }
+            return n;
+        }
+
+        return collapseUnaryNodes(newRoot);
+    }
+
+    window.handleOutgroupChange10 = function(silent = false) {
+        const selectEl = document.getElementById('outgroupSelect10');
+        if (!selectEl) return;
+        currentSelectedOutgroup = selectEl.value;
+
+        if (!originalMolTreeData && !originalMorphTreeData) return;
+
+        let molTreeCopy = cloneTreeData(originalMolTreeData);
+        let morphTreeCopy = originalMorphTreeData ? cloneTreeData(originalMorphTreeData) : null;
+
+        if (currentSelectedOutgroup) {
+            molTreeCopy = rerootTreeData(molTreeCopy, currentSelectedOutgroup);
+            if (morphTreeCopy) {
+                morphTreeCopy = rerootTreeData(morphTreeCopy, currentSelectedOutgroup);
+            }
+        }
+
+        let molRoot = d3.hierarchy(molTreeCopy, d => d.children);
+        let nodeIdCounter = 0;
+        molRoot.each(d => {
+            d.nodeId = "tree-node-mol-" + (nodeIdCounter++);
+            d.leavesList = d.leaves().map(l => l.data.name).filter(n => n);
+            if (d.children) { d.originalChildren = [...d.children]; }
+        });
+
+        let morphRoot = null;
+        if (morphTreeCopy) {
+            morphRoot = d3.hierarchy(morphTreeCopy, d => d.children);
+            let mIdCounter = 0;
+            morphRoot.each(d => {
+                d.nodeId = "tree-node-morph-" + (mIdCounter++);
+                d.leavesList = d.leaves().map(l => l.data.name).filter(n => n);
+                if (d.children) { d.originalChildren = [...d.children]; }
+            });
+        }
+
+        if (globalTreeRoot) {
+            globalTreeRoot.molRoot = molRoot;
+            globalTreeRoot.morphRoot = morphRoot;
+        } else {
+            globalTreeRoot = { molRoot, morphRoot, pairMappings: [] };
+        }
+
+        isUntangled = false;
+        const untangleBtn = document.getElementById('untangleBtn');
+        if (untangleBtn) {
+            untangleBtn.classList.replace('btn-secondary', 'btn-primary');
+            untangleBtn.innerText = "もつれ解消";
+        }
+
+        renderTanglegram(molRoot, morphRoot, globalTreeRoot.pairMappings || []);
+
+        if (typeof triggerHapticFeedback === 'function') triggerHapticFeedback();
+        if (!silent && typeof showToast === 'function') {
+            showToast(currentSelectedOutgroup ? `外群を [${currentSelectedOutgroup}] に再設定しました。` : '外群を自動設定に戻しました。', 'info');
+        }
+        if (typeof saveApp10Session === 'function') saveApp10Session();
+    };
+
 
     // ==========================================
     // Main Integration Logic (Hybrid Auto-Detect)
@@ -2059,19 +2211,21 @@ input[type="submit"]:disabled:active {
             molRoot.each(d => {
                 d.nodeId = "tree-node-mol-" + (nodeIdCounter++);
                 d.leavesList = d.leaves().map(l => l.data.name).filter(n => n);
+                if (d.children) { d.originalChildren = [...d.children]; }
             });
             
             let leafNames = molRoot.leaves().map(l => l.data.name).filter(n => n);
 
             // 2. 形態系統樹のパース (任意入力)
             let morphRoot = null;
+            let morphTree = null;
             if (newickMorphStr) {
-                let morphTree = typeof window.parseNewick === 'function' ? window.parseNewick(newickMorphStr) : parseNewickString(newickMorphStr);
+                morphTree = typeof window.parseNewick === 'function' ? window.parseNewick(newickMorphStr) : parseNewickString(newickMorphStr);
                 morphRoot = d3.hierarchy(morphTree, d => d.children);
                 let mIdCounter = 0;
                 morphRoot.each(d => {
                     d.nodeId = "tree-node-morph-" + (mIdCounter++);
-                    d.leavesList = d.leaves().map(l => l.data.name).filter(n => n); // 形態側にも連動用のリストを付与
+                    d.leavesList = d.leaves().map(l => l.data.name).filter(n => n);
                     if (d.children) { d.originalChildren = [...d.children]; }
                 });
             }
@@ -2117,6 +2271,26 @@ input[type="submit"]:disabled:active {
             }
 
             globalTreeRoot = { molRoot, morphRoot, pairMappings }; 
+            originalMolTreeData = cloneTreeData(molTree);
+            originalMorphTreeData = morphTree ? cloneTreeData(morphTree) : null;
+
+            // 外群選択プルダウンの動的生成
+            const outgroupSelect = document.getElementById('outgroupSelect10');
+            if (outgroupSelect) {
+                outgroupSelect.innerHTML = '<option value="">外群指定(自動)</option>';
+                leafNames.forEach(leaf => {
+                    const opt = document.createElement('option');
+                    opt.value = leaf;
+                    opt.textContent = leaf;
+                    outgroupSelect.appendChild(opt);
+                });
+                outgroupSelect.disabled = false;
+                if (currentSelectedOutgroup && leafNames.includes(currentSelectedOutgroup)) {
+                    outgroupSelect.value = currentSelectedOutgroup;
+                } else {
+                    currentSelectedOutgroup = "";
+                }
+            }
             
             // 不足がある場合、処理は止めずに確実にトーストを発火させる
             if (missingLeaves.length > 0) {
@@ -2268,7 +2442,7 @@ input[type="submit"]:disabled:active {
             .attr('stroke', '#fff')
             .attr('stroke-width', 1.5)
             .style('cursor', 'pointer')
-            .attr('data-tooltip', d => d.data.name ? d.data.name : null); 
+            .attr('data-tooltip', d => d.children ? 'クリックしてこの枝を回転（モビール操作）' : (d.data.name || null)); 
             
         nodeMol.append('text')
             .attr('dy', '0.31em')
@@ -2286,7 +2460,16 @@ input[type="submit"]:disabled:active {
             .style('pointer-events', 'none');
             
         nodeMol.on('mouseenter', (event, d) => handleNodeHover(d))
-               .on('click', (event, d) => handleNodeHover(d));
+               .on('click', (event, d) => {
+                   if (d.children && d.children.length >= 2) {
+                       event.stopPropagation();
+                       d.children.reverse();
+                       if (typeof triggerHapticFeedback === 'function') triggerHapticFeedback();
+                       renderTanglegram(globalTreeRoot.molRoot, globalTreeRoot.morphRoot, globalTreeRoot.pairMappings || []);
+                   } else {
+                       handleNodeHover(d);
+                   }
+               });
                
         // --- 右ツリー (形態系統樹) ---
         if (morphRoot) {
@@ -2323,7 +2506,7 @@ input[type="submit"]:disabled:active {
                 .attr('stroke', '#fff')
                 .attr('stroke-width', 1.5)
                 .style('cursor', 'pointer')
-                .attr('data-tooltip', d => d.data.name ? d.data.name : null);
+                .attr('data-tooltip', d => d.children ? 'クリックしてこの枝を回転（モビール操作）' : (d.data.name || null));
                 
             nodeMorph.append('text')
                 .attr('dy', '0.31em')
@@ -2341,7 +2524,16 @@ input[type="submit"]:disabled:active {
                 .style('pointer-events', 'none');
 
             nodeMorph.on('mouseenter', (event, d) => handleNodeHover(d))
-                     .on('click', (event, d) => handleNodeHover(d));
+                     .on('click', (event, d) => {
+                         if (d.children && d.children.length >= 2) {
+                             event.stopPropagation();
+                             d.children.reverse();
+                             if (typeof triggerHapticFeedback === 'function') triggerHapticFeedback();
+                             renderTanglegram(globalTreeRoot.molRoot, globalTreeRoot.morphRoot, globalTreeRoot.pairMappings || []);
+                         } else {
+                             handleNodeHover(d);
+                         }
+                     });
                 
             // --- タングル結線 (Tangle lines) ---
             const molLeaves = molRoot.leaves();
@@ -3269,6 +3461,7 @@ function closeFeedbackForm() {
                 morphVal: morphVal,
                 jsonVal: jsonVal,
                 mappingVal: mappingVal,
+                outgroupVal: currentSelectedOutgroup,
                 dataDirection: document.getElementById('data-direction') ? document.getElementById('data-direction').value : 'col',
                 distType: document.getElementById('dist-type') ? document.getElementById('dist-type').value : 'euclidean',
                 linkType: document.getElementById('link-type') ? document.getElementById('link-type').value : 'ward',
@@ -3330,8 +3523,16 @@ function closeFeedbackForm() {
 
             // 5. 解析実行済みだった場合は、即座に runIntegration() を呼び出し完全再描画
             if (state.isExecuted && typeof runIntegration === 'function') {
+                if (state.outgroupVal) {
+                    currentSelectedOutgroup = state.outgroupVal;
+                }
                 requestAnimationFrame(() => {
                     runIntegration();
+                    if (state.outgroupVal && typeof handleOutgroupChange10 === 'function') {
+                        const outgroupSelect = document.getElementById('outgroupSelect10');
+                        if (outgroupSelect) outgroupSelect.value = state.outgroupVal;
+                        handleOutgroupChange10(true);
+                    }
                     if (typeof showToast === 'function') {
                         showToast('前回の統合解析データを復元しました', 'info');
                     }
