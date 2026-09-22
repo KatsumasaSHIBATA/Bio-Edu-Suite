@@ -259,6 +259,9 @@ function startRoomListener() {
 async function syncFromCloud() {
   if (!isConnected || !auth.currentUser) return;
   try {
+    const roomRef = doc(db, "rooms", currentRoomCode);
+    const docRef = doc(db, `rooms/${currentRoomCode}/participants`, currentParticipantId);
+
     // 【同一セッション内ステート保護】ローカルに作業中データが存在する場合の調停
     let hasLocalWork = false;
     for (let i = 0; i < sessionStorage.length; i++) {
@@ -317,7 +320,23 @@ export async function saveCurrentWorkspace() {
     for (let i = 0; i < sessionStorage.length; i++) {
       const k = sessionStorage.key(i);
       if (k && (k.startsWith('bio_edu_ws_') || k.startsWith('bio_edu_draft_') || k.startsWith('bio_edu_autosave_') || k.startsWith('bio_edu_workspace_'))) {
-        snap[k] = sessionStorage.getItem(k);
+        let val = sessionStorage.getItem(k);
+        if (k.includes('dashboard_samples') && val) {
+          try {
+            const arr = JSON.parse(val);
+            if (Array.isArray(arr)) {
+              const sanitized = arr.map(item => {
+                const copy = { ...item };
+                if (copy.image_data && copy.image_data.startsWith('data:image')) {
+                  copy.image_data = "";
+                }
+                return copy;
+              });
+              val = JSON.stringify(sanitized);
+            }
+          } catch(e) {}
+        }
+        snap[k] = val;
       }
     }
     if (Object.keys(snap).length === 0) return;
