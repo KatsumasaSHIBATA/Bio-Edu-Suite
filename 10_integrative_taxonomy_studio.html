@@ -1299,8 +1299,8 @@ input[type="submit"]:disabled:active {
 
                 <!-- 下段右: 系統間対応表オプション -->
                 <div style="display: flex; flex-direction: column;">
-                    <label class="input-label">4. 系統間対応表 [任意] (宿主-寄生虫 等 / TSV形式)</label>
-                    <textarea id="mapping-input" class="paste-area" style="max-width: 100%; width: 100%;" placeholder="宿主ID [Tabまたはスペース] 寄生虫ID&#10;（未入力の場合は同名ノード同士を結線します）"></textarea>
+                    <label class="input-label">4. メタデータ / 系統間対応表 [任意] (環境TSV 等)</label>
+                    <textarea id="mapping-input" class="paste-area" style="max-width: 100%; width: 100%;" placeholder="Sample ID [Tab] 環境データ (例: 水中) または&#10;宿主ID [Tab] 寄生虫ID を入力・ペーストしてください"></textarea>
                 </div>
             </div>
             
@@ -2276,19 +2276,42 @@ input[type="submit"]:disabled:active {
             }
             
             let pairMappings = [];
+            let envMetadata = {};
+            let morphLeafNames = morphRoot ? morphRoot.leaves().map(l => normalizeId(l.data.name)) : [];
+
             if (mappingStr) {
                 const lines = mappingStr.split('\n');
                 for (let line of lines) {
                     line = line.trim();
                     if (!line) continue;
-                    const parts = line.split(/[\t\s]+/);
+                    // ダッシュボード出力のヘッダーを安全にスキップ
+                    if (line.startsWith('#') || line.startsWith('Sample_ID')) continue;
+                    
+                    let parts = line.split('\t');
+                    if (parts.length < 2) parts = line.split(/[\s,]+/);
+                    
                     if (parts.length >= 2) {
-                        pairMappings.push({ left: parts[0], right: parts[1] });
+                        let leftId = parts[0].trim();
+                        // 3カラム（ID, 名前, 環境）の場合も一番右を取得
+                        let rightVal = parts[parts.length - 1].trim();
+                        
+                        if (morphLeafNames.includes(normalizeId(rightVal))) {
+                            pairMappings.push({ left: leftId, right: rightVal });
+                        } else {
+                            envMetadata[normalizeId(leftId)] = rightVal;
+                        }
                     }
                 }
             }
 
-            globalTreeRoot = { molRoot, morphRoot, pairMappings }; 
+            let envCategories = [...new Set(Object.values(envMetadata))].filter(Boolean);
+            const colorPalette = ["#3498db", "#27ae60", "#8e44ad", "#e67e22", "#e74c3c", "#1abc9c", "#f1c40f", "#34495e"];
+            let envColorMap = {};
+            envCategories.forEach((cat, i) => {
+                envColorMap[cat] = colorPalette[i % colorPalette.length];
+            });
+
+            globalTreeRoot = { molRoot, morphRoot, pairMappings, envMetadata, envColorMap }; 
             originalMolTreeData = cloneTreeData(molTree);
             originalMorphTreeData = morphTree ? cloneTreeData(morphTree) : null;
 
@@ -2427,6 +2450,51 @@ input[type="submit"]:disabled:active {
         const treeLinksLayer = svg.append('g').attr('class', 'layer-tree-links');
         const treeNodesLayer = svg.append('g').attr('class', 'layer-tree-nodes');
 
+        if (globalTreeRoot.envMetadata && Object.keys(globalTreeRoot.envColorMap).length > 0) {
+            const legendGroup = svg.append('g')
+                .attr('class', 'env-legend')
+                .attr('transform', `translate(${w / 2}, -10)`);
+                
+            let currentX = 0;
+            const entries = Object.entries(globalTreeRoot.envColorMap);
+            
+            const tempCanvas = document.createElement('canvas');
+            const ctx = tempCanvas.getContext('2d');
+            ctx.font = 'bold 11px "Segoe UI", sans-serif';
+            
+            let totalWidth = 0;
+            const itemWidths = [];
+            entries.forEach(([cat, color]) => {
+                const textW = ctx.measureText(cat).width;
+                const itemW = 12 + 6 + textW + 16; 
+                itemWidths.push(itemW);
+                totalWidth += itemW;
+            });
+            
+            currentX = -totalWidth / 2;
+            entries.forEach(([cat, color], i) => {
+                const item = legendGroup.append('g').attr('transform', `translate(${currentX}, 0)`);
+                item.append('circle').attr('cx', 6).attr('cy', 0).attr('r', 5).attr('fill', color);
+                item.append('text').attr('x', 16).attr('y', 3).attr('fill', '#2c3e50').attr('font-size', '11px').attr('font-weight', 'bold').text(cat);
+                currentX += itemWidths[i];
+            });
+        }
+
+        function getNodeColor(d, defaultColor) {
+            if (d.children) return '#bdc3c7';
+            if (!globalTreeRoot.envMetadata || !d.data.name) return defaultColor;
+            let cat = globalTreeRoot.envMetadata[normalizeId(d.data.name)];
+            if (cat && globalTreeRoot.envColorMap[cat]) return globalTreeRoot.envColorMap[cat];
+            return defaultColor;
+        }
+        function getTextColor(d) {
+            if (d.children) return '#2c3e50';
+            if (!globalTreeRoot.envMetadata || !d.data.name) return '#2c3e50';
+            let cat = globalTreeRoot.envMetadata[normalizeId(d.data.name)];
+            if (cat && globalTreeRoot.envColorMap[cat]) return globalTreeRoot.envColorMap[cat];
+            return '#2c3e50';
+        }
+
         // --- 左ツリー (分子系統樹) ---
         const treeLayoutMol = d3.cluster().size([h, treeWidth]);
         treeLayoutMol(molRoot);
@@ -2456,7 +2524,7 @@ input[type="submit"]:disabled:active {
             
         nodeMol.append('circle')
             .attr('r', 6)
-            .attr('fill', d => d.children ? '#bdc3c7' : '#3498db')
+            .attr('fill', d => getNodeColor(d, '#3498db'))
             .attr('stroke', '#fff')
             .attr('stroke-width', 1.5)
             .style('cursor', 'pointer')
@@ -2466,7 +2534,7 @@ input[type="submit"]:disabled:active {
             .attr('dy', '0.31em')
             .attr('x', d => d.children ? -8 : 10)
             .attr('text-anchor', d => d.children ? 'end' : 'start')
-            .attr('fill', '#2c3e50')
+            .attr('fill', d => getTextColor(d))
             .attr('font-size', '11px')
             .attr('font-weight', 'bold')
             .attr('font-family', 'Segoe UI, sans-serif')
@@ -2520,7 +2588,7 @@ input[type="submit"]:disabled:active {
                 
             nodeMorph.append('circle')
                 .attr('r', 6)
-                .attr('fill', d => d.children ? '#bdc3c7' : '#e67e22')
+                .attr('fill', d => getNodeColor(d, '#e67e22'))
                 .attr('stroke', '#fff')
                 .attr('stroke-width', 1.5)
                 .style('cursor', 'pointer')
@@ -2530,7 +2598,7 @@ input[type="submit"]:disabled:active {
                 .attr('dy', '0.31em')
                 .attr('x', d => d.children ? 8 : -10)
                 .attr('text-anchor', d => d.children ? 'start' : 'end')
-                .attr('fill', '#2c3e50')
+                .attr('fill', d => getTextColor(d))
                 .attr('font-size', '11px')
                 .attr('font-weight', 'bold')
                 .attr('font-family', 'Segoe UI, sans-serif')
@@ -3169,7 +3237,14 @@ input[type="submit"]:disabled:active {
             
             ctx.beginPath();
             ctx.arc(x, y, isHovered ? 8 : 5, 0, Math.PI * 2);
-            ctx.fillStyle = isHovered ? '#e74c3c' : '#3498db';
+            let ptColor = '#3498db';
+            if (window.globalTreeRoot && window.globalTreeRoot.envMetadata && window.globalTreeRoot.envColorMap) {
+                let cat = window.globalTreeRoot.envMetadata[normalizeId(d.id)];
+                if (cat && window.globalTreeRoot.envColorMap[cat]) {
+                    ptColor = window.globalTreeRoot.envColorMap[cat];
+                }
+            }
+            ctx.fillStyle = isHovered ? '#e74c3c' : ptColor;
             ctx.fill();
             ctx.strokeStyle = '#fff';
             ctx.lineWidth = 2;

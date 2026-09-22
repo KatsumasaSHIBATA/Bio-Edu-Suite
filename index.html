@@ -1137,7 +1137,7 @@ input[type="submit"]:disabled:active {
         </button>
         <button id="btnBulkCopyEnv" class="btn btn-secondary" onclick="copyEnvDataTSV(); triggerHapticFeedback();">
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-          ⑫ 環境TSVをコピー
+          ⑩・⑫ 環境TSVをコピー
         </button>
       </div>
     </div>
@@ -1169,7 +1169,7 @@ input[type="submit"]:disabled:active {
         <div class="form-group">
           <label>環境データ</label>
           <input type="text" id="envCategory" class="form-control" placeholder="例: A湖畔、B山林など" enterkeyhint="done">
-          <div class="help-text">Statistical Genetics Lab で「環境(E)」要因として解析されます。</div>
+          <div class="help-text">Integrative Taxonomy Studio (⑩) の系統樹色分けや、Statistical Genetics Lab (⑫) の「環境(E)」要因として解析されます。</div>
         </div>
         
         <div class="form-group">
@@ -2093,7 +2093,7 @@ function closeFeedbackForm() {
       navigator.clipboard.writeText(tsv).then(() => {
         document.querySelectorAll('.sample-checkbox').forEach(cb => cb.checked = false);
         renderSamples();
-        showToast("環境データをTSV形式でクリップボードにコピーしました", "success");
+        showToast("⑩・⑫用の環境データ(TSV)をクリップボードにコピーしました", "success");
       }).catch(err => {
         showToast("データのコピーに失敗しました", "error");
       });
