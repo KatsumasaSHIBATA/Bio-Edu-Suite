@@ -225,12 +225,12 @@ export async function importMasterPreset(taskCode) {
   }
 }
 
-// 🔽 Firestoreキー復元ユーティリティ (ドットパス制約回避用)
-function restoreKeyName(safeKey) {
-  if (safeKey.startsWith('bio_edu_draft_') && safeKey.endsWith('_html')) {
-    return safeKey.substring(0, safeKey.length - 5) + '.html';
+function parseWorkspacePayload(raw) {
+  if (!raw) return null;
+  if (typeof raw === 'string') {
+    try { return JSON.parse(raw); } catch(e) { return null; }
   }
-  return safeKey;
+  return raw;
 }
 
 // [Bio-Edu Suite v36.2] Teacher Live Sync & Hydration Engine
@@ -244,17 +244,17 @@ function startRoomListener() {
     unsubscribeRoomListener = onSnapshot(roomRef, (snap) => {
       if (!snap.exists()) return;
       const data = snap.data();
-      if (data && data.teacherLiveState) {
+      const liveState = parseWorkspacePayload(data?.teacherLiveState);
+      if (liveState && typeof liveState === 'object') {
         let changed = false;
-        Object.keys(data.teacherLiveState).forEach((k) => {
-          const originalKey = restoreKeyName(k);
-          if (sessionStorage.getItem(originalKey) !== data.teacherLiveState[k]) {
-            sessionStorage.setItem(originalKey, data.teacherLiveState[k]);
+        Object.keys(liveState).forEach((k) => {
+          if (sessionStorage.getItem(k) !== liveState[k]) {
+            sessionStorage.setItem(k, liveState[k]);
             changed = true;
           }
         });
         if (changed) {
-          window.dispatchEvent(new CustomEvent('bio_edu_cloud_synced', { detail: data.teacherLiveState }));
+          window.dispatchEvent(new CustomEvent('bio_edu_cloud_synced', { detail: liveState }));
         }
       }
     }, (err) => {
@@ -300,16 +300,15 @@ async function syncFromCloud() {
     const [roomSnap, userSnap] = await Promise.all([getDoc(roomRef), getDoc(docRef)]);
     let targetWorkspace = null;
 
-    if (userSnap.exists() && userSnap.data()?.workspace && Object.keys(userSnap.data().workspace).length > 0) {
-      targetWorkspace = userSnap.data().workspace;
-    } else if (!isTeacher && roomSnap.exists() && roomSnap.data()?.teacherLiveState) {
-      targetWorkspace = roomSnap.data().teacherLiveState;
+    if (userSnap.exists() && userSnap.data()?.workspace) {
+      targetWorkspace = parseWorkspacePayload(userSnap.data().workspace);
+    } else if (roomSnap.exists() && roomSnap.data()?.teacherLiveState) {
+      targetWorkspace = parseWorkspacePayload(roomSnap.data().teacherLiveState);
     }
 
-    if (targetWorkspace) {
+    if (targetWorkspace && typeof targetWorkspace === 'object') {
       Object.keys(targetWorkspace).forEach((k) => {
-        const originalKey = restoreKeyName(k);
-        sessionStorage.setItem(originalKey, targetWorkspace[k]);
+        sessionStorage.setItem(k, targetWorkspace[k]);
       });
       window.dispatchEvent(new CustomEvent('bio_edu_cloud_synced', { detail: targetWorkspace }));
       if (typeof showToast === 'function') showToast("最新の作業状態を同期しました", "info");
@@ -346,24 +345,26 @@ export async function saveCurrentWorkspace() {
             }
           } catch(e) {}
         }
-        const safeKey = k.replace(/\.html$/, '_html');
-        snap[safeKey] = val;
+        snap[k] = val;
       }
     }
     if (Object.keys(snap).length === 0) return;
+
+    // 🌟 Firestoreのドット制約・ネスト制約を完全無効化するため、JSON文字列として格納
+    const serializedPayload = JSON.stringify(snap);
 
     // 親ドキュメント（rooms/{roomCode}）を実体化して教員ステートをブロードキャスト
     const roomRef = doc(db, "rooms", currentRoomCode);
     const roomPayload = { roomCode: currentRoomCode, lastActive: Date.now() };
     if (isTeacher) {
-      roomPayload.teacherLiveState = snap;
+      roomPayload.teacherLiveState = serializedPayload;
       roomPayload.teacherId = currentParticipantId;
       roomPayload.teacherUpdatedAt = Date.now();
     }
     await setDoc(roomRef, roomPayload, { merge: true });
 
     const docRef = doc(db, `rooms/${currentRoomCode}/participants`, currentParticipantId);
-    await setDoc(docRef, { workspace: snap, participantId: currentParticipantId, isTeacher: isTeacher, lastUpdated: Date.now() }, { merge: true });
+    await setDoc(docRef, { workspace: serializedPayload, participantId: currentParticipantId, isTeacher: isTeacher, lastUpdated: Date.now() }, { merge: true });
   } catch (e) {
     console.warn("Cloud sync write error:", e);
   }
