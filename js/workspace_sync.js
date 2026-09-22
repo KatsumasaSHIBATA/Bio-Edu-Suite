@@ -3,9 +3,13 @@
 // 全アプリ共通の作業状態永続化・自動ハイドレーション機構
 
 (function() {
-    // 1. キーの動的生成
-    const APP_ID = window.location.pathname.split('/').pop().replace('.html', '') || 'index';
-    const STORE_KEY = 'bio_edu_workspace_' + APP_ID;
+    // 1. キーの動的生成（ダッシュボード例外を安全にハンドリング）
+    const path = window.location.pathname;
+    let fileName = path.split('/').pop().replace('.html', '');
+    if (!fileName || fileName === 'index') {
+        fileName = 'dashboard';
+    }
+    const STORE_KEY = 'bio_edu_workspace_' + fileName;
     
     let saveTimeout;
     
@@ -13,9 +17,10 @@
     function collectState() {
         const state = {};
         document.querySelectorAll('input, select, textarea').forEach(el => {
-            if (!el.id && !el.name) return; // id/nameがない要素は除外
-            // セキュリティおよび構造的に保存不要なものを除外
+            if (!el.id && !el.name) return;
+            // セキュリティ、送信ボタン、モーダル一時要素を除外
             if (['password', 'file', 'submit', 'button'].includes(el.type)) return;
+            if (el.closest('#confirmModal') || el.closest('#accountModal')) return;
             
             const key = el.id || el.name;
             if (el.type === 'checkbox' || el.type === 'radio') {
@@ -33,6 +38,8 @@
         clearTimeout(saveTimeout);
         saveTimeout = setTimeout(() => {
             sessionStorage.setItem(STORE_KEY, JSON.stringify(collectState()));
+            // 他スクリプト（auth_sync等）へ保存要求を伝播
+            window.dispatchEvent(new CustomEvent('bio_edu_request_save'));
         }, 150);
     }
 
@@ -40,6 +47,9 @@
     function instantSave() {
         if (window.isResetting) return;
         sessionStorage.setItem(STORE_KEY, JSON.stringify(collectState()));
+        if (typeof window.saveCurrentWorkspace === 'function') {
+            window.saveCurrentWorkspace();
+        }
     }
 
     // 5. ハイドレーション（復元）
@@ -84,13 +94,16 @@
         if (e.persisted) restoreWorkspace();
     });
 
+    // クラウド同期受信時の連動
+    window.addEventListener('bio_edu_cloud_synced', () => {
+        restoreWorkspace();
+    });
+
     // 7. 初期化処理時の物理遮断（Anti-Rollback / パージ対応）
-    // 既存の confirmDataReset などのリセット関数が呼ばれた際に連動してセッションもパージする
     document.addEventListener('click', (e) => {
         const btn = e.target.closest('.sidebar-action-btn.danger');
         if(btn && btn.textContent.includes('データを初期化')) {
             window.isResetting = true;
-            // 一時的にStorageへの書き込みを無力化してレースコンディションを防ぐ
             Storage.prototype.setItem = function() {}; 
             sessionStorage.removeItem(STORE_KEY);
         }
