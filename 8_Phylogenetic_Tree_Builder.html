@@ -623,6 +623,11 @@
         }
         .log-table td { border-bottom: 1px solid #ecf0f1; padding: 8px; vertical-align: top; }
         .log-table tr:hover td { background-color: #f8f9f9; }
+        .log-table tr.clickable-log { cursor: pointer; transition: background-color 0.15s; }
+        .log-table tr.clickable-log:hover td { background-color: #f2f4f4; }
+        .log-table tr.active-log td { 
+            background-color: #d1f2eb !important; 
+        }
         
         .modal-overlay { 
             position: fixed; 
@@ -1739,7 +1744,7 @@ input[type="submit"]:disabled:active {
                         <button class="btn btn-sm" id="btnDownloadLog" onclick="downloadLogCSV()" disabled style="background:#fff; border-color:var(--border-color); box-shadow:none;" data-tooltip="履歴をCSVで保存します"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> CSV保存</button>
                     </div>
                 </div>
-                <div style="max-height: 200px; overflow-y: auto;">
+                <div style="max-height: 380px; overflow-y: auto;">
                     <table class="log-table" style="width: 100%; text-align: left; border-collapse: collapse; font-size: 11px;">
                         <thead>
                             <tr>
