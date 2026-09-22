@@ -225,6 +225,14 @@ export async function importMasterPreset(taskCode) {
   }
 }
 
+// 🔽 Firestoreキー復元ユーティリティ (ドットパス制約回避用)
+function restoreKeyName(safeKey) {
+  if (safeKey.startsWith('bio_edu_draft_') && safeKey.endsWith('_html')) {
+    return safeKey.substring(0, safeKey.length - 5) + '.html';
+  }
+  return safeKey;
+}
+
 // [Bio-Edu Suite v36.2] Teacher Live Sync & Hydration Engine
 function startRoomListener() {
   if (!isConnected || !auth.currentUser || isTeacher) return;
@@ -239,8 +247,9 @@ function startRoomListener() {
       if (data && data.teacherLiveState) {
         let changed = false;
         Object.keys(data.teacherLiveState).forEach((k) => {
-          if (sessionStorage.getItem(k) !== data.teacherLiveState[k]) {
-            sessionStorage.setItem(k, data.teacherLiveState[k]);
+          const originalKey = restoreKeyName(k);
+          if (sessionStorage.getItem(originalKey) !== data.teacherLiveState[k]) {
+            sessionStorage.setItem(originalKey, data.teacherLiveState[k]);
             changed = true;
           }
         });
@@ -299,7 +308,8 @@ async function syncFromCloud() {
 
     if (targetWorkspace) {
       Object.keys(targetWorkspace).forEach((k) => {
-        sessionStorage.setItem(k, targetWorkspace[k]);
+        const originalKey = restoreKeyName(k);
+        sessionStorage.setItem(originalKey, targetWorkspace[k]);
       });
       window.dispatchEvent(new CustomEvent('bio_edu_cloud_synced', { detail: targetWorkspace }));
       if (typeof showToast === 'function') showToast("最新の作業状態を同期しました", "info");
@@ -336,7 +346,8 @@ export async function saveCurrentWorkspace() {
             }
           } catch(e) {}
         }
-        snap[k] = val;
+        const safeKey = k.replace(/\.html$/, '_html');
+        snap[safeKey] = val;
       }
     }
     if (Object.keys(snap).length === 0) return;
