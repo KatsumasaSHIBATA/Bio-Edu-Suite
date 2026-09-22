@@ -952,15 +952,6 @@ body {
     filter: none !important;
     transform: none !important;
 }
-    background-color: #ffffff !important;
-    color: #bdc3c7 !important;
-    border: 1px solid #d5dbdb !important;
-    cursor: not-allowed !important;
-    opacity: 0.8 !important;
-    box-shadow: none !important;
-    filter: none !important;
-    transform: none !important;
-}
 
 
 
@@ -1860,6 +1851,21 @@ input[type="submit"]:disabled:active {
         return false;
     }
 
+    function getEnvCategory(name) {
+        if (!name || !globalTreeRoot || !globalTreeRoot.envMetadata) return null;
+        const normName = normalizeId(name);
+        if (globalTreeRoot.envMetadata[normName]) {
+            return globalTreeRoot.envMetadata[normName];
+        }
+        for (let key of Object.keys(globalTreeRoot.envMetadata)) {
+            if (isIdOrNameMatched(name, key)) {
+                return globalTreeRoot.envMetadata[key];
+            }
+        }
+        return null;
+    }
+    window.getEnvCategory = getEnvCategory;
+
     function parseNewickString(s) {
         if (!s || typeof s !== 'string') return { name: "root" };
         let str = s.trim();
@@ -2069,6 +2075,7 @@ input[type="submit"]:disabled:active {
         } else {
             globalTreeRoot = { molRoot, morphRoot, pairMappings: [] };
         }
+        window.globalTreeRoot = globalTreeRoot;
 
         isUntangled = false;
         const untangleBtn = document.getElementById('untangleBtn');
@@ -2078,6 +2085,9 @@ input[type="submit"]:disabled:active {
         }
 
         renderTanglegram(molRoot, morphRoot, globalTreeRoot.pairMappings || []);
+        if (parsedMorphData && parsedMorphData.length > 0) {
+            drawPCA();
+        }
 
         if (typeof triggerHapticFeedback === 'function') triggerHapticFeedback();
         if (!silent && typeof showToast === 'function') {
@@ -2299,6 +2309,13 @@ input[type="submit"]:disabled:active {
                             pairMappings.push({ left: leftId, right: rightVal });
                         } else {
                             envMetadata[normalizeId(leftId)] = rightVal;
+                            // 3カラム形式（Sample_ID \t 系統名 \t 環境カテゴリ）の場合、第2カラムもキーとして登録
+                            if (parts.length >= 3) {
+                                let secondCol = parts[1].trim();
+                                if (secondCol) {
+                                    envMetadata[normalizeId(secondCol)] = rightVal;
+                                }
+                            }
                         }
                     }
                 }
@@ -2312,12 +2329,15 @@ input[type="submit"]:disabled:active {
             });
 
             globalTreeRoot = { molRoot, morphRoot, pairMappings, envMetadata, envColorMap }; 
+            window.globalTreeRoot = globalTreeRoot;
             originalMolTreeData = cloneTreeData(molTree);
             originalMorphTreeData = morphTree ? cloneTreeData(morphTree) : null;
 
-            // 外群選択プルダウンの動的生成
+            // 外群選択プルダウンの動的生成（前回の選択値引き継ぎを撤廃し、確実に初期化）
+            currentSelectedOutgroup = "";
             const outgroupSelect = document.getElementById('outgroupSelect10');
             if (outgroupSelect) {
+                outgroupSelect.value = "";
                 outgroupSelect.innerHTML = '<option value="">外群指定(自動)</option>';
                 leafNames.forEach(leaf => {
                     const opt = document.createElement('option');
@@ -2326,11 +2346,6 @@ input[type="submit"]:disabled:active {
                     outgroupSelect.appendChild(opt);
                 });
                 outgroupSelect.disabled = false;
-                if (currentSelectedOutgroup && leafNames.includes(currentSelectedOutgroup)) {
-                    outgroupSelect.value = currentSelectedOutgroup;
-                } else {
-                    currentSelectedOutgroup = "";
-                }
             }
             
             // 不足がある場合、処理は止めずに確実にトーストを発火させる
@@ -2482,16 +2497,16 @@ input[type="submit"]:disabled:active {
 
         function getNodeColor(d, defaultColor) {
             if (d.children) return '#bdc3c7';
-            if (!globalTreeRoot.envMetadata || !d.data.name) return defaultColor;
-            let cat = globalTreeRoot.envMetadata[normalizeId(d.data.name)];
-            if (cat && globalTreeRoot.envColorMap[cat]) return globalTreeRoot.envColorMap[cat];
+            if (!globalTreeRoot || !d.data.name) return defaultColor;
+            let cat = getEnvCategory(d.data.name);
+            if (cat && globalTreeRoot.envColorMap && globalTreeRoot.envColorMap[cat]) return globalTreeRoot.envColorMap[cat];
             return defaultColor;
         }
         function getTextColor(d) {
             if (d.children) return '#2c3e50';
-            if (!globalTreeRoot.envMetadata || !d.data.name) return '#2c3e50';
-            let cat = globalTreeRoot.envMetadata[normalizeId(d.data.name)];
-            if (cat && globalTreeRoot.envColorMap[cat]) return globalTreeRoot.envColorMap[cat];
+            if (!globalTreeRoot || !d.data.name) return '#2c3e50';
+            let cat = getEnvCategory(d.data.name);
+            if (cat && globalTreeRoot.envColorMap && globalTreeRoot.envColorMap[cat]) return globalTreeRoot.envColorMap[cat];
             return '#2c3e50';
         }
 
@@ -2837,6 +2852,7 @@ input[type="submit"]:disabled:active {
 
     window.handleUntangle = function() {
         if (!globalTreeRoot || !globalTreeRoot.molRoot || !globalTreeRoot.morphRoot) return;
+        window.globalTreeRoot = globalTreeRoot;
         
         const btn = document.getElementById('untangleBtn');
         isUntangled = !isUntangled;
@@ -2860,6 +2876,9 @@ input[type="submit"]:disabled:active {
         }
         
         renderTanglegram(globalTreeRoot.molRoot, globalTreeRoot.morphRoot, globalTreeRoot.pairMappings || []);
+        if (parsedMorphData && parsedMorphData.length > 0) {
+            drawPCA();
+        }
     };
 
     // ==========================================
@@ -3238,11 +3257,9 @@ input[type="submit"]:disabled:active {
             ctx.beginPath();
             ctx.arc(x, y, isHovered ? 8 : 5, 0, Math.PI * 2);
             let ptColor = '#3498db';
-            if (window.globalTreeRoot && window.globalTreeRoot.envMetadata && window.globalTreeRoot.envColorMap) {
-                let cat = window.globalTreeRoot.envMetadata[normalizeId(d.id)];
-                if (cat && window.globalTreeRoot.envColorMap[cat]) {
-                    ptColor = window.globalTreeRoot.envColorMap[cat];
-                }
+            let cat = getEnvCategory(d.id);
+            if (cat && window.globalTreeRoot && window.globalTreeRoot.envColorMap && window.globalTreeRoot.envColorMap[cat]) {
+                ptColor = window.globalTreeRoot.envColorMap[cat];
             }
             ctx.fillStyle = isHovered ? '#e74c3c' : ptColor;
             ctx.fill();
