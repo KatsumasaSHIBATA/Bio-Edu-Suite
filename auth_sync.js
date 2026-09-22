@@ -234,8 +234,52 @@ function parseWorkspacePayload(raw) {
 }
 
 // [Bio-Edu Suite v36.2] Teacher Live Sync & Hydration Engine
+let lastSentTimestamp = 0;
+
+function mergeLocalImageData(targetWorkspace) {
+  if (!targetWorkspace || typeof targetWorkspace !== 'object') return targetWorkspace;
+  try {
+    const rawLocalSamples = localStorage.getItem('bio_edu_samples');
+    if (!rawLocalSamples) return targetWorkspace;
+    const localSamples = JSON.parse(rawLocalSamples);
+    if (!Array.isArray(localSamples)) return targetWorkspace;
+    
+    // local map by id
+    const imgMap = {};
+    localSamples.forEach(s => {
+      if (s && s.id && s.image_data) {
+        imgMap[s.id] = s.image_data;
+      }
+    });
+    if (Object.keys(imgMap).length === 0) return targetWorkspace;
+
+    Object.keys(targetWorkspace).forEach(k => {
+      if (k.includes('dashboard_samples') && targetWorkspace[k]) {
+        try {
+          const wsSamples = typeof targetWorkspace[k] === 'string' ? JSON.parse(targetWorkspace[k]) : targetWorkspace[k];
+          if (Array.isArray(wsSamples)) {
+            let patched = false;
+            wsSamples.forEach(ws => {
+              if (ws && ws.id && (!ws.image_data || ws.image_data === '') && imgMap[ws.id]) {
+                ws.image_data = imgMap[ws.id];
+                patched = true;
+              }
+            });
+            if (patched) {
+              targetWorkspace[k] = JSON.stringify(wsSamples);
+            }
+          }
+        } catch(e) {}
+      }
+    });
+  } catch(e) {
+    console.warn("mergeLocalImageData error:", e);
+  }
+  return targetWorkspace;
+}
+
 function startRoomListener() {
-  if (!isConnected || !auth.currentUser || isTeacher) return;
+  if (!isConnected || !auth.currentUser) return;
   if (typeof unsubscribeRoomListener === 'function') {
     unsubscribeRoomListener();
   }
@@ -244,17 +288,24 @@ function startRoomListener() {
     unsubscribeRoomListener = onSnapshot(roomRef, (snap) => {
       if (!snap.exists()) return;
       const data = snap.data();
+      
+      // 自身が直前に送信した更新は無視するガード
+      if (data?.teacherId === currentParticipantId && (Date.now() - lastSentTimestamp < 3000)) {
+        return;
+      }
+
       const liveState = parseWorkspacePayload(data?.teacherLiveState);
       if (liveState && typeof liveState === 'object') {
+        const mergedLiveState = mergeLocalImageData(liveState);
         let changed = false;
-        Object.keys(liveState).forEach((k) => {
-          if (sessionStorage.getItem(k) !== liveState[k]) {
-            sessionStorage.setItem(k, liveState[k]);
+        Object.keys(mergedLiveState).forEach((k) => {
+          if (sessionStorage.getItem(k) !== mergedLiveState[k]) {
+            sessionStorage.setItem(k, mergedLiveState[k]);
             changed = true;
           }
         });
         if (changed) {
-          window.dispatchEvent(new CustomEvent('bio_edu_cloud_synced', { detail: liveState }));
+          window.dispatchEvent(new CustomEvent('bio_edu_cloud_synced', { detail: mergedLiveState }));
         }
       }
     }, (err) => {
@@ -271,47 +322,39 @@ async function syncFromCloud() {
     const roomRef = doc(db, "rooms", currentRoomCode);
     const docRef = doc(db, `rooms/${currentRoomCode}/participants`, currentParticipantId);
 
-    // 【同一セッション内ステート保護】ローカルに作業中データが存在する場合の調停
-    let hasLocalWork = false;
-    for (let i = 0; i < sessionStorage.length; i++) {
-      const k = sessionStorage.key(i);
-      if (k && (k.startsWith('bio_edu_ws_') || k.startsWith('bio_edu_draft_') || k.startsWith('bio_edu_autosave_') || k.startsWith('bio_edu_workspace_'))) {
-        const val = sessionStorage.getItem(k);
-        if (val && val !== '[]' && val !== '{}' && val !== '""') {
-          hasLocalWork = true;
-          break;
-        }
-      }
-    }
-
-    // 初回入室直後フラグの確認（入室直後はクラウドからの初回展開を優先し、以降のアプリ間遷移ではローカル最新を維持）
-    const isJustJoined = sessionStorage.getItem('bio_edu_just_joined') === 'true';
-    if (isJustJoined) {
-      sessionStorage.removeItem('bio_edu_just_joined');
-    }
-
-    // 教員モード、または生徒モードでアプリ間遷移時（!isJustJoined）にローカル作業が存在する場合、
-    // クラウドからの過去スナップショットダウンロード（巻き戻し・復活バグ）を遮断し、ローカルを確定保存
-    if (hasLocalWork && (isTeacher || !isJustJoined)) {
-      await saveCurrentWorkspace();
-      return;
-    }
-
     const [roomSnap, userSnap] = await Promise.all([getDoc(roomRef), getDoc(docRef)]);
+    
+    // 編集時刻の取得（未編集の場合は 0）
+    const localEditTime = parseInt(localStorage.getItem('bio_edu_last_user_edit') || sessionStorage.getItem('bio_edu_last_user_edit') || '0', 10);
+    
+    let remoteUpdatedAt = 0;
     let targetWorkspace = null;
 
     if (userSnap.exists() && userSnap.data()?.workspace) {
       targetWorkspace = parseWorkspacePayload(userSnap.data().workspace);
+      remoteUpdatedAt = userSnap.data().lastUpdated || 0;
     } else if (roomSnap.exists() && roomSnap.data()?.teacherLiveState) {
       targetWorkspace = parseWorkspacePayload(roomSnap.data().teacherLiveState);
+      remoteUpdatedAt = roomSnap.data().teacherUpdatedAt || roomSnap.data().lastActive || 0;
     }
 
-    if (targetWorkspace && typeof targetWorkspace === 'object') {
+    // LWW (Last-Write-Wins) 判定: クラウドがローカルより新しい場合（またはローカル未編集/初回入室時）
+    if (targetWorkspace && typeof targetWorkspace === 'object' && (remoteUpdatedAt >= localEditTime || localEditTime === 0)) {
+      targetWorkspace = mergeLocalImageData(targetWorkspace);
       Object.keys(targetWorkspace).forEach((k) => {
         sessionStorage.setItem(k, targetWorkspace[k]);
       });
       window.dispatchEvent(new CustomEvent('bio_edu_cloud_synced', { detail: targetWorkspace }));
       if (typeof showToast === 'function') showToast("最新の作業状態を同期しました", "info");
+    } else if (localEditTime > remoteUpdatedAt && localEditTime > 0) {
+      // ローカルの方が新しい場合はローカルの作業状態をクラウドへ保存
+      await saveCurrentWorkspace();
+    } else if (targetWorkspace && typeof targetWorkspace === 'object') {
+      targetWorkspace = mergeLocalImageData(targetWorkspace);
+      Object.keys(targetWorkspace).forEach((k) => {
+        sessionStorage.setItem(k, targetWorkspace[k]);
+      });
+      window.dispatchEvent(new CustomEvent('bio_edu_cloud_synced', { detail: targetWorkspace }));
     } else {
       await saveCurrentWorkspace();
     }
@@ -330,6 +373,7 @@ export async function saveCurrentWorkspace() {
       const k = sessionStorage.key(i);
       if (k && (k.startsWith('bio_edu_ws_') || k.startsWith('bio_edu_draft_') || k.startsWith('bio_edu_autosave_') || k.startsWith('bio_edu_workspace_'))) {
         let val = sessionStorage.getItem(k);
+        // sessionStorage 本体は破壊せず、Firestore送信用の一時オブジェクトでのみBase64軽量化
         if (k.includes('dashboard_samples') && val) {
           try {
             const arr = JSON.parse(val);
@@ -337,7 +381,7 @@ export async function saveCurrentWorkspace() {
               const sanitized = arr.map(item => {
                 const copy = { ...item };
                 if (copy.image_data && copy.image_data.startsWith('data:image')) {
-                  copy.image_data = "";
+                  copy.image_data = ""; // 送信用オブジェクト内でのみ除外
                 }
                 return copy;
               });
@@ -352,19 +396,21 @@ export async function saveCurrentWorkspace() {
 
     // 🌟 Firestoreのドット制約・ネスト制約を完全無効化するため、JSON文字列として格納
     const serializedPayload = JSON.stringify(snap);
+    const nowTime = Date.now();
+    lastSentTimestamp = nowTime;
 
     // 親ドキュメント（rooms/{roomCode}）を実体化して教員ステートをブロードキャスト
     const roomRef = doc(db, "rooms", currentRoomCode);
-    const roomPayload = { roomCode: currentRoomCode, lastActive: Date.now() };
+    const roomPayload = { roomCode: currentRoomCode, lastActive: nowTime };
     if (isTeacher) {
       roomPayload.teacherLiveState = serializedPayload;
       roomPayload.teacherId = currentParticipantId;
-      roomPayload.teacherUpdatedAt = Date.now();
+      roomPayload.teacherUpdatedAt = nowTime;
     }
     await setDoc(roomRef, roomPayload, { merge: true });
 
     const docRef = doc(db, `rooms/${currentRoomCode}/participants`, currentParticipantId);
-    await setDoc(docRef, { workspace: serializedPayload, participantId: currentParticipantId, isTeacher: isTeacher, lastUpdated: Date.now() }, { merge: true });
+    await setDoc(docRef, { workspace: serializedPayload, participantId: currentParticipantId, isTeacher: isTeacher, lastUpdated: nowTime }, { merge: true });
   } catch (e) {
     console.warn("Cloud sync write error:", e);
   }

@@ -60,6 +60,7 @@
         window.isHydrating = true;
         try {
             const state = JSON.parse(stored);
+            const restoredElements = [];
             Object.keys(state).forEach(key => {
                 const el = document.getElementById(key) || document.querySelector(`[name="${key}"]`);
                 if (el) {
@@ -68,8 +69,18 @@
                     } else {
                         el.value = state[key];
                     }
+                    restoredElements.push(el);
                 }
             });
+
+            // 各要素に対して input および change イベントをディスパッチして計算・描画エンジンを再実行
+            restoredElements.forEach(el => {
+                try {
+                    el.dispatchEvent(new Event('input', { bubbles: true }));
+                    el.dispatchEvent(new Event('change', { bubbles: true }));
+                } catch(err) {}
+            });
+
             // 復元後、D3.js等の描画関数をキックするためのカスタムイベントをディスパッチ
             window.dispatchEvent(new CustomEvent('bio_edu_workspace_restored', { detail: state }));
         } catch (e) {
@@ -79,8 +90,16 @@
     }
 
     // 6. ライフサイクルイベントの監視
-    document.addEventListener('input', saveWorkspace);
-    document.addEventListener('change', saveWorkspace);
+    function handleUserEdit() {
+        if (window.isHydrating) return;
+        try {
+            localStorage.setItem('bio_edu_last_user_edit', Date.now().toString());
+        } catch(e) {}
+        saveWorkspace();
+    }
+
+    document.addEventListener('input', handleUserEdit);
+    document.addEventListener('change', handleUserEdit);
     
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') instantSave();

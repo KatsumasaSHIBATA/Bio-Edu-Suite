@@ -1609,9 +1609,35 @@ function closeFeedbackForm() {
     window.addEventListener('bio_edu_cloud_synced', (e) => {
       try {
         const workspace = e.detail;
-        if (workspace && workspace[SESSION_WORKSPACE_KEY]) {
-          const remoteSamples = JSON.parse(workspace[SESSION_WORKSPACE_KEY]);
+        if (workspace && (workspace[SESSION_WORKSPACE_KEY] || workspace['bio_edu_workspace_dashboard_samples'])) {
+          const raw = workspace[SESSION_WORKSPACE_KEY] || workspace['bio_edu_workspace_dashboard_samples'];
+          const remoteSamples = typeof raw === 'string' ? JSON.parse(raw) : raw;
           if (Array.isArray(remoteSamples)) {
+            // 画像マージ保護: 既存の samples または localStorage 内のローカルサンプルに画像があり、受信側が空の場合はローカル画像をマージ
+            const localImgMap = {};
+            if (Array.isArray(samples)) {
+              samples.forEach(s => {
+                if (s && s.id && s.image_data) localImgMap[s.id] = s.image_data;
+              });
+            }
+            try {
+              const rawLs = localStorage.getItem(STORAGE_KEY);
+              if (rawLs) {
+                const lsSamples = JSON.parse(rawLs);
+                if (Array.isArray(lsSamples)) {
+                  lsSamples.forEach(s => {
+                    if (s && s.id && s.image_data && !localImgMap[s.id]) localImgMap[s.id] = s.image_data;
+                  });
+                }
+              }
+            } catch(err) {}
+
+            remoteSamples.forEach(rs => {
+              if (rs && rs.id && (!rs.image_data || rs.image_data === '') && localImgMap[rs.id]) {
+                rs.image_data = localImgMap[rs.id];
+              }
+            });
+
             samples = remoteSamples;
             try {
               localStorage.setItem(STORAGE_KEY, JSON.stringify(samples));
