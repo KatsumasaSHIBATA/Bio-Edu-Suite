@@ -1626,6 +1626,7 @@ input[type="submit"]:disabled:active {
             
             document.getElementById('queryInput').value = ev.target.result; 
             showToast(`クエリを読み込みました: ${currentQueryName || '名称不明'}`);
+            if (typeof window.saveApp7Session === "function") window.saveApp7Session();
         };
         if(e.target.files[0]) reader.readAsText(e.target.files[0]);
     }
@@ -1674,6 +1675,7 @@ input[type="submit"]:disabled:active {
                     updateDBCount();
                     document.getElementById('currentLoadedDataInfo').innerText = forceReplace ? `読み込み中: [外部JSON] ${file.name} (${localDB.length}種)` : `読み込み中: [外部JSON追加済] ${file.name} (合計: ${localDB.length}種)`;
                     showToast(`JSONデータベースを${forceReplace ? '読み込み' : '追加し'}ました (${addedCount}件)`);
+                    if (typeof window.saveApp7Session === "function") window.saveApp7Session();
                 } catch(err) {
                     showToast("JSONファイルの解析に失敗しました。", "error");
                 }
@@ -1726,6 +1728,7 @@ input[type="submit"]:disabled:active {
                 } else {
                     showToast(`${addedCount} 件の塩基配列をローカルデータベースに${forceReplace ? '登録' : '追加'}しました！`);
                 }
+                if (typeof window.saveApp7Session === "function") window.saveApp7Session();
             }
         };
         reader.readAsText(file);
@@ -1734,6 +1737,7 @@ input[type="submit"]:disabled:active {
     function loadShortSequence() {
         document.getElementById('queryInput').value = "ATCACACCCACTA";
         showToast("短い塩基配列を読み込みました。「解析を実行」をクリックしてE-valueの変化を確認してください。");
+        if (typeof window.saveApp7Session === "function") window.saveApp7Session();
     }
 
     function handleEngineChange() {
@@ -2081,6 +2085,7 @@ input[type="submit"]:disabled:active {
                 showToast(`${cleanAccession} をデータベースに追加しました！`);
             }
             document.getElementById('ncbiAccession').value = '';
+            if (typeof window.saveApp7Session === "function") window.saveApp7Session();
         } catch (error) {
             showToast("データの取得中にエラーが発生しました。", "error");
         }
@@ -2088,6 +2093,23 @@ input[type="submit"]:disabled:active {
 
     window.addEventListener('DOMContentLoaded', (event) => {
         loadAllCombinedDB(true);
+        
+        // 以下の入力フォーム即時保存リスナーを追加
+        const queryInput = document.getElementById('queryInput');
+        if (queryInput) {
+            queryInput.addEventListener('input', () => {
+                if (typeof window.saveApp7Session === 'function') window.saveApp7Session();
+            });
+        }
+        
+        ['valMatch', 'valMismatch', 'valGap'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('change', () => {
+                    if (typeof window.saveApp7Session === 'function') window.saveApp7Session();
+                });
+            }
+        });
     });
 </script>
 
