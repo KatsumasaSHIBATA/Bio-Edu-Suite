@@ -927,6 +927,18 @@ input[type="submit"]:disabled:active {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 /* --- UNIFIED DISABLED BUTTON MASTER CSS END --- */
+
+/* --- 階層型サンプルハブ＆スマート・ディスパッチ UI規格 (v37.0) --- */
+.file-chip-container { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.file-chip { display: inline-flex; align-items: center; gap: 6px; background: #eef2f7; border: 1px solid #d5dbdb; border-radius: 4px; padding: 4px 8px; font-size: 11px; font-family: monospace; }
+.file-chip .chip-dir { font-size: 10px; font-weight: bold; padding: 1px 4px; border-radius: 3px; text-transform: uppercase; }
+.chip-dir.forward { background: #d4efdf; color: #196f3d; }
+.chip-dir.reverse { background: #d6eaf8; color: #21618c; }
+.chip-dir.unknown { background: #f2f4f4; color: #7f8c8d; }
+.file-chip .btn-remove-chip { background: none; border: none; color: #95a5a6; cursor: pointer; font-size: 12px; line-height: 1; padding: 0 2px; }
+.file-chip .btn-remove-chip:hover { color: var(--danger); }
+.marker-badge-list { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.marker-tag { font-size: 10px; font-weight: bold; background: #e8f8f5; color: #16a085; border: 1px solid #a3e4d7; border-radius: 3px; padding: 1px 5px; }
 </style>
 
   <!-- PWA起動時ルーティング（State Restoration - ガイドライン第7.3項） -->
@@ -1211,8 +1223,9 @@ input[type="submit"]:disabled:active {
           <div class="drop-zone" id="ab1DropZone" onclick="document.getElementById('ab1Input').click(); triggerHapticFeedback();">
             <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
             <p id="ab1DropText">ここをクリック、または .ab1 ファイル をドラッグ＆ドロップ</p>
-            <input type="file" id="ab1Input" accept=".ab1,.scf" style="display: none;" onchange="handleAb1File(event)">
+            <input type="file" id="ab1Input" accept=".ab1,.scf" multiple style="display: none;" onchange="handleAb1File(event)">
           </div>
+          <div id="ab1FilesList" class="file-chip-container"></div>
           <div class="help-text">Sanger Trace Editor (④) に送って波形解析を行えます。</div>
           <input type="hidden" id="ab1DataHidden">
           <input type="hidden" id="ab1FileNameHidden">
@@ -1228,6 +1241,32 @@ input[type="submit"]:disabled:active {
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="closeModal(); triggerHapticFeedback();">キャンセル</button>
         <button class="btn btn-primary" onclick="saveSample(); triggerHapticFeedback();">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- スマート・ディスパッチ（マーカー選択送信）モーダル -->
+  <div class="modal-overlay" id="markerSelectModal">
+    <div class="modal-content" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 style="margin: 0; font-size: 15px;">送信対象マーカーの選択</h3>
+        <button class="modal-close" onclick="closeMarkerSelectModal(); triggerHapticFeedback();">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 14px 0; line-height: 1.5;">
+          選択されたサンプル内に複数の遺伝子マーカーが存在します。<br>
+          アライメント解析を行うマーカー領域を1つ選択してください（異種遺伝子の混合アライメントによる生物学的過誤を防止します）。
+        </p>
+        <div id="markerRadioContainer" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+          <!-- 動的生成ラジオボタン -->
+        </div>
+        <div class="help-text" style="font-size: 11px; color: #7f8c8d;">
+          ※選択されたマーカーの塩基配列のみを抽出し、マルチFASTAを生成して DNA Alignment Studio へ転送します。
+        </div>
+      </div>
+      <div class="modal-footer" style="padding: 12px 20px; display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="btn btn-secondary" onclick="closeMarkerSelectModal(); triggerHapticFeedback();">キャンセル</button>
+        <button class="btn btn-primary" onclick="confirmMarkerDispatch(); triggerHapticFeedback();">⑤ FASTA を送信</button>
       </div>
     </div>
   </div>
@@ -1350,6 +1389,60 @@ input[type="submit"]:disabled:active {
     const SESSION_WORKSPACE_KEY = 'bio_edu_workspace_dashboard_samples'; // セッション完全保持用キー
 
     let samples = [];
+    let currentAb1Files = [];
+
+    // ==========================================
+    // 遺伝子マーカー・自律正規化エンジン (v37.0)
+    // ==========================================
+    function parseFastaMarkers(dnaText) {
+      if (!dnaText || !dnaText.trim()) return [];
+      const text = dnaText.trim();
+      const results = [];
+      if (text.startsWith('>')) {
+        const records = text.split(/^>/m).filter(r => r.trim() !== '');
+        for (const rec of records) {
+          const lines = rec.trim().split('\n');
+          const header = lines[0].trim();
+          const sequence = lines.slice(1).join('').replace(/\s+/g, '').toUpperCase();
+          let marker = 'Default';
+          const markerMatch = header.match(/\b(CO1|COI|COX1|Cytb|CYTB|16S|18S|12S|28S|ALX1|ITS[12]?|rbcL|matK|trnH|ND[1-6]|D-loop|B-actin|GAPDH|H3)\b/i);
+          if (markerMatch) {
+            marker = markerMatch[1].toUpperCase();
+            if (marker === 'COI' || marker === 'COX1') marker = 'CO1';
+          } else {
+            const bracketMatch = header.match(/\[(.*?)\]/);
+            if (bracketMatch) {
+              const inner = bracketMatch[1];
+              const m2 = inner.match(/\b(CO1|COI|COX1|Cytb|CYTB|16S|18S|12S|28S|ALX1|ITS[12]?|rbcL|matK|trnH|ND[1-6]|D-loop)\b/i);
+              if (m2) {
+                marker = m2[1].toUpperCase();
+                if (marker === 'COI' || marker === 'COX1') marker = 'CO1';
+              }
+            }
+          }
+          if (marker === 'Default' && /CDS|gene/i.test(header)) {
+            const gMatch = header.match(/([A-Za-z0-9_-]+)\s+(?:CDS|gene)/i);
+            if (gMatch) marker = gMatch[1].toUpperCase();
+          }
+          results.push({ marker, header, sequence });
+        }
+      } else {
+        const seq = text.replace(/\s+/g, '').toUpperCase();
+        results.push({ marker: 'Default', header: 'Sequence', sequence: seq });
+      }
+      return results;
+    }
+
+    function normalizeSample(s) {
+      if (!s) return s;
+      if (!Array.isArray(s.sequences)) {
+        s.sequences = parseFastaMarkers(s.dnaData || "");
+      }
+      if (!Array.isArray(s.traces)) {
+        s.traces = [];
+      }
+      return s;
+    }
 
     // ==========================================
     // IndexedDB ユーティリティ (ハイブリッド構成用)
@@ -1792,8 +1885,8 @@ function closeFeedbackForm() {
             e.preventDefault();
             ab1Zone.style.borderColor = 'var(--border-color)';
             ab1Zone.style.background = '#f8f9fa';
-            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-              processAb1File(e.dataTransfer.files[0]);
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+              processAb1Files(e.dataTransfer.files);
             }
           });
       }
@@ -1843,22 +1936,82 @@ function closeFeedbackForm() {
       reader.readAsDataURL(file);
     }
 
+    function detectTraceDirection(filename) {
+      const fn = (filename || '').toUpperCase();
+      if (/(?:^|[_\.\-])(?:F|FWD|FORWARD)(?:[_\.\-]|$)/i.test(fn) || /_F\.ab1$/i.test(fn) || /_FWD\.ab1$/i.test(fn)) {
+        return 'forward';
+      }
+      if (/(?:^|[_\.\-])(?:R|REV|REVERSE)(?:[_\.\-]|$)/i.test(fn) || /_R\.ab1$/i.test(fn) || /_REV\.ab1$/i.test(fn)) {
+        return 'reverse';
+      }
+      return 'unknown';
+    }
+
     function handleAb1File(event) {
-      if (event.target.files && event.target.files[0]) {
-        processAb1File(event.target.files[0]);
+      if (event.target.files && event.target.files.length > 0) {
+        processAb1Files(event.target.files);
       }
     }
 
-    function processAb1File(file) {
-      document.getElementById('ab1DropText').innerText = "読み込み中...";
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        document.getElementById('ab1DataHidden').value = e.target.result; // Data URL形式で保持し、IndexedDBへ送る
-        document.getElementById('ab1FileNameHidden').value = file.name;
-        document.getElementById('ab1DropText').innerText = file.name + " (セット済)";
-        showToast("未処理塩基配列データをセットしました", "success");
-      };
-      reader.readAsDataURL(file);
+    function processAb1Files(fileList) {
+      const files = Array.from(fileList);
+      if (files.length === 0) return;
+      
+      let loadedCount = 0;
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const dir = detectTraceDirection(file.name);
+          currentAb1Files.push({
+            name: file.name,
+            size: file.size,
+            direction: dir,
+            data: e.target.result
+          });
+          loadedCount++;
+          if (loadedCount === files.length) {
+            renderAb1Chips();
+            showToast(`${files.length}件の未処理波形データを追加しました`, "success");
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function removeAb1Chip(index) {
+      if (index >= 0 && index < currentAb1Files.length) {
+        currentAb1Files.splice(index, 1);
+        renderAb1Chips();
+      }
+    }
+
+    function renderAb1Chips() {
+      const container = document.getElementById('ab1FilesList');
+      if (!container) return;
+      container.innerHTML = '';
+      
+      if (currentAb1Files.length === 0) {
+        document.getElementById('ab1DropText').innerText = "ここをクリック、または .ab1 ファイル をドラッグ＆ドロップ";
+        document.getElementById('ab1DataHidden').value = "";
+        document.getElementById('ab1FileNameHidden').value = "";
+        return;
+      }
+
+      document.getElementById('ab1DropText').innerText = `${currentAb1Files.length}件の波形ファイルが選択されています（追加ドロップ可能）`;
+      document.getElementById('ab1DataHidden').value = currentAb1Files[0].data;
+      document.getElementById('ab1FileNameHidden').value = currentAb1Files[0].name;
+
+      currentAb1Files.forEach((file, idx) => {
+        const chip = document.createElement('div');
+        chip.className = 'file-chip';
+        const dirLabel = file.direction === 'forward' ? 'FWD' : file.direction === 'reverse' ? 'REV' : 'RAW';
+        chip.innerHTML = `
+          <span class="chip-dir ${file.direction}">${dirLabel}</span>
+          <span title="${escapeHTML(file.name)}">${escapeHTML(file.name.length > 22 ? file.name.substring(0, 19) + '...' : file.name)}</span>
+          <button type="button" class="btn-remove-chip" onclick="removeAb1Chip(${idx}); triggerHapticFeedback();" title="削除">&times;</button>
+        `;
+        container.appendChild(chip);
+      });
     }
 
     function renderSamples() {
@@ -1881,21 +2034,41 @@ function closeFeedbackForm() {
 
       samples.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-      samples.forEach(sample => {
+      samples.forEach(rawSample => {
+        const sample = normalizeSample(rawSample);
         const envCat = sample.envCategory || "";
         const envNote = sample.envNote || sample.envData || "";
         
         const hasEnv = envCat.trim() !== "";
         const hasMorph = sample.morphData && sample.morphData.trim() !== "";
-        const hasDna = sample.dnaData && sample.dnaData.trim() !== "";
+        const hasDna = (sample.dnaData && sample.dnaData.trim() !== "") || (sample.sequences && sample.sequences.length > 0);
         const hasImage = sample.image_data && sample.image_data.trim() !== "";
-        const hasRawSeq = sample.hasRawSeq || false;
         
+        const traces = sample.traces || [];
+        const hasRawSeq = traces.length > 0 || sample.hasRawSeq;
+        
+        let rawDnaBadge = `<span class="badge none">未処理塩基配列なし</span>`;
+        if (traces.length > 1) {
+          const fwdCount = traces.filter(t => t.direction === 'forward').length;
+          const revCount = traces.filter(t => t.direction === 'reverse').length;
+          const dirStr = (fwdCount > 0 && revCount > 0) ? 'Fwd/Rev' : fwdCount > 0 ? 'Fwd' : revCount > 0 ? 'Rev' : '複数';
+          rawDnaBadge = `<span class="badge ok">未処理波形: ${traces.length}件 (${dirStr})</span>`;
+        } else if (hasRawSeq) {
+          rawDnaBadge = `<span class="badge ok">未処理塩基配列あり</span>`;
+        }
+
         const envBadge = hasEnv ? `<span class="badge ok">環境データあり</span>` : `<span class="badge none">環境データなし</span>`;
         const morphBadge = hasMorph ? `<span class="badge ok">計測データあり</span>` : `<span class="badge none">計測データなし</span>`;
         const imageBadge = hasImage ? `<span class="badge ok">画像データあり</span>` : `<span class="badge none">画像データなし</span>`;
-        const rawDnaBadge = hasRawSeq ? `<span class="badge ok">未処理塩基配列あり</span>` : `<span class="badge none">未処理塩基配列なし</span>`;
         const dnaBadge = hasDna ? `<span class="badge ok">処理済み塩基配列あり</span>` : `<span class="badge none">処理済み塩基配列なし</span>`;
+
+        // マーカータグ一覧
+        const seqs = (sample.sequences && sample.sequences.length > 0) ? sample.sequences : parseFastaMarkers(sample.dnaData || "");
+        const markers = Array.from(new Set(seqs.map(sq => sq.marker).filter(m => m && m !== 'Default')));
+        let markerTagsHtml = '';
+        if (markers.length > 0) {
+          markerTagsHtml = `<div class="marker-badge-list">${markers.map(m => `<span class="marker-tag">[${escapeHTML(m)}]</span>`).join('')}</div>`;
+        }
 
         const card = document.createElement('div');
         card.className = 'sample-card';
@@ -1916,10 +2089,11 @@ function closeFeedbackForm() {
           </div>
           <div class="card-body" onclick="editSample('${sample.id}'); triggerHapticFeedback();">
             <div class="status-badges">${envBadge}${morphBadge}${imageBadge}${rawDnaBadge}${dnaBadge}</div>
+            ${markerTagsHtml}
             ${hasEnv ? `<div class="data-preview" data-tooltip="環境データ">${escapeHTML(envCat)}</div>` : ''}
             ${envNote ? `<div class="data-preview" data-tooltip="特記事項">${escapeHTML(envNote.substring(0, 30))}...</div>` : ''}
             ${hasMorph ? `<div class="data-preview" data-tooltip="計測データ">${escapeHTML(sample.morphData.substring(0, 30))}...</div>` : ''}
-            ${hasDna ? `<div class="data-preview" data-tooltip="処理済み塩基配列">${escapeHTML(sample.dnaData.substring(0, 30))}...</div>` : ''}
+            ${hasDna ? `<div class="data-preview" data-tooltip="処理済み塩基配列">${escapeHTML((sample.dnaData || '').substring(0, 30))}...</div>` : ''}
           </div>
         `;
         grid.appendChild(card);
@@ -1950,8 +2124,10 @@ function closeFeedbackForm() {
           if (sample) {
             if (!sample.image_data || sample.image_data.trim() === "") canSendMorph = false;
             if (!sample.morphData || sample.morphData.trim() === "") canCopyMorphCSV = false;
-            if (!sample.dnaData || sample.dnaData.trim() === "") canSendDna = false;
-            if (!sample.hasRawSeq) canSendTrace = false;
+            const hasDnaContent = (sample.dnaData && sample.dnaData.trim() !== "") || (sample.sequences && sample.sequences.length > 0);
+            if (!hasDnaContent) canSendDna = false;
+            const hasTraceContent = (sample.traces && sample.traces.length > 0) || sample.hasRawSeq;
+            if (!hasTraceContent) canSendTrace = false;
             if (!sample.envCategory || sample.envCategory.trim() === "") canCopyEnv = false;
           }
         });
@@ -1980,7 +2156,7 @@ function closeFeedbackForm() {
       if (checkboxes.length === 0) return;
       
       const selectedIds = Array.from(checkboxes).map(cb => cb.value);
-      const selectedSamples = selectedIds.map(id => samples.find(s => s.id === id)).filter(Boolean);
+      const selectedSamples = selectedIds.map(id => samples.find(s => s.id === id)).filter(Boolean).map(normalizeSample);
       
       if (selectedSamples.length === 0) return;
 
@@ -1991,9 +2167,39 @@ function closeFeedbackForm() {
         envNote: s.envNote || s.envData || "",
         morphData: s.morphData || "",
         dnaData: s.dnaData || "",
+        sequences: s.sequences || [],
+        traces: s.traces || [],
         image_data: s.image_data || "",
-        hasRawSeq: s.hasRawSeq || false
+        hasRawSeq: (s.traces && s.traces.length > 0) || s.hasRawSeq || false
       }));
+
+      if (type === 'dna') {
+        // 全サンプルのマーカー遺伝子を集計
+        const markerMap = new Map();
+        exportSamples.forEach(s => {
+          const seqList = (s.sequences && s.sequences.length > 0) ? s.sequences : parseFastaMarkers(s.dnaData || "");
+          const sampleMarkers = new Set();
+          seqList.forEach(item => {
+            if (item.marker && item.marker !== 'Default') sampleMarkers.add(item.marker);
+          });
+          if (sampleMarkers.size === 0) sampleMarkers.add('Default');
+          sampleMarkers.forEach(m => {
+            markerMap.set(m, (markerMap.get(m) || 0) + 1);
+          });
+        });
+
+        const distinctMarkers = Array.from(markerMap.keys()).filter(m => m !== 'Default');
+
+        if (distinctMarkers.length > 1) {
+          // 複数マーカー混在時：スマート・ディスパッチ モーダルを開いて生徒に選択させる
+          openMarkerSelectModal(exportSamples, distinctMarkers, markerMap);
+          return;
+        }
+
+        // マーカーが1種またはDefaultのみの場合は即座に送信
+        executeDnaDispatch(exportSamples, distinctMarkers[0] || null);
+        return;
+      }
 
       document.querySelectorAll('.sample-checkbox').forEach(cb => cb.checked = false);
       renderSamples();
@@ -2008,16 +2214,29 @@ function closeFeedbackForm() {
           
           let bulkQueue = [];
           for (const s of exportSamples) {
-              if (s.hasRawSeq) {
+              if (s.hasRawSeq || (s.traces && s.traces.length > 0)) {
                   try {
                       const binData = await getFromIndexedDB(STORE_SAMPLES, s.id);
-                      if (binData && binData.data) {
-                          bulkQueue.push({
-                              id: s.id,
-                              name: s.name,
-                              fileName: binData.fileName || (s.id + '.ab1'),
-                              data: binData.data 
-                          });
+                      if (binData) {
+                          if (Array.isArray(binData.files) && binData.files.length > 0) {
+                              binData.files.forEach((f, idx) => {
+                                  bulkQueue.push({
+                                      id: s.id,
+                                      name: s.name,
+                                      fileName: f.name || `${s.id}_trace_${idx+1}.ab1`,
+                                      direction: f.direction || detectTraceDirection(f.name),
+                                      data: f.data 
+                                  });
+                              });
+                          } else if (binData.data) {
+                              bulkQueue.push({
+                                  id: s.id,
+                                  name: s.name,
+                                  fileName: binData.fileName || (s.id + '.ab1'),
+                                  direction: detectTraceDirection(binData.fileName),
+                                  data: binData.data 
+                              });
+                          }
                       }
                   } catch(e) { console.warn("Failed to load binary for", s.id); }
               }
@@ -2026,7 +2245,7 @@ function closeFeedbackForm() {
           // IndexedDBに連携用の一時プールを作成
           await saveToIndexedDB(STORE_BULK, { queueId: 'current_trace_queue', timestamp: new Date().getTime(), samples: bulkQueue });
           
-          // アプリ④が軽量データ（DNA等）も参照できるよう、全データをそのままsessionStorageへ送る（絞り込みによるバグ解消）
+          // アプリ④が軽量データ（DNA等）も参照できるよう、全データをそのままsessionStorageへ送る
           sessionStorage.setItem('bio_edu_bulk_data', JSON.stringify({
             samples: exportSamples,
             timestamp: new Date().getTime(),
@@ -2034,7 +2253,7 @@ function closeFeedbackForm() {
           }));
 
           targetUrl = '4_Sanger_Trace_Editor.html';
-          showToast(`${bulkQueue.length}件の未処理データを Sanger Trace Editor に転送します`, "info");
+          showToast(`${bulkQueue.length}件の未処理波形データを Sanger Trace Editor に転送します`, "info");
       } 
       else {
           // ============================================
@@ -2048,16 +2267,90 @@ function closeFeedbackForm() {
           
           if (type === 'morph') {
             targetUrl = '9_Morphometrics_Studio.html';
-            showToast(`${selectedSamples.length}件のデータを Morphometrics Studio に転送しました`, "info");
-          } else if (type === 'dna') {
-            targetUrl = '5_DNA_Alignment_Studio.html'; 
-            showToast(`${selectedSamples.length}件のデータを DNA Alignment Studio に転送しました`, "info");
+            showToast(`${exportSamples.length}件のデータを Morphometrics Studio に転送しました`, "info");
           }
       }
 
       if(targetUrl) {
         setTimeout(() => { window.location.href = targetUrl; }, 800);
       }
+    }
+
+    let pendingDnaSamples = null;
+
+    function openMarkerSelectModal(samplesList, distinctMarkers, markerMap) {
+      pendingDnaSamples = samplesList;
+      const container = document.getElementById('markerRadioContainer');
+      container.innerHTML = '';
+
+      distinctMarkers.forEach((marker, idx) => {
+        const count = markerMap.get(marker) || 0;
+        const label = document.createElement('label');
+        label.style.cssText = "display: flex; align-items: center; gap: 10px; font-size: 13px; cursor: pointer; padding: 10px 14px; background: #f8f9fa; border: 1px solid #d5dbdb; border-radius: 6px; transition: background 0.15s;";
+        label.innerHTML = `
+          <input type="radio" name="dispatchMarkerRadio" value="${escapeHTML(marker)}" ${idx === 0 ? 'checked' : ''} style="cursor: pointer;">
+          <span style="font-weight: 700; color: var(--primary);">${escapeHTML(marker)}</span>
+          <span style="color: var(--text-muted); font-size: 11px; margin-left: auto;">(${count} / ${samplesList.length} サンプル)</span>
+        `;
+        container.appendChild(label);
+      });
+
+      document.getElementById('markerSelectModal').style.display = 'flex';
+    }
+
+    function closeMarkerSelectModal() {
+      document.getElementById('markerSelectModal').style.display = 'none';
+      pendingDnaSamples = null;
+    }
+
+    function confirmMarkerDispatch() {
+      if (!pendingDnaSamples || pendingDnaSamples.length === 0) {
+        closeMarkerSelectModal();
+        return;
+      }
+      const checked = document.querySelector('input[name="dispatchMarkerRadio"]:checked');
+      const selectedMarker = checked ? checked.value : null;
+      const samplesToDispatch = pendingDnaSamples;
+      closeMarkerSelectModal();
+      executeDnaDispatch(samplesToDispatch, selectedMarker);
+    }
+
+    function executeDnaDispatch(selectedSamples, targetMarker) {
+      document.querySelectorAll('.sample-checkbox').forEach(cb => cb.checked = false);
+      renderSamples();
+
+      const exportSamples = selectedSamples.map(s => {
+        let dnaContent = s.dnaData || "";
+        if (targetMarker) {
+          const seqList = (s.sequences && s.sequences.length > 0) ? s.sequences : parseFastaMarkers(s.dnaData || "");
+          const matched = seqList.find(item => item.marker === targetMarker);
+          if (matched && matched.sequence) {
+            dnaContent = `>${s.id}_${s.name.replace(/\s+/g, '_')}_${targetMarker}\n${matched.sequence}`;
+          }
+        }
+        return {
+          id: s.id || generateBaseId(),
+          name: s.name || "Unknown_Sample",
+          envCategory: s.envCategory || "",
+          envNote: s.envNote || s.envData || "",
+          morphData: s.morphData || "",
+          dnaData: dnaContent,
+          sequences: s.sequences || [],
+          traces: s.traces || [],
+          image_data: s.image_data || "",
+          hasRawSeq: (s.traces && s.traces.length > 0) || s.hasRawSeq || false
+        };
+      });
+
+      sessionStorage.setItem('bio_edu_bulk_data', JSON.stringify({
+        samples: exportSamples,
+        selectedMarker: targetMarker || undefined,
+        timestamp: new Date().getTime(),
+        source: "App_1_Dashboard"
+      }));
+
+      showToast(`${exportSamples.length}件のデータを DNA Alignment Studio に転送しました${targetMarker ? ' (マーカー: ' + targetMarker + ')' : ''}`, "info");
+      setTimeout(() => { window.location.href = '5_DNA_Alignment_Studio.html'; }, 800);
     }
 
     function copyMorphCSV() {
@@ -2137,6 +2430,9 @@ function closeFeedbackForm() {
     }
 
     function openModal() {
+      currentAb1Files = [];
+      renderAb1Chips();
+
       document.getElementById('modalTitle').innerText = "サンプルの登録";
       document.getElementById('originalSampleId').value = "";
       document.getElementById('sampleId').value = generateBaseId();
@@ -2162,11 +2458,14 @@ function closeFeedbackForm() {
 
     function closeModal() {
       document.getElementById('sampleModal').style.display = 'none';
+      currentAb1Files = [];
+      renderAb1Chips();
     }
 
     function editSample(id) {
-      const sample = samples.find(s => s.id === id);
-      if (!sample) return;
+      const rawSample = samples.find(s => s.id === id);
+      if (!rawSample) return;
+      const sample = normalizeSample(rawSample);
       
       document.getElementById('modalTitle').innerText = "サンプルの編集";
       document.getElementById('originalSampleId').value = sample.id;
@@ -2190,11 +2489,25 @@ function closeFeedbackForm() {
       document.getElementById('ab1DataHidden').value = "";
       document.getElementById('ab1FileNameHidden').value = "";
       document.getElementById('ab1Input').value = "";
-      if (sample.hasRawSeq) {
-          document.getElementById('ab1DropText').innerText = "保存済みの未処理データあり (変更する場合は再ドロップ)";
-      } else {
-          document.getElementById('ab1DropText').innerText = "ここをクリック、または .ab1 ファイル をドラッグ＆ドロップ";
+
+      currentAb1Files = (sample.traces || []).map(t => ({...t}));
+      if (currentAb1Files.length === 0 && sample.hasRawSeq) {
+        getFromIndexedDB(STORE_SAMPLES, sample.id).then(binData => {
+          if (binData) {
+            if (Array.isArray(binData.files) && binData.files.length > 0) {
+              currentAb1Files = binData.files.map(f => ({...f}));
+            } else if (binData.data) {
+              currentAb1Files = [{
+                name: binData.fileName || (sample.id + '.ab1'),
+                direction: detectTraceDirection(binData.fileName),
+                data: binData.data
+              }];
+            }
+            renderAb1Chips();
+          }
+        }).catch(e => console.warn(e));
       }
+      renderAb1Chips();
 
       document.getElementById('morphData').value = sample.morphData || "";
       document.getElementById('dnaData').value = sample.dnaData || "";
@@ -2225,6 +2538,15 @@ function closeFeedbackForm() {
         counter++;
       }
 
+      const sequences = parseFastaMarkers(dna);
+      const traces = currentAb1Files.map(f => ({
+        name: f.name,
+        direction: f.direction || detectTraceDirection(f.name),
+        data: f.data,
+        size: f.size
+      }));
+      const hasRawSeq = traces.length > 0 || (ab1Data ? true : false);
+
       if (originalId) {
         const index = samples.findIndex(s => s.id === originalId);
         if (index !== -1) {
@@ -2235,19 +2557,29 @@ function closeFeedbackForm() {
           samples[index].image_data = image_data;
           samples[index].morphData = morph;
           samples[index].dnaData = dna;
+          samples[index].sequences = sequences;
+          samples[index].traces = traces;
           samples[index].date = new Date().toISOString();
-          samples[index].hasRawSeq = ab1Data ? true : (samples[index].hasRawSeq || false);
+          samples[index].hasRawSeq = hasRawSeq || (samples[index].hasRawSeq || false);
           delete samples[index].envData; 
         }
       } else {
         samples.push({ 
           id: finalId, name: name, envCategory: envCategory, envNote: envNote, 
           image_data: image_data, morphData: morph, dnaData: dna, 
-          hasRawSeq: ab1Data ? true : false, date: new Date().toISOString() 
+          sequences: sequences, traces: traces,
+          hasRawSeq: hasRawSeq, date: new Date().toISOString() 
         });
       }
       
-      if (ab1Data) {
+      if (traces.length > 0) {
+         saveToIndexedDB(STORE_SAMPLES, {
+           id: finalId,
+           fileName: traces[0].name,
+           data: traces[0].data,
+           files: traces
+         }).catch(e => console.error("IndexedDB Save Error:", e));
+      } else if (ab1Data) {
          saveToIndexedDB(STORE_SAMPLES, { id: finalId, fileName: ab1FileName, data: ab1Data })
             .catch(e => console.error("IndexedDB Save Error:", e));
       }
@@ -2519,8 +2851,8 @@ function closeFeedbackForm() {
                 const inputs = document.querySelectorAll('input, textarea, select');
                 const draft = {};
                 inputs.forEach(el => {
-                    // confirmModal, accountModal に加え、巨大データを抱える sampleModal を除外してセッション容量を保護
-                    if (el.id && !el.closest('#confirmModal') && !el.closest('#accountModal') && !el.closest('#sampleModal')) {
+                    // confirmModal, accountModal に加え、巨大データを抱える sampleModal, markerSelectModal を除外してセッション容量を保護
+                    if (el.id && !el.closest('#confirmModal') && !el.closest('#accountModal') && !el.closest('#sampleModal') && !el.closest('#markerSelectModal')) {
                         if (el.type === 'checkbox' || el.type === 'radio') {
                             draft[el.id] = el.checked;
                         } else if (el.type !== 'file' && el.type !== 'password') {
