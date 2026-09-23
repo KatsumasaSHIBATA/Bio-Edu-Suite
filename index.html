@@ -2467,13 +2467,11 @@ function closeFeedbackForm() {
                 if (typeof showToast === 'function') showToast('課題コードを入力してください', 'warning');
                 return;
             }
-            
             try {
                 await importMasterPreset(t);
             } catch (err) {
                 console.error('Failed to import preset:', err);
             }
-
             if (typeof closeAccountSettings === 'function') closeAccountSettings();
         };
 

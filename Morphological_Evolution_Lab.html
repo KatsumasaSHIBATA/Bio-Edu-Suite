@@ -2116,15 +2116,20 @@ input[type="submit"]:disabled:active {
         leaveRoom();
         if (typeof closeAccountSettings === 'function') closeAccountSettings();
     };
-    window.handleImportPreset = function(inputId = \'masterTaskCodeInput\') {
-        const tEl = document.getElementById('masterTaskCodeInput');
-        const t = tEl ? tEl.value.trim() : '';
-        if (!t) {
-            if (typeof showToast === 'function') showToast('課題コードを入力してください', 'warning');
-            return;
-        }
-        importMasterPreset(t);
-    };
+    window.handleImportPreset = async function(inputId = 'masterTaskCodeInput') {
+            const tEl = document.getElementById(inputId);
+            const t = tEl ? tEl.value.trim() : '';
+            if (!t) {
+                if (typeof showToast === 'function') showToast('課題コードを入力してください', 'warning');
+                return;
+            }
+            try {
+                await importMasterPreset(t);
+            } catch (err) {
+                console.error('Failed to import preset:', err);
+            }
+            if (typeof closeAccountSettings === 'function') closeAccountSettings();
+        };
     window.handleRegisterCurrentPreset = function() {
         const tEl = document.getElementById('newMasterTaskCodeInput');
         const t = tEl ? tEl.value.trim() : '';
