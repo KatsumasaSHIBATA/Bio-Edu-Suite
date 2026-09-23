@@ -2152,7 +2152,15 @@ input[type="submit"]:disabled:active {
           <span id="syncStatusBadge" style="font-size: 14px; font-weight: bold; color: var(--phase-color);">🟢 ルーム同期中</span>
         </div>
 
-        <div style="background: #f8f9fa; border: 1px solid #e1e8ed; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
+                <!-- 入室中：教員マスター課題データのオンデマンド読込パネル -->
+        <div style="border-top: 1px dashed var(--border-color); padding-top: 12px; margin-bottom: 14px;">
+          <label style="font-size: 11px; font-weight: bold; color: var(--text-muted); display: block; margin-bottom: 4px;">教員マスター課題データの読込</label>
+          <div style="display: flex; gap: 6px;">
+            <input type="text" id="loggedInMasterTaskCodeInput" class="primer-input" placeholder="課題コード (例: TASK-01)" style="flex: 1; text-transform: uppercase;">
+            <button class="btn btn-secondary" style="font-size: 11px; padding: 6px 10px; white-space: nowrap;" onclick="window.handleImportPreset('loggedInMasterTaskCodeInput'); triggerHapticFeedback();">読込</button>
+          </div>
+        </div>
+<div style="background: #f8f9fa; border: 1px solid #e1e8ed; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
           <div id="roomDisplay" style="font-weight: bold; font-size: 14px; color: var(--primary);"></div>
           <div id="participantDisplay" style="font-size: 12px; color: var(--text-muted); margin-top: 2px;"></div>
           <div id="syncStatusNote" style="font-size: 11px; color: var(--danger); margin-top: 6px; display: none;">
@@ -2358,7 +2366,7 @@ function closeFeedbackForm() {
         leaveRoom();
         if (typeof closeAccountSettings === 'function') closeAccountSettings();
     };
-    window.handleImportPreset = function() {
+    window.handleImportPreset = function(inputId = \'masterTaskCodeInput\') {
         const tEl = document.getElementById('masterTaskCodeInput');
         const t = tEl ? tEl.value.trim() : '';
         if (!t) {

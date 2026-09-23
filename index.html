@@ -1298,6 +1298,15 @@ input[type="submit"]:disabled:active {
           <span id="syncStatusBadge" style="font-size: 14px; font-weight: bold; color: var(--phase-color);">🟢 ルーム同期中</span>
         </div>
 
+        <!-- 入室中：教員マスター課題データのオンデマンド読込パネル -->
+        <div style="border-top: 1px dashed var(--border-color); padding-top: 12px; margin-bottom: 14px;">
+          <label style="font-size: 11px; font-weight: bold; color: var(--text-muted); display: block; margin-bottom: 4px;">教員マスター課題データの読込</label>
+          <div style="display: flex; gap: 6px;">
+            <input type="text" id="loggedInMasterTaskCodeInput" class="primer-input" placeholder="課題コード (例: TASK-01)" style="flex: 1; text-transform: uppercase;">
+            <button class="btn btn-secondary" style="font-size: 11px; padding: 6px 10px; white-space: nowrap;" onclick="window.handleImportPreset('loggedInMasterTaskCodeInput'); triggerHapticFeedback();">読込</button>
+          </div>
+        </div>
+
         <div style="background: #f8f9fa; border: 1px solid #e1e8ed; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
           <div id="roomDisplay" style="font-weight: bold; font-size: 14px; color: var(--primary);"></div>
           <div id="participantDisplay" style="font-size: 12px; color: var(--text-muted); margin-top: 2px;"></div>
@@ -1662,10 +1671,12 @@ function closeFeedbackForm() {
           else if (Array.isArray(d.samples)) target = d.samples;
           else if (d.payload && Array.isArray(d.payload.samples)) target = d.payload.samples;
           else if (d.payload && d.payload.sessionData) {
-            const raw = d.payload.sessionData[SESSION_WORKSPACE_KEY] || d.payload.sessionData['bio_edu_workspace_dashboard_samples'];
+            const s = d.payload.sessionData;
+            const raw = s[SESSION_WORKSPACE_KEY] || s[SESSION_WORKSPACE_KEY.replace(/\./g, '__dot__')] || s['bio_edu_workspace_dashboard_samples'];
             if (raw) target = typeof raw === 'string' ? JSON.parse(raw) : raw;
           } else if (d.sessionData) {
-            const raw = d.sessionData[SESSION_WORKSPACE_KEY] || d.sessionData['bio_edu_workspace_dashboard_samples'];
+            const s = d.sessionData;
+            const raw = s[SESSION_WORKSPACE_KEY] || s[SESSION_WORKSPACE_KEY.replace(/\./g, '__dot__')] || s['bio_edu_workspace_dashboard_samples'];
             if (raw) target = typeof raw === 'string' ? JSON.parse(raw) : raw;
           }
         }
@@ -2449,8 +2460,8 @@ function closeFeedbackForm() {
             if (typeof closeAccountSettings === 'function') closeAccountSettings();
         };
 
-        window.handleImportPreset = async function() {
-            const tEl = document.getElementById('masterTaskCodeInput');
+        window.handleImportPreset = async function(inputId = 'masterTaskCodeInput') {
+            const tEl = document.getElementById(inputId);
             const t = tEl ? tEl.value.trim() : '';
             if (!t) {
                 if (typeof showToast === 'function') showToast('課題コードを入力してください', 'warning');
@@ -2479,9 +2490,13 @@ function closeFeedbackForm() {
             const sessionSnap = {};
             for (let i = 0; i < sessionStorage.length; i++) {
                 const k = sessionStorage.key(i);
-                if (k) sessionSnap[k] = sessionStorage.getItem(k);
+                if (k) {
+                    const sanitizedKey = k.replace(/\./g, '__dot__');
+                    sessionSnap[sanitizedKey] = sessionStorage.getItem(k);
+                }
             }
-            sessionSnap[SESSION_WORKSPACE_KEY] = JSON.stringify(targetSamples);
+            const sanitizedWorkspaceKey = SESSION_WORKSPACE_KEY.replace(/\./g, '__dot__');
+            sessionSnap[sanitizedWorkspaceKey] = JSON.stringify(targetSamples);
 
             const payload = {
                 samples: targetSamples,

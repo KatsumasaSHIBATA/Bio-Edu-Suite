@@ -171,9 +171,18 @@ export async function registerMasterPreset(taskCode, payload) {
   const cleanCode = taskCode.toUpperCase().trim();
   try {
     const docRef = doc(db, "master_tasks", cleanCode);
+    const sanitizedPayload = JSON.parse(JSON.stringify(payload));
+    if (sanitizedPayload.sessionData && typeof sanitizedPayload.sessionData === 'object') {
+      const newSessionData = {};
+      Object.keys(sanitizedPayload.sessionData).forEach((k) => {
+        const sanitizedKey = k.replace(/\./g, '__dot__');
+        newSessionData[sanitizedKey] = sanitizedPayload.sessionData[k];
+      });
+      sanitizedPayload.sessionData = newSessionData;
+    }
     await setDoc(docRef, {
       taskCode: cleanCode,
-      payload: payload,
+      payload: sanitizedPayload,
       creatorRoom: currentRoomCode,
       creatorId: currentParticipantId,
       createdAt: Date.now()
@@ -207,10 +216,11 @@ export async function importMasterPreset(taskCode) {
           activeTextarea.dispatchEvent(new Event('input', { bubbles: true }));
           activeTextarea.dispatchEvent(new Event('change', { bubbles: true }));
         }
-        // ② セッションワークスペースデータが存在する場合は展開
+        // ② セッションワークスペースデータが存在する場合は展開（キー名の '__dot__' を元の '.' へ逆変換）
         if (data.payload.sessionData) {
           Object.keys(data.payload.sessionData).forEach((k) => {
-            sessionStorage.setItem(k, data.payload.sessionData[k]);
+            const restoredKey = k.replace(/__dot__/g, '.');
+            sessionStorage.setItem(restoredKey, data.payload.sessionData[k]);
           });
         }
         window.dispatchEvent(new CustomEvent('bio_edu_preset_loaded', { detail: { taskCode: cleanCode, payload: data.payload } }));
