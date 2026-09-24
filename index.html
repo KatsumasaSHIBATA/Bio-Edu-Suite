@@ -1254,6 +1254,7 @@ input[type="submit"]:disabled:active {
                 <input type="file" id="fastaInput" accept=".fasta,.fas,.seq,.txt" style="display: none;" onchange="handleFastaFile(event)">
               </div>
               <textarea id="dnaData" class="form-control paste-area" placeholder="FASTA形式などで塩基配列テキストを入力（または上にドロップして展開）"></textarea>
+              <div id="fastaMarkerContainer" class="file-chip-container" style="margin-top: 8px;"></div>
               <div class="help-text">DNA Alignment Studio (⑤) に送って系統解析を行えます。</div>
             </div>
           </div>
@@ -1454,6 +1455,31 @@ input[type="submit"]:disabled:active {
       return results;
     }
 
+    function updateFastaMarkers() {
+      const dnaText = document.getElementById('dnaData').value;
+      const container = document.getElementById('fastaMarkerContainer');
+      if (!container) return;
+      container.innerHTML = '';
+      if (!dnaText.trim()) return;
+
+      const sequences = parseFastaMarkers(dnaText);
+      const markers = Array.from(new Set(sequences.map(sq => sq.marker).filter(m => m && m !== 'Default')));
+      
+      if (markers.length > 0) {
+        markers.forEach(m => {
+          const tag = document.createElement('span');
+          tag.className = 'marker-tag';
+          tag.innerText = `[${m}]`;
+          container.appendChild(tag);
+        });
+      } else if (sequences.length > 0) {
+        const tag = document.createElement('span');
+        tag.className = 'marker-tag';
+        tag.innerText = `[Seq]`;
+        container.appendChild(tag);
+      }
+    }
+
     function normalizeSample(s) {
       if (!s) return s;
       if (!Array.isArray(s.sequences)) {
@@ -1530,6 +1556,7 @@ input[type="submit"]:disabled:active {
       setupDropZone();
       loadSamples();
       renderSamples();
+      document.getElementById('dnaData').addEventListener('input', updateFastaMarkers);
       await hydrateAb1Presets();
     };
 
@@ -2504,6 +2531,7 @@ function closeFeedbackForm() {
 
       document.getElementById('morphData').value = "";
       document.getElementById('dnaData').value = "";
+      updateFastaMarkers();
 
       document.getElementById('envDetails').open = false;
       document.getElementById('morphDetails').open = false;
@@ -2567,6 +2595,7 @@ function closeFeedbackForm() {
 
       document.getElementById('morphData').value = sample.morphData || "";
       document.getElementById('dnaData').value = sample.dnaData || "";
+      updateFastaMarkers();
 
       document.getElementById('envDetails').open = (sample.envCategory || sample.envNote) ? true : false;
       document.getElementById('morphDetails').open = (sample.image_data || sample.morphData) ? true : false;
