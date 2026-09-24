@@ -228,6 +228,11 @@
            ガイドライン 第5項(Peg Menu) / 第8項(必須モーダル) / 第15項(PWA) 準拠。
            =================================================================== */
 
+        .action-icon { background: transparent; border: 1px solid transparent; border-radius: 3px; cursor: pointer; padding: 4px; font-size: 12px; color: var(--text-muted); transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+        .action-icon:hover { background: #ecf0f1; color: var(--secondary); }
+        .icon-delete { color: var(--danger); }
+        .icon-delete:hover { background: #fadbd8; color: #c0392b; }
+
         /* --- 第15項② 画面読み込み・遷移時の白飛び防止 --- */
         html { background-color: #1a252f; }
         @keyframes pageFadeIn { from { opacity: 0.85; } to { opacity: 1; } }
@@ -1045,6 +1050,12 @@ input[type="submit"]:disabled:active {
                 ・機械が自動で波形から塩基（A,T,G,C）を判定しますが、波形が乱れた場所では間違えたり「N（判読不能）」と判定したりします。<br>
                 ・機械を100%信用せず、未処理塩基配列データ（波形）を人間の目で確認して手動で修正(キュレーション)するのが、論文を書くための絶対条件です。
             </div>
+            <div id="rat_revcomp" class="rationale-text popover-panel">
+                <strong>【根拠：なぜ逆相補鎖にするのか？】</strong>
+                ・DNAは2本の鎖が逆向き（反平行）に結合した構造をしています。<br>
+                ・リバースプライマーで読んだ波形（Rリード）は、フォワードプライマーで読んだ波形（Lリード）と向きも塩基も逆になります。<br>
+                ・両方をつなぎ合わせてコンティグを作成（アライメント）するには、Rリードを「逆相補鎖（Reverse Complement）」に変換して向きと塩基を揃える必要があります。
+            </div>
             <div id="rat_export" class="rationale-text popover-panel">
                 <strong>【根拠：なぜFASTA形式で保存するのか？】</strong>
                 ・FASTA形式は、塩基配列をコンピューターで扱うための世界標準フォーマットです。<br>
@@ -1070,6 +1081,9 @@ input[type="submit"]:disabled:active {
                         </div>
                         <button class="btn btn-secondary" id="btnNextQueue" onclick="nextQueue()" style="padding: 6px 10px;">▶</button>
                         <span id="queueNameText" style="font-size: 13px; color: var(--text-muted); font-weight: normal; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block;"></span>
+                        <button class="action-icon icon-delete" id="btnRemoveQueue" onclick="removeCurrentQueueItem(); triggerHapticFeedback();" data-tooltip="現在表示している波形データを削除します">
+                            <svg class="svg-danger" style="width: 14px; height: 14px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1093,9 +1107,12 @@ input[type="submit"]:disabled:active {
                 <div class="action-group">
                     <span class="step-label">3. 品質管理 (QC)</span>
                     <button class="btn" id="btnQC" onclick="runQC()" disabled data-tooltip="配列内の判読不能塩基(N)や曖昧塩基(ダブルピーク等)を検出し、ハイライトします。">
-                        <svg class="btn-icon svg-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                         低品質・曖昧塩基を検出
                     </button>
+                    <button class="btn" id="btnRevComp" onclick="toggleRevComp(); triggerHapticFeedback();" disabled data-tooltip="塩基配列と波形を逆相補鎖（Reverse Complement）に反転させます。">
+                        逆相補鎖
+                    </button>
+                    <button class="rationale-btn spaced" onclick="toggleRationale(event, 'rat_revcomp')">?</button>
                 </div>
 
                 <!-- 中央：ディバイダー -->
@@ -1309,6 +1326,37 @@ input[type="submit"]:disabled:active {
         }
     }
 
+    function removeCurrentQueueItem() {
+        if(ab1Queue.length === 0) return;
+        
+        ab1Queue.splice(currentQueueIndex, 1);
+        showToast("波形データを削除しました", "success");
+        
+        if(ab1Queue.length === 0) {
+            // 全部消えた場合、画面を初期状態に戻す
+            ab1Data = null;
+            document.getElementById('queueNavContainer').style.display = 'none';
+            document.getElementById('statusText').innerText = "ステータス: .ab1 ファイルを読み込んでください。";
+            document.getElementById('fileInfoText').innerText = "File: - | Base: -";
+            document.getElementById('traceInner').innerHTML = '<div class="bases-layer" id="basesLayer"></div><canvas class="canvas-layer" id="traceCanvas"></canvas>';
+            
+            ['scaleX', 'scaleY', 'searchInput', 'btnQC', 'btnExport', 'btnCopyFasta', 'btnSearchToggle', 'btnRevComp'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.disabled = true;
+            });
+            isRevCompState = false;
+            document.getElementById('btnRevComp').classList.remove('btn-primary');
+            return;
+        }
+        
+        if(currentQueueIndex >= ab1Queue.length) {
+            currentQueueIndex = ab1Queue.length - 1;
+        }
+        
+        updateQueueUI();
+        loadQueueItem(currentQueueIndex);
+    }
+
     function loadQueueItem(index) {
         const item = ab1Queue[index];
         if (!item || !item.data) return;
@@ -1343,6 +1391,13 @@ input[type="submit"]:disabled:active {
             document.getElementById('btnQC').disabled = false;
             document.getElementById('btnExport').disabled = false;
             document.getElementById('btnCopyFasta').disabled = false;
+            
+            isRevCompState = false;
+            const btnRev = document.getElementById('btnRevComp');
+            if (btnRev) {
+                btnRev.disabled = false;
+                btnRev.classList.remove('btn-primary');
+            }
 
             selectedBaseIndex = -1;
             dragStartIndex = -1;
@@ -1465,6 +1520,7 @@ input[type="submit"]:disabled:active {
 
     // --- メインステート管理 ---
     let ab1Data = null; 
+    let isRevCompState = false;
     let currentFileName = "";
     let selectedBaseIndex = -1;
     let dragStartIndex = -1;
@@ -1475,6 +1531,34 @@ input[type="submit"]:disabled:active {
     let historyIndex = -1;
     
     let isSearchActive = false;
+
+    function toggleRevComp() {
+        if(!ab1Data) return;
+        isRevCompState = !isRevCompState;
+        
+        const btn = document.getElementById('btnRevComp');
+        if(isRevCompState) {
+            btn.classList.add('btn-primary');
+            showToast("逆相補鎖（Reverse Complement）に変換しました", "info");
+        } else {
+            btn.classList.remove('btn-primary');
+            showToast("元の配列（Forward）に戻しました", "info");
+        }
+        
+        // 選択状態のリセット
+        selectedBaseIndex = -1;
+        dragStartIndex = -1;
+        dragEndIndex = -1;
+        if(isSearchActive) clearSearch();
+        
+        redrawAll();
+    }
+
+    function getComplement(char) {
+        const cMap = { 'A':'T', 'T':'A', 'G':'C', 'C':'G', 'U':'A', 'Y':'R', 'R':'Y', 'W':'W', 'S':'S', 'M':'K', 'K':'M', 'B':'V', 'V':'B', 'D':'H', 'H':'D', 'N':'N' };
+        let upper = char.toUpperCase();
+        return cMap[upper] ? (char === char.toUpperCase() ? cMap[upper] : cMap[upper].toLowerCase()) : char;
+    }
 
     const colorMap = {
         'A': '#27ae60',
@@ -1621,7 +1705,8 @@ input[type="submit"]:disabled:active {
         ctx.lineWidth = 1;
         ab1Data.bases.forEach(b => {
             if(!b.isDeleted) {
-                let x = b.loc * baseWidth * scaleX;
+                const actualLoc = isRevCompState ? (dataLen - 1 - b.loc) : b.loc;
+                let x = actualLoc * baseWidth * scaleX;
                 ctx.moveTo(x, 0);
                 ctx.lineTo(x, h);
             }
@@ -1630,7 +1715,8 @@ input[type="submit"]:disabled:active {
 
         ab1Data.bases.forEach(b => {
             if (!b.isDeleted && b.isQCWarning) {
-                let x = b.loc * baseWidth * scaleX;
+                const actualLoc = isRevCompState ? (dataLen - 1 - b.loc) : b.loc;
+                let x = actualLoc * baseWidth * scaleX;
                 ctx.fillStyle = 'rgba(231, 76, 60, 0.15)';
                 ctx.fillRect(x - (baseWidth * scaleX / 2), 0, baseWidth * scaleX, h);
             }
@@ -1642,8 +1728,10 @@ input[type="submit"]:disabled:active {
         if (minSel !== -1 && maxSel !== -1) {
             let bMin = ab1Data.bases[minSel];
             let bMax = ab1Data.bases[maxSel];
-            let startX = bMin.loc * baseWidth * scaleX;
-            let endX = bMax.loc * baseWidth * scaleX;
+            const locMin = isRevCompState ? (dataLen - 1 - bMin.loc) : bMin.loc;
+            const locMax = isRevCompState ? (dataLen - 1 - bMax.loc) : bMax.loc;
+            let startX = Math.min(locMin, locMax) * baseWidth * scaleX;
+            let endX = Math.max(locMin, locMax) * baseWidth * scaleX;
             
             ctx.fillStyle = 'rgba(142, 68, 173, 0.15)'; 
             ctx.fillRect(startX - 10, 0, (endX - startX) + 20, h);
@@ -1663,7 +1751,8 @@ input[type="submit"]:disabled:active {
         }
 
         ['G', 'A', 'T', 'C'].forEach(base => {
-            const arr = ab1Data.traces[base];
+            const targetBase = isRevCompState ? getComplement(base) : base;
+            const arr = ab1Data.traces[targetBase];
             if(!arr) return;
             
             ctx.beginPath();
@@ -1671,9 +1760,10 @@ input[type="submit"]:disabled:active {
             ctx.lineWidth = 1.5;
             
             for(let i=0; i<dataLen; i++) {
+                const actualI = isRevCompState ? (dataLen - 1 - i) : i;
                 let x = i * baseWidth * scaleX;
                 if (x > w) break;
-                let y = h - (arr[i] * drawScaleY);
+                let y = h - (arr[actualI] * drawScaleY);
                 if(i===0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
             }
@@ -1685,11 +1775,15 @@ input[type="submit"]:disabled:active {
         container.innerHTML = '';
         const frag = document.createDocumentFragment();
 
-        ab1Data.bases.forEach((b, index) => {
-            let x = b.loc * baseWidth * scaleX;
+        ab1Data.bases.forEach((_, index) => {
+            const actualIndex = isRevCompState ? (ab1Data.bases.length - 1 - index) : index;
+            const b = ab1Data.bases[actualIndex];
+            const displayChar = isRevCompState ? getComplement(b.char) : b.char;
+            const actualLoc = isRevCompState ? (ab1Data.traceLength - 1 - b.loc) : b.loc;
+            let x = actualLoc * baseWidth * scaleX;
             let div = document.createElement('div');
             
-            let classes = ['base-char', `c-${b.char}`];
+            let classes = ['base-char', `c-${displayChar}`];
             if(b.isDeleted) classes.push('deleted');
             if(b.isEdited) classes.push('edited');
             if(b.isHighlight) classes.push('highlight');
@@ -1699,35 +1793,35 @@ input[type="submit"]:disabled:active {
             if (dragStartIndex !== -1 && dragEndIndex !== -1) {
                 const min = Math.min(dragStartIndex, dragEndIndex);
                 const max = Math.max(dragStartIndex, dragEndIndex);
-                if (index >= min && index <= max) isSelected = true;
-            } else if (index === selectedBaseIndex) {
+                if (actualIndex >= min && actualIndex <= max) isSelected = true;
+            } else if (actualIndex === selectedBaseIndex) {
                 isSelected = true;
             }
             if(isSelected) classes.push('selected');
             
             div.className = classes.join(' ');
             div.style.left = x + 'px';
-            div.innerText = b.char;
-            div.dataset.index = index;
+            div.innerText = displayChar;
+            div.dataset.index = actualIndex;
 
             div.onmousedown = (e) => {
                 isDraggingBases = true;
                 if (e.shiftKey && selectedBaseIndex !== -1) {
                     dragStartIndex = selectedBaseIndex;
-                    dragEndIndex = index;
-                    selectedBaseIndex = index;
+                    dragEndIndex = actualIndex;
+                    selectedBaseIndex = actualIndex;
                 } else {
-                    dragStartIndex = index;
-                    dragEndIndex = index;
-                    selectedBaseIndex = index;
+                    dragStartIndex = actualIndex;
+                    dragEndIndex = actualIndex;
+                    selectedBaseIndex = actualIndex;
                 }
                 redrawAll();
                 updateStatusBar(selectedBaseIndex);
             };
             div.onmouseenter = (e) => {
                 if (isDraggingBases) {
-                    dragEndIndex = index;
-                    selectedBaseIndex = index;
+                    dragEndIndex = actualIndex;
+                    selectedBaseIndex = actualIndex;
                     redrawAll();
                     updateStatusBar(selectedBaseIndex);
                 }
@@ -2143,11 +2237,18 @@ input[type="submit"]:disabled:active {
     function exportFasta() {
         if(!ab1Data) return;
         let seqStr = "";
-        ab1Data.bases.forEach(b => {
-            if(!b.isDeleted) seqStr += b.char;
-        });
+        if (isRevCompState) {
+            for (let i = ab1Data.bases.length - 1; i >= 0; i--) {
+                const b = ab1Data.bases[i];
+                if (!b.isDeleted) seqStr += getComplement(b.char);
+            }
+        } else {
+            ab1Data.bases.forEach(b => {
+                if(!b.isDeleted) seqStr += b.char;
+            });
+        }
         
-        let headerName = currentFileName.replace(/\.ab1$/i, '_curated');
+        let headerName = currentFileName.replace(/\.ab1$/i, isRevCompState ? '_RevComp_curated' : '_curated');
         let output = `>${headerName}\n${seqStr}\n`;
         
         const today = new Date();
@@ -2168,11 +2269,18 @@ input[type="submit"]:disabled:active {
     function copyFasta() {
         if(!ab1Data) return;
         let seqStr = "";
-        ab1Data.bases.forEach(b => {
-            if(!b.isDeleted) seqStr += b.char;
-        });
+        if (isRevCompState) {
+            for (let i = ab1Data.bases.length - 1; i >= 0; i--) {
+                const b = ab1Data.bases[i];
+                if (!b.isDeleted) seqStr += getComplement(b.char);
+            }
+        } else {
+            ab1Data.bases.forEach(b => {
+                if(!b.isDeleted) seqStr += b.char;
+            });
+        }
         
-        let headerName = currentFileName.replace(/\.ab1$/i, '_curated');
+        let headerName = currentFileName.replace(/\.ab1$/i, isRevCompState ? '_RevComp_curated' : '_curated');
         
         // メタデータ刻印 (ガイドライン第7項④準拠)
         const timestamp = new Date().toISOString();
@@ -2555,7 +2663,7 @@ function closeFeedbackForm() {
                 if (searchInput) { searchInput.value = saved.searchInput || ""; searchInput.disabled = false; }
 
                 // ボタン類の活性化
-                ['btnQC', 'btnExport', 'btnCopyFasta'].forEach(id => {
+                ['btnQC', 'btnExport', 'btnCopyFasta', 'btnRevComp'].forEach(id => {
                     const btn = document.getElementById(id);
                     if (btn) btn.disabled = false;
                 });
