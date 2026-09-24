@@ -1558,6 +1558,7 @@ input[type="submit"]:disabled:active {
       renderSamples();
       document.getElementById('dnaData').addEventListener('input', updateFastaMarkers);
       await hydrateAb1Presets();
+      await syncTracesFromIndexedDB();
     };
 
     // AB1 プリセット波形データの IndexedDB 自動ハイドレーション
@@ -1580,10 +1581,16 @@ input[type="submit"]:disabled:active {
             }
           }
         }
-        if (!needsHydration) return;
+        if (!needsHydration) {
+          await syncTracesFromIndexedDB();
+          return;
+        }
 
         const response = await fetch('data/ab1_presets.json?v=v3');
-        if (!response.ok) return;
+        if (!response.ok) {
+          await syncTracesFromIndexedDB();
+          return;
+        }
         const presets = await response.json();
         for (const [id, preset] of Object.entries(presets)) {
           await saveToIndexedDB(STORE_SAMPLES, preset);
@@ -1592,6 +1599,42 @@ input[type="submit"]:disabled:active {
         console.log("AB1 presets successfully hydrated into IndexedDB (v3).");
       } catch (err) {
         console.warn("Failed to hydrate AB1 presets:", err);
+      }
+      await syncTracesFromIndexedDB();
+    }
+
+    async function syncTracesFromIndexedDB() {
+      let updated = false;
+      for (const sample of samples) {
+        if (sample.hasRawSeq && (!sample.traces || sample.traces.length === 0)) {
+          try {
+            const binData = await getFromIndexedDB(STORE_SAMPLES, sample.id);
+            if (binData) {
+              if (Array.isArray(binData.files) && binData.files.length > 0) {
+                sample.traces = binData.files.map(f => ({
+                  name: f.name,
+                  direction: f.direction || detectTraceDirection(f.name),
+                  size: f.size
+                }));
+                updated = true;
+              } else if (binData.data || binData.fileName) {
+                const fName = binData.fileName || (sample.id + '.ab1');
+                sample.traces = [{
+                  name: fName,
+                  direction: detectTraceDirection(fName),
+                  size: binData.size || 0
+                }];
+                updated = true;
+              }
+            }
+          } catch (err) {
+            console.warn("Failed to sync trace for", sample.id, err);
+          }
+        }
+      }
+      if (updated) {
+        saveToStorage();
+        renderSamples();
       }
     }
 
@@ -1670,6 +1713,7 @@ function closeFeedbackForm() {
           dnaData: ">SPECIMEN-01_magnirostris [Darwin (1845) p.379 Plate No.1] Geospiza magnirostris (Hist: Geospiza magnirostris (Gould, 1837)) ALX1 CDS (987 bp) | 鈍端型 (Blunt B: Pro112, Val211) | BioProject: PRJNA263122 | Scaffold: JH739921 | CDS長: 987 bp | Lamichhaney et al. (2015) Nature 518:371-375 (doi:10.1038/nature14181)\nATGATTATGGATTTTCTGAGCGAGAAGTTTGCCCTGAAGAGCCAGCCGAGCAAGAACAGTGACTTTTATATGGGAGCAGGAGGCAGTTTGGAGCACGTTATGGAAACTTTGGACAATGAGTCCTTTTATAGCAAAACGTCAGGCAGCAAATGCGTGCAGGCCTTCAACCCTCTGCAAAGAGCGGAGCATCATGTGAGGCTGGAGAGGACATCACCCTGCCAGGACACGAACGTGAACTACGGGATTACTAAAGTGGAAGGACAGCCTCTTCACACAGAGCTGAGCAGGCCCATGGACAATTGCAACAATCTCAGGATGTCTCCAGTGAAAGGGCCGCAGGAGAAGGGGGACCTGGATGAACTTGGTGATAAGTGTGACAGCAATGTCTCCAGCAGTAAGAAGAGGAGACACAGAACAACTTTCACCAGTTTGCAGCTGGAGGAACTGGAGAAAGTATTCCAGAAAACTCACTACCCTGATGTCTATGTAAGAGAACAGCTAGCTCTGAGAACAGAGCTCACTGAGGCCAGAGTCCAGGTTTGGTTCCAGAATCGAAGAGCAAAATGGAGAAAAAGAGAACGCTATGGTCAGATCCAGCAAGCCAAGAGCCACTTTGCTGCCACCTATGATGTATCTGTTCTTCCAAGGACTGACAGCTACCCTCAGATTCAGAACAATCTGTGGGCAGGGAATGCGGCCAGTGGTTCTGTGGTTACCTCCTGCATGCTGCCACGAGATACGTCCTCCTGTATGACACCTTACTCCCATTCACCCCGGACAGATTCTGGCTACACAGGCTTTTCAAACCACCAGAATCAATTTAGCCACATGCCCCTCAATAATTTTTTCACTGACTCATTGCTTTCTGGGGCAACCAATGGACATGCTTTTGAAACCAAGCCAGAGTTTGAAAGGAGGTCCTCCAGCATTGCAGTTCTACGGATGAAAGCCAAAGAGCATGCTGCCAATATTTCTTGGGCCATGTAA",
           date: new Date(Date.now() - 10000).toISOString(),
           image_data: "images/finch_1_magnirostris.jpg",
+          traces: [{ name: "SPECIMEN-01_magnirostris.ab1", direction: "unknown" }],
           hasRawSeq: true
         },
         {
@@ -1681,6 +1725,7 @@ function closeFeedbackForm() {
           dnaData: ">SPECIMEN-02_fortis [Darwin (1845) p.379 Plate No.2] Geospiza fortis (Hist: Geospiza fortis (Gould, 1837)) ALX1 CDS (987 bp) | 鈍端型 (Blunt B: Pro112, Val211) | BioProject: PRJNA263122 | Reference Genome: GeoFor1 | Protein: XP_005421635 | Lamichhaney et al. (2015) Nature 518:371-375 (doi:10.1038/nature14181)\nATGATTATGGATTTTCTGAGCGAGAAGTTTGCCCTGAAGAGCCAGCCGAGCAAGAACAGTGACTTTTATATGGGAGCAGGAGGCAGTTTGGAGCACGTTATGGAAACTTTGGACAATGAGTCCTTTTATAGCAAAACGTCAGGCAGCAAATGCGTGCAGGCCTTCAACCCTCTGCAAAGAGCGGAGCATCATGTGAGGCTGGAGAGGACATCACCCTGCCAGGACACGAACGTGAACTACGGGATTACTAAAGTGGAAGGACAGCCTCTTCACACAGAGCTGAGCAGGCCCATGGACAATTGCAACAATCTCAGGATGTCTCCAGTGAAAGGGCCGCAGGAGAAGGGGGACCTGGATGAACTTGGTGATAAGTGTGACAGCAATGTCTCCAGCAGTAAGAAGAGGAGACACAGAACAACTTTCACCAGTTTGCAGCTGGAGGAACTGGAGAAAGTATTCCAGAAAACTCACTACCCTGATGTCTATGTAAGAGAACAGCTAGCTCTGAGAACAGAGCTCACTGAGGCCAGAGTCCAGGTTTGGTTCCAGAATCGAAGAGCAAAATGGAGAAAAAGAGAACGCTATGGTCAGATCCAGCAAGCCAAGAGCCACTTTGCTGCCACCTATGATGTATCTGTTCTTCCAAGGACTGACAGCTACCCTCAGATTCAGAACAATCTGTGGGCAGGGAATGCGGCCAGTGGTTCTGTGGTTACCTCCTGCATGCTGCCACGAGATACGTCCTCCTGTATGACACCTTACTCCCATTCACCCCGGACAGATTCTGGCTACACAGGCTTTTCAAACCACCAGAATCAATTTAGCCACATGCCCCTCAATAATTTTTTCACTGACTCATTGCTTTCTGGGGCAACCAATGGACATGCTTTTGAAACCAAGCCAGAGTTTGAAAGGAGGTCCTCCAGCATTGCAGTTCTACGGATGAAAGCCAAAGAGCATGCTGCCAATATTTCTTGGGCCATGTAA",
           date: new Date(Date.now() - 20000).toISOString(),
           image_data: "images/finch_2_fortis.jpg",
+          traces: [{ name: "SPECIMEN-02_fortis.ab1", direction: "unknown" }],
           hasRawSeq: true
         },
         {
@@ -1692,6 +1737,7 @@ function closeFeedbackForm() {
           dnaData: ">SPECIMEN-03_parvulus [Darwin (1845) p.379 Plate No.3] Camarhynchus parvulus (Hist: Geospiza parvula (Gould, 1837)) ALX1 CDS (987 bp) | 鋭端型 (Pointed P: Leu112, Ile211) | BioProject: PRJNA263122 | Scaffold: JH739921 | CDS長: 987 bp | Lamichhaney et al. (2015) Nature 518:371-375 (doi:10.1038/nature14181)\nATGATTATGGATTTTCTGAGCGAGAAGTTTGCCCTGAAGAGCCAGCCGAGCAAGAACAGTGACTTTTATATGGGAGCAGGAGGCAGTTTGGAGCACGTTATGGAAACTTTGGACAATGAGTCCTTTTATAGCAAAACGTCAGGCAGCAAATGCGTGCAGGCCTTCAACCCTCTGCAAAGAGCGGAGCATCATGTGAGGCTGGAGAGGACATCACCCTGCCAGGACACGAACGTGAACTACGGGATTACTAAAGTGGAAGGACAGCCTCTTCACACAGAGCTGAGCAGGCCCATGGACAATTGCAACAATCTCAGGATGTCTCCAGTGAAAGGGCTGCAGGAGAAGGGGGACCTGGATGAACTTGGTGATAAGTGTGACAGCAATGTCTCCAGCAGTAAGAAGAGGAGACACAGAACAACTTTCACCAGTTTGCAGCTGGAGGAACTGGAGAAAGTATTCCAGAAAACTCACTACCCTGATGTCTATGTAAGAGAACAGCTAGCTCTGAGAACAGAGCTCACTGAGGCCAGAGTCCAGGTTTGGTTCCAGAATCGAAGAGCAAAATGGAGAAAAAGAGAACGCTATGGTCAGATCCAGCAAGCCAAGAGCCACTTTGCTGCCACCTATGATATATCTGTTCTTCCAAGGACTGACAGCTACCCTCAGATTCAGAACAATCTGTGGGCAGGGAATGCGGCCAGTGGTTCTGTGGTTACCTCCTGCATGCTGCCACGAGATACGTCCTCCTGTATGACACCTTACTCCCATTCACCCCGGACAGATTCTGGCTACACAGGCTTTTCAAACCACCAGAATCAATTTAGCCACATGCCCCTCAATAATTTTTTCACTGACTCATTGCTTTCTGGGGCAACCAATGGACATGCTTTTGAAACCAAGCCAGAGTTTGAAAGGAGGTCCTCCAGCATTGCAGTTCTACGGATGAAAGCCAAAGAGCATGCTGCCAATATTTCTTGGGCCATGTAA",
           date: new Date(Date.now() - 30000).toISOString(),
           image_data: "images/finch_3_parvulus.jpg",
+          traces: [{ name: "SPECIMEN-03_parvulus.ab1", direction: "unknown" }],
           hasRawSeq: true
         },
         {
@@ -1703,6 +1749,7 @@ function closeFeedbackForm() {
           dnaData: ">SPECIMEN-04_olivacea [Darwin (1845) p.379 Plate No.4] Certhidea olivacea (Hist: Certhidea olivacea (Gould, 1837)) ALX1 CDS (987 bp) | 鋭端型 (Pointed P: Leu112, Ile211 / 祖先型) | BioProject: PRJNA263122 | Scaffold: JH739921 | CDS長: 987 bp | Lamichhaney et al. (2015) Nature 518:371-375 (doi:10.1038/nature14181)\nATGATTATGGATTTTCTGAGCGAGAAGTTTGCCCTGAAGAGCCAGCCGAGCAAGAACAGTGACTTTTATATGGGAGCAGGAGGCAGTTTGGAGCACGTTATGGAAACTTTGGACAATGAGTCCTTTTATAGCAAAACGTCAGGCAGCAAATGCGTGCAGGCCTTCAACCCTCTGCAAAGAGCGGAGCATCATGTGAGGCTGGAGAGGACATCACCCTGCCAGGACACGAACGTGAACTACGGGATTACTAAAGTGGAAGGACAGCCTCTTCACACAGAGCTGAGCAGGCCCATGGACAATTGCAACAATCTCAGGATGTCTCCAGTGAAAGGGCTGCAGGAGAAGGGGGACCTGGATGAACTTGGTGATAAGTGTGACAGCAATGTCTCCAGCAGTAAGAAGAGGAGACACAGAACAACTTTCACCAGTTTGCAGCTGGAGGAACTGGAGAAAGTATTCCAGAAAACTCACTACCCTGATGTCTATGTAAGAGAACAGCTAGCTCTGAGAACAGAGCTCACTGAGGCCAGAGTCCAGGTTTGGTTCCAGAATCGAAGAGCAAAATGGAGAAAAAGAGAACGCTATGGTCAGATCCAGCAAGCCAAGAGCCACTTTGCTGCCACCTATGATATATCTGTTCTTCCAAGGACTGACAGCTACCCTCAGATTCAGAACAATCTGTGGGCAGGGAATGCGGCCAGTGGTTCTGTGGTTACCTCCTGCATGCTGCCACGAGATACGTCCTCCTGTATGACACCTTACTCCCATTCACCCCGGACAGATTCTGGCTACACAGGCTTTTCAAACCACCAGAATCAATTTAGCCACATGCCCCTCAATAATTTTTTCACTGACTCATTGCTTTCTGGGGCAACCAATGGACATGCTTTTGAAACCAAGCCAGAGTTTGAAAGGAGGTCCTCCAGCATTGCAGTTCTACGGATGAAAGCCAAAGAGCATGCTGCCAATATTTCTTGGGCCATGTAA",
           date: new Date(Date.now() - 40000).toISOString(),
           image_data: "images/finch_4_olivacea.jpg",
+          traces: [{ name: "SPECIMEN-04_olivacea.ab1", direction: "unknown" }],
           hasRawSeq: true
         }
       ];
@@ -1750,6 +1797,7 @@ function closeFeedbackForm() {
       samples = getDefaultFinchSamples();
       saveToStorage();
       renderSamples();
+      syncTracesFromIndexedDB();
       if (typeof showToast === 'function') {
         showToast("初期サンプル（4種）を復元しました", "success");
       }
@@ -2546,7 +2594,7 @@ function closeFeedbackForm() {
       renderAb1Chips();
     }
 
-    function editSample(id) {
+    async function editSample(id) {
       const rawSample = samples.find(s => s.id === id);
       if (!rawSample) return;
       const sample = normalizeSample(rawSample);
@@ -2576,7 +2624,8 @@ function closeFeedbackForm() {
 
       currentAb1Files = (sample.traces || []).map(t => ({...t}));
       if (currentAb1Files.length === 0 && sample.hasRawSeq) {
-        getFromIndexedDB(STORE_SAMPLES, sample.id).then(binData => {
+        try {
+          const binData = await getFromIndexedDB(STORE_SAMPLES, sample.id);
           if (binData) {
             if (Array.isArray(binData.files) && binData.files.length > 0) {
               currentAb1Files = binData.files.map(f => ({...f}));
@@ -2587,9 +2636,10 @@ function closeFeedbackForm() {
                 data: binData.data
               }];
             }
-            renderAb1Chips();
           }
-        }).catch(e => console.warn(e));
+        } catch (e) {
+          console.warn(e);
+        }
       }
       renderAb1Chips();
 
@@ -2650,7 +2700,7 @@ function closeFeedbackForm() {
           samples[index].sequences = sequences;
           samples[index].traces = traces;
           samples[index].date = new Date().toISOString();
-          samples[index].hasRawSeq = hasRawSeq || (samples[index].hasRawSeq || false);
+          samples[index].hasRawSeq = hasRawSeq;
           delete samples[index].envData; 
         }
       } else {
@@ -2672,6 +2722,8 @@ function closeFeedbackForm() {
       } else if (ab1Data) {
          saveToIndexedDB(STORE_SAMPLES, { id: finalId, fileName: ab1FileName, data: ab1Data })
             .catch(e => console.error("IndexedDB Save Error:", e));
+      } else {
+         deleteFromIndexedDB(STORE_SAMPLES, finalId).catch(e => console.warn(e));
       }
 
       saveToStorage(); renderSamples(); closeModal();
