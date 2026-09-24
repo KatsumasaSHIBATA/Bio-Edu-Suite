@@ -1295,9 +1295,17 @@ input[type="submit"]:disabled:active {
         checkIndexedDBQueue();
     });
 
+    function saveCurrentStateToQueue() {
+        if (!ab1Data || !ab1Queue || ab1Queue.length === 0 || currentQueueIndex < 0 || currentQueueIndex >= ab1Queue.length) return;
+        ab1Queue[currentQueueIndex].editedAb1Data = ab1Data;
+        ab1Queue[currentQueueIndex].savedHistoryStack = historyStack;
+        ab1Queue[currentQueueIndex].savedHistoryIndex = historyIndex;
+        ab1Queue[currentQueueIndex].savedIsRevCompState = isRevCompState;
+    }
+
     function updateQueueUI() {
         const container = document.getElementById('queueNavContainer');
-        if (ab1Queue.length >= 2) {
+        if (ab1Queue.length >= 1) {
             container.style.display = 'flex';
             document.getElementById('queueIndexText').innerText = currentQueueIndex + 1;
             document.getElementById('queueTotalText').innerText = ab1Queue.length;
@@ -1312,6 +1320,7 @@ input[type="submit"]:disabled:active {
 
     function prevQueue() {
         if (currentQueueIndex > 0) {
+            saveCurrentStateToQueue();
             currentQueueIndex--;
             updateQueueUI();
             loadQueueItem(currentQueueIndex);
@@ -1320,6 +1329,7 @@ input[type="submit"]:disabled:active {
 
     function nextQueue() {
         if (currentQueueIndex < ab1Queue.length - 1) {
+            saveCurrentStateToQueue();
             currentQueueIndex++;
             updateQueueUI();
             loadQueueItem(currentQueueIndex);
@@ -1359,30 +1369,45 @@ input[type="submit"]:disabled:active {
 
     function loadQueueItem(index) {
         const item = ab1Queue[index];
-        if (!item || !item.data) return;
+        if (!item) return;
         
         currentFileName = item.fileName || item.name;
-        document.getElementById('statusText').innerText = "ステータス: バイナリデータを解析中...";
+        document.getElementById('fileInfoText').innerText = `File: ${currentFileName}`;
         
         try {
-            // dataがArrayBufferかUint8Arrayかで処理
-            let buffer = item.data;
-            if (buffer instanceof Uint8Array) {
-                buffer = buffer.buffer;
-            } else if (typeof buffer === 'string' && buffer.startsWith('data:')) {
-                // Base64からArrayBufferへの変換 (アプリ①でDataURL形式で保存している場合の対応)
-                const base64Data = buffer.split(',')[1];
-                const binaryString = window.atob(base64Data);
-                const len = binaryString.length;
-                const bytes = new Uint8Array(len);
-                for (let i = 0; i < len; i++) {
-                    bytes[i] = binaryString.charCodeAt(i);
+            if (item.editedAb1Data) {
+                // 退避された編集状態が存在する場合：バイナリから再パースせずそのまま復元
+                ab1Data = item.editedAb1Data;
+                historyStack = item.savedHistoryStack || [JSON.stringify(ab1Data.bases)];
+                historyIndex = (item.savedHistoryIndex !== undefined && item.savedHistoryIndex >= 0) ? item.savedHistoryIndex : (historyStack.length - 1);
+                isRevCompState = !!item.savedIsRevCompState;
+            } else {
+                if (!item.data) return;
+                document.getElementById('statusText').innerText = "ステータス: バイナリデータを解析中...";
+                
+                // dataがArrayBufferかUint8Arrayかで処理
+                let buffer = item.data;
+                if (buffer instanceof Uint8Array) {
+                    buffer = buffer.buffer;
+                } else if (typeof buffer === 'string' && buffer.startsWith('data:')) {
+                    // Base64からArrayBufferへの変換 (アプリ①でDataURL形式で保存している場合の対応)
+                    const base64Data = buffer.split(',')[1];
+                    const binaryString = window.atob(base64Data);
+                    const len = binaryString.length;
+                    const bytes = new Uint8Array(len);
+                    for (let i = 0; i < len; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
+                    }
+                    buffer = bytes.buffer;
                 }
-                buffer = bytes.buffer;
+                ab1Data = parseAB1(buffer);
+                isRevCompState = false;
+                historyStack = [];
+                historyIndex = -1;
+                saveHistory();
             }
-            ab1Data = parseAB1(buffer);
+
             document.getElementById('statusText').innerText = "ステータス: 準備完了。波形を確認して修正してください。";
-            document.getElementById('fileInfoText').innerText = `File: ${currentFileName}`;
             
             document.getElementById('scaleX').disabled = false;
             document.getElementById('scaleY').disabled = false;
@@ -1392,20 +1417,19 @@ input[type="submit"]:disabled:active {
             document.getElementById('btnExport').disabled = false;
             document.getElementById('btnCopyFasta').disabled = false;
             
-            isRevCompState = false;
             const btnRev = document.getElementById('btnRevComp');
             if (btnRev) {
                 btnRev.disabled = false;
-                btnRev.classList.remove('btn-primary');
+                if (isRevCompState) {
+                    btnRev.classList.add('btn-primary');
+                } else {
+                    btnRev.classList.remove('btn-primary');
+                }
             }
 
             selectedBaseIndex = -1;
             dragStartIndex = -1;
             dragEndIndex = -1;
-            
-            historyStack = [];
-            historyIndex = -1;
-            saveHistory();
             
             if(isSearchActive) clearSearch();
 
@@ -1507,6 +1531,7 @@ input[type="submit"]:disabled:active {
         Promise.all(promises).then(results => {
             if (results.length > 0) {
                 if (ab1Queue.length > 0) {
+                    saveCurrentStateToQueue();
                     ab1Queue = ab1Queue.concat(results);
                 } else {
                     ab1Queue = results;
@@ -2096,16 +2121,44 @@ input[type="submit"]:disabled:active {
         
         ab1Data.bases.forEach((b, index) => {
             let charUpper = b.char.toUpperCase();
+            let isWarning = false;
+
+            // 1. テキスト判定 (IUPAC曖昧コード・N)
             if (!b.isDeleted && iupac.includes(charUpper)) {
-                b.isQCWarning = true;
-                if (firstIssueIndex === -1) firstIssueIndex = index;
+                isWarning = true;
                 if (charUpper === 'N') {
                     nCount++;
                 } else {
                     iupacCount++;
                 }
-            } else {
-                b.isQCWarning = false;
+            }
+
+            // 2. 波形（Trace）のシグナル強度に基づく異常検知
+            if (!b.isDeleted && ab1Data.traces && ab1Data.maxVal > 0) {
+                const loc = b.loc;
+                const signals = ['A', 'T', 'G', 'C'].map(base => {
+                    const trace = ab1Data.traces[base];
+                    return (trace && loc >= 0 && loc < trace.length) ? trace[loc] : 0;
+                }).sort((a, b) => b - a);
+
+                const maxPeak = signals[0];
+                const secondPeak = signals[1];
+
+                const isLowSignal = maxPeak < (ab1Data.maxVal * 0.05);
+                const isSaturated = maxPeak > (ab1Data.maxVal * 0.95);
+                const isDoublePeak = maxPeak > 0 && (secondPeak >= maxPeak * 0.3);
+
+                if (isLowSignal || isSaturated || isDoublePeak) {
+                    if (!isWarning) {
+                        iupacCount++;
+                    }
+                    isWarning = true;
+                }
+            }
+
+            b.isQCWarning = isWarning;
+            if (isWarning && firstIssueIndex === -1) {
+                firstIssueIndex = index;
             }
         });
         redrawAll();
@@ -2115,7 +2168,7 @@ input[type="submit"]:disabled:active {
             let statusStr = "";
             if (totalCount > 0) {
                 showToast(`${totalCount}個の低品質/曖昧塩基を検出しました。`, "warning");
-                statusStr = `ステータス: QC完了。N塩基 ${nCount}件、ダブルピーク等 ${iupacCount}件を確認してください。`;
+                statusStr = `ステータス: QC完了。N塩基 ${nCount}件、波形異常/曖昧塩基 ${iupacCount}件を確認してください。`;
                 if (firstIssueIndex !== -1) {
                     selectBase(firstIssueIndex);
                 }
@@ -2584,41 +2637,110 @@ function closeFeedbackForm() {
       console.warn('State restoration unavailable:', e);
     }
     /* ===================================================================
-       【セッション永続化仕様】画面遷移時の波形データ自動退避＆復元 (アプリ⑤準拠)
-       タブを閉じるか初期化ボタンを押さない限り、他アプリへ行っても波形を維持する
+       【セッション永続化仕様】画面遷移時の波形データ自動退避＆復元 (ガイドライン第7.4項準拠)
+       タブを閉じるか初期化ボタンを押さない限り、他アプリへ行ってもキューと編集状態を維持する
        =================================================================== */
     (function() {
-        const AUTOSAVE_KEY = 'bio_edu_autosave_app4';
+        const AUTOSAVE_KEY = 'bio_edu_workspace_app4';
 
-        // 離脱時：波形データ（Int16Arrayをプレーン配列化）とUI状態を退避
+        function arrayBufferToBase64(buffer) {
+            if (!buffer) return null;
+            let binary = '';
+            const bytes = (buffer instanceof Uint8Array) ? buffer : new Uint8Array(buffer);
+            const len = bytes.byteLength;
+            for (let i = 0; i < len; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return window.btoa(binary);
+        }
+
+        function base64ToArrayBuffer(base64) {
+            if (!base64) return null;
+            const binaryString = window.atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        function serializeAb1Data(data) {
+            if (!data) return null;
+            const serializedTraces = {};
+            if (data.traces) {
+                ['A', 'T', 'G', 'C'].forEach(base => {
+                    if (data.traces[base]) {
+                        serializedTraces[base] = Array.from(data.traces[base]);
+                    }
+                });
+            }
+            return {
+                bases: data.bases,
+                traces: serializedTraces,
+                maxVal: data.maxVal,
+                traceLength: data.traceLength
+            };
+        }
+
+        function deserializeAb1Data(saved) {
+            if (!saved) return null;
+            const restoredTraces = {};
+            if (saved.traces) {
+                ['A', 'T', 'G', 'C'].forEach(base => {
+                    if (saved.traces[base]) {
+                        restoredTraces[base] = new Int16Array(saved.traces[base]);
+                    }
+                });
+            }
+            return {
+                bases: saved.bases,
+                traces: restoredTraces,
+                maxVal: saved.maxVal,
+                traceLength: saved.traceLength
+            };
+        }
+
+        // 離脱時：ab1Queue全体（Base64/プレーン配列化）とUI状態を退避
         function saveApp4Session() {
             try {
-                if (!ab1Data || !currentFileName) {
+                if (typeof saveCurrentStateToQueue === 'function') {
+                    saveCurrentStateToQueue();
+                }
+
+                if (!ab1Queue || ab1Queue.length === 0) {
                     sessionStorage.removeItem(AUTOSAVE_KEY);
                     return;
                 }
 
-                const serializedTraces = {};
-                if (ab1Data.traces) {
-                    ['A', 'T', 'G', 'C'].forEach(base => {
-                        if (ab1Data.traces[base]) {
-                            serializedTraces[base] = Array.from(ab1Data.traces[base]);
+                const serializedQueue = ab1Queue.map(item => {
+                    let base64Data = null;
+                    if (item.data) {
+                        if (typeof item.data === 'string') {
+                            base64Data = item.data;
+                        } else {
+                            base64Data = arrayBufferToBase64(item.data);
                         }
-                    });
-                }
+                    }
+
+                    return {
+                        name: item.name,
+                        fileName: item.fileName,
+                        data: base64Data,
+                        editedAb1Data: item.editedAb1Data ? serializeAb1Data(item.editedAb1Data) : null,
+                        savedHistoryStack: item.savedHistoryStack,
+                        savedHistoryIndex: item.savedHistoryIndex,
+                        savedIsRevCompState: item.savedIsRevCompState
+                    };
+                });
 
                 const payload = {
                     savedAt: Date.now(),
-                    currentFileName: currentFileName,
+                    currentQueueIndex: currentQueueIndex,
                     scaleX: document.getElementById('scaleX') ? document.getElementById('scaleX').value : "1.0",
                     scaleY: document.getElementById('scaleY') ? document.getElementById('scaleY').value : "1.5",
                     searchInput: document.getElementById('searchInput') ? document.getElementById('searchInput').value : "",
-                    ab1Data: {
-                        bases: ab1Data.bases,
-                        traces: serializedTraces,
-                        maxVal: ab1Data.maxVal,
-                        traceLength: ab1Data.traceLength
-                    }
+                    queue: serializedQueue
                 };
 
                 sessionStorage.setItem(AUTOSAVE_KEY, JSON.stringify(payload));
@@ -2633,57 +2755,42 @@ function closeFeedbackForm() {
                 const raw = sessionStorage.getItem(AUTOSAVE_KEY);
                 if (!raw) return;
                 const saved = JSON.parse(raw);
-                if (!saved || !saved.ab1Data || ab1Data) return; // 新規ロード済みなら上書きしない
+                if (!saved || !saved.queue || saved.queue.length === 0 || ab1Data) return; // 新規ロード済みなら上書きしない
 
-                currentFileName = saved.currentFileName;
-
-                const restoredTraces = {};
-                if (saved.ab1Data.traces) {
-                    ['A', 'T', 'G', 'C'].forEach(base => {
-                        if (saved.ab1Data.traces[base]) {
-                            restoredTraces[base] = new Int16Array(saved.ab1Data.traces[base]);
+                ab1Queue = saved.queue.map(item => {
+                    let buffer = null;
+                    if (item.data) {
+                        if (typeof item.data === 'string' && item.data.startsWith('data:')) {
+                            buffer = item.data;
+                        } else if (typeof item.data === 'string') {
+                            buffer = base64ToArrayBuffer(item.data);
                         }
-                    });
-                }
+                    }
 
-                ab1Data = {
-                    bases: saved.ab1Data.bases,
-                    traces: restoredTraces,
-                    maxVal: saved.ab1Data.maxVal,
-                    traceLength: saved.ab1Data.traceLength
-                };
+                    return {
+                        name: item.name,
+                        fileName: item.fileName,
+                        data: buffer,
+                        editedAb1Data: item.editedAb1Data ? deserializeAb1Data(item.editedAb1Data) : null,
+                        savedHistoryStack: item.savedHistoryStack,
+                        savedHistoryIndex: item.savedHistoryIndex,
+                        savedIsRevCompState: item.savedIsRevCompState
+                    };
+                });
 
-                // スライダー・入力欄の復元
+                currentQueueIndex = (saved.currentQueueIndex >= 0 && saved.currentQueueIndex < ab1Queue.length) ? saved.currentQueueIndex : 0;
+
                 const scaleXEl = document.getElementById('scaleX');
                 const scaleYEl = document.getElementById('scaleY');
                 const searchInput = document.getElementById('searchInput');
 
-                if (scaleXEl) { scaleXEl.value = saved.scaleX; scaleXEl.disabled = false; }
-                if (scaleYEl) { scaleYEl.value = saved.scaleY; scaleYEl.disabled = false; }
-                if (searchInput) { searchInput.value = saved.searchInput || ""; searchInput.disabled = false; }
+                if (scaleXEl && saved.scaleX) scaleXEl.value = saved.scaleX;
+                if (scaleYEl && saved.scaleY) scaleYEl.value = saved.scaleY;
+                if (searchInput && saved.searchInput) searchInput.value = saved.searchInput;
 
-                // ボタン類の活性化
-                ['btnQC', 'btnExport', 'btnCopyFasta', 'btnRevComp'].forEach(id => {
-                    const btn = document.getElementById(id);
-                    if (btn) btn.disabled = false;
-                });
-                toggleSearchBtn();
+                updateQueueUI();
+                loadQueueItem(currentQueueIndex);
 
-                // ステータスバー表示更新
-                const statusText = document.getElementById('statusText');
-                const fileInfoText = document.getElementById('fileInfoText');
-                if (statusText) statusText.innerText = "ステータス: 前回の作業状態を復元しました。波形を確認して修正してください。";
-                if (fileInfoText) fileInfoText.innerText = `File: ${currentFileName}`;
-
-                // 履歴の初期化
-                historyStack = [JSON.stringify(ab1Data.bases)];
-                historyIndex = 0;
-                selectedBaseIndex = -1;
-                dragStartIndex = -1;
-                dragEndIndex = -1;
-
-                // 再描画
-                redrawAll();
                 showToast("前回の波形データを復元しました", "info");
             } catch (e) {
                 console.warn('[AutoSave] App4 restore failed:', e);
