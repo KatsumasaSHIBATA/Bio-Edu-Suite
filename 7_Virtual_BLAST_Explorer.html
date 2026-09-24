@@ -1506,14 +1506,32 @@ input[type="submit"]:disabled:active {
     let localDB = [];
     const DB_SIZE = 10000000000; 
 
-    function determineSourceType(gene, fallback) {
+    function determineSourceType(gene, fallback = '核ゲノム/その他') {
         if (!gene || gene === '-') return fallback;
-        const g = gene.toLowerCase();
+        const g = gene.toLowerCase().trim();
         
-        if (['coi', 'co1', 'cox1', 'cytb', '12s', 'nd1', 'd-loop'].includes(g)) return 'ミトコンドリア';
-        if (['rbcl', 'matk', 'trnl', 'psba', 'trnh'].includes(g)) return '葉緑体';
-        if (['16s', '18s', '28s', 'its', 'its1', 'its2', '5.8s'].includes(g)) return '核ゲノム';
-        if (['spike', 's', 'ha', 'na', 'gp', 'env', 'capsid', 'vp1', 'e', 'pol'].includes(g)) return 'ウイルスゲノム';
+        // ミトコンドリアDNAマーカー
+        if (['coi', 'co1', 'cox1', 'cytb', 'cob', '12s', '16s_mt', 'mt-rnr1', 'mt-rnr2', 'nd1', 'nd2', 'nd3', 'nd4', 'nd5', 'nd6', 'd-loop', 'control_region', 'atp6', 'atp8'].includes(g)) return 'ミトコンドリア';
+        
+        // 葉緑体DNAマーカー
+        if (['rbcl', 'matk', 'trnl', 'trnf', 'trnh', 'psba', 'psba-trnh', 'ndhf', 'atpb', 'ycf1'].includes(g)) return '葉緑体';
+        
+        // 主要な核DNAマーカー（日本学術会議2025年版・高校生物・分子系統学標準）
+        if ([
+            'rag1', 'rag-1', 'rag2', 'rag-2', // 組換え活性化遺伝子（脊椎動物系統解析）
+            '16s', '18s', '28s', 'its', 'its1', 'its2', '5.8s', // 核リボソームRNA・スペーサー
+            'c-mos', 'cmos', 'bdnf', // 脊椎動物系統解析定番マーカー
+            'rho', 'rhodopsin', // ロドプシン（2025年版最重要語・分子進化）
+            'actb', 'actin', // アクチン（2025年版最重要語・細胞骨格）
+            'tubb', 'tubulin', // チューブリン（2025年版最重要語・微小管）
+            'h3', 'h4', 'histone', // ヒストン（2025年版重要語・クロマチン）
+            'gapdh', 'g3pdh', 'ef1a', 'ef-1a', // ハウスキーピング遺伝子・伸長因子
+            'hbb', 'hemoglobin', // ヘモグロビン（2025年版重要語・分子時計・突然変異）
+            'phy', 'phytochrome', 'cry', 'cryptochrome' // 光受容体（2025年版最重要語）
+        ].includes(g)) return '核ゲノム';
+        
+        // ウイルスゲノムマーカー
+        if (['spike', 's', 'ha', 'hemagglutinin', 'na', 'neuraminidase', 'gp', 'env', 'capsid', 'vp1', 'e', 'pol', 'gag'].includes(g)) return 'ウイルスゲノム';
         
         return fallback;
     }
@@ -1662,10 +1680,11 @@ input[type="submit"]:disabled:active {
                     }
                     let addedCount = 0;
                     jsonData.forEach(item => {
+                        const directSource = item.source_type || (item.isMito && item.isMito !== 'Unknown' ? item.isMito : null);
                         localDB.push({
                             id: item.accession || '-',
                             name: (item.scientific_name ? item.scientific_name + " (" + item.name + ")" : item.name),
-                            isMito: determineSourceType(item.gene, 'Genomic/Other'),
+                            isMito: directSource || determineSourceType(item.gene, '核ゲノム/その他'),
                             seqBase: "部分配列",
                             seq: item.sequence,
                             gene: item.gene || '-'
@@ -1673,9 +1692,28 @@ input[type="submit"]:disabled:active {
                         addedCount++;
                     });
                     updateDBCount();
-                    document.getElementById('currentLoadedDataInfo').innerText = forceReplace ? `読み込み中: [外部JSON] ${file.name} (${localDB.length}種)` : `読み込み中: [外部JSON追加済] ${file.name} (合計: ${localDB.length}種)`;
+                    
+                    const selector = document.getElementById('presetSelector');
+                    if (selector) {
+                        let customOpt = selector.querySelector('option[value="custom"]');
+                        if (!customOpt) {
+                            customOpt = document.createElement('option');
+                            customOpt.value = 'custom';
+                            selector.appendChild(customOpt);
+                        }
+                        customOpt.text = `外部カスタムDB (${file.name})`;
+                        selector.value = 'custom';
+                    }
+                    
+                    document.getElementById('currentLoadedDataInfo').innerText = forceReplace ? `読み込み中: [外部カセット] ${file.name} (${localDB.length}種)` : `読み込み中: [外部カセット追加済] ${file.name} (合計: ${localDB.length}種)`;
                     showToast(`JSONデータベースを${forceReplace ? '読み込み' : '追加し'}ました (${addedCount}件)`);
+                    
+                    // LWW調停タイムスタンプ更新＆セッション保存＆クラウド同期要求
+                    const nowStr = Date.now().toString();
+                    localStorage.setItem('bio_edu_last_user_edit', nowStr);
+                    sessionStorage.setItem('bio_edu_last_user_edit', nowStr);
                     if (typeof window.saveApp7Session === "function") window.saveApp7Session();
+                    window.dispatchEvent(new CustomEvent('bio_edu_request_save'));
                 } catch(err) {
                     showToast("JSONファイルの解析に失敗しました。", "error");
                 }
@@ -1728,7 +1766,24 @@ input[type="submit"]:disabled:active {
                 } else {
                     showToast(`${addedCount} 件の塩基配列をローカルデータベースに${forceReplace ? '登録' : '追加'}しました！`);
                 }
+                
+                const selector = document.getElementById('presetSelector');
+                if (selector) {
+                    let customOpt = selector.querySelector('option[value="custom"]');
+                    if (!customOpt) {
+                        customOpt = document.createElement('option');
+                        customOpt.value = 'custom';
+                        selector.appendChild(customOpt);
+                    }
+                    customOpt.text = `外部カスタムDB (${file.name})`;
+                    selector.value = 'custom';
+                }
+                
+                const nowStr = Date.now().toString();
+                localStorage.setItem('bio_edu_last_user_edit', nowStr);
+                sessionStorage.setItem('bio_edu_last_user_edit', nowStr);
                 if (typeof window.saveApp7Session === "function") window.saveApp7Session();
+                window.dispatchEvent(new CustomEvent('bio_edu_request_save'));
             }
         };
         reader.readAsText(file);
@@ -1870,9 +1925,13 @@ input[type="submit"]:disabled:active {
             runBtn.innerHTML = originalBtnHtml;
         }
 
+        const nowStr = Date.now().toString();
+        localStorage.setItem('bio_edu_last_user_edit', nowStr);
+        sessionStorage.setItem('bio_edu_last_user_edit', nowStr);
         if (typeof window.saveApp7Session === 'function') {
             window.saveApp7Session();
         }
+        window.dispatchEvent(new CustomEvent('bio_edu_request_save'));
         showToast("解析が完了しました（全生物種 照合完了）");
     }
 
@@ -2092,12 +2151,18 @@ input[type="submit"]:disabled:active {
     }
 
     window.addEventListener('DOMContentLoaded', (event) => {
-        loadAllCombinedDB(true);
+        const restored = (typeof restoreApp7Session === 'function') ? restoreApp7Session() : false;
+        if (!restored) {
+            loadAllCombinedDB(true);
+        }
         
-        // 以下の入力フォーム即時保存リスナーを追加
+        // フォーム即時保存リスナー
         const queryInput = document.getElementById('queryInput');
         if (queryInput) {
             queryInput.addEventListener('input', () => {
+                const nowStr = Date.now().toString();
+                localStorage.setItem('bio_edu_last_user_edit', nowStr);
+                sessionStorage.setItem('bio_edu_last_user_edit', nowStr);
                 if (typeof window.saveApp7Session === 'function') window.saveApp7Session();
             });
         }
@@ -2106,6 +2171,9 @@ input[type="submit"]:disabled:active {
             const el = document.getElementById(id);
             if (el) {
                 el.addEventListener('change', () => {
+                    const nowStr = Date.now().toString();
+                    localStorage.setItem('bio_edu_last_user_edit', nowStr);
+                    sessionStorage.setItem('bio_edu_last_user_edit', nowStr);
                     if (typeof window.saveApp7Session === 'function') window.saveApp7Session();
                 });
             }
@@ -2308,10 +2376,13 @@ function closeFeedbackForm() {
        【セッション永続化仕様】アプリ⑦ 登録DB・BLAST結果・UI完全復元 (v35.3)
        localDB、クエリ塩基配列、検索結果テーブル、アライメント表示の完全保持
        =================================================================== */
+    let isHydrating = false;
+
     (function () {
         const AUTOSAVE_KEY = 'bio_edu_autosave_app7_full';
 
         function saveApp7Session() {
+            if (isHydrating) return;
             try {
                 const queryEl = document.getElementById('queryInput');
                 const queryVal = queryEl ? queryEl.value : '';
@@ -2358,9 +2429,11 @@ function closeFeedbackForm() {
         function restoreApp7Session() {
             try {
                 const raw = sessionStorage.getItem(AUTOSAVE_KEY);
-                if (!raw) return;
+                if (!raw) return false;
                 const state = JSON.parse(raw);
-                if (!state) return;
+                if (!state) return false;
+
+                isHydrating = true;
 
                 // 1. クエリおよびスコアリング設定の復元
                 const queryEl = document.getElementById('queryInput');
@@ -2373,12 +2446,21 @@ function closeFeedbackForm() {
                 if (state.match && document.getElementById('valMatch')) document.getElementById('valMatch').value = state.match;
                 if (state.mismatch && document.getElementById('valMismatch')) document.getElementById('valMismatch').value = state.mismatch;
                 if (state.gap && document.getElementById('valGap')) document.getElementById('valGap').value = state.gap;
+                
+                // セレクタの復元（customオプションの動的生成）
                 if (state.presetVal && document.getElementById('presetSelector')) {
-                    document.getElementById('presetSelector').value = state.presetVal;
+                    const selector = document.getElementById('presetSelector');
+                    if (state.presetVal === 'custom' && !selector.querySelector('option[value="custom"]')) {
+                        const opt = document.createElement('option');
+                        opt.value = 'custom';
+                        opt.text = '外部カスタムDB (保持中)';
+                        selector.appendChild(opt);
+                    }
+                    selector.value = state.presetVal;
                 }
 
                 // 2. ローカルデータベース (localDB) の復元
-                if (state.localDB && Array.isArray(state.localDB) && state.localDB.length > 0 && typeof localDB !== 'undefined') {
+                if (state.localDB && Array.isArray(state.localDB) && state.localDB.length > 0) {
                     localDB = state.localDB;
                     if (typeof updateDBCount === 'function') updateDBCount();
                 }
@@ -2387,11 +2469,10 @@ function closeFeedbackForm() {
                 }
 
                 // 3. BLAST検索結果およびアライメントパネルの復元
-                if (state.currentResults && Array.isArray(state.currentResults) && state.currentResults.length > 0 && typeof currentResults !== 'undefined') {
+                if (state.currentResults && Array.isArray(state.currentResults) && state.currentResults.length > 0) {
                     currentResults = state.currentResults;
                     if (typeof renderHitsTable === 'function') {
                         renderHitsTable();
-                        // 直前に選択されていた行を復元
                         if (state.selectedIdx !== undefined && state.selectedIdx >= 0) {
                             const rows = document.querySelectorAll('#hitsTableBody .hit-row');
                             if (rows && rows[state.selectedIdx]) {
@@ -2409,9 +2490,7 @@ function closeFeedbackForm() {
 
                     const linkPanel = document.getElementById('ncbiLinkPanel');
                     if (linkPanel) {
-                        if (state.ncbiLinkHtml) {
-                            linkPanel.innerHTML = state.ncbiLinkHtml;
-                        }
+                        if (state.ncbiLinkHtml) linkPanel.innerHTML = state.ncbiLinkHtml;
                         linkPanel.style.display = state.ncbiLinkDisplay || 'none';
                         const directLink = document.getElementById('ncbiDirectLink');
                         if (directLink && state.query) {
@@ -2421,13 +2500,13 @@ function closeFeedbackForm() {
                             }
                         }
                     }
-
-                    if (typeof showToast === 'function') {
-                        showToast('前回のデータベースと検索結果を復元しました', 'info');
-                    }
                 }
+                setTimeout(() => { isHydrating = false; }, 60);
+                return true;
             } catch (e) {
                 console.warn('[AutoSave] App7 restore failed:', e);
+                isHydrating = false;
+                return false;
             }
         }
 
