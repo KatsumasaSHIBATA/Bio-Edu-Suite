@@ -447,6 +447,13 @@ input, textarea {
 }
     .modal-footer { padding: 15px 20px; border-top: 1px solid #ecf0f1; display: flex; justify-content: flex-end; gap: 10px; background: #fdfefe; border-radius: 0 0 8px 8px; }
 
+    /* プログレッシブ・ディスクロージャー用スタイル */
+    .advanced-section { margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 6px; background: #ffffff; }
+    .advanced-section summary { padding: 12px 16px; font-size: 13px; font-weight: bold; cursor: pointer; color: var(--primary); display: flex; align-items: center; gap: 8px; user-select: none; background: #f8f9fa; border-radius: 6px; transition: background 0.2s; }
+    .advanced-section summary:hover { background: #f0f3f4; }
+    .advanced-section[open] summary { border-radius: 6px 6px 0 0; border-bottom: 1px solid var(--border-color); }
+    .advanced-section-body { padding: 16px; }
+
     .form-group { margin-bottom: 15px; }
     .form-group label { display: block; margin-bottom: 5px; font-size: 13px; font-weight: bold; color: var(--primary); }
     .form-control { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px; font-family: inherit; transition: 0.2s; box-sizing: border-box; }
@@ -1176,67 +1183,81 @@ input[type="submit"]:disabled:active {
           <div class="help-text">LIMS用の一意なIDです。末尾に採集場所などを自由に追記できます。</div>
         </div>
         
-        <hr style="border: 0; border-top: 1px solid #ecf0f1; margin: 20px 0;">
-
-        <div class="form-group">
-          <label>環境データ</label>
-          <input type="text" id="envCategory" class="form-control" placeholder="例: A湖畔、B山林など" enterkeyhint="done">
-          <div class="help-text">Integrative Taxonomy Studio (⑩) の系統樹色分けや、Statistical Genetics Lab (⑫) の「環境(E)」要因として解析されます。</div>
-        </div>
-        
-        <div class="form-group">
-          <label>特記事項</label>
-          <textarea id="envNote" class="form-control" placeholder="自由記述のメモを入力（※出力には含まれません）" style="min-height: 80px;"></textarea>
-          <div class="help-text">画面上だけの記録です。解析ノイズとなる長文データを構造から切り離します。</div>
-        </div>
-        
-        <hr style="border: 0; border-top: 1px solid #ecf0f1; margin: 20px 0;">
-        
-        <div class="form-group">
-          <label>画像データ（形態解析用）</label>
-          <div style="display: flex; gap: 10px; align-items: stretch;">
-            <div class="drop-zone" id="imageDropZone" onclick="document.getElementById('imageInput').click(); triggerHapticFeedback();" style="flex: 1;">
-              <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-              <p id="imageDropText">ここをクリック、または 画像データ をドラッグ＆ドロップ</p>
-              <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageFile(event)">
+        <details id="envDetails" class="advanced-section">
+          <summary><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> 環境メタデータを追加</summary>
+          <div class="advanced-section-body">
+            <div class="form-group">
+              <label>環境データ</label>
+              <input type="text" id="envCategory" class="form-control" placeholder="例: A湖畔、B山林など" enterkeyhint="done">
+              <div class="help-text">Integrative Taxonomy Studio (⑩) の系統樹色分けや、Statistical Genetics Lab (⑫) の「環境(E)」要因として解析されます。</div>
             </div>
-            <!-- プレビュー表示枠 (flexで横並び) -->
-            <div id="imagePreviewContainer" style="width: 80px; height: 80px; border: 1px solid var(--border-color); border-radius: 4px; display: none; flex-shrink: 0; overflow: hidden; background: #f8f9fa;">
-              <img id="modalImagePreview" style="object-fit: cover; width: 100%; height: 100%;" src="">
+            
+            <div class="form-group">
+              <label>特記事項</label>
+              <textarea id="envNote" class="form-control" placeholder="自由記述のメモを入力（※出力には含まれません）" style="min-height: 80px;"></textarea>
+              <div class="help-text">画面上だけの記録です。解析ノイズとなる長文データを構造から切り離します。</div>
             </div>
           </div>
-          <input type="hidden" id="imageDataBase64">
-          <div class="help-text">長辺1200pxの軽量なJPEG (品質80%) に自動最適化され保存されます。</div>
-        </div>
+        </details>
 
-        <div class="form-group">
-          <label>計測データ (CSV)</label>
-          <textarea id="morphData" class="form-control paste-area" placeholder="例: 12.5, 4.3, 8.1 などの計測値をカンマ区切りで入力"></textarea>
-          <div class="help-text">後で Integrative Taxonomy Studio (⑩) に送って形態系統樹を構築できます。</div>
-        </div>
+        <details id="morphDetails" class="advanced-section">
+          <summary><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> 画像・計測データを追加</summary>
+          <div class="advanced-section-body">
+            <div class="form-group">
+              <label>画像データ（形態解析用）</label>
+              <div style="display: flex; gap: 10px; align-items: stretch;">
+                <div class="drop-zone" id="imageDropZone" onclick="document.getElementById('imageInput').click(); triggerHapticFeedback();" style="flex: 1;">
+                  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                  <p id="imageDropText">ここをクリック、または 画像データ をドラッグ＆ドロップ</p>
+                  <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageFile(event)">
+                </div>
+                <!-- プレビュー表示枠 (flexで横並び) -->
+                <div id="imagePreviewContainer" style="width: 80px; height: 80px; border: 1px solid var(--border-color); border-radius: 4px; display: none; flex-shrink: 0; overflow: hidden; background: #f8f9fa;">
+                  <img id="modalImagePreview" style="object-fit: cover; width: 100%; height: 100%;" src="">
+                </div>
+              </div>
+              <input type="hidden" id="imageDataBase64">
+              <div class="help-text">長辺1200pxの軽量なJPEG (品質80%) に自動最適化され保存されます。</div>
+            </div>
 
-        <hr style="border: 0; border-top: 1px solid #ecf0f1; margin: 20px 0;">
-
-        <!-- 2025年用語規格: バイナリデータのアップロード対応 -->
-        <div class="form-group">
-          <label>未処理塩基配列データ (.ab1等)</label>
-          <div class="drop-zone" id="ab1DropZone" onclick="document.getElementById('ab1Input').click(); triggerHapticFeedback();">
-            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-            <p id="ab1DropText">ここをクリック、または .ab1 ファイル をドラッグ＆ドロップ</p>
-            <input type="file" id="ab1Input" accept=".ab1,.scf" multiple style="display: none;" onchange="handleAb1File(event)">
+            <div class="form-group">
+              <label>計測データ (CSV)</label>
+              <textarea id="morphData" class="form-control paste-area" placeholder="例: 12.5, 4.3, 8.1 などの計測値をカンマ区切りで入力"></textarea>
+              <div class="help-text">後で Integrative Taxonomy Studio (⑩) に送って形態系統樹を構築できます。</div>
+            </div>
           </div>
-          <div id="ab1FilesList" class="file-chip-container"></div>
-          <div class="help-text">Sanger Trace Editor (④) に送って波形解析を行えます。</div>
-          <input type="hidden" id="ab1DataHidden">
-          <input type="hidden" id="ab1FileNameHidden">
-        </div>
+        </details>
 
-        <!-- 2025年用語規格: FASTAテキストのペースト対応 -->
-        <div class="form-group">
-          <label>処理済み塩基配列データ (FASTA等)</label>
-          <textarea id="dnaData" class="form-control paste-area" placeholder="FASTA形式などで塩基配列テキストを入力"></textarea>
-          <div class="help-text">Sanger Trace Editor等で処理した結果の塩基配列を貼り付けます。<br>DNA Alignment Studio (⑤) に送って系統解析を行えます。</div>
-        </div>
+        <details id="dnaDetails" class="advanced-section">
+          <summary><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v18"/><path d="M16 3v18"/><path d="M8 7h8"/><path d="M8 12h8"/><path d="M8 17h8"/></svg> DNA・波形データを追加</summary>
+          <div class="advanced-section-body">
+            <!-- 2025年用語規格: バイナリデータのアップロード対応 -->
+            <div class="form-group">
+              <label>未処理塩基配列データ (.ab1等)</label>
+              <div class="drop-zone" id="ab1DropZone" onclick="document.getElementById('ab1Input').click(); triggerHapticFeedback();">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                <p id="ab1DropText">ここをクリック、または .ab1 ファイル をドラッグ＆ドロップ</p>
+                <input type="file" id="ab1Input" accept=".ab1,.scf" multiple style="display: none;" onchange="handleAb1File(event)">
+              </div>
+              <div id="ab1FilesList" class="file-chip-container"></div>
+              <div class="help-text">Sanger Trace Editor (④) に送って波形解析を行えます。</div>
+              <input type="hidden" id="ab1DataHidden">
+              <input type="hidden" id="ab1FileNameHidden">
+            </div>
+
+            <!-- 既存のFASTAテキストエリアを以下のように改修 -->
+            <div class="form-group">
+              <label>処理済み塩基配列データ (FASTA等)</label>
+              <div class="drop-zone" id="fastaDropZone" onclick="document.getElementById('fastaInput').click(); triggerHapticFeedback();" style="margin-bottom: 8px;">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                <p id="fastaDropText">ここをクリック、または FASTA/テキストファイル をドラッグ＆ドロップ</p>
+                <input type="file" id="fastaInput" accept=".fasta,.fas,.seq,.txt" style="display: none;" onchange="handleFastaFile(event)">
+              </div>
+              <textarea id="dnaData" class="form-control paste-area" placeholder="FASTA形式などで塩基配列テキストを入力（または上にドロップして展開）"></textarea>
+              <div class="help-text">DNA Alignment Studio (⑤) に送って系統解析を行えます。</div>
+            </div>
+          </div>
+        </details>
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="closeModal(); triggerHapticFeedback();">キャンセル</button>
@@ -1890,6 +1911,17 @@ function closeFeedbackForm() {
             }
           });
       }
+
+      // 3. FASTA ファイル用ドロップゾーン
+      const fastaZone = document.getElementById('fastaDropZone');
+      if (fastaZone) {
+        fastaZone.addEventListener('dragover', (e) => { e.preventDefault(); fastaZone.style.borderColor = 'var(--phase-color)'; fastaZone.style.background = '#e8f8f5'; });
+        fastaZone.addEventListener('dragleave', () => { fastaZone.style.borderColor = 'var(--border-color)'; fastaZone.style.background = '#f8f9fa'; });
+        fastaZone.addEventListener('drop', (e) => {
+          e.preventDefault(); fastaZone.style.borderColor = 'var(--border-color)'; fastaZone.style.background = '#f8f9fa';
+          if (e.dataTransfer.files && e.dataTransfer.files.length > 0) processFastaFile(e.dataTransfer.files[0]);
+        });
+      }
     }
 
     function handleImageFile(event) {
@@ -1951,6 +1983,22 @@ function closeFeedbackForm() {
       if (event.target.files && event.target.files.length > 0) {
         processAb1Files(event.target.files);
       }
+    }
+
+    function handleFastaFile(event) {
+      if (event.target.files && event.target.files.length > 0) processFastaFile(event.target.files[0]);
+    }
+    function processFastaFile(file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const text = e.target.result;
+        const dnaArea = document.getElementById('dnaData');
+        dnaArea.value = dnaArea.value.trim() !== "" ? dnaArea.value.trim() + "\n\n" + text : text;
+        showToast("ファイルから塩基配列を展開しました", "success");
+        dnaArea.dispatchEvent(new Event('input', { bubbles: true })); // オートセーブ発火用
+      };
+      reader.readAsText(file);
+      document.getElementById('fastaInput').value = ""; // リセット
     }
 
     function processAb1Files(fileList) {
@@ -2453,6 +2501,11 @@ function closeFeedbackForm() {
 
       document.getElementById('morphData').value = "";
       document.getElementById('dnaData').value = "";
+
+      document.getElementById('envDetails').open = false;
+      document.getElementById('morphDetails').open = false;
+      document.getElementById('dnaDetails').open = false;
+
       document.getElementById('sampleModal').style.display = 'flex';
     }
 
@@ -2511,6 +2564,11 @@ function closeFeedbackForm() {
 
       document.getElementById('morphData').value = sample.morphData || "";
       document.getElementById('dnaData').value = sample.dnaData || "";
+
+      document.getElementById('envDetails').open = (sample.envCategory || sample.envNote) ? true : false;
+      document.getElementById('morphDetails').open = (sample.image_data || sample.morphData) ? true : false;
+      document.getElementById('dnaDetails').open = (sample.dnaData || currentAb1Files.length > 0 || sample.hasRawSeq) ? true : false;
+
       document.getElementById('sampleModal').style.display = 'flex';
     }
 
