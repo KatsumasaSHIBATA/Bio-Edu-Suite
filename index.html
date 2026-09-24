@@ -2095,27 +2095,31 @@ function closeFeedbackForm() {
         const traces = sample.traces || [];
         const hasRawSeq = traces.length > 0 || sample.hasRawSeq;
         
+        const envBadge = hasEnv ? `<span class="badge ok">環境データあり</span>` : `<span class="badge none">環境データなし</span>`;
+        const morphBadge = hasMorph ? `<span class="badge ok">計測データあり</span>` : `<span class="badge none">計測データなし</span>`;
+        const imageBadge = hasImage ? `<span class="badge ok">画像データあり</span>` : `<span class="badge none">画像データなし</span>`;
+
         let rawDnaBadge = `<span class="badge none">未処理塩基配列なし</span>`;
         if (traces.length > 1) {
           const fwdCount = traces.filter(t => t.direction === 'forward').length;
           const revCount = traces.filter(t => t.direction === 'reverse').length;
           const dirStr = (fwdCount > 0 && revCount > 0) ? 'Fwd/Rev' : fwdCount > 0 ? 'Fwd' : revCount > 0 ? 'Rev' : '複数';
           rawDnaBadge = `<span class="badge ok">未処理波形: ${traces.length}件 (${dirStr})</span>`;
-        } else if (hasRawSeq) {
+        } else if (traces.length === 1) {
+          const dirLabel = traces[0].direction === 'forward' ? 'Fwd' : traces[0].direction === 'reverse' ? 'Rev' : 'Raw';
+          rawDnaBadge = `<span class="badge ok">未処理波形: 1件 (${dirLabel})</span>`;
+        } else if (sample.hasRawSeq) {
           rawDnaBadge = `<span class="badge ok">未処理塩基配列あり</span>`;
         }
 
-        const envBadge = hasEnv ? `<span class="badge ok">環境データあり</span>` : `<span class="badge none">環境データなし</span>`;
-        const morphBadge = hasMorph ? `<span class="badge ok">計測データあり</span>` : `<span class="badge none">計測データなし</span>`;
-        const imageBadge = hasImage ? `<span class="badge ok">画像データあり</span>` : `<span class="badge none">画像データなし</span>`;
-        const dnaBadge = hasDna ? `<span class="badge ok">処理済み塩基配列あり</span>` : `<span class="badge none">処理済み塩基配列なし</span>`;
-
-        // マーカータグ一覧
         const seqs = (sample.sequences && sample.sequences.length > 0) ? sample.sequences : parseFastaMarkers(sample.dnaData || "");
-        const markers = Array.from(new Set(seqs.map(sq => sq.marker).filter(m => m && m !== 'Default')));
-        let markerTagsHtml = '';
-        if (markers.length > 0) {
-          markerTagsHtml = `<div class="marker-badge-list">${markers.map(m => `<span class="marker-tag">[${escapeHTML(m)}]</span>`).join('')}</div>`;
+        let dnaBadge = `<span class="badge none">処理済み塩基配列なし</span>`;
+        if (seqs.length > 0) {
+          const markers = Array.from(new Set(seqs.map(sq => sq.marker).filter(m => m && m !== 'Default')));
+          const markerStr = markers.length > 0 ? markers.map(m => `[${escapeHTML(m)}]`).join('') : '[Seq]';
+          dnaBadge = `<span class="badge ok">処理済み塩基配列: ${seqs.length}件 ${markerStr}</span>`;
+        } else if (hasDna) {
+          dnaBadge = `<span class="badge ok">処理済み塩基配列あり</span>`;
         }
 
         const card = document.createElement('div');
@@ -2137,7 +2141,6 @@ function closeFeedbackForm() {
           </div>
           <div class="card-body" onclick="editSample('${sample.id}'); triggerHapticFeedback();">
             <div class="status-badges">${envBadge}${morphBadge}${imageBadge}${rawDnaBadge}${dnaBadge}</div>
-            ${markerTagsHtml}
             ${hasEnv ? `<div class="data-preview" data-tooltip="環境データ">${escapeHTML(envCat)}</div>` : ''}
             ${envNote ? `<div class="data-preview" data-tooltip="特記事項">${escapeHTML(envNote.substring(0, 30))}...</div>` : ''}
             ${hasMorph ? `<div class="data-preview" data-tooltip="計測データ">${escapeHTML(sample.morphData.substring(0, 30))}...</div>` : ''}
