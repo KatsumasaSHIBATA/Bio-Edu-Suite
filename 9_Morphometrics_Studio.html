@@ -3981,6 +3981,9 @@ function closeFeedbackForm() {
                 if (typeof closeAccountSettings === 'function') closeAccountSettings();
             } catch (err) {
                 console.error('課題発行エラー:', err);
+                if (typeof showToast === 'function') {
+                    showToast('課題発行エラー: ' + (err.message || err), 'error');
+                }
             } finally {
                 if (btn) {
                     btn.disabled = false;

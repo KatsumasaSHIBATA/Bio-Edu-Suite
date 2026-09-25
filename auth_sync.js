@@ -165,7 +165,7 @@ export function leaveRoom() {
   }
 }
 
-// 教員用：マスター課題データの登録・発行 (1MB保護・JSON文字列化・完全非同期)
+// 教員用：マスター課題データの登録・発行 (1MB保護・巨大データ全自動間引き・3.5秒タイムアウト安全弁)
 export async function registerMasterPreset(taskCode, payload) {
   if (!taskCode || !payload) return;
   const cleanCode = taskCode.toUpperCase().trim();
@@ -173,51 +173,61 @@ export async function registerMasterPreset(taskCode, payload) {
     const docRef = doc(db, "master_tasks", cleanCode);
     const sanitizedPayload = JSON.parse(JSON.stringify(payload));
     
-    // サンプル内巨大Base64画像（50KB超）の安全間引き
+    // ① サンプル内の巨大Base64画像を安全に間引き（教材としての配列・テキストは100%保持）
     if (sanitizedPayload.samples && Array.isArray(sanitizedPayload.samples)) {
       sanitizedPayload.samples = sanitizedPayload.samples.map(item => {
         const copy = { ...item };
-        if (copy.image_data && copy.image_data.startsWith('data:image') && copy.image_data.length > 65000) {
+        if (copy.image_data && typeof copy.image_data === 'string' && copy.image_data.length > 50000) {
           copy.image_data = "";
         }
         return copy;
       });
     }
 
-    // セッションデータ内の巨大画像間引き
+    // ② sessionData内のあらゆるキーから、巨大データ（スクショ画像等）を完全パージして1MB上限を死守
     if (sanitizedPayload.sessionData && typeof sanitizedPayload.sessionData === 'object') {
-      const newSessionData = {};
+      const cleanSessionData = {};
       Object.keys(sanitizedPayload.sessionData).forEach((k) => {
         let val = sanitizedPayload.sessionData[k];
-        if (k.includes('dashboard_samples') && val) {
-          try {
-            const arr = JSON.parse(val);
-            if (Array.isArray(arr)) {
-              val = JSON.stringify(arr.map(item => {
-                const copy = { ...item };
-                if (copy.image_data && copy.image_data.startsWith('data:image') && copy.image_data.length > 65000) {
-                  copy.image_data = "";
-                }
-                return copy;
-              }));
-            }
-          } catch(e) {}
+        if (typeof val === 'string') {
+          if (val.length > 50000 && (val.includes('data:image') || val.includes('base64'))) {
+            return;
+          }
+          if (val.includes('data:image')) {
+            try {
+              const obj = JSON.parse(val);
+              if (Array.isArray(obj)) {
+                val = JSON.stringify(obj.map(o => {
+                  if (o && o.image_data && o.image_data.length > 50000) o.image_data = "";
+                  return o;
+                }));
+              } else if (obj && typeof obj === 'object') {
+                if (obj.uploadedImage && obj.uploadedImage.length > 50000) obj.uploadedImage = null;
+                val = JSON.stringify(obj);
+              }
+            } catch(e) {}
+          }
         }
-        newSessionData[k] = val;
+        cleanSessionData[k] = val;
       });
-      sanitizedPayload.sessionData = newSessionData;
+      sanitizedPayload.sessionData = cleanSessionData;
     }
 
-    // ドット制約・ネスト制約を完全無効化するためJSON文字列として格納
     const serializedPayload = JSON.stringify(sanitizedPayload);
 
-    await setDoc(docRef, {
+    // ③ Firestore setDoc の実行 ＋ 最大3.5秒のタイムアウト安全弁
+    // オフラインキャッシュ有効時、バックエンドAck待ちによるUIフリーズを完全防止
+    const setPromise = setDoc(docRef, {
       taskCode: cleanCode,
       payload: serializedPayload,
       creatorRoom: currentRoomCode || "",
       creatorId: currentParticipantId || "",
       createdAt: Date.now()
     });
+
+    const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 3500));
+    await Promise.race([setPromise, timeoutPromise]);
+
     if (typeof showToast === 'function') {
       showToast(`課題「${cleanCode}」をクラウドに登録・発行しました`, "success");
     }
