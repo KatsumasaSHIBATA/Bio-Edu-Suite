@@ -2265,7 +2265,6 @@ input[type="submit"]:disabled:active {
             if (jsonStr) {
                 let parsedJson = JSON.parse(jsonStr);
                 let morphData = parsedJson.samples ? parsedJson.samples : parsedJson;
-                let normMorphIds = morphData.map(d => normalizeId(d.id || d.name));
                 
                 // メソッドの自動判定 (GPA or EFA)
                 if (parsedJson.metadata && parsedJson.metadata.method === 'GPA_PCA') {
@@ -2277,8 +2276,8 @@ input[type="submit"]:disabled:active {
                 }
 
                 leafNames.forEach(leaf => {
-                    let normLeaf = normalizeId(leaf);
-                    if (!normMorphIds.includes(normLeaf)) {
+                    let isMatched = morphData.some(d => isIdOrNameMatched(leaf, d.id) || isIdOrNameMatched(leaf, d.name));
+                    if (!isMatched) {
                         missingLeaves.push(leaf);
                     }
                 });
@@ -2937,12 +2936,12 @@ input[type="submit"]:disabled:active {
         if (parsedMorphData.length > 0) {
             let rootPC1 = 0, rootPC2 = 0, validRoot = 0;
             let targetPC1 = 0, targetPC2 = 0, validTarget = 0;
-            let normTargetLeaves = nodeData.leavesList.map(l => normalizeId(l));
             
             parsedMorphData.forEach(d => {
                 if (d.pc1 !== undefined && d.pc2 !== undefined) {
                     rootPC1 += d.pc1; rootPC2 += d.pc2; validRoot++;
-                    if (normTargetLeaves.includes(normalizeId(d.id))) {
+                    let isTarget = nodeData.leavesList.some(leaf => isIdOrNameMatched(leaf, d.id) || isIdOrNameMatched(leaf, d.name));
+                    if (isTarget) {
                         targetPC1 += d.pc1; targetPC2 += d.pc2; validTarget++;
                     }
                 }
@@ -3017,8 +3016,9 @@ input[type="submit"]:disabled:active {
     }
 
     function interpolateAncestralGPA(leafIds) {
-        let normLeafIds = leafIds.map(id => normalizeId(id));
-        let targets = parsedMorphData.filter(d => normLeafIds.includes(normalizeId(d.id)) && d.gpaCoordinates);
+        let targets = parsedMorphData.filter(d => 
+            leafIds.some(leafId => isIdOrNameMatched(leafId, d.id) || isIdOrNameMatched(leafId, d.name)) && d.gpaCoordinates
+        );
         
         if (targets.length === 0) return null;
         
@@ -3042,8 +3042,9 @@ input[type="submit"]:disabled:active {
     }
 
     function interpolateAncestralEFA(leafIds) {
-        let normLeafIds = leafIds.map(id => normalizeId(id));
-        let targets = parsedMorphData.filter(d => normLeafIds.includes(normalizeId(d.id)) && d.fullCoeffs);
+        let targets = parsedMorphData.filter(d => 
+            leafIds.some(leafId => isIdOrNameMatched(leafId, d.id) || isIdOrNameMatched(leafId, d.name)) && d.fullCoeffs
+        );
         
         if (targets.length === 0) return null;
         
@@ -3250,8 +3251,7 @@ input[type="submit"]:disabled:active {
             
             let isHovered = false;
             if (currentHoveredNode) {
-                let normLeaves = currentHoveredNode.leavesList.map(l => normalizeId(l));
-                isHovered = normLeaves.includes(normalizeId(d.id));
+                isHovered = currentHoveredNode.leavesList.some(leaf => isIdOrNameMatched(leaf, d.id) || isIdOrNameMatched(leaf, d.name));
             }
             
             ctx.beginPath();
@@ -3267,6 +3267,8 @@ input[type="submit"]:disabled:active {
             ctx.lineWidth = 2;
             ctx.stroke();
             
+            let displayName = d.name || getShortLabel(d.id);
+
             // ホバー時のみ完全なIDを表示するインタラクション拡張
             if (isHovered) {
                 ctx.fillStyle = '#c0392b';
@@ -3275,7 +3277,7 @@ input[type="submit"]:disabled:active {
                 
                 let textX = (x > w * 0.8) ? x - 12 : x + 12;
                 let textY = y + 4;
-                let textWidth = ctx.measureText(d.id).width;
+                let textWidth = ctx.measureText(displayName).width;
                 
                 // 可読性向上のための白背景
                 ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
@@ -3283,13 +3285,13 @@ input[type="submit"]:disabled:active {
                 
                 // 完全なIDを描画
                 ctx.fillStyle = '#c0392b';
-                ctx.fillText(d.id, textX, textY);
+                ctx.fillText(displayName, textX, textY);
             } else {
                 // 通常時は省略表示
                 ctx.fillStyle = '#7f8c8d';
                 ctx.font = "10px sans-serif";
                 ctx.textAlign = (x > w * 0.8) ? "right" : "left";
-                ctx.fillText(getShortLabel(d.id), (x > w * 0.8) ? x - 10 : x + 10, y + 4);
+                ctx.fillText(displayName, (x > w * 0.8) ? x - 10 : x + 10, y + 4);
             }
         });
     }
