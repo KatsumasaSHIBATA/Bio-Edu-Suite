@@ -77,6 +77,17 @@
     .svg-info { color: inherit; } 
     .svg-danger { color: var(--danger); } 
 
+    .dynamic-hint {    
+        background: #fdf2f2;    
+        border: 1px solid #f8d7da;    
+        color: #721c24;    
+        padding: 10px 12px;    
+        border-radius: 6px;    
+        font-weight: bold;    
+        font-size: 11px;    
+        text-align: left;    
+    } 
+
     *, *::before, *::after { 
       box-sizing: border-box; 
       -webkit-tap-highlight-color: transparent;
@@ -1057,6 +1068,12 @@ input[type="submit"]:disabled:active {
                     } else if (measureMode === 'C') {
                         ctx.strokeStyle = '#fbcfe8';
                         ctx.fillStyle = '#fbcfe8';
+                    } else if (measureMode === 'D') {
+                        ctx.strokeStyle = '#f97316';
+                        ctx.fillStyle = '#f97316';
+                    } else if (measureMode === 'E') {
+                        ctx.strokeStyle = '#a855f7';
+                        ctx.fillStyle = '#a855f7';
                     }
 
                     if (points.length === 2) {
@@ -1078,6 +1095,8 @@ input[type="submit"]:disabled:active {
                         if (measureMode === 'A') ctx.fillStyle = '#bef264';
                         else if (measureMode === 'B') ctx.fillStyle = '#fb7185';
                         else if (measureMode === 'C') ctx.fillStyle = '#fbcfe8';
+                        else if (measureMode === 'D') ctx.fillStyle = '#f97316';
+                        else if (measureMode === 'E') ctx.fillStyle = '#a855f7';
                     });
                 }
             };
@@ -1269,10 +1288,10 @@ input[type="submit"]:disabled:active {
             // 保存データがない場合の初期化
             const initialData = {};
             SPECIES_LIST.forEach(s => {
-                initialData[s.name] = { fore: "", meta: "", phal: "" };
+                initialData[s.name] = { fore: "", meta: "", phal: "", width: "", spread: "" };
             });
-            initialData["ヒト(班・クラス平均)"] = { fore: "", meta: "", phal: "" };
-            initialData["手羽先(班・クラス平均)"] = { fore: "", meta: "", phal: "" };
+            initialData["自分の腕"] = { fore: "", meta: "", phal: "", width: "", spread: "" };
+            initialData["手羽先"] = { fore: "", meta: "", phal: "", width: "", spread: "" };
             setMeasurements(initialData);
             isHydrated.current = true;
         }, []);
@@ -1391,17 +1410,15 @@ input[type="submit"]:disabled:active {
                 return;
             }
 
-            const ratioFore = "100.0";
-            const ratioMeta = ((meta / fore) * 100).toFixed(1);
-            const ratioPhal = ((phal / fore) * 100).toFixed(1);
-
-            // 追加特徴量: 手先部(B+C)に対する指骨(C)の集中度 (%)
-            const fingerConcentration = (meta + phal > 0)
-                ? ((phal / (meta + phal)) * 100).toFixed(1)
-                : "0.0";
-
-            // 5カラム形式（生物名, 前腕比, 手根中手比, 指骨比, 指先集中度）
-            const csvRow = `${speciesName},${ratioFore},${ratioMeta},${ratioPhal},${fingerConcentration}`;
+            const width = parseFloat(data.width) || 0;
+            const spread = parseFloat(data.spread) || 0;
+            const sum = fore + meta + phal;
+            const x1 = ((fore / sum) * 100).toFixed(1);
+            const x2 = ((meta / sum) * 100).toFixed(1);
+            const x3 = ((phal / sum) * 100).toFixed(1);
+            const x4 = ((width / fore) * 100).toFixed(1); // 頑健性指数
+            const x5 = (meta + phal > 0) ? ((spread / (meta + phal)) * 100).toFixed(1) : "0.0"; // スパン指数
+            const csvRow = `${speciesName},${x1},${x2},${x3},${x4},${x5}`;
 
             navigator.clipboard.writeText(csvRow).then(() => {
                 setCopyStatus(prev => ({ ...prev, [speciesName]: "済" }));
@@ -1412,7 +1429,7 @@ input[type="submit"]:disabled:active {
         const handleCopyAllCSV = () => {
             let csv = "";
             let hasError = false;
-            const allSpeciesToCopy = [...SPECIES_LIST.map(s => s.name), "ヒト(班・クラス平均)", "手羽先(班・クラス平均)"];
+            const allSpeciesToCopy = [...SPECIES_LIST.map(s => s.name), "自分の腕", "手羽先"];
 
             allSpeciesToCopy.forEach(name => {
                 const data = measurements[name] || {};
@@ -1421,15 +1438,15 @@ input[type="submit"]:disabled:active {
                 const phal = parseFloat(data.phal);
 
                 if (!isNaN(fore) && !isNaN(meta) && !isNaN(phal) && fore > 0) {
-                    const ratioFore = "100.0";
-                    const ratioMeta = ((meta / fore) * 100).toFixed(1);
-                    const ratioPhal = ((phal / fore) * 100).toFixed(1);
-                    
-                    const fingerConcentration = (meta + phal > 0)
-                        ? ((phal / (meta + phal)) * 100).toFixed(1)
-                        : "0.0";
-
-                    csv += `${name},${ratioFore},${ratioMeta},${ratioPhal},${fingerConcentration}\n`;
+                    const width = parseFloat(data.width) || 0;
+                    const spread = parseFloat(data.spread) || 0;
+                    const sum = fore + meta + phal;
+                    const x1 = ((fore / sum) * 100).toFixed(1);
+                    const x2 = ((meta / sum) * 100).toFixed(1);
+                    const x3 = ((phal / sum) * 100).toFixed(1);
+                    const x4 = ((width / fore) * 100).toFixed(1); // 頑健性指数
+                    const x5 = (meta + phal > 0) ? ((spread / (meta + phal)) * 100).toFixed(1) : "0.0"; // スパン指数
+                    csv += `${name},${x1},${x2},${x3},${x4},${x5}\n`;
                 } else {
                     hasError = true;
                 }
@@ -1447,7 +1464,7 @@ input[type="submit"]:disabled:active {
             });
         };
         
-        const allSpeciesToCopy = [...SPECIES_LIST.map(s => s.name), "ヒト(班・クラス平均)", "手羽先(班・クラス平均)"];
+        const allSpeciesToCopy = [...SPECIES_LIST.map(s => s.name), "自分の腕", "手羽先"];
         const canCopyAll = allSpeciesToCopy.some(name => {
             const data = measurements[name] || {};
             const fore = parseFloat(data.fore);
@@ -1663,6 +1680,11 @@ input[type="submit"]:disabled:active {
                                             <div className="font-bold text-rose-600 mt-0.5 mb-0.5">結論：見た目の重なりは気にせず、「関節が曲がる支点（骨と骨の隙間のライン）」を基準にして測る</div>
                                             <div className="text-slate-600">鳥類の翼は、手根骨と中手骨がガッチリくっついて「手根中手骨（しゅこんちゅうしゅこつ）」という一つのブロックに進化しています。空を飛ぶときの衝撃に耐えるために関節が複雑に噛み合っているため、横から見ると色が重なって見えます。この場合、色がはみ出ている部分は無視し、「前腕の骨はここまでだな」「ここから先が手の甲だな」と判断できる関節の切れ目（曲がるポイント）を生徒自身の目で見極めさせ、そこから測るのが正解です。</div>
                                         </div>
+                                        <div className="border-t border-slate-200/60 pt-2">
+                                            <div className="font-bold text-slate-800">3. 太さや広がりを測るときの撮影アングル（面の正面化）</div>
+                                            <div className="font-bold text-rose-600 mt-0.5 mb-0.5">結論：骨の平らな面（翼や手のひらの広がり）が、画面の「真正面」を向くように3Dモデルを回転させてからスクショを撮る</div>
+                                            <div className="text-slate-600">コウモリの翼などを斜めや真横から撮ると、指の広がりが実際より極端に狭く写ってしまいます。骨が最も平たく、幅広く見える角度に揃えて撮影するのが、正確な比較を行うための鉄則です。</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1705,6 +1727,20 @@ input[type="submit"]:disabled:active {
                                                     title="指骨を計測（クリックで全画面拡大）"
                                                 >
                                                     C: 指骨 (2点)
+                                                </button>
+                                                <button 
+                                                    className={`btn ${measureMode === 'D' ? 'btn-primary' : 'btn-secondary'} px-2.5 py-1 text-[10px] font-bold`} 
+                                                    onClick={() => handleModeChange('D')}
+                                                    title="前腕の太さを計測（クリックで全画面拡大）"
+                                                >
+                                                    D: 前腕の太さ (2点)
+                                                </button>
+                                                <button 
+                                                    className={`btn ${measureMode === 'E' ? 'btn-primary' : 'btn-secondary'} px-2.5 py-1 text-[10px] font-bold`} 
+                                                    onClick={() => handleModeChange('E')}
+                                                    title="指の展開幅を計測（クリックで全画面拡大）"
+                                                >
+                                                    E: 指の展開幅 (2点)
                                                 </button>
                                                 <button 
                                                     className="btn btn-secondary px-2.5 py-1 text-[10px]" 
@@ -1804,6 +1840,9 @@ input[type="submit"]:disabled:active {
 
                             {/* Ⅲ. 計測ワークシート (単位: mm または px比率) */}
                             <div className="p-4 pt-1 flex-1 flex flex-col min-h-[350px]">
+                                <div className="dynamic-hint mb-3">
+                                    撮影アングルの重要ポイント：骨の太さ（D）や広がり（E）を正確に比べるため、必ず骨の平らな面が画面の「真正面」を向くようにアングルを揃えてから撮影してください。斜めから撮ると正しい数値が測れません。
+                                </div>
                                 <div className="flex justify-between items-end mb-2 border-b-2 border-slate-200 pb-1.5 shrink-0">
                                     <div className="flex items-center gap-2">
                                         <h2 className="text-[14px] font-bold text-slate-800">Ⅲ. 計測ワークシート (単位: mm または px比率)</h2>
@@ -1818,32 +1857,43 @@ input[type="submit"]:disabled:active {
                                             <thead className="bg-slate-100 text-slate-600 sticky top-0 z-10 border-b border-slate-300 shadow-sm">
                                                 <tr>
                                                     <th className="px-3 py-2 font-bold w-[25%] align-top text-[11px] leading-tight pt-3">生物名</th>
-                                                    <th className="px-1 py-2 font-bold align-top text-[11px] leading-tight">
-                                                        <div className="flex items-start gap-1">
+                                                    <th className="px-1 py-2 font-bold align-top text-[11px] leading-tight text-center">
+                                                        <div className="flex justify-center items-start gap-1">
                                                             <div className="w-14 flex flex-col items-center">
                                                                 <span className="whitespace-nowrap pt-1">A: 前腕</span>
-                                                                <span className="whitespace-nowrap text-[9px] font-normal text-slate-400 mt-0.5 scale-90 origin-center">黄緑/水色</span>
+                                                                <span className="whitespace-nowrap text-[9px] font-normal text-slate-400 mt-0.5">黄緑/水色</span>
                                                             </div>
                                                             <div className="w-12"></div>
                                                         </div>
                                                     </th>
-                                                    <th className="px-1 py-2 font-bold align-top text-[11px] leading-tight">
-                                                        <div className="flex items-start gap-1">
+                                                    <th className="px-1 py-2 font-bold align-top text-[11px] leading-tight text-center">
+                                                        <div className="flex justify-center items-start gap-1">
                                                             <div className="w-14 flex flex-col items-center">
                                                                 <span className="whitespace-nowrap pt-1">B: 手根・中手</span>
-                                                                <span className="whitespace-nowrap text-[9px] font-normal text-slate-400 mt-0.5 scale-90 origin-center">濃〜薄ピンク根元</span>
+                                                                <span className="whitespace-nowrap text-[9px] font-normal text-slate-400 mt-0.5">濃〜薄ピンク根元</span>
                                                             </div>
                                                             <div className="w-12"></div>
                                                         </div>
                                                     </th>
-                                                    <th className="px-1 py-2 font-bold align-top text-[11px] leading-tight">
-                                                        <div className="flex items-start gap-1">
+                                                    <th className="px-1 py-2 font-bold align-top text-[11px] leading-tight text-center">
+                                                        <div className="flex justify-center items-start gap-1">
                                                             <div className="w-14 flex flex-col items-center">
                                                                 <span className="whitespace-nowrap pt-1">C: 指骨</span>
-                                                                <span className="whitespace-nowrap text-[9px] font-normal text-slate-400 mt-0.5 scale-90 origin-center">薄ピンクの関節先</span>
+                                                                <span className="whitespace-nowrap text-[9px] font-normal text-slate-400 mt-0.5">薄ピンクの関節先</span>
                                                             </div>
                                                             <div className="w-12"></div>
-                                                            <div className="w-11 shrink-0"></div>
+                                                        </div>
+                                                    </th>
+                                                    <th className="px-1 py-2 font-bold align-top text-[11px] leading-tight text-center">
+                                                        <div className="flex flex-col items-center">
+                                                            <span className="whitespace-nowrap pt-1">D: 前腕幅</span>
+                                                            <span className="whitespace-nowrap text-[9px] font-normal text-slate-400 mt-0.5">前腕の中央付近</span>
+                                                        </div>
+                                                    </th>
+                                                    <th className="px-1 py-2 font-bold align-top text-[11px] leading-tight text-center">
+                                                        <div className="flex flex-col items-center">
+                                                            <span className="whitespace-nowrap pt-1">E: 展開幅</span>
+                                                            <span className="whitespace-nowrap text-[9px] font-normal text-slate-400 mt-0.5">指全体の両端</span>
                                                         </div>
                                                     </th>
                                                     <th className="px-2 py-2 font-bold text-center w-[90px] align-top text-[11px] leading-tight pt-3">データ転送</th>
@@ -1869,35 +1919,35 @@ input[type="submit"]:disabled:active {
                                                             {species.isOutgroup && <span className="text-[9px] bg-slate-200 text-slate-600 px-1 rounded border border-slate-300 whitespace-nowrap">外群</span>}
                                                         </td>
                                                         <td className="px-1 py-1.5">
-                                                            <div className="flex items-center gap-1">
+                                                            <div className="flex justify-center items-center gap-1">
                                                                 <input type="number" step="0.1" value={data.fore || ""} onChange={(e) => handleInput(species.name, 'fore', e.target.value)}
                                                                     className="w-14 bg-slate-50 border border-slate-300 text-slate-800 text-center text-[12px] rounded focus:ring-1 focus:ring-emerald-400 focus:outline-none py-0.5 transition-all" />
                                                                 <div className="w-12 text-[12px] text-emerald-600 font-mono-code font-bold leading-none">{ratioFore}</div>
                                                             </div>
                                                         </td>
                                                         <td className="px-1 py-1.5">
-                                                            <div className="flex items-center gap-1">
+                                                            <div className="flex justify-center items-center gap-1">
                                                                 <input type="number" step="0.1" value={data.meta || ""} onChange={(e) => handleInput(species.name, 'meta', e.target.value)}
                                                                     className="w-14 bg-slate-50 border border-slate-300 text-slate-800 text-center text-[12px] rounded focus:ring-1 focus:ring-emerald-400 focus:outline-none py-0.5 transition-all" />
                                                                 <div className="w-12 text-[12px] text-emerald-600 font-mono-code font-bold leading-none">{ratioMeta}</div>
                                                             </div>
                                                         </td>
                                                         <td className="px-1 py-1.5">
-                                                            <div className="flex items-center gap-1">
+                                                            <div className="flex justify-center items-center gap-1">
                                                                 <input type="number" step="0.1" value={data.phal || ""} onChange={(e) => handleInput(species.name, 'phal', e.target.value)}
                                                                     className="w-14 bg-slate-50 border border-slate-300 text-slate-800 text-center text-[12px] rounded focus:ring-1 focus:ring-emerald-400 focus:outline-none py-0.5 transition-all" />
                                                                 <div className="w-12 text-[12px] text-emerald-600 font-mono-code font-bold leading-none">{ratioPhal}</div>
-                                                                <div className="w-11 shrink-0 flex items-center">
-                                                                    {!isNaN(metaVal) && !isNaN(phalVal) && (metaVal + phalVal > 0) && (
-                                                                        <span 
-                                                                            className="text-[9px] font-mono-code text-indigo-600 bg-indigo-50 border border-indigo-200 rounded px-1 whitespace-nowrap scale-90 origin-left"
-                                                                            title="手先(B+C)に対する指骨(C)の比率"
-                                                                        >
-                                                                            指:{((phalVal / (metaVal + phalVal)) * 100).toFixed(0)}%
-                                                                        </span>
-                                                                    )}
-                                                                </div>
                                                             </div>
+                                                        </td>
+                                                        <td className="px-1 py-1.5">
+                                                            <input type="number" step="0.1" value={data.width || ""} onChange={(e) => handleInput(species.name, 'width', e.target.value)}
+                                                                placeholder="太さ"
+                                                                className="w-14 bg-slate-50 border border-slate-300 text-slate-800 text-center text-[12px] rounded focus:ring-1 focus:ring-emerald-400 focus:outline-none py-0.5 transition-all" />
+                                                        </td>
+                                                        <td className="px-1 py-1.5">
+                                                            <input type="number" step="0.1" value={data.spread || ""} onChange={(e) => handleInput(species.name, 'spread', e.target.value)}
+                                                                placeholder="展開幅"
+                                                                className="w-14 bg-slate-50 border border-slate-300 text-slate-800 text-center text-[12px] rounded focus:ring-1 focus:ring-emerald-400 focus:outline-none py-0.5 transition-all" />
                                                         </td>
                                                         <td className="px-2 py-1.5 text-center">
                                                             <button 
@@ -1916,7 +1966,7 @@ input[type="submit"]:disabled:active {
                                                 })}
                                                 
                                                 {(() => {
-                                                    const avgName = "ヒト(班・クラス平均)";
+                                                    const avgName = "自分の腕";
                                                     const avgData = measurements[avgName] || {};
                                                     const aForeVal = parseFloat(avgData.fore);
                                                     const aHasFore = !isNaN(aForeVal) && aForeVal > 0;
@@ -1931,41 +1981,40 @@ input[type="submit"]:disabled:active {
                                                 <tr className="bg-amber-50/80 border-t-2 border-amber-300">
                                                     <td className="px-3 py-2.5 text-[11px] font-bold text-amber-900 flex flex-col justify-center gap-0.5">
                                                         <div className="flex items-center gap-1.5">
-                                                            <span>ヒト</span>
+                                                            <span>自分の腕</span>
                                                         </div>
-                                                        <span className="text-[9px] font-normal text-amber-700 leading-none block">(班・クラス平均)</span>
                                                     </td>
                                                     <td className="px-1 py-1.5 text-center">
-                                                        <div className="flex items-center gap-1">
+                                                        <div className="flex justify-center items-center gap-1">
                                                             <input type="number" step="0.1" value={avgData.fore || ""} onChange={(e) => handleInput(avgName, 'fore', e.target.value)}
                                                                 className="w-14 bg-white border border-amber-400 shadow-inner text-amber-900 text-center text-[12px] font-bold rounded focus:ring-1 focus:ring-amber-500 focus:outline-none py-0.5" />
                                                             <div className="w-12 text-[12px] text-amber-600 font-mono-code font-bold leading-none">{aRatioFore}</div>
                                                         </div>
                                                     </td>
                                                     <td className="px-1 py-1.5 text-center">
-                                                        <div className="flex items-center gap-1">
+                                                        <div className="flex justify-center items-center gap-1">
                                                             <input type="number" step="0.1" value={avgData.meta || ""} onChange={(e) => handleInput(avgName, 'meta', e.target.value)}
                                                                 className="w-14 bg-white border border-amber-400 shadow-inner text-amber-900 text-center text-[12px] font-bold rounded focus:ring-1 focus:ring-amber-500 focus:outline-none py-0.5" />
                                                             <div className="w-12 text-[12px] text-amber-600 font-mono-code font-bold leading-none">{aRatioMeta}</div>
                                                         </div>
                                                     </td>
                                                     <td className="px-1 py-1.5 text-center">
-                                                        <div className="flex items-center gap-1">
+                                                        <div className="flex justify-center items-center gap-1">
                                                             <input type="number" step="0.1" value={avgData.phal || ""} onChange={(e) => handleInput(avgName, 'phal', e.target.value)}
                                                                 className="w-14 bg-white border border-amber-400 shadow-inner text-amber-900 text-center text-[12px] font-bold rounded focus:ring-1 focus:ring-amber-500 focus:outline-none py-0.5" />
                                                             <div className="w-12 text-[12px] text-amber-600 font-mono-code font-bold leading-none">{aRatioPhal}</div>
-                                                            <div className="w-11 shrink-0 flex items-center">
-                                                                {!isNaN(aMetaVal) && !isNaN(aPhalVal) && (aMetaVal + aPhalVal > 0) && (
-                                                                    <span 
-                                                                        className="text-[9px] font-mono-code text-indigo-600 bg-indigo-50 border border-indigo-200 rounded px-1 whitespace-nowrap scale-90 origin-left"
-                                                                        title="手先(B+C)に対する指骨(C)の比率"
-                                                                    >
-                                                                        指:{((aPhalVal / (aMetaVal + aPhalVal)) * 100).toFixed(0)}%
-                                                                    </span>
-                                                                )}
-                                                            </div>
                                                         </div>
                                                     </td>
+                                                            <td className="px-1 py-1.5 text-center">
+                                                                <input type="number" step="0.1" value={avgData.width || ""} onChange={(e) => handleInput(avgName, 'width', e.target.value)}
+                                                                    placeholder="太さ"
+                                                                    className="w-14 bg-white border border-amber-400 shadow-inner text-amber-900 text-center text-[12px] font-bold rounded focus:ring-1 focus:ring-amber-500 focus:outline-none py-0.5" />
+                                                            </td>
+                                                            <td className="px-1 py-1.5 text-center">
+                                                                <input type="number" step="0.1" value={avgData.spread || ""} onChange={(e) => handleInput(avgName, 'spread', e.target.value)}
+                                                                    placeholder="展開幅"
+                                                                    className="w-14 bg-white border border-amber-400 shadow-inner text-amber-900 text-center text-[12px] font-bold rounded focus:ring-1 focus:ring-amber-500 focus:outline-none py-0.5" />
+                                                            </td>
                                                     <td className="px-2 py-1.5 text-center">
                                                         <button 
                                                             onClick={() => handleCopyIndividualCSV(avgName)}
@@ -1983,7 +2032,7 @@ input[type="submit"]:disabled:active {
                                             })()}
                                             
                                             {(() => {
-                                                const chickName = "手羽先(班・クラス平均)";
+                                                const chickName = "手羽先";
                                                 const chickData = measurements[chickName] || {};
                                                 const cForeVal = parseFloat(chickData.fore);
                                                 const cHasFore = !isNaN(cForeVal) && cForeVal > 0;
@@ -2000,39 +2049,38 @@ input[type="submit"]:disabled:active {
                                                         <div className="flex items-center gap-1.5">
                                                             <span>手羽先</span>
                                                         </div>
-                                                        <span className="text-[9px] font-normal text-orange-700 leading-none block">(班・クラス平均)</span>
                                                     </td>
                                                     <td className="px-1 py-1.5 text-center">
-                                                        <div className="flex items-center gap-1">
+                                                        <div className="flex justify-center items-center gap-1">
                                                             <input type="number" step="0.1" value={chickData.fore || ""} onChange={(e) => handleInput(chickName, 'fore', e.target.value)}
                                                                 className="w-14 bg-white border border-orange-300 shadow-inner text-orange-900 text-center text-[12px] font-bold rounded focus:ring-1 focus:ring-orange-400 focus:outline-none py-0.5" />
                                                             <div className="w-12 text-[12px] text-orange-600 font-mono-code font-bold leading-none">{cRatioFore}</div>
                                                         </div>
                                                     </td>
                                                     <td className="px-1 py-1.5 text-center">
-                                                        <div className="flex items-center gap-1">
+                                                        <div className="flex justify-center items-center gap-1">
                                                             <input type="number" step="0.1" value={chickData.meta || ""} onChange={(e) => handleInput(chickName, 'meta', e.target.value)}
                                                                 className="w-14 bg-white border border-orange-300 shadow-inner text-orange-900 text-center text-[12px] font-bold rounded focus:ring-1 focus:ring-orange-400 focus:outline-none py-0.5" />
                                                             <div className="w-12 text-[12px] text-orange-600 font-mono-code font-bold leading-none">{cRatioMeta}</div>
                                                         </div>
                                                     </td>
                                                     <td className="px-1 py-1.5 text-center">
-                                                        <div className="flex items-center gap-1">
+                                                        <div className="flex justify-center items-center gap-1">
                                                             <input type="number" step="0.1" value={chickData.phal || ""} onChange={(e) => handleInput(chickName, 'phal', e.target.value)}
                                                                 className="w-14 bg-white border border-orange-300 shadow-inner text-orange-900 text-center text-[12px] font-bold rounded focus:ring-1 focus:ring-orange-400 focus:outline-none py-0.5" />
                                                             <div className="w-12 text-[12px] text-orange-600 font-mono-code font-bold leading-none">{cRatioPhal}</div>
-                                                            <div className="w-11 shrink-0 flex items-center">
-                                                                {!isNaN(cMetaVal) && !isNaN(cPhalVal) && (cMetaVal + cPhalVal > 0) && (
-                                                                    <span 
-                                                                        className="text-[9px] font-mono-code text-indigo-600 bg-indigo-50 border border-indigo-200 rounded px-1 whitespace-nowrap scale-90 origin-left"
-                                                                        title="手先(B+C)に対する指骨(C)の比率"
-                                                                    >
-                                                                        指:{((cPhalVal / (cMetaVal + cPhalVal)) * 100).toFixed(0)}%
-                                                                    </span>
-                                                                )}
-                                                            </div>
                                                         </div>
                                                     </td>
+                                                            <td className="px-1 py-1.5 text-center">
+                                                                <input type="number" step="0.1" value={chickData.width || ""} onChange={(e) => handleInput(chickName, 'width', e.target.value)}
+                                                                    placeholder="太さ"
+                                                                    className="w-14 bg-white border border-orange-400 shadow-inner text-orange-900 text-center text-[12px] font-bold rounded focus:ring-1 focus:ring-orange-500 focus:outline-none py-0.5" />
+                                                            </td>
+                                                            <td className="px-1 py-1.5 text-center">
+                                                                <input type="number" step="0.1" value={chickData.spread || ""} onChange={(e) => handleInput(chickName, 'spread', e.target.value)}
+                                                                    placeholder="展開幅"
+                                                                    className="w-14 bg-white border border-orange-400 shadow-inner text-orange-900 text-center text-[12px] font-bold rounded focus:ring-1 focus:ring-orange-500 focus:outline-none py-0.5" />
+                                                            </td>
                                                     <td className="px-2 py-1.5 text-center">
                                                         <button 
                                                             onClick={() => handleCopyIndividualCSV(chickName)}
