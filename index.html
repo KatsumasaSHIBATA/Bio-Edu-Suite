@@ -2949,34 +2949,47 @@ function closeFeedbackForm() {
             if (typeof closeAccountSettings === 'function') closeAccountSettings();
         };
 
-        window.handleRegisterCurrentPreset = function() {
-            const tEl = document.getElementById('newMasterTaskCodeInput');
+        window.handleRegisterCurrentPreset = async function() {
+            const tEl = document.getElementById('newMasterTaskCodeInput') || document.getElementById('loggedInMasterTaskCodeInput');
             const t = tEl ? tEl.value.trim() : '';
             if (!t) {
                 if (typeof showToast === 'function') showToast('発行する課題コードを入力してください', 'warning');
                 return;
             }
             
-            const targetSamples = (Array.isArray(samples) && samples.length > 0) ? samples : getDefaultFinchSamples();
-            
-            const sessionSnap = {};
-            for (let i = 0; i < sessionStorage.length; i++) {
-                const k = sessionStorage.key(i);
-                if (k) {
-                    const sanitizedKey = k.replace(/\./g, '__dot__');
-                    sessionSnap[sanitizedKey] = sessionStorage.getItem(k);
+            const btn = document.querySelector('#teacherPresetSection button.btn-primary');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerText = '登録中...';
+            }
+
+            try {
+                const targetSamples = (Array.isArray(samples) && samples.length > 0) ? samples : (typeof getDefaultFinchSamples === 'function' ? getDefaultFinchSamples() : []);
+                const sessionSnap = {};
+                for (let i = 0; i < sessionStorage.length; i++) {
+                    const k = sessionStorage.key(i);
+                    if (k) sessionSnap[k] = sessionStorage.getItem(k);
+                }
+                const sanitizedWorkspaceKey = (typeof SESSION_WORKSPACE_KEY !== 'undefined' ? SESSION_WORKSPACE_KEY : 'bio_edu_workspace_dashboard_samples');
+                sessionSnap[sanitizedWorkspaceKey] = JSON.stringify(targetSamples);
+
+                const payload = {
+                    samples: targetSamples,
+                    sessionData: sessionSnap,
+                    appName: document.title,
+                    registeredAt: Date.now()
+                };
+                await registerMasterPreset(t, payload);
+                if (tEl) tEl.value = '';
+                if (typeof closeAccountSettings === 'function') closeAccountSettings();
+            } catch (err) {
+                console.error('課題発行エラー:', err);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerText = '登録・発行';
                 }
             }
-            const sanitizedWorkspaceKey = SESSION_WORKSPACE_KEY.replace(/\./g, '__dot__');
-            sessionSnap[sanitizedWorkspaceKey] = JSON.stringify(targetSamples);
-
-            const payload = {
-                samples: targetSamples,
-                sessionData: sessionSnap,
-                appName: document.title,
-                registeredAt: Date.now()
-            };
-            registerMasterPreset(t, payload);
         };
     </script>
 
