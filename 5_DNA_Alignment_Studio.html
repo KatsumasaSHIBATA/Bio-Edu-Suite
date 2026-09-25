@@ -2179,6 +2179,9 @@ function closeFeedbackForm() {
                 if(selectedCol < seq.data.length) seq.data[selectedCol] = key; else seq.data.push(key);
                 selectedCol++; prevent = true; requiresSave = true;
                 updateMutationsAndRender();
+                if (selectedRow >= 0 && selectedCol < seq.data.length) {
+                    selectCell(selectedRow, selectedCol);
+                }
             }
         }
 
@@ -2630,8 +2633,41 @@ function closeFeedbackForm() {
         });
     }
 
+    function getLocalBasePos(seqObj, alignCol) {
+        if (!seqObj || !seqObj.data || alignCol < 0 || alignCol >= seqObj.data.length) return null;
+        if (seqObj.data[alignCol] === '-') return null;
+        let count = 0;
+        for (let i = 0; i <= alignCol; i++) {
+            if (seqObj.data[i] !== '-') count++;
+        }
+        return count;
+    }
+
     function selectCell(rIdx, bIdx) {
         selectedRow = rIdx; selectedCol = bIdx;
+        let seq = sequences[rIdx];
+        if (seq && seq.isConsensus) {
+            let targetSeqs = sequences.filter(s => s.isSelected !== false && !s.isFPrimerFasta && !s.isRPrimerFasta && !s.isConsensus);
+            let basesInCol = [];
+            let posDetails = [];
+            targetSeqs.forEach(s => {
+                let base = s.data[bIdx];
+                let localPos = getLocalBasePos(s, bIdx);
+                if (base && base !== '-') {
+                    basesInCol.push(base);
+                    posDetails.push(`${s.name}: [${base}] (${localPos}bp目)`);
+                }
+            });
+            let uniqueBases = [...new Set(basesInCol)];
+            if (uniqueBases.length > 1) {
+                let recKey = uniqueBases.join('/');
+                if (uniqueBases.includes('A') && uniqueBases.includes('G')) recKey += " または [R]";
+                else if (uniqueBases.includes('C') && uniqueBases.includes('T')) recKey += " または [Y]";
+                document.getElementById('statusText').innerText = `ステータス: 衝突検出 (Col ${bIdx + 1}) → ${posDetails.join(' vs ')} | キー入力で確定 [${recKey}]`;
+            } else {
+                document.getElementById('statusText').innerText = `ステータス: Consensus Col ${bIdx + 1} を選択中。キーボードで塩基を直接上書きできます。`;
+            }
+        }
         document.getElementById('posText').innerText = `Row: ${rIdx + 1} | Pos: ${bIdx + 1}`;
         updateSelectionUI();
     }
@@ -2655,30 +2691,6 @@ function closeFeedbackForm() {
         if(e.target.classList.contains('base')) {
             let row = parseInt(e.target.parentElement.dataset.row);
             let col = parseInt(e.target.dataset.col);
-            let seq = sequences[row];
-            if (seq && seq.isConsensus && !e.shiftKey) {
-                let targetSeqs = sequences.filter(s => s.isSelected !== false && !s.isFPrimerFasta && !s.isRPrimerFasta && !s.isConsensus);
-                let basesInCol = new Set();
-                targetSeqs.forEach(s => { if (s.data[col] && s.data[col] !== '-') basesInCol.add(s.data[col]); });
-                let candidates = Array.from(basesInCol);
-                if(candidates.includes('A') && candidates.includes('G')) candidates.push('R');
-                if(candidates.includes('C') && candidates.includes('T')) candidates.push('Y');
-                if(candidates.includes('A') && candidates.includes('C')) candidates.push('M');
-                if(candidates.includes('G') && candidates.includes('T')) candidates.push('K');
-                if(candidates.includes('C') && candidates.includes('G')) candidates.push('S');
-                if(candidates.includes('A') && candidates.includes('T')) candidates.push('W');
-                candidates.push('N', '-');
-                candidates = [...new Set(candidates)];
-                if (candidates.length > 1) {
-                    let currentBase = seq.data[col];
-                    let idx = candidates.indexOf(currentBase);
-                    let nextBase = candidates[(idx + 1) % candidates.length];
-                    seq.data[col] = nextBase;
-                    e.target.innerText = nextBase;
-                    triggerHapticFeedback();
-                    saveState();
-                }
-            }
             if (e.shiftKey && dragMode === 'individual' && dragStartRow === row && dragStartCol !== -1) {
                 dragEndCol = col;
                 isDragging = true;
