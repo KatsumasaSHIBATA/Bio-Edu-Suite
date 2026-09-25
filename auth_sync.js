@@ -165,67 +165,58 @@ export function leaveRoom() {
   }
 }
 
-// 教員用：マスター課題データの登録・発行 (1MB保護・巨大データ全自動間引き・3.5秒タイムアウト安全弁)
+// 教員用：マスター課題データの登録・発行 (軽量化・ルーム二重保存・完全堅牢化)
 export async function registerMasterPreset(taskCode, payload) {
   if (!taskCode || !payload) return;
   const cleanCode = taskCode.toUpperCase().trim();
   try {
-    const docRef = doc(db, "master_tasks", cleanCode);
     const sanitizedPayload = JSON.parse(JSON.stringify(payload));
     
-    // ① サンプル内の巨大Base64画像を安全に間引き（教材としての配列・テキストは100%保持）
+    // サンプル内の巨大画像を適正サイズ（150,000文字 ≒ 110KB以下）は保持し、それ以上の超巨大画像のみ間引く
     if (sanitizedPayload.samples && Array.isArray(sanitizedPayload.samples)) {
       sanitizedPayload.samples = sanitizedPayload.samples.map(item => {
         const copy = { ...item };
-        if (copy.image_data && typeof copy.image_data === 'string' && copy.image_data.length > 50000) {
+        if (copy.image_data && typeof copy.image_data === 'string' && copy.image_data.length > 150000) {
           copy.image_data = "";
         }
         return copy;
       });
     }
 
-    // ② sessionData内のあらゆるキーから、巨大データ（スクショ画像等）を完全パージして1MB上限を死守
+    // sessionData内の不要な巨大データをパージして軽量化
     if (sanitizedPayload.sessionData && typeof sanitizedPayload.sessionData === 'object') {
       const cleanSessionData = {};
       Object.keys(sanitizedPayload.sessionData).forEach((k) => {
         let val = sanitizedPayload.sessionData[k];
-        if (typeof val === 'string') {
-          if (val.length > 50000 && (val.startsWith('data:image') || val.startsWith('base64'))) {
-            val = ""; // 巨大な画像単体の場合は空文字にして維持（returnで捨てない）
-          } else if (val.includes('data:image')) {
-            try {
-              const obj = JSON.parse(val);
-              if (Array.isArray(obj)) {
-                val = JSON.stringify(obj.map(o => {
-                  if (o && o.image_data && o.image_data.length > 50000) o.image_data = "";
-                  return o;
-                }));
-              } else if (obj && typeof obj === 'object') {
-                if (obj.uploadedImage && obj.uploadedImage.length > 50000) obj.uploadedImage = null;
-                val = JSON.stringify(obj);
-              }
-            } catch(e) {}
-          }
+        if (typeof val === 'string' && val.length > 150000) {
+          val = "";
         }
-        cleanSessionData[k] = val; // 必ずキーを残してセットする
+        cleanSessionData[k] = val;
       });
       sanitizedPayload.sessionData = cleanSessionData;
     }
 
     const serializedPayload = JSON.stringify(sanitizedPayload);
-
-    // ③ Firestore setDoc の実行 ＋ 最大3.5秒のタイムアウト安全弁
-    // オフラインキャッシュ有効時、バックエンドAck待ちによるUIフリーズを完全防止
-    const setPromise = setDoc(docRef, {
+    const taskData = {
       taskCode: cleanCode,
       payload: serializedPayload,
       creatorRoom: currentRoomCode || "",
       creatorId: currentParticipantId || "",
       createdAt: Date.now()
-    });
+    };
 
-    const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 3500));
-    await Promise.race([setPromise, timeoutPromise]);
+    // ① ルートコレクション master_tasks への書き込み
+    const globalDocRef = doc(db, "master_tasks", cleanCode);
+    const p1 = setDoc(globalDocRef, taskData, { merge: true });
+
+    // ② 書き込み実績が確実に保証されている rooms/{currentRoomCode}/tasks にも二重保存（フェイルセーフ）
+    let p2 = Promise.resolve();
+    if (currentRoomCode) {
+      const roomTaskRef = doc(db, `rooms/${currentRoomCode}/tasks`, cleanCode);
+      p2 = setDoc(roomTaskRef, taskData, { merge: true });
+    }
+
+    await Promise.all([p1, p2]);
 
     if (typeof showToast === 'function') {
       showToast(`課題「${cleanCode}」をクラウドに登録・発行しました`, "success");
@@ -239,14 +230,23 @@ export async function registerMasterPreset(taskCode, payload) {
   }
 }
 
-// 生徒用：教員マスター課題データの読込・展開 (文字列・オブジェクト両対応)
+// 生徒用：教員マスター課題データの読込・展開 (グローバル＆ルーム内ハイブリッド探索)
 export async function importMasterPreset(taskCode) {
   if (!taskCode) return;
   const cleanCode = taskCode.toUpperCase().trim();
   try {
     if (typeof showToast === 'function') showToast(`課題「${cleanCode}」を取得中...`, "info");
-    const taskRef = doc(db, "master_tasks", cleanCode);
-    const snap = await getDoc(taskRef);
+    
+    // 1. まず master_tasks から探索
+    const globalTaskRef = doc(db, "master_tasks", cleanCode);
+    let snap = await getDoc(globalTaskRef);
+
+    // 2. 見つからない場合は現在のルーム内の tasks からフェイルセーフ探索
+    if (!snap.exists() && currentRoomCode) {
+      const roomTaskRef = doc(db, `rooms/${currentRoomCode}/tasks`, cleanCode);
+      snap = await getDoc(roomTaskRef);
+    }
+
     if (snap.exists()) {
       const data = snap.data();
       let payload = data.payload;
@@ -417,6 +417,7 @@ async function syncFromCloud() {
   }
 }
 
+// ワークスペース自動同期 (画像許容枠を150,000文字へ拡大)
 export async function saveCurrentWorkspace() {
   if (!isConnected || !auth.currentUser) return;
   if (window.isResetting === true) return;
@@ -427,16 +428,14 @@ export async function saveCurrentWorkspace() {
       const k = sessionStorage.key(i);
       if (k && (k.startsWith('bio_edu_ws_') || k.startsWith('bio_edu_draft_') || k.startsWith('bio_edu_autosave_') || k.startsWith('bio_edu_workspace_'))) {
         let val = sessionStorage.getItem(k);
-        // sessionStorage 本体は破壊せず、Firestore送信用の一時オブジェクトでのみBase64軽量化
         if (k.includes('dashboard_samples') && val) {
           try {
             const arr = JSON.parse(val);
             if (Array.isArray(arr)) {
               const sanitized = arr.map(item => {
                 const copy = { ...item };
-                // 50KB（Base64長で約65,000文字）を超える極端に巨大な画像のみFirestoreの1MB上限保護のため除外
-                // 最適化済みの軽量画像（長辺400px/品質0.6、通常10〜20KB）は他端末への完全同期のためそのまま送信
-                if (copy.image_data && copy.image_data.startsWith('data:image') && copy.image_data.length > 65000) {
+                // 150,000文字（約110KB）を超える異常な巨大画像のみ除外し、通常の軽量画像は確実に通す
+                if (copy.image_data && copy.image_data.startsWith('data:image') && copy.image_data.length > 150000) {
                   copy.image_data = "";
                 }
                 return copy;
@@ -450,12 +449,10 @@ export async function saveCurrentWorkspace() {
     }
     if (Object.keys(snap).length === 0) return;
 
-    // 🌟 Firestoreのドット制約・ネスト制約を完全無効化するため、JSON文字列として格納
     const serializedPayload = JSON.stringify(snap);
     const nowTime = Date.now();
     lastSentTimestamp = nowTime;
 
-    // 親ドキュメント（rooms/{roomCode}）を実体化して教員ステートをブロードキャスト
     const roomRef = doc(db, "rooms", currentRoomCode);
     const roomPayload = { roomCode: currentRoomCode, lastActive: nowTime };
     if (isTeacher) {

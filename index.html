@@ -2018,7 +2018,7 @@ function closeFeedbackForm() {
         img.onload = function() {
           let width = img.width;
           let height = img.height;
-          const max_side = 400; // 1200から400へ変更（容量パンク防止）
+          const max_side = 320; // 確実に軽量化
           if (width > height) {
             if (width > max_side) { height = Math.round(height * (max_side / width)); width = max_side; }
           } else {
@@ -2030,7 +2030,7 @@ function closeFeedbackForm() {
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
           
-          const base64 = canvas.toDataURL('image/jpeg', 0.6); // 品質を0.6に最適化
+          const base64 = canvas.toDataURL('image/jpeg', 0.5); // 品質0.5で20〜30KBに完全抑制
           document.getElementById('imageDataBase64').value = base64;
           document.getElementById('imageDropText').innerText = file.name + " (最適化済)";
           
