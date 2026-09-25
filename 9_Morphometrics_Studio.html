@@ -1992,13 +1992,23 @@ input[type="submit"]:disabled:active {
         const n = samples.length;
         if (n < 2) return null;
 
-        let clusters = samples.map((s, idx) => ({
-            id: idx,
-            name: s.name || s.id || `Sample_${idx + 1}`,
-            size: 1,
-            height: 0,
-            newick: s.name || s.id || `Sample_${idx + 1}`
-        }));
+        let clusters = samples.map((s, idx) => {
+            let displayName = s.name || s.id || `Sample_${idx + 1}`;
+            // ダッシュボードから引き継いだ元データがあれば ID_Name に合成する
+            if (window.transferredSamples) {
+                let orig = window.transferredSamples.find(ts => ts.id === s.name || ts.name === s.name);
+                if (orig && orig.id && orig.name && orig.id !== orig.name) {
+                    displayName = `${orig.id}_${orig.name}`;
+                }
+            }
+            return {
+                id: idx,
+                name: displayName,
+                size: 1,
+                height: 0,
+                newick: displayName
+            };
+        });
 
         let dist = Array.from({ length: n }, () => new Float64Array(n));
         for (let i = 0; i < n; i++) {
