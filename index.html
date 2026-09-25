@@ -1916,6 +1916,10 @@ function closeFeedbackForm() {
     }
 
     function saveToStorage() {
+      const nowTimeBES = Date.now().toString();
+      localStorage.setItem('bio_edu_last_user_edit', nowTimeBES);
+      sessionStorage.setItem('bio_edu_last_user_edit', nowTimeBES);
+
       const serialized = JSON.stringify(samples);
       try {
         localStorage.setItem(STORAGE_KEY, serialized);
@@ -3006,6 +3010,10 @@ function closeFeedbackForm() {
 
         function serializeUIState() {
             try {
+      const nowTimeBES = Date.now().toString();
+      localStorage.setItem('bio_edu_last_user_edit', nowTimeBES);
+      sessionStorage.setItem('bio_edu_last_user_edit', nowTimeBES);
+
                 const inputs = document.querySelectorAll('input, textarea, select');
                 const draft = {};
                 inputs.forEach(el => {

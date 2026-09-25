@@ -359,6 +359,9 @@ function startRoomListener() {
           }
         });
         if (changed) {
+          const remoteTime = data.teacherUpdatedAt || Date.now();
+          localStorage.setItem('bio_edu_last_user_edit', remoteTime.toString());
+          sessionStorage.setItem('bio_edu_last_user_edit', remoteTime.toString());
           window.dispatchEvent(new CustomEvent('bio_edu_cloud_synced', { detail: mergedLiveState }));
         }
       }
@@ -393,12 +396,19 @@ async function syncFromCloud() {
     }
 
     // LWW (Last-Write-Wins) 判定: クラウドがローカルより新しい場合（またはローカル未編集/初回入室時）
-    if (targetWorkspace && typeof targetWorkspace === 'object' && (remoteUpdatedAt >= localEditTime || localEditTime === 0)) {
+    const isJustJoined = sessionStorage.getItem('bio_edu_just_joined') === 'true';
+
+    // LWW (Last-Write-Wins) 判定: 初回入室時、またはクラウドがローカルより新しい場合
+    if (targetWorkspace && typeof targetWorkspace === 'object' && (isJustJoined || remoteUpdatedAt > localEditTime || localEditTime === 0)) {
       targetWorkspace = mergeLocalImageData(targetWorkspace);
       Object.keys(targetWorkspace).forEach((k) => {
         const restoredKey = k.replace(/__dot__/g, '.');
         sessionStorage.setItem(restoredKey, targetWorkspace[k]);
       });
+      if (isJustJoined) sessionStorage.removeItem('bio_edu_just_joined');
+      localStorage.setItem('bio_edu_last_user_edit', remoteUpdatedAt.toString());
+      sessionStorage.setItem('bio_edu_last_user_edit', remoteUpdatedAt.toString());
+      
       window.dispatchEvent(new CustomEvent('bio_edu_cloud_synced', { detail: targetWorkspace }));
       if (typeof showToast === 'function') showToast("最新の作業状態を同期しました", "info");
     } else if (localEditTime > remoteUpdatedAt && localEditTime > 0) {
@@ -410,6 +420,10 @@ async function syncFromCloud() {
         const restoredKey = k.replace(/__dot__/g, '.');
         sessionStorage.setItem(restoredKey, targetWorkspace[k]);
       });
+      if (isJustJoined) sessionStorage.removeItem('bio_edu_just_joined');
+      localStorage.setItem('bio_edu_last_user_edit', remoteUpdatedAt.toString());
+      sessionStorage.setItem('bio_edu_last_user_edit', remoteUpdatedAt.toString());
+      
       window.dispatchEvent(new CustomEvent('bio_edu_cloud_synced', { detail: targetWorkspace }));
     } else {
       await saveCurrentWorkspace();
@@ -453,6 +467,8 @@ export async function saveCurrentWorkspace() {
 
     const nowTime = Date.now();
     lastSentTimestamp = nowTime;
+    localStorage.setItem('bio_edu_last_user_edit', nowTime.toString());
+    sessionStorage.setItem('bio_edu_last_user_edit', nowTime.toString());
 
     const roomRef = doc(db, "rooms", currentRoomCode);
     const roomPayload = { roomCode: currentRoomCode, lastActive: nowTime };
