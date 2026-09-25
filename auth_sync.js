@@ -390,8 +390,10 @@ export async function saveCurrentWorkspace() {
             if (Array.isArray(arr)) {
               const sanitized = arr.map(item => {
                 const copy = { ...item };
-                if (copy.image_data && copy.image_data.startsWith('data:image')) {
-                  copy.image_data = ""; // 送信用オブジェクト内でのみ除外
+                // 50KB（Base64長で約65,000文字）を超える極端に巨大な画像のみFirestoreの1MB上限保護のため除外
+                // 最適化済みの軽量画像（長辺400px/品質0.6、通常10〜20KB）は他端末への完全同期のためそのまま送信
+                if (copy.image_data && copy.image_data.startsWith('data:image') && copy.image_data.length > 65000) {
+                  copy.image_data = "";
                 }
                 return copy;
               });

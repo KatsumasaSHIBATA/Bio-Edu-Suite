@@ -2614,6 +2614,7 @@ function closeFeedbackForm() {
                     }
                 });
                 sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+                window.dispatchEvent(new CustomEvent('bio_edu_request_save'));
             } catch (e) {
                 console.warn('UIステートのシリアライズに失敗しました:', e);
             }
