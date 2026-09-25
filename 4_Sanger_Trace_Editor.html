@@ -1080,7 +1080,8 @@ input[type="submit"]:disabled:active {
                             [ <span id="queueIndexText">1</span> / <span id="queueTotalText">1</span> ]
                         </div>
                         <button class="btn btn-secondary" id="btnNextQueue" onclick="nextQueue()" style="padding: 6px 10px;">▶</button>
-                        <span id="queueNameText" style="font-size: 13px; color: var(--text-muted); font-weight: normal; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block;"></span>
+                        <span id="queueDirectionBadge" style="margin-right: 6px; flex-shrink: 0; display: none;"></span>
+                        <span id="queueNameText" style="font-size: 13px; color: var(--text-muted); font-weight: normal; max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block;"></span>
                         <button class="action-icon icon-delete" id="btnRemoveQueue" onclick="removeCurrentQueueItem(); triggerHapticFeedback();" data-tooltip="現在表示している波形データを削除します">
                             <svg class="svg-danger" style="width: 14px; height: 14px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                         </button>
@@ -1309,7 +1310,35 @@ input[type="submit"]:disabled:active {
             container.style.display = 'flex';
             document.getElementById('queueIndexText').innerText = currentQueueIndex + 1;
             document.getElementById('queueTotalText').innerText = ab1Queue.length;
-            document.getElementById('queueNameText').innerText = ab1Queue[currentQueueIndex].fileName || ab1Queue[currentQueueIndex].name;
+            const fileName = ab1Queue[currentQueueIndex].fileName || ab1Queue[currentQueueIndex].name;
+            document.getElementById('queueNameText').innerText = fileName;
+
+            let isRev = false;
+            let isFwd = false;
+            
+            // 拡張子直前のサフィックスで優先判定
+            if (/[_\-\s](rev|reverse|r|r1|1492r)(\.[a-zA-Z0-9]+)?$/i.test(fileName)) {
+                isRev = true;
+            } else if (/[_\-\s](fwd|forward|f|l|1f|27f)(\.[a-zA-Z0-9]+)?$/i.test(fileName)) {
+                isFwd = true;
+            } else {
+                // 末尾にない場合はファイル名全体から特徴的なキーワードを探す
+                const lowerName = fileName.toLowerCase();
+                if (lowerName.includes('_rev') || lowerName.includes('-rev')) isRev = true;
+                else if (lowerName.includes('_fwd') || lowerName.includes('-fwd') || lowerName.includes('_forward')) isFwd = true;
+            }
+
+            const badgeEl = document.getElementById('queueDirectionBadge');
+            if (isRev) {
+                badgeEl.innerHTML = `<span style="display:inline-flex; align-items:center; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; background: #f4ecf7; color: #8e44ad; border: 1px solid #9b59b6;">Rev</span>`;
+                badgeEl.style.display = "inline-block";
+            } else if (isFwd) {
+                badgeEl.innerHTML = `<span style="display:inline-flex; align-items:center; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; background: #eaf2f8; color: #2980b9; border: 1px solid #3498db;">Fwd</span>`;
+                badgeEl.style.display = "inline-block";
+            } else {
+                badgeEl.innerHTML = "";
+                badgeEl.style.display = "none";
+            }
             
             document.getElementById('btnPrevQueue').disabled = (currentQueueIndex === 0);
             document.getElementById('btnNextQueue').disabled = (currentQueueIndex === ab1Queue.length - 1);
