@@ -191,15 +191,14 @@ export async function registerMasterPreset(taskCode, payload) {
         if (typeof val === 'string' && val.length > 150000) {
           val = "";
         }
-        cleanSessionData[k] = val;
+        cleanSessionData[k.replace(/\./g, '__dot__')] = val;
       });
       sanitizedPayload.sessionData = cleanSessionData;
     }
 
-    const serializedPayload = JSON.stringify(sanitizedPayload);
     const taskData = {
       taskCode: cleanCode,
-      payload: serializedPayload,
+      payload: sanitizedPayload,
       creatorRoom: currentRoomCode || "",
       creatorId: currentParticipantId || "",
       createdAt: Date.now()
@@ -353,8 +352,9 @@ function startRoomListener() {
         const mergedLiveState = mergeLocalImageData(liveState);
         let changed = false;
         Object.keys(mergedLiveState).forEach((k) => {
-          if (sessionStorage.getItem(k) !== mergedLiveState[k]) {
-            sessionStorage.setItem(k, mergedLiveState[k]);
+          const restoredKey = k.replace(/__dot__/g, '.');
+          if (sessionStorage.getItem(restoredKey) !== mergedLiveState[k]) {
+            sessionStorage.setItem(restoredKey, mergedLiveState[k]);
             changed = true;
           }
         });
@@ -396,7 +396,8 @@ async function syncFromCloud() {
     if (targetWorkspace && typeof targetWorkspace === 'object' && (remoteUpdatedAt >= localEditTime || localEditTime === 0)) {
       targetWorkspace = mergeLocalImageData(targetWorkspace);
       Object.keys(targetWorkspace).forEach((k) => {
-        sessionStorage.setItem(k, targetWorkspace[k]);
+        const restoredKey = k.replace(/__dot__/g, '.');
+        sessionStorage.setItem(restoredKey, targetWorkspace[k]);
       });
       window.dispatchEvent(new CustomEvent('bio_edu_cloud_synced', { detail: targetWorkspace }));
       if (typeof showToast === 'function') showToast("最新の作業状態を同期しました", "info");
@@ -406,7 +407,8 @@ async function syncFromCloud() {
     } else if (targetWorkspace && typeof targetWorkspace === 'object') {
       targetWorkspace = mergeLocalImageData(targetWorkspace);
       Object.keys(targetWorkspace).forEach((k) => {
-        sessionStorage.setItem(k, targetWorkspace[k]);
+        const restoredKey = k.replace(/__dot__/g, '.');
+        sessionStorage.setItem(restoredKey, targetWorkspace[k]);
       });
       window.dispatchEvent(new CustomEvent('bio_edu_cloud_synced', { detail: targetWorkspace }));
     } else {
@@ -444,26 +446,25 @@ export async function saveCurrentWorkspace() {
             }
           } catch(e) {}
         }
-        snap[k] = val;
+        snap[k.replace(/\./g, '__dot__')] = val;
       }
     }
     if (Object.keys(snap).length === 0) return;
 
-    const serializedPayload = JSON.stringify(snap);
     const nowTime = Date.now();
     lastSentTimestamp = nowTime;
 
     const roomRef = doc(db, "rooms", currentRoomCode);
     const roomPayload = { roomCode: currentRoomCode, lastActive: nowTime };
     if (isTeacher) {
-      roomPayload.teacherLiveState = serializedPayload;
+      roomPayload.teacherLiveState = snap;
       roomPayload.teacherId = currentParticipantId;
       roomPayload.teacherUpdatedAt = nowTime;
     }
     await setDoc(roomRef, roomPayload, { merge: true });
 
     const docRef = doc(db, `rooms/${currentRoomCode}/participants`, currentParticipantId);
-    await setDoc(docRef, { workspace: serializedPayload, participantId: currentParticipantId, isTeacher: isTeacher, lastUpdated: nowTime }, { merge: true });
+    await setDoc(docRef, { workspace: snap, participantId: currentParticipantId, isTeacher: isTeacher, lastUpdated: nowTime }, { merge: true });
   } catch (e) {
     console.warn("Cloud sync write error:", e);
   }
