@@ -3170,7 +3170,7 @@ function closeFeedbackForm() {
 </script>
   
   <!-- Firebase同期スクリプトの読み込みを追加 -->
-  <script type="module" src="auth_sync.js"></script>
+  <script type="module" src="auth_sync.js?v=update37"></script>
 
 <!-- アカウント・同期設定（ログインパネル）モーダル -->
 <!-- ルーム接続・同期設定（Kahoot方式）モーダル v35.4 -->
@@ -3352,7 +3352,7 @@ function closeFeedbackForm() {
 
 <!-- Firebase 認証・クラウド同期（ガイドライン第7項） -->
 <script type="module">
-    import { joinRoom, leaveRoom, importMasterPreset, registerMasterPreset } from './auth_sync.js';
+    import { joinRoom, leaveRoom, importMasterPreset, registerMasterPreset } from './auth_sync.js?v=update37';
     window.handleJoinRoom = function() {
         const rEl = document.getElementById('roomCodeInput');
         const pEl = document.getElementById('participantIdInput');

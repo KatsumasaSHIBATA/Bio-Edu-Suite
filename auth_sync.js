@@ -190,10 +190,9 @@ export async function registerMasterPreset(taskCode, payload) {
       Object.keys(sanitizedPayload.sessionData).forEach((k) => {
         let val = sanitizedPayload.sessionData[k];
         if (typeof val === 'string') {
-          if (val.length > 50000 && (val.includes('data:image') || val.includes('base64'))) {
-            return;
-          }
-          if (val.includes('data:image')) {
+          if (val.length > 50000 && (val.startsWith('data:image') || val.startsWith('base64'))) {
+            val = ""; // 巨大な画像単体の場合は空文字にして維持（returnで捨てない）
+          } else if (val.includes('data:image')) {
             try {
               const obj = JSON.parse(val);
               if (Array.isArray(obj)) {
@@ -208,7 +207,7 @@ export async function registerMasterPreset(taskCode, payload) {
             } catch(e) {}
           }
         }
-        cleanSessionData[k] = val;
+        cleanSessionData[k] = val; // 必ずキーを残してセットする
       });
       sanitizedPayload.sessionData = cleanSessionData;
     }
