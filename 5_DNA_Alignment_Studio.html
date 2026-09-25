@@ -1524,7 +1524,7 @@ function closeFeedbackForm() {
     // アライメント評価スコア (Sum-of-Pairs) 計算
     // ==========================================
     function calculateAlignmentScore() {
-        let targetSeqs = sequences.filter(s => !s.isFPrimerFasta && !s.isRPrimerFasta && s.isSelected !== false);
+        let targetSeqs = sequences.filter(s => !s.isFPrimerFasta && !s.isRPrimerFasta && !s.isConsensus && s.isSelected !== false);
         if(targetSeqs.length < 2) return 0;
         
         let score = 0;
@@ -1546,11 +1546,35 @@ function closeFeedbackForm() {
         return score;
     }
 
+    function generateConsensusSequence() {
+        sequences = sequences.filter(s => s.isConsensus !== true);
+        let targetSeqs = sequences.filter(s => s.isSelected !== false && !s.isFPrimerFasta && !s.isRPrimerFasta);
+        if(targetSeqs.length < 2) return;
+        let finalAlignLen = Math.max(...targetSeqs.map(s => s.data.length));
+        let consensusData = [];
+        for (let c = 0; c < finalAlignLen; c++) {
+            let bases = [];
+            targetSeqs.forEach(s => { if (s.data[c] && s.data[c] !== '-') bases.push(s.data[c]); });
+            if (bases.length === 0) { consensusData.push('-'); }
+            else if (bases.length === 1) { consensusData.push(bases[0]); }
+            else {
+                let uniqueBases = [...new Set(bases)];
+                if (uniqueBases.length === 1) consensusData.push(uniqueBases[0]);
+                else consensusData.push('N');
+            }
+        }
+        sequences.push({
+            id: "Consensus", name: "Consensus", data: consensusData,
+            isFPrimerFasta: false, isRPrimerFasta: false,
+            isSelected: true, isConsensus: true
+        });
+    }
+
     function saveState() {
         let state = sequences.map(s => ({
             id: s.id, name: s.name, data: [...s.data],
             isFPrimerFasta: s.isFPrimerFasta, isRPrimerFasta: s.isRPrimerFasta,
-            isSelected: s.isSelected,
+            isSelected: s.isSelected, isConsensus: s.isConsensus,
             fStart: s.fStart, fEnd: s.fEnd, rStart: s.rStart, rEnd: s.rEnd,
             searchHighlights: s.searchHighlights ? new Set(s.searchHighlights) : new Set()
         }));
@@ -1567,7 +1591,7 @@ function closeFeedbackForm() {
         sequences = state.map(s => ({
             id: s.id, name: s.name, data: [...s.data],
             isFPrimerFasta: s.isFPrimerFasta, isRPrimerFasta: s.isRPrimerFasta,
-            isSelected: s.isSelected,
+            isSelected: s.isSelected, isConsensus: s.isConsensus,
             fStart: s.fStart, fEnd: s.fEnd, rStart: s.rStart, rEnd: s.rEnd,
             searchHighlights: s.searchHighlights ? new Set(s.searchHighlights) : new Set()
         }));
@@ -2179,7 +2203,7 @@ function closeFeedbackForm() {
         for(let c=0; c<finalAlignLen; c++) {
             let bases = [];
             sequences.forEach(s => { 
-                if(!s.isFPrimerFasta && !s.isRPrimerFasta && s.isSelected !== false && s.data[c] !== undefined && s.data[c] !== '-') {
+                if(!s.isFPrimerFasta && !s.isRPrimerFasta && !s.isConsensus && s.isSelected !== false && s.data[c] !== undefined && s.data[c] !== '-') {
                     bases.push(s.data[c]); 
                 }
             });
@@ -2298,6 +2322,7 @@ function closeFeedbackForm() {
             }
         });
 
+        generateConsensusSequence();
         updateMutationsAndRender(); saveState(); document.getElementById('btnResetMSA').disabled = false;
         
         const finalScore = calculateAlignmentScore();
@@ -2386,6 +2411,7 @@ function closeFeedbackForm() {
                 }
             });
 
+            generateConsensusSequence();
             updateMutationsAndRender(); 
             saveState(); 
             
@@ -2629,6 +2655,30 @@ function closeFeedbackForm() {
         if(e.target.classList.contains('base')) {
             let row = parseInt(e.target.parentElement.dataset.row);
             let col = parseInt(e.target.dataset.col);
+            let seq = sequences[row];
+            if (seq && seq.isConsensus && !e.shiftKey) {
+                let targetSeqs = sequences.filter(s => s.isSelected !== false && !s.isFPrimerFasta && !s.isRPrimerFasta && !s.isConsensus);
+                let basesInCol = new Set();
+                targetSeqs.forEach(s => { if (s.data[col] && s.data[col] !== '-') basesInCol.add(s.data[col]); });
+                let candidates = Array.from(basesInCol);
+                if(candidates.includes('A') && candidates.includes('G')) candidates.push('R');
+                if(candidates.includes('C') && candidates.includes('T')) candidates.push('Y');
+                if(candidates.includes('A') && candidates.includes('C')) candidates.push('M');
+                if(candidates.includes('G') && candidates.includes('T')) candidates.push('K');
+                if(candidates.includes('C') && candidates.includes('G')) candidates.push('S');
+                if(candidates.includes('A') && candidates.includes('T')) candidates.push('W');
+                candidates.push('N', '-');
+                candidates = [...new Set(candidates)];
+                if (candidates.length > 1) {
+                    let currentBase = seq.data[col];
+                    let idx = candidates.indexOf(currentBase);
+                    let nextBase = candidates[(idx + 1) % candidates.length];
+                    seq.data[col] = nextBase;
+                    e.target.innerText = nextBase;
+                    triggerHapticFeedback();
+                    saveState();
+                }
+            }
             if (e.shiftKey && dragMode === 'individual' && dragStartRow === row && dragStartCol !== -1) {
                 dragEndCol = col;
                 isDragging = true;
@@ -2874,7 +2924,8 @@ function closeFeedbackForm() {
         let output = "";
         sequences.forEach(s => { 
             if(s.isFPrimerFasta || s.isRPrimerFasta || s.isSelected === false) return;
-            output += `${getFastaHeader(s)}\n${s.data.join('')}\n`; 
+            let seqData = s.isConsensus ? s.data.join('').replace(/-/g, '') : s.data.join('');
+            output += `${getFastaHeader(s)}\n${seqData}\n`; 
         });
         if(output === "") { showToast("出力対象が選択されていません", "warning"); return; }
         
@@ -2969,7 +3020,8 @@ function closeFeedbackForm() {
         let output = "";
         sequences.forEach(s => { 
             if(s.isFPrimerFasta || s.isRPrimerFasta || s.isSelected === false) return;
-            output += `${getFastaHeader(s)}\n${s.data.join('')}\n`; 
+            let seqData = s.isConsensus ? s.data.join('').replace(/-/g, '') : s.data.join('');
+            output += `${getFastaHeader(s)}\n${seqData}\n`; 
         });
         copyToClipboardFallback(output.trim(), "FASTA形式で一括コピーしました");
     }
