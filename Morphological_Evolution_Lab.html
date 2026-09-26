@@ -1685,6 +1685,11 @@ input[type="submit"]:disabled:active {
                                             <div className="font-bold text-rose-600 mt-0.5 mb-0.5">結論：骨の平らな面（翼や手のひらの広がり）が、画面の「真正面」を向くように3Dモデルを回転させてからスクショを撮る</div>
                                             <div className="text-slate-600">コウモリの翼などを斜めや真横から撮ると、指の広がりが実際より極端に狭く写ってしまいます。骨が最も平たく、幅広く見える角度に揃えて撮影するのが、正確な比較を行うための鉄則です。</div>
                                         </div>
+                                        <div className="border-t border-slate-200/60 pt-2">
+                                            <div className="font-bold text-slate-800">4. 手首の幅（関節面の幅）の測り方</div>
+                                            <div className="font-bold text-rose-600 mt-0.5 mb-0.5">結論：3Dモデルでは前腕の骨が終わる手首側の関節面の幅を測る。自分の腕は、手首の左右の出っ張り（茎状突起）を定規等で挟んで測る</div>
+                                            <div className="text-slate-600">前腕の中央部は筋肉の厚みがあるため、正確な骨格の頑健性を測るには筋肉のつかない手首の関節（茎状突起間幅）を測るのが比較解剖学の標準です。自分の腕を測る際も、手首のグリグリした骨の両端を定規やノギスで直接挟めば、皮下脂肪に影響されず正確に骨幅を測定できます。</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1731,9 +1736,9 @@ input[type="submit"]:disabled:active {
                                                 <button 
                                                     className={`btn ${measureMode === 'D' ? 'btn-primary' : 'btn-secondary'} px-2 py-1 text-[10px] font-bold`} 
                                                     onClick={() => handleModeChange('D')}
-                                                    title="前腕の太さを計測（クリックで全画面拡大）"
+                                                    title="手首の関節の幅を計測（クリックで全画面拡大）"
                                                 >
-                                                    D: 太さ
+                                                    D: 手首幅
                                                 </button>
                                                 <button 
                                                     className={`btn ${measureMode === 'E' ? 'btn-primary' : 'btn-secondary'} px-2 py-1 text-[10px] font-bold`} 
@@ -1886,8 +1891,8 @@ input[type="submit"]:disabled:active {
                                                     </th>
                                                     <th className="px-1 py-2 font-bold align-top text-[11px] leading-tight text-center">
                                                         <div className="flex flex-col items-center">
-                                                            <span className="whitespace-nowrap pt-1">D: 前腕幅</span>
-                                                            <span className="whitespace-nowrap text-[9px] font-normal text-slate-400 mt-0.5">前腕の中央付近</span>
+                                                            <span className="whitespace-nowrap pt-1">D: 手首幅</span>
+                                                            <span className="whitespace-nowrap text-[9px] font-normal text-slate-400 mt-0.5">手首関節の骨幅</span>
                                                         </div>
                                                     </th>
                                                     <th className="px-1 py-2 font-bold align-top text-[11px] leading-tight text-center">
@@ -2003,11 +2008,10 @@ input[type="submit"]:disabled:active {
                                                             <div className="w-12 text-[12px] text-amber-600 font-mono-code font-bold leading-none">{aRatioPhal}</div>
                                                         </div>
                                                     </td>
-                                                        <td className="px-1 py-1.5 text-center">
-                                                            <div className="w-14 mx-auto py-0.5 text-slate-400 font-bold text-[11px] bg-slate-100 rounded border border-slate-200 select-none text-center" title="生身の腕は筋肉の厚みがあるため、骨の幅は測定対象外です">
-                                                                ー
-                                                            </div>
-                                                        </td>
+                                                    <td className="px-1 py-1.5 text-center">
+                                                        <input type="number" step="0.1" value={avgData.width || ""} onChange={(e) => handleInput(avgName, 'width', e.target.value)}
+                                                            className="w-14 bg-white border border-amber-400 shadow-inner text-amber-900 text-center text-[12px] font-bold rounded focus:ring-1 focus:ring-amber-500 focus:outline-none py-0.5" />
+                                                    </td>
                                                             <td className="px-1 py-1.5 text-center">
                                                                 <input type="number" step="0.1" value={avgData.spread || ""} onChange={(e) => handleInput(avgName, 'spread', e.target.value)}
                                                                     className="w-14 bg-white border border-amber-400 shadow-inner text-amber-900 text-center text-[12px] font-bold rounded focus:ring-1 focus:ring-amber-500 focus:outline-none py-0.5" />
