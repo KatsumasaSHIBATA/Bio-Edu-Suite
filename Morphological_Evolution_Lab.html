@@ -1941,12 +1941,10 @@ input[type="submit"]:disabled:active {
                                                         </td>
                                                         <td className="px-1 py-1.5 text-center">
                                                             <input type="number" step="0.1" value={data.width || ""} onChange={(e) => handleInput(species.name, 'width', e.target.value)}
-                                                                placeholder="太さ"
                                                                 className="w-14 bg-slate-50 border border-slate-300 text-slate-800 text-center text-[12px] rounded focus:ring-1 focus:ring-emerald-400 focus:outline-none py-0.5 transition-all" />
                                                         </td>
                                                         <td className="px-1 py-1.5 text-center">
                                                             <input type="number" step="0.1" value={data.spread || ""} onChange={(e) => handleInput(species.name, 'spread', e.target.value)}
-                                                                placeholder="展開幅"
                                                                 className="w-14 bg-slate-50 border border-slate-300 text-slate-800 text-center text-[12px] rounded focus:ring-1 focus:ring-emerald-400 focus:outline-none py-0.5 transition-all" />
                                                         </td>
                                                         <td className="px-2 py-1.5 text-center">
@@ -2012,7 +2010,6 @@ input[type="submit"]:disabled:active {
                                                         </td>
                                                             <td className="px-1 py-1.5 text-center">
                                                                 <input type="number" step="0.1" value={avgData.spread || ""} onChange={(e) => handleInput(avgName, 'spread', e.target.value)}
-                                                                    placeholder="展開幅"
                                                                     className="w-14 bg-white border border-amber-400 shadow-inner text-amber-900 text-center text-[12px] font-bold rounded focus:ring-1 focus:ring-amber-500 focus:outline-none py-0.5" />
                                                             </td>
                                                     <td className="px-2 py-1.5 text-center">
@@ -2073,12 +2070,10 @@ input[type="submit"]:disabled:active {
                                                     </td>
                                                             <td className="px-1 py-1.5 text-center">
                                                                 <input type="number" step="0.1" value={chickData.width || ""} onChange={(e) => handleInput(chickName, 'width', e.target.value)}
-                                                                    placeholder="太さ"
                                                                     className="w-14 bg-white border border-orange-400 shadow-inner text-orange-900 text-center text-[12px] font-bold rounded focus:ring-1 focus:ring-orange-500 focus:outline-none py-0.5" />
                                                             </td>
                                                             <td className="px-1 py-1.5 text-center">
                                                                 <input type="number" step="0.1" value={chickData.spread || ""} onChange={(e) => handleInput(chickName, 'spread', e.target.value)}
-                                                                    placeholder="展開幅"
                                                                     className="w-14 bg-white border border-orange-400 shadow-inner text-orange-900 text-center text-[12px] font-bold rounded focus:ring-1 focus:ring-orange-500 focus:outline-none py-0.5" />
                                                             </td>
                                                     <td className="px-2 py-1.5 text-center">
@@ -2125,7 +2120,7 @@ input[type="submit"]:disabled:active {
 
 <!-- 根拠 (Rationale) ポップオーバー: スクショ計測の意義と手順 -->
 <div id="rationale-screenshot" class="rationale-text">
-  <strong>【根拠：なぜスクリーンショットを撮って計測するのか？】</strong>
+  <strong>【根拠：なぜスクリーンショットを撮るのか？】</strong>
   <p style="margin: 0 0 10px 0;">
     ・実際の形態計測の研究現場では、実物を直接測るだけでなく、対象物をスキャナ等で正確に平面画像として取り込み、画像上で寸法や角度を解析する手法が広く用いられています。<br>
     ・本アプリでは、この本格的なアプローチを疑似体験するため、あえてアプリ内蔵の自動計測ではなく、画面キャプチャを用いた手動計測を設計しています。
