@@ -1463,6 +1463,42 @@ input[type="submit"]:disabled:active {
                 setTimeout(() => setCopyStatus(prev => ({ ...prev, all: null })), 3000);
             });
         };
+
+        const handleDownloadAllCSV = () => {
+            let csv = "Sample_ID,前腕比率,手根中手比率,指骨比率,手首頑健指数,指展開指数\n";
+            const allSpeciesToCopy = [...SPECIES_LIST.map(s => s.name), "自分の腕", "手羽先"];
+
+            allSpeciesToCopy.forEach(name => {
+                const data = measurements[name] || {};
+                const fore = parseFloat(data.fore);
+                const meta = parseFloat(data.meta);
+                const phal = parseFloat(data.phal);
+
+                if (!isNaN(fore) && !isNaN(meta) && !isNaN(phal) && fore > 0) {
+                    const width = parseFloat(data.width) || 0;
+                    const spread = parseFloat(data.spread) || 0;
+                    const sum = fore + meta + phal;
+                    const x1 = ((fore / sum) * 100).toFixed(1);
+                    const x2 = ((meta / sum) * 100).toFixed(1);
+                    const x3 = ((phal / sum) * 100).toFixed(1);
+                    const x4 = ((width / fore) * 100).toFixed(1);
+                    const x5 = (meta + phal > 0) ? ((spread / (meta + phal)) * 100).toFixed(1) : "0.0";
+                    csv += `${name},${x1},${x2},${x3},${x4},${x5}\n`;
+                }
+            });
+
+            if (csv === "Sample_ID,前腕比率,手根中手比率,指骨比率,手首頑健指数,指展開指数\n") return;
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `Morphometrics_Export_${new Date().toISOString().slice(0, 10).replace(/-/g, "")}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            if (typeof showToast === 'function') showToast("CSVファイルをダウンロードしました", "success");
+        };
         
         const allSpeciesToCopy = [...SPECIES_LIST.map(s => s.name), "自分の腕", "手羽先"];
         const canCopyAll = allSpeciesToCopy.some(name => {
@@ -2099,14 +2135,24 @@ input[type="submit"]:disabled:active {
                                         </table>
                                     </div>
                                     
-                                    <div className="p-3 bg-slate-100 border-t border-slate-200 text-right flex justify-end shrink-0">
+                                    <div className="p-3 bg-slate-100 border-t border-slate-200 text-right flex justify-end gap-2 shrink-0">
                                         <button 
                                             onClick={handleCopyAllCSV}
                                             className="btn btn-secondary"
                                             disabled={!canCopyAll}
+                                            title="クリップボードにコピー（他のアプリへ持っていく用）"
                                         >
-                                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                            <svg className="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                                             {copyStatus.all || "⑩ 全ての補正済みCSVコピー"}
+                                        </button>
+                                        <button 
+                                            onClick={handleDownloadAllCSV}
+                                            className="btn btn-dynamic"
+                                            disabled={!canCopyAll}
+                                            title="CSVファイルとしてローカルPCに保存"
+                                        >
+                                            <svg className="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                                            CSV保存
                                         </button>
                                     </div>
                                 </div>

@@ -1281,6 +1281,36 @@ input[type="submit"]:disabled:active {
             });
         };
 
+        const handleDownloadAllCSV = () => {
+            let csv = "Sample_ID,顔角,脳頭蓋長比,顔面頭蓋長比\n";
+            const allSpeciesToCopy = [...SPECIES_LIST.map(s => s.name), "自分・班の平均"];
+
+            allSpeciesToCopy.forEach(name => {
+                const data = measurements[name] || {};
+                const angle = parseFloat(data.angle);
+                const cranium = parseFloat(data.cranium);
+                const face = parseFloat(data.face);
+
+                if (!isNaN(angle) && !isNaN(cranium) && !isNaN(face) && cranium > 0) {
+                    const ratioCranium = "100.0";
+                    const ratioFace = ((face / cranium) * 100).toFixed(1);
+                    csv += `${name},${angle.toFixed(1)},${ratioCranium},${ratioFace}\n`;
+                }
+            });
+
+            if (csv === "Sample_ID,顔角,脳頭蓋長比,顔面頭蓋長比\n") return;
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `Hominin_Morphology_Export_${new Date().toISOString().slice(0, 10).replace(/-/g, "")}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            if (typeof showToast === 'function') showToast("CSVファイルをダウンロードしました", "success");
+        };
+
         const allSpeciesToCopy = [...SPECIES_LIST.map(s => s.name), "自分・班の平均"];
         const canCopyAll = allSpeciesToCopy.some(name => {
             const data = measurements[name] || {};
@@ -1777,14 +1807,26 @@ input[type="submit"]:disabled:active {
                                     </div>
                                     <div className="p-3 bg-slate-100 border-t border-slate-200 text-right flex justify-between items-center shrink-0">
                                         <span className="text-[10px] text-slate-500 font-bold ml-1">※RLA Archaeologyの3Dモデルを使用</span>
-                                        <button 
-                                            onClick={handleCopyAllCSV}
-                                            className="btn btn-secondary"
-                                            disabled={!canCopyAll}
-                                        >
-                                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                                            {copyStatus.all || "⑩ 全ての補正済みCSVコピー"}
-                                        </button>
+                                        <div className="flex gap-2">
+                                            <button 
+                                                onClick={handleCopyAllCSV}
+                                                className="btn btn-secondary"
+                                                disabled={!canCopyAll}
+                                                title="クリップボードにコピー（他のアプリへ持っていく用）"
+                                            >
+                                                <svg className="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                                {copyStatus.all || "⑩ 全ての補正済みCSVコピー"}
+                                            </button>
+                                            <button 
+                                                onClick={handleDownloadAllCSV}
+                                                className="btn btn-dynamic"
+                                                disabled={!canCopyAll}
+                                                title="CSVファイルとしてローカルPCに保存"
+                                            >
+                                                <svg className="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                                                CSV保存
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
