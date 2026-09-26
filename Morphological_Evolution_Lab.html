@@ -1702,48 +1702,48 @@ input[type="submit"]:disabled:active {
                                             : "bg-white rounded-lg border border-slate-300 p-3 shadow-sm relative"
                                     }>
                                         {/* ツールバー：ボタン群を右端へ配置、縮小ボタンを完全撤廃 */}
-                                        <div className={`flex items-center justify-between mb-3 shrink-0 ${isDigitizerExpanded ? 'border-b border-slate-800 pb-3' : ''}`}>
+                                        <div className={`flex flex-wrap items-center justify-between gap-y-2 mb-3 shrink-0 ${isDigitizerExpanded ? 'border-b border-slate-800 pb-3' : ''}`}>
                                             <span className={`text-[11px] font-bold ${isDigitizerExpanded ? 'text-slate-300 text-sm' : 'text-slate-600'}`}>
                                                 計測部位:
                                             </span>
-                                            <div className="flex items-center gap-1.5">
+                                            <div className="flex flex-wrap items-center gap-1">
                                                 <button 
-                                                    className={`btn ${measureMode === 'A' ? 'btn-primary' : 'btn-secondary'} px-2.5 py-1 text-[10px] font-bold`} 
+                                                    className={`btn ${measureMode === 'A' ? 'btn-primary' : 'btn-secondary'} px-2 py-1 text-[10px] font-bold`} 
                                                     onClick={() => handleModeChange('A')}
                                                     title="前腕を計測（クリックで全画面拡大）"
                                                 >
-                                                    A: 前腕 (2点)
+                                                    A: 前腕
                                                 </button>
                                                 <button 
-                                                    className={`btn ${measureMode === 'B' ? 'btn-primary' : 'btn-secondary'} px-2.5 py-1 text-[10px] font-bold`} 
+                                                    className={`btn ${measureMode === 'B' ? 'btn-primary' : 'btn-secondary'} px-2 py-1 text-[10px] font-bold`} 
                                                     onClick={() => handleModeChange('B')}
                                                     title="手根・中手骨を計測（クリックで全画面拡大）"
                                                 >
-                                                    B: 手根・中手 (2点)
+                                                    B: 手根・中手
                                                 </button>
                                                 <button 
-                                                    className={`btn ${measureMode === 'C' ? 'btn-primary' : 'btn-secondary'} px-2.5 py-1 text-[10px] font-bold`} 
+                                                    className={`btn ${measureMode === 'C' ? 'btn-primary' : 'btn-secondary'} px-2 py-1 text-[10px] font-bold`} 
                                                     onClick={() => handleModeChange('C')}
                                                     title="指骨を計測（クリックで全画面拡大）"
                                                 >
-                                                    C: 指骨 (2点)
+                                                    C: 指骨
                                                 </button>
                                                 <button 
-                                                    className={`btn ${measureMode === 'D' ? 'btn-primary' : 'btn-secondary'} px-2.5 py-1 text-[10px] font-bold`} 
+                                                    className={`btn ${measureMode === 'D' ? 'btn-primary' : 'btn-secondary'} px-2 py-1 text-[10px] font-bold`} 
                                                     onClick={() => handleModeChange('D')}
                                                     title="前腕の太さを計測（クリックで全画面拡大）"
                                                 >
-                                                    D: 前腕の太さ (2点)
+                                                    D: 太さ
                                                 </button>
                                                 <button 
-                                                    className={`btn ${measureMode === 'E' ? 'btn-primary' : 'btn-secondary'} px-2.5 py-1 text-[10px] font-bold`} 
+                                                    className={`btn ${measureMode === 'E' ? 'btn-primary' : 'btn-secondary'} px-2 py-1 text-[10px] font-bold`} 
                                                     onClick={() => handleModeChange('E')}
                                                     title="指の展開幅を計測（クリックで全画面拡大）"
                                                 >
-                                                    E: 指の展開幅 (2点)
+                                                    E: 展開幅
                                                 </button>
                                                 <button 
-                                                    className="btn btn-secondary px-2.5 py-1 text-[10px]" 
+                                                    className="btn btn-secondary px-2 py-1 text-[10px]" 
                                                     onClick={handleClearDigitizer}
                                                     title="計測点と選択をリセットして通常画面に戻る"
                                                 >
@@ -1839,7 +1839,7 @@ input[type="submit"]:disabled:active {
                                 </div>
 
                             {/* Ⅲ. 計測ワークシート (単位: mm または px比率) */}
-                            <div className="p-4 pt-1 flex-1 flex flex-col min-h-[350px]">
+                            <div className="p-4 pt-1 flex flex-col">
                                 <div className="dynamic-hint mb-3">
                                     撮影アングルの重要ポイント：骨の太さ（D）や広がり（E）を正確に比べるため、必ず骨の平らな面が画面の「真正面」を向くようにアングルを揃えてから撮影してください。斜めから撮ると正しい数値が測れません。
                                 </div>
@@ -1851,8 +1851,8 @@ input[type="submit"]:disabled:active {
                                     <span className="text-[10px] text-slate-500 font-bold bg-slate-200 px-2 py-0.5 rounded">※小数点第一位まで</span>
                                 </div>
 
-                                <div className="bg-white border border-slate-300 rounded-lg shadow-sm overflow-hidden flex-1 flex flex-col">
-                                    <div className="overflow-y-auto flex-1">
+                                <div className="bg-white border border-slate-300 rounded-lg shadow-sm overflow-hidden flex flex-col">
+                                    <div className="overflow-x-auto">
                                         <table className="w-full text-sm text-left">
                                             <thead className="bg-slate-100 text-slate-600 sticky top-0 z-10 border-b border-slate-300 shadow-sm">
                                                 <tr>
@@ -1939,12 +1939,12 @@ input[type="submit"]:disabled:active {
                                                                 <div className="w-12 text-[12px] text-emerald-600 font-mono-code font-bold leading-none">{ratioPhal}</div>
                                                             </div>
                                                         </td>
-                                                        <td className="px-1 py-1.5">
+                                                        <td className="px-1 py-1.5 text-center">
                                                             <input type="number" step="0.1" value={data.width || ""} onChange={(e) => handleInput(species.name, 'width', e.target.value)}
                                                                 placeholder="太さ"
                                                                 className="w-14 bg-slate-50 border border-slate-300 text-slate-800 text-center text-[12px] rounded focus:ring-1 focus:ring-emerald-400 focus:outline-none py-0.5 transition-all" />
                                                         </td>
-                                                        <td className="px-1 py-1.5">
+                                                        <td className="px-1 py-1.5 text-center">
                                                             <input type="number" step="0.1" value={data.spread || ""} onChange={(e) => handleInput(species.name, 'spread', e.target.value)}
                                                                 placeholder="展開幅"
                                                                 className="w-14 bg-slate-50 border border-slate-300 text-slate-800 text-center text-[12px] rounded focus:ring-1 focus:ring-emerald-400 focus:outline-none py-0.5 transition-all" />
@@ -2005,11 +2005,11 @@ input[type="submit"]:disabled:active {
                                                             <div className="w-12 text-[12px] text-amber-600 font-mono-code font-bold leading-none">{aRatioPhal}</div>
                                                         </div>
                                                     </td>
-                                                            <td className="px-1 py-1.5 text-center">
-                                                                <input type="number" step="0.1" value={avgData.width || ""} onChange={(e) => handleInput(avgName, 'width', e.target.value)}
-                                                                    placeholder="太さ"
-                                                                    className="w-14 bg-white border border-amber-400 shadow-inner text-amber-900 text-center text-[12px] font-bold rounded focus:ring-1 focus:ring-amber-500 focus:outline-none py-0.5" />
-                                                            </td>
+                                                        <td className="px-1 py-1.5 text-center">
+                                                            <div className="w-14 mx-auto py-0.5 text-slate-400 font-bold text-[11px] bg-slate-100 rounded border border-slate-200 select-none text-center" title="生身の腕は筋肉の厚みがあるため、骨の幅は測定対象外です">
+                                                                ー
+                                                            </div>
+                                                        </td>
                                                             <td className="px-1 py-1.5 text-center">
                                                                 <input type="number" step="0.1" value={avgData.spread || ""} onChange={(e) => handleInput(avgName, 'spread', e.target.value)}
                                                                     placeholder="展開幅"
@@ -2129,12 +2129,6 @@ input[type="submit"]:disabled:active {
   <p style="margin: 0 0 10px 0;">
     ・実際の形態計測の研究現場では、実物を直接測るだけでなく、対象物をスキャナ等で正確に平面画像として取り込み、画像上で寸法や角度を解析する手法が広く用いられています。<br>
     ・本アプリでは、この本格的なアプローチを疑似体験するため、あえてアプリ内蔵の自動計測ではなく、画面キャプチャを用いた手動計測を設計しています。
-  </p>
-  <strong>【計測の手順とコツ】</strong>
-  <p style="margin: 0 0 10px 0;">
-    ・ショートカットキーで腕の骨の構造をスクリーンショット撮影します。<br>
-    ・撮影した画像を「写真」や「ペイント」等の画像ビューワーで開きます。<br>
-    ・撮影した画像をアプリ内の『2Dデジタイザ』にペーストし、各骨の両端をクリックして長さを測ります。
   </p>
   <strong>【スクリーンショットの撮り方（ショートカット）】</strong>
   <p style="margin: 0;">
