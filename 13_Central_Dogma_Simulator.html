@@ -2251,5 +2251,41 @@ if ('serviceWorker' in navigator) {
 
   <!-- Session-Persistent Workspace 共通モジュール -->
   <script src="./js/workspace_sync.js"></script>
+
+<!-- [Bio-Edu Suite v37.1] ハイブリッド初期化（非破壊上書きパッチ） -->
+<script>
+window.confirmDataReset = function() {
+    if (window.innerWidth <= 1024) {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
+        if (sidebar) sidebar.classList.remove('open');
+        if (overlay) overlay.classList.remove('open');
+    }
+    const isTeacher = localStorage.getItem('bio_edu_participant_id')?.toUpperCase().startsWith("TEACHER");
+    const msg = isTeacher 
+      ? "⚠️ 【確認】ルームを解散し、すべての生徒のデータおよびローカルデータを初期化して退出しますか？\nこの操作は取り消せません。" 
+      : "⚠️ 【確認】自分のクラウドデータおよびローカルデータを初期化し、ルームから退出しますか？\nこの操作は取り消せません。";
+
+    const showConf = typeof window.showConfirm === 'function' ? window.showConfirm : (typeof showConfirm === 'function' ? showConfirm : window.confirm);
+    
+    const executeReset = async () => {
+        window.isResetting = true;
+        if (typeof Storage !== 'undefined') Storage.prototype.setItem = function() {};
+        if (window.executeHybridReset) {
+            await window.executeHybridReset();
+        }
+        try { localStorage.clear(); } catch(e) {}
+        try { sessionStorage.clear(); } catch(e) {}
+        location.reload();
+    };
+
+    if (showConf === window.confirm) {
+        if (confirm(msg)) executeReset();
+    } else {
+        showConf(msg, executeReset, isTeacher ? "解散して初期化" : "初期化して退出");
+    }
+};
+</script>
+
 </body>
 </html>

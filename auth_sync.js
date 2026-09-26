@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, enableIndexedDbPersistence, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, enableIndexedDbPersistence, doc, setDoc, getDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAFJ8dH4K50MCLAkHgaS6pqdvsTNUzAzHk",
@@ -463,7 +463,9 @@ export async function saveCurrentWorkspace() {
         snap[k.replace(/\./g, '__dot__')] = val;
       }
     }
-    if (Object.keys(snap).length === 0) return;
+    const hasData = Object.keys(snap).length > 0;
+    // 教員はデータが空でも部屋を確保する。生徒は空ならスキップ。
+    if (!hasData && !isTeacher) return;
 
     const nowTime = Date.now();
     lastSentTimestamp = nowTime;
@@ -473,14 +475,16 @@ export async function saveCurrentWorkspace() {
     const roomRef = doc(db, "rooms", currentRoomCode);
     const roomPayload = { roomCode: currentRoomCode, lastActive: nowTime };
     if (isTeacher) {
-      roomPayload.teacherLiveState = snap;
+      if (hasData) roomPayload.teacherLiveState = snap;
       roomPayload.teacherId = currentParticipantId;
       roomPayload.teacherUpdatedAt = nowTime;
     }
     await setDoc(roomRef, roomPayload, { merge: true });
 
-    const docRef = doc(db, `rooms/${currentRoomCode}/participants`, currentParticipantId);
-    await setDoc(docRef, { workspace: snap, participantId: currentParticipantId, isTeacher: isTeacher, lastUpdated: nowTime }, { merge: true });
+    if (hasData || isTeacher) {
+      const docRef = doc(db, `rooms/${currentRoomCode}/participants`, currentParticipantId);
+      await setDoc(docRef, { workspace: snap, participantId: currentParticipantId, isTeacher: isTeacher, lastUpdated: nowTime }, { merge: true });
+    }
   } catch (e) {
     console.warn("Cloud sync write error:", e);
   }
@@ -488,6 +492,25 @@ export async function saveCurrentWorkspace() {
 
 // グローバル window オブジェクトへ saveCurrentWorkspace を公開し、他スクリプトから遅延なく即時保存を呼び出せるようにする
 window.saveCurrentWorkspace = saveCurrentWorkspace;
+
+// [Bio-Edu Suite v37.1] スマート初期化・ルーム解散ハイブリッド規格
+export async function executeHybridReset() {
+  if (!isConnected || !auth.currentUser) return;
+  try {
+    if (isTeacher) {
+      const roomRef = doc(db, "rooms", currentRoomCode);
+      await deleteDoc(roomRef);
+      if (typeof showToast === 'function') showToast(`ルーム「${currentRoomCode}」を解散しました`, "success");
+    } else {
+      const docRef = doc(db, `rooms/${currentRoomCode}/participants`, currentParticipantId);
+      await deleteDoc(docRef);
+      if (typeof showToast === 'function') showToast("自分のクラウドデータを消去しました", "success");
+    }
+  } catch (e) {
+    console.warn("Hybrid reset error:", e);
+  }
+}
+window.executeHybridReset = executeHybridReset;
 
 export { app, auth, db };
 // [Bio-Edu Suite v36.2] 各アプリからの即時保存要求リスナー
