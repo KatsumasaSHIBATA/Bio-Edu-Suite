@@ -1257,7 +1257,10 @@ input[type="submit"]:disabled:active {
                             </select>
                         </div>
                         <div style="flex: 1; min-width: 80px;">
-                            <label class="input-label" style="font-size: 11px; margin-bottom: 4px;">距離計算</label>
+                            <label class="input-label" style="font-size: 11px; margin-bottom: 4px; display:flex; align-items:center;">
+                                距離計算
+                                <button class="rationale-btn" onclick="toggleRationale(event, 'rat_dist')" style="width:14px; height:14px; font-size:10px;">?</button>
+                            </label>
                             <select id="dist-type" class="form-select" style="width: 100%; padding: 4px 8px; font-size: 12px;" disabled>
                                 <option value="euclidean">ユークリッド距離</option>
                                 <option value="manhattan">マンハッタン距離</option>
@@ -1302,11 +1305,18 @@ input[type="submit"]:disabled:active {
                 </button>
             </div>
             
+            <!-- 距離計算の解説ポップオーバー -->
+            <div id="rat_dist" class="rationale-text">
+                <strong>【根拠：距離計算と形態差の評価】</strong>
+                ・多次元データ（複数の計測値）における「形態の違い」を空間上の距離として計算します。<br>
+                ・<b>ユークリッド距離</b>は直線距離であり一般的な形態差の評価に最適です。<b>マンハッタン距離</b>は各値の差の絶対値の和で、極端な外れ値の影響を抑えたい場合に有効です。
+            </div>
+
             <!-- ウォード法の解説ポップオーバー -->
             <div id="rat_ward" class="rationale-text">
                 <strong>【根拠：ウォード法 (Ward method)】</strong>
-                ・クラスタを併合したときに、クラスタ内の平方和の増加分が最小になるように併合します。<br>
-                ・データの重心や分散を考慮するため、生態学や形態測定学の分類において最も精度が良い（自然な分類になる）傾向があります。
+                ・クラスタを併合したときに、全体の分散（ばらつき）の増加分が最小になるように併合します。<br>
+                ・<b>【なぜUPGMAではないの？】</b> 遺伝距離（塩基置換）から進化の道筋を推定する場合はUPGMAがよく使われますが、現在の「形や大きさ（連続値）」の類似度からグループ分けを行う形態測定学においては、外れ値に強く自然な分類を作りやすいウォード法が標準的です。
             </div>
         </div>
     </div>
@@ -2639,6 +2649,67 @@ input[type="submit"]:disabled:active {
             const molLeaves = molRoot.leaves();
             const morphLeaves = morphRoot.leaves();
             
+            // --- 欠損データ抽出とトポロジー一致度計算 ---
+            let missingData = { mol: [], morph: [] };
+            let isTopologyMatch = true;
+            
+            const molLeafNodes = molRoot.leaves();
+            const morphLeafNodes = morphRoot.leaves();
+            
+            let molLeafIds = molLeafNodes.map(l => normalizeId(l.data.name));
+            let morphLeafIds = morphLeafNodes.map(l => normalizeId(l.data.name));
+            
+            let commonMolIds = [];
+            let reverseMap = {}; // morph -> mol のマッピング
+            
+            if (pairMappings && pairMappings.length > 0) {
+                pairMappings.forEach(m => {
+                    let molId = normalizeId(m.left);
+                    let morphId = normalizeId(m.right);
+                    if (molLeafIds.includes(molId) && morphLeafIds.includes(morphId)) {
+                        commonMolIds.push(molId);
+                        reverseMap[morphId] = molId;
+                    }
+                });
+                missingData.mol = molLeafNodes.map(l => l.data.name).filter(n => !pairMappings.some(m => normalizeId(m.left) === normalizeId(n)));
+                missingData.morph = morphLeafNodes.map(l => l.data.name).filter(n => !pairMappings.some(m => normalizeId(m.right) === normalizeId(n)));
+            } else {
+                commonMolIds = molLeafIds.filter(id => morphLeafIds.includes(id));
+                missingData.mol = molLeafNodes.map(l => l.data.name).filter(n => !morphLeafIds.includes(normalizeId(n)));
+                missingData.morph = morphLeafNodes.map(l => l.data.name).filter(n => !molLeafIds.includes(normalizeId(n)));
+                commonMolIds.forEach(id => { reverseMap[id] = id; });
+            }
+            
+            // 共通ノードが3つ以上ある場合のみクレード構造を比較
+            if (commonMolIds.length >= 3) {
+                function extractClades(rootNode, validLeaves, revMap) {
+                    let clades = new Set();
+                    rootNode.each(d => {
+                        if (d.children) {
+                            let leaves = d.leaves().map(l => {
+                                let id = normalizeId(l.data.name);
+                                return revMap[id] || id;
+                            }).filter(id => validLeaves.includes(id));
+                            
+                            if (leaves.length >= 2 && leaves.length < validLeaves.length) {
+                                leaves.sort();
+                                clades.add(leaves.join('|'));
+                            }
+                        }
+                    });
+                    return clades;
+                }
+                
+                let molClades = extractClades(molRoot, commonMolIds, Object.fromEntries(commonMolIds.map(id => [id, id])));
+                let morphClades = extractClades(morphRoot, commonMolIds, reverseMap);
+                
+                let unmatchCount = 0;
+                molClades.forEach(c => { if (!morphClades.has(c)) unmatchCount++; });
+                morphClades.forEach(c => { if (!molClades.has(c)) unmatchCount++; });
+                
+                isTopologyMatch = (unmatchCount === 0);
+            }
+
             const tangleData = [];
             if (pairMappings && pairMappings.length > 0) {
                 pairMappings.forEach((mapping) => {
@@ -2704,7 +2775,7 @@ input[type="submit"]:disabled:active {
                 .style('pointer-events', 'none');
 
             // 動的観察ポイント（ダイナミック・フィードバック）のリアルタイム更新
-            updateDynamicInsight(tangleData, isUntangled, crossingPairs, crossingCount);
+            updateDynamicInsight(tangleData, isUntangled, crossingPairs, crossingCount, missingData, isTopologyMatch);
         }
         
         d3.select(container).select('svg').on('mouseleave', () => {
@@ -2720,7 +2791,7 @@ input[type="submit"]:disabled:active {
         return String(str).replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag]));
     }
 
-    function updateDynamicInsight(tangleData, isUntangledState, crossingPairs, crossingCount) {
+    function updateDynamicInsight(tangleData, isUntangledState, crossingPairs, crossingCount, missingData = {mol:[], morph:[]}, isTopologyMatch = true) {
         const panel = document.getElementById('dynamic-insight-panel');
         const badge = document.getElementById('insight-status-badge');
         const content = document.getElementById('insight-dynamic-content');
@@ -2735,8 +2806,23 @@ input[type="submit"]:disabled:active {
             return;
         }
 
+        let missingHtml = '';
+        let allMissing = [...missingData.mol, ...missingData.morph];
+        if (allMissing.length > 0) {
+            let displayNames = allMissing.slice(0, 3).map(n => escapeHTML(getShortLabel(n))).join('、');
+            let moreText = allMissing.length > 3 ? ` 等（計${allMissing.length}件）` : '';
+            missingHtml = `
+                <div style="background: #fadbd8; border-left: 4px solid var(--danger); padding: 10px 14px; margin-bottom: 12px; border-radius: 4px;">
+                    <div style="font-weight: bold; color: #c0392b; font-size: 13px; margin-bottom: 4px;">🚨 比較できないデータを除外しました</div>
+                    <div style="font-size: 12px; color: #7f8c8d; line-height: 1.5;">
+                        「${displayNames}${moreText}」は、片方の系統樹にしか存在しないため比較から除外されています。両方のデータを揃えるか、不要なデータを削除（データクレンジング）して再解析してください。
+                    </div>
+                </div>
+            `;
+        }
+
+        let diagnosisHtml = '';
         if (!isUntangledState) {
-            // パターンA: もつれ未解消（初回解析時）
             badge.style.background = '#f1f5f9';
             badge.style.color = '#475569';
             badge.style.border = '1px solid #cbd5e1';
@@ -2748,31 +2834,40 @@ input[type="submit"]:disabled:active {
                 pairText = `（主な交差ペア: ${samplePairs}${crossingPairs.length > 3 ? ' 等' : ''}）`;
             }
 
-            content.innerHTML = `
+            diagnosisHtml = `
                 <p style="margin-bottom: 6px;"><strong>現在の状態:</strong> 左右の樹形図間で <strong>${crossingCount}箇所</strong> の結線の交差が検出されています。${pairText}</p>
                 <p style="margin-bottom: 0;"><strong>観察のステップ:</strong> 右上の「もつれ解消」ボタンを実行してください。回転可能な枝を数学的に最適化し、見かけの枝の並び順による交差か、生物学的に真の不一致かを切り分けます。</p>
             `;
         } else {
-            // もつれ解消実行後
             if (crossingCount === 0) {
-                // パターンB: 完全一致
-                badge.style.background = '#dcfce7';
-                badge.style.color = '#15803d';
-                badge.style.border = '1px solid #bbf7d0';
-                badge.innerText = '系統完全一致（交差: 0箇所）';
+                if (isTopologyMatch) {
+                    badge.style.background = '#dcfce7';
+                    badge.style.color = '#15803d';
+                    badge.style.border = '1px solid #bbf7d0';
+                    badge.innerText = '系統完全一致（交差: 0箇所）';
 
-                content.innerHTML = `
-                    <p style="margin-bottom: 6px;"><strong>系統関係の一致:</strong> 枝の回転最適化によりすべての交差が解消され、結線が完全に平行になりました（交差: 0箇所）。</p>
-                    <p style="margin-bottom: 0;"><strong>考察の視点:</strong> 分子系統樹（DNAの突然変異の蓄積）と形態分類の分岐パターンが美しく一致しています。種分化に伴い現在の形態差が順調に蓄積していった、標準的な分岐進化プロセスを示唆します。</p>
-                `;
+                    diagnosisHtml = `
+                        <p style="margin-bottom: 6px;"><strong>系統関係の一致:</strong> 枝の回転最適化によりすべての交差が解消され、結線が完全に平行になりました。</p>
+                        <p style="margin-bottom: 0;"><strong>考察の視点:</strong> 分子系統樹（DNAの突然変異の蓄積）と形態分類の分岐パターンが美しく一致しています。種分化に伴い現在の形態差が順調に蓄積していった、標準的な分岐進化プロセスを示唆します。</p>
+                    `;
+                } else {
+                    badge.style.background = '#fef08a';
+                    badge.style.color = '#854d0e';
+                    badge.style.border = '1px solid #fde047';
+                    badge.innerText = '見かけの平行（分岐構造不一致）';
+
+                    diagnosisHtml = `
+                        <p style="margin-bottom: 6px; color: #b45309;"><strong>⚠️ 注意：タングルグラムの見た目に騙されないでください！</strong></p>
+                        <p style="margin-bottom: 6px;">左右の結線は平行（交差: 0箇所）に見えますが、内部の<strong>枝の分かれ方（クレード構造）が一致していません。</strong></p>
+                        <p style="margin-bottom: 0;">タングルグラムの線が平行なのは、単に「末端の並び順がたまたま同じ」になっただけです。異常な値（例: 測定不能で0.0になったデータ）によって、特定の生物が本来のグループ（哺乳類など）から外れてしまっている可能性があります。分岐点（丸いノード）のつながりを注意深く追跡してみましょう。</p>
+                    `;
+                }
             } else {
-                // パターンC: 真の不一致あり
                 badge.style.background = '#ffedd5';
                 badge.style.color = '#c2410c';
                 badge.style.border = '1px solid #fed7aa';
                 badge.innerText = `真の系統不一致（交差: ${crossingCount}箇所）`;
 
-                // 交差に関与している固有の生物種名を抽出
                 const crossingSpeciesSet = new Set();
                 crossingPairs.forEach(pair => {
                     crossingSpeciesSet.add(pair[0]);
@@ -2780,32 +2875,29 @@ input[type="submit"]:disabled:active {
                 });
                 const speciesList = Array.from(crossingSpeciesSet).slice(0, 4).map(s => `【${escapeHTML(s)}】`).join('、');
 
-                // 形態データ(PCA)の存在確認
                 const hasPCA = (typeof parsedMorphData !== 'undefined' && parsedMorphData && parsedMorphData.length > 0);
+                let pcaInsightText = hasPCA ? `<p style="margin-bottom: 6px;"><strong>形態空間との照合:</strong> 右側の形態空間プロットを確認してください。遺伝的には遠縁であるこれらの種が形態空間上で近接している場合、類似の環境に適応した結果生じた<strong>収斂進化（しゅうれんしんか）</strong>の可能性が高くなります。逆に遺伝的に近いのに形態が離れている場合は、急速な適応放散や表現型可塑性が示唆されます。</p>` : '';
 
-                let pcaInsightText = '';
-                if (hasPCA) {
-                    pcaInsightText = `<p style="margin-bottom: 6px;"><strong>形態空間との照合:</strong> 右側の形態空間プロットを確認してください。遺伝的には遠縁であるこれらの種が形態空間上で近接している場合、類似の環境に適応した結果生じた<strong>収斂進化（しゅうれんしんか）</strong>の可能性が高くなります。逆に遺伝的に近いのに形態が離れている場合は、急速な適応放散や表現型可塑性が示唆されます。</p>`;
-                }
-
-                content.innerHTML = `
+                diagnosisHtml = `
                     <p style="margin-bottom: 6px;"><strong>真の系統不一致を検出:</strong> 枝の最適化を行っても解消されない交差が <strong>${crossingCount}箇所</strong> 残存しています。交差に関与している生物種: ${speciesList}${crossingSpeciesSet.size > 4 ? ' 等' : ''}。</p>
                     ${pcaInsightText}
                     <p style="margin-bottom: 0;"><strong>祖先形の検証:</strong> タングルグラム上の分岐ノードをクリックすると、右側のモーフィング画面にその共通祖先の推定形態が再現されます。どの進化段階で形態の急激な変化が起きたかをシミュレーションしてみましょう。</p>
                 `;
-            // 宿主・寄生虫対応表モードの場合の上書き
-            const isMappingMode = globalTreeRoot && globalTreeRoot.pairMappings && globalTreeRoot.pairMappings.length > 0;
-            if (isMappingMode && isUntangledState) {
-                if (crossingCount === 0) {
-                    badge.innerText = '共進化・共分岐（交差: 0箇所）';
-                    content.innerHTML = `<p style="margin-bottom: 0;"><strong>共進化・共分岐（Co-speciation）の成立:</strong> 左右の系統樹が完全に平行です。宿主の種分化と寄生虫の種分化が厳密に同期して進んだことを示唆しています。</p>`;
-                } else {
+                
+                const isMappingMode = globalTreeRoot && globalTreeRoot.pairMappings && globalTreeRoot.pairMappings.length > 0;
+                if (isMappingMode && isUntangledState) {
                     badge.innerText = `宿主転換の示唆（交差: ${crossingCount}箇所）`;
-                    content.innerHTML = `<p style="margin-bottom: 0;"><strong>宿主転換（Host switch）の示唆:</strong> 枝の最適化後も残る交差は、寄生虫が本来の共分岐系統から別の宿主系統へ乗り換えた（宿主転換）、あるいは重複寄生が起きたホットスポットを示しています。</p>`;
+                    diagnosisHtml = `<p style="margin-bottom: 0;"><strong>宿主転換（Host switch）の示唆:</strong> 枝の最適化後も残る交差は、寄生虫が本来の共分岐系統から別の宿主系統へ乗り換えた（宿主転換）、あるいは重複寄生が起きたホットスポットを示しています。</p>`;
                 }
             }
-
-            }
+        }
+        
+        content.innerHTML = missingHtml + diagnosisHtml;
+        
+        // 欠損データ、見かけの平行、または交差残存時にアコーディオンを自動展開して視線を誘導
+        if (allMissing.length > 0 || (isUntangledState && crossingCount === 0 && !isTopologyMatch) || (isUntangledState && crossingCount > 0)) {
+            const detailsEl = document.getElementById('tangle-insight-details');
+            if (detailsEl) detailsEl.open = true;
         }
     }
 
