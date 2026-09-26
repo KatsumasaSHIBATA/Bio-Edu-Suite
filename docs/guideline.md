@@ -273,7 +273,11 @@ SVGはネイティブ絵文字と異なり色を持たないため、アイコ�
 * **[保存 / ダウンロード] ボタン (Save / フロッピー型)**: ファイルエクスポート（FASTA、CSV、JSON、画像保存）専用に固定。他のアイコン（例：クラウド保存や単なるディスクレスアイコン）への置換を禁止。 `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>`
 
 
-**【各フェーズのヘッダー公式SVG (v32.0 固定版)】** 各アプリのヘッダー `<h1>` 内で使用するSVGアイコンは、Phaseごとに以下のものを**一字一句違わず**使用すること。 また、SVGが親要素の影響を受けて巨大化しレイアウトが崩れるのを防ぐため、必ずCSSに `.header-icon { width: 24px; height: 24px; flex-shrink: 0; }` を定義しておくこと。
+**【ペグメニュー・ダイナミックナンバーSVG規格 (v37.1 新設)】**
+ペグメニュー内（`.nav-menu`）に配置されるアプリアイコン（`.nav-icon`）において、閉鎖時（幅60px）の視認性を極致化するため、SVGの中心にアプリ番号（①、②等）を直接描画する「ダイナミック・ナンバーSVG」規格を適用する。
+追加するテキストタグは、既存の線画と重なっても視認性を損なわないよう、縁取りにページ背景色と同じ `stroke="var(--primary)"` を指定し、`paint-order="stroke fill"` を用いて描画すること。
+* 挿入タグ標準規格: `<text x="12" y="16.5" text-anchor="middle" font-size="12" font-weight="bold" font-family="sans-serif" fill="currentColor" stroke="var(--primary)" stroke-width="3" paint-order="stroke fill">[丸数字]</text>`
+
 
 * **PHASE 1 (ダッシュボード)**: **PHASE 1 (ダッシュボード)**: `<svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>`  
 * **PHASE 2**: `<svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9"/><path d="M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9"/><path d="M10 7.5h4M10 16.5h4"/></svg>`  
