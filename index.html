@@ -2298,7 +2298,7 @@ function closeFeedbackForm() {
         morphData: s.morphData || "",
         dnaData: s.dnaData || "",
         sequences: s.sequences || [],
-        traces: s.traces || [],
+        traces: (s.traces || []).map(t => ({ name: t.name, direction: t.direction, size: t.size })),
         image_data: s.image_data || "",
         hasRawSeq: (s.traces && s.traces.length > 0) || s.hasRawSeq || false
       }));
@@ -2466,7 +2466,7 @@ function closeFeedbackForm() {
           morphData: s.morphData || "",
           dnaData: dnaContent,
           sequences: s.sequences || [],
-          traces: s.traces || [],
+          traces: (s.traces || []).map(t => ({ name: t.name, direction: t.direction, size: t.size })),
           image_data: s.image_data || "",
           hasRawSeq: (s.traces && s.traces.length > 0) || s.hasRawSeq || false
         };
