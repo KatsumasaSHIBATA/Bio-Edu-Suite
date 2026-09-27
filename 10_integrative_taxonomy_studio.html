@@ -1025,6 +1025,15 @@ input[type="submit"]:disabled:active {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 /* --- UNIFIED DISABLED BUTTON MASTER CSS END --- */
+/* 【タングルグラム・UX規格】交差ラインのホバー強調とツールチップ対応 */
+.tangle-line { transition: stroke 0.2s ease, stroke-width 0.2s ease, stroke-opacity 0.2s ease; cursor: default; }
+.tangle-line.crossing-line { cursor: help; }
+.tangle-line.crossing-line:hover {
+    stroke: #d35400 !important;
+    stroke-width: 4px !important;
+    stroke-opacity: 1 !important;
+    filter: drop-shadow(0 0 4px rgba(211, 84, 0, 0.4));
+}
 </style>
 
 </head>
@@ -2593,78 +2602,20 @@ input[type="submit"]:disabled:active {
                 d.xMorph = d.x;
             });
             
-            // エクスポート時の黒ベタ化を防ぐため、fill: none と stroke を属性として直接設定
-            treeLinksLayer.selectAll('.link-morph')
-                .data(morphRoot.links())
-                .enter().append('path')
-                .attr('class', 'link link-morph')
-                .attr('fill', 'none')
-                .attr('stroke', '#bdc3c7')
-                .attr('stroke-width', 2)
-                .attr('id', d => `link-${d.source.nodeId}-${d.target.nodeId}`)
-                .attr('d', d => `M${d.source.yMorph},${d.source.xMorph} V${d.target.xMorph} H${d.target.yMorph}`);
-                
-            const nodeMorph = treeNodesLayer.selectAll('.node-morph')
-                .data(morphRoot.descendants())
-                .enter().append('g')
-                .attr('class', 'node-tree node-morph')
-                .attr('id', d => d.nodeId)
-                .attr('transform', d => `translate(${d.yMorph},${d.xMorph})`);
-                
-            nodeMorph.append('circle')
-                .attr('r', 6)
-                .attr('fill', d => getNodeColor(d, '#e67e22'))
-                .attr('stroke', '#fff')
-                .attr('stroke-width', 1.5)
-                .style('cursor', 'pointer')
-                .attr('data-tooltip', d => d.children ? 'クリックしてこの枝を回転（モビール操作）' : (d.data.name || null));
-                
-            nodeMorph.append('text')
-                .attr('dy', '0.31em')
-                .attr('x', d => d.children ? 8 : -10)
-                .attr('text-anchor', d => d.children ? 'start' : 'end')
-                .attr('fill', d => getTextColor(d))
-                .attr('font-size', '11px')
-                .attr('font-weight', 'bold')
-                .attr('font-family', 'Segoe UI, sans-serif')
-                .style('paint-order', 'stroke fill')
-                .style('stroke', '#ffffff')
-                .style('stroke-width', '3.5px')
-                .style('stroke-linejoin', 'round')
-                .text(d => getShortLabel(d.data.name))
-                .style('pointer-events', 'none');
-
-            nodeMorph.on('mouseenter', (event, d) => handleNodeHover(d))
-                     .on('click', (event, d) => {
-                         if (d.children && d.children.length >= 2) {
-                             event.stopPropagation();
-                             d.children.reverse();
-                             if (typeof triggerHapticFeedback === 'function') triggerHapticFeedback();
-                             renderTanglegram(globalTreeRoot.molRoot, globalTreeRoot.morphRoot, globalTreeRoot.pairMappings || []);
-                         } else {
-                             handleNodeHover(d);
-                         }
-                     });
-                
-            // --- タングル結線 (Tangle lines) ---
+            // --- タングル結線のデータ構築（描画より先に実行して対応関係を算出） ---
             const molLeaves = molRoot.leaves();
             const morphLeaves = morphRoot.leaves();
             
-            // --- 欠損データ抽出とトポロジー一致度計算 ---
             let missingData = { mol: [], morph: [] };
             let isTopologyMatch = true;
-            
             const molLeafNodes = molRoot.leaves();
             const morphLeafNodes = morphRoot.leaves();
-            
             let molLeafIds = molLeafNodes.map(l => normalizeId(l.data.name));
             let morphLeafIds = morphLeafNodes.map(l => normalizeId(l.data.name));
-            
             let commonMolIds = [];
-            let reverseMap = {}; // morph -> mol のマッピング
+            let reverseMap = {};
             
             if (pairMappings && pairMappings.length > 0) {
-                // 既存の対応表マッピング処理
                 pairMappings.forEach(m => {
                     let molId = normalizeId(m.left);
                     let morphId = normalizeId(m.right);
@@ -2676,25 +2627,12 @@ input[type="submit"]:disabled:active {
                 missingData.mol = molLeafNodes.map(l => l.data.name).filter(n => !pairMappings.some(m => isIdOrNameMatched(m.left, n)));
                 missingData.morph = morphLeafNodes.map(l => l.data.name).filter(n => !pairMappings.some(m => isIdOrNameMatched(m.right, n)));
             } else {
-                // 分子系統樹側に存在しない形態データを抽出
-                missingData.morph = morphLeafNodes
-                    .map(l => l.data.name)
-                    .filter(morphName => !molLeafNodes.some(m => isIdOrNameMatched(m.data.name, morphName)));
-
-                // 形態データ側に存在しない分子系統樹ノードを抽出
-                missingData.mol = molLeafNodes
-                    .map(l => l.data.name)
-                    .filter(molName => !morphLeafNodes.some(m => isIdOrNameMatched(m.data.name, molName)));
-
-                // 共通ノードIDの抽出（トポロジー比較用）
-                commonMolIds = molLeafNodes
-                    .filter(molNode => morphLeafNodes.some(m => isIdOrNameMatched(m.data.name, molNode.data.name)))
-                    .map(l => normalizeId(l.data.name));
-
+                missingData.morph = morphLeafNodes.map(l => l.data.name).filter(morphName => !molLeafNodes.some(m => isIdOrNameMatched(m.data.name, morphName)));
+                missingData.mol = molLeafNodes.map(l => l.data.name).filter(molName => !morphLeafNodes.some(m => isIdOrNameMatched(m.data.name, molName)));
+                commonMolIds = molLeafNodes.filter(molNode => morphLeafNodes.some(m => isIdOrNameMatched(m.data.name, molNode.data.name))).map(l => normalizeId(l.data.name));
                 commonMolIds.forEach(id => { reverseMap[id] = id; });
             }
             
-            // 共通ノードが3つ以上ある場合のみクレード構造を比較
             if (commonMolIds.length >= 3) {
                 function extractClades(rootNode, validLeaves, revMap) {
                     let clades = new Set();
@@ -2704,7 +2642,6 @@ input[type="submit"]:disabled:active {
                                 let id = normalizeId(l.data.name);
                                 return revMap[id] || id;
                             }).filter(id => validLeaves.includes(id));
-                            
                             if (leaves.length >= 2 && leaves.length < validLeaves.length) {
                                 leaves.sort();
                                 clades.add(leaves.join('|'));
@@ -2713,14 +2650,11 @@ input[type="submit"]:disabled:active {
                     });
                     return clades;
                 }
-                
                 let molClades = extractClades(molRoot, commonMolIds, Object.fromEntries(commonMolIds.map(id => [id, id])));
                 let morphClades = extractClades(morphRoot, commonMolIds, reverseMap);
-                
                 let unmatchCount = 0;
                 molClades.forEach(c => { if (!morphClades.has(c)) unmatchCount++; });
                 morphClades.forEach(c => { if (!molClades.has(c)) unmatchCount++; });
-                
                 isTopologyMatch = (unmatchCount === 0);
             }
 
@@ -2762,31 +2696,108 @@ input[type="submit"]:disabled:active {
                 }
             }
             
-            // 各生物種の文字実長を動的計算し、文字の末尾のすぐ横から最背面レイヤーへ結線
+            // 形態ツリーの各ノードの初期位置(initialX: 縦座標)を計算し、アニメーションの始点とする
+            morphRoot.eachAfter(d => {
+                if (!d.children) {
+                    const map = tangleData.find(m => m.morph.nodeId === d.nodeId);
+                    d.initialX = map ? map.mol.xMol : d.xMorph;
+                } else {
+                    const validChildren = d.children.filter(c => c.initialX !== undefined);
+                    d.initialX = validChildren.length > 0 ? d3.mean(validChildren, c => c.initialX) : d.xMorph;
+                }
+            });
+
+            // --- 右ツリー リンク描画 ---
+            treeLinksLayer.selectAll('.link-morph')
+                .data(morphRoot.links())
+                .enter().append('path')
+                .attr('class', 'link link-morph')
+                .attr('fill', 'none')
+                .attr('stroke', '#bdc3c7')
+                .attr('stroke-width', 2)
+                .attr('id', d => `link-${d.source.nodeId}-${d.target.nodeId}`)
+                .attr('d', d => `M${d.source.yMorph},${d.source.initialX} V${d.target.initialX} H${d.target.yMorph}`)
+                .transition().duration(1500).ease(d3.easeCubicInOut)
+                .attr('d', d => `M${d.source.yMorph},${d.source.xMorph} V${d.target.xMorph} H${d.target.yMorph}`);
+                
+            // --- 右ツリー ノード描画 ---
+            const nodeMorph = treeNodesLayer.selectAll('.node-morph')
+                .data(morphRoot.descendants())
+                .enter().append('g')
+                .attr('class', 'node-tree node-morph')
+                .attr('id', d => d.nodeId)
+                .attr('transform', d => `translate(${d.yMorph},${d.initialX})`);
+                
+            nodeMorph.transition().duration(1500).ease(d3.easeCubicInOut)
+                .attr('transform', d => `translate(${d.yMorph},${d.xMorph})`);
+                
+            nodeMorph.append('circle')
+                .attr('r', 6)
+                .attr('fill', d => getNodeColor(d, '#e67e22'))
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 1.5)
+                .style('cursor', 'pointer')
+                .attr('data-tooltip', d => d.children ? 'クリックしてこの枝を回転（モビール操作）' : (d.data.name || null));
+                
+            nodeMorph.append('text')
+                .attr('dy', '0.31em')
+                .attr('x', d => d.children ? 8 : -10)
+                .attr('text-anchor', d => d.children ? 'start' : 'end')
+                .attr('fill', d => getTextColor(d))
+                .attr('font-size', '11px')
+                .attr('font-weight', 'bold')
+                .attr('font-family', 'Segoe UI, sans-serif')
+                .style('paint-order', 'stroke fill')
+                .style('stroke', '#ffffff')
+                .style('stroke-width', '3.5px')
+                .style('stroke-linejoin', 'round')
+                .text(d => getShortLabel(d.data.name))
+                .style('pointer-events', 'none');
+
+            nodeMorph.on('mouseenter', (event, d) => handleNodeHover(d))
+                     .on('click', (event, d) => {
+                         if (d.children && d.children.length >= 2) {
+                             event.stopPropagation();
+                             d.children.reverse();
+                             if (typeof triggerHapticFeedback === 'function') triggerHapticFeedback();
+                             renderTanglegram(globalTreeRoot.molRoot, globalTreeRoot.morphRoot, globalTreeRoot.pairMappings || []);
+                         } else {
+                             handleNodeHover(d);
+                         }
+                     });
+
+            // --- タングル結線 描画 ---
             tangleLinesLayer.selectAll('.tangle-line')
                 .data(tangleData)
                 .enter().append('path')
-                .attr('class', 'tangle-line')
-                .attr('d', d => {
-                    // 左側: ノード座標 + マージン(10px) + 文字実幅 + 余白(10px)
-                    const molTextW = getComputedLabelWidth(d.mol.data.name);
-                    const x1 = d.mol.yMol + 10 + molTextW + 10;
-                    const y1 = d.mol.xMol;
-                    
-                    // 右側: ノード座標 - マージン(10px) - 文字実幅 - 余白(10px)
-                    const morphTextW = getComputedLabelWidth(d.morph.data.name);
-                    const x2 = d.morph.yMorph - 10 - morphTextW - 10;
-                    const y2 = d.morph.xMorph;
-                    
-                    // 中央ベジェ曲線（もし文字が極端に長くx1 >= x2になる場合は中間点フォールバック）
-                    const cX = x1 + (x2 - x1) / 2;
-                    return `M${x1},${y1} C${cX},${y1} ${cX},${y2} ${x2},${y2}`;
-                })
+                .attr('class', d => 'tangle-line' + (d.isCrossing ? ' crossing-line' : ''))
                 .attr('fill', 'none')
                 .attr('stroke', d => (isUntangled && d.isCrossing) ? '#e67e22' : '#bdc3c7')
                 .attr('stroke-width', d => (isUntangled && d.isCrossing) ? 2.5 : 1.5)
                 .attr('stroke-opacity', d => (isUntangled && d.isCrossing) ? 0.9 : 0.6)
-                .style('pointer-events', 'none');
+                .attr('data-tooltip', d => d.isCrossing ? '💡【環境要因・不一致の可能性】<br>形質が遺伝的系統と異なります。環境適応（収斂進化等）の可能性があります。' : '系統関係が一致しています')
+                .style('pointer-events', 'stroke')
+                .attr('d', d => {
+                    const molTextW = getComputedLabelWidth(d.mol.data.name);
+                    const x1 = d.mol.yMol + 10 + molTextW + 10;
+                    const y1 = d.mol.xMol;
+                    const morphTextW = getComputedLabelWidth(d.morph.data.name);
+                    const x2 = d.morph.yMorph - 10 - morphTextW - 10;
+                    const y2_init = d.morph.initialX;
+                    const cX = x1 + (x2 - x1) / 2;
+                    return `M${x1},${y1} C${cX},${y1} ${cX},${y2_init} ${x2},${y2_init}`;
+                })
+                .transition().duration(1500).ease(d3.easeCubicInOut)
+                .attr('d', d => {
+                    const molTextW = getComputedLabelWidth(d.mol.data.name);
+                    const x1 = d.mol.yMol + 10 + molTextW + 10;
+                    const y1 = d.mol.xMol;
+                    const morphTextW = getComputedLabelWidth(d.morph.data.name);
+                    const x2 = d.morph.yMorph - 10 - morphTextW - 10;
+                    const y2 = d.morph.xMorph;
+                    const cX = x1 + (x2 - x1) / 2;
+                    return `M${x1},${y1} C${cX},${y1} ${cX},${y2} ${x2},${y2}`;
+                });
 
             // 動的観察ポイント（ダイナミック・フィードバック）のリアルタイム更新
             updateDynamicInsight(tangleData, isUntangled, crossingPairs, crossingCount, missingData, isTopologyMatch);
