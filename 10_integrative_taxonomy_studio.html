@@ -2664,6 +2664,7 @@ input[type="submit"]:disabled:active {
             let reverseMap = {}; // morph -> mol のマッピング
             
             if (pairMappings && pairMappings.length > 0) {
+                // 既存の対応表マッピング処理
                 pairMappings.forEach(m => {
                     let molId = normalizeId(m.left);
                     let morphId = normalizeId(m.right);
@@ -2672,12 +2673,24 @@ input[type="submit"]:disabled:active {
                         reverseMap[morphId] = molId;
                     }
                 });
-                missingData.mol = molLeafNodes.map(l => l.data.name).filter(n => !pairMappings.some(m => normalizeId(m.left) === normalizeId(n)));
-                missingData.morph = morphLeafNodes.map(l => l.data.name).filter(n => !pairMappings.some(m => normalizeId(m.right) === normalizeId(n)));
+                missingData.mol = molLeafNodes.map(l => l.data.name).filter(n => !pairMappings.some(m => isIdOrNameMatched(m.left, n)));
+                missingData.morph = morphLeafNodes.map(l => l.data.name).filter(n => !pairMappings.some(m => isIdOrNameMatched(m.right, n)));
             } else {
-                commonMolIds = molLeafIds.filter(id => morphLeafIds.includes(id));
-                missingData.mol = molLeafNodes.map(l => l.data.name).filter(n => !morphLeafIds.includes(normalizeId(n)));
-                missingData.morph = morphLeafNodes.map(l => l.data.name).filter(n => !molLeafIds.includes(normalizeId(n)));
+                // 分子系統樹側に存在しない形態データを抽出
+                missingData.morph = morphLeafNodes
+                    .map(l => l.data.name)
+                    .filter(morphName => !molLeafNodes.some(m => isIdOrNameMatched(m.data.name, morphName)));
+
+                // 形態データ側に存在しない分子系統樹ノードを抽出
+                missingData.mol = molLeafNodes
+                    .map(l => l.data.name)
+                    .filter(molName => !morphLeafNodes.some(m => isIdOrNameMatched(m.data.name, molName)));
+
+                // 共通ノードIDの抽出（トポロジー比較用）
+                commonMolIds = molLeafNodes
+                    .filter(molNode => morphLeafNodes.some(m => isIdOrNameMatched(m.data.name, molNode.data.name)))
+                    .map(l => normalizeId(l.data.name));
+
                 commonMolIds.forEach(id => { reverseMap[id] = id; });
             }
             
