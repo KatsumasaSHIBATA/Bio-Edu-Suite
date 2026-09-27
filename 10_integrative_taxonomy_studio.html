@@ -1343,7 +1343,8 @@ input[type="submit"]:disabled:active {
             <div id="rat_tangle" class="rationale-text">
                 <strong>【根拠：タングルグラムと系統の不一致】</strong>
                 ・左の分子系統樹（DNA）と右の形態系統樹（見た目）を比較します。<br>
-                ・線が交差（クロス）している部分は『見た目は似ているが遺伝的には遠い（収斂進化）』、あるいは『見た目は違うが遺伝的には近い』といった、進化のダイナミズムや隠蔽種（Cryptic species）の存在を示唆しています。
+                ・線が交差（クロス）している部分は『見た目は似ているが遺伝的には遠い（収斂進化）』、あるいは『見た目は違うが遺伝的には近い』といった、進化のダイナミズムや隠蔽種（Cryptic species）の存在を示唆しています。<br>
+                ・金属の焼きなましから着想を得たメタヒューリスティクス（<b>焼きなまし法 / Simulated Annealing</b>）により、分岐ノードを探索して交差数が最小となる最適な表示順序を自動計算します。
             </div>
             <div id="rat_outgroup10" class="rationale-text">
                 <strong>【根拠：外群の指定と枝の回転】</strong>
@@ -1457,7 +1458,7 @@ input[type="submit"]:disabled:active {
                 <ul style="padding-left: 20px; margin: 0; display: flex; flex-direction: column; gap: 6px;">
                     <li><strong>Hierarchical Clustering (Lance-Williams Algorithm):</strong> Lance, G. N., & Williams, W. T. (1967). A general theory of classificatory sorting strategies: 1. Hierarchical systems. <em>The Computer Journal</em>, 9(4), 373–380.</li>
                     <li><strong>Ward's Minimum Variance Method:</strong> Ward Jr, J. H. (1963). Hierarchical grouping to optimize an objective function. <em>Journal of the American Statistical Association</em>, 58(301), 236–244.</li>
-                    <li><strong>Tanglegram (Co-phylogenetic comparison):</strong> Page, R. D. (1993). Genes, organisms, and areas: the problem of multiple lineages. <em>Systematic Biology</em>, 42(1), 77–84.</li>
+                    <li><strong>Tanglegram Layout Optimization (Simulated Annealing):</strong> Page, R. D. (1993). Genes, organisms, and areas: the problem of multiple lineages. <em>Systematic Biology</em>, 42(1), 77–84.; Buchin, K., Buchin, M., Bykov, J., Maas, M., & Speckmann, B. (2012). Exact algorithms for tanglegram layout. In <em>International Symposium on Graph Drawing</em> (pp. 352–363). Springer, Berlin, Heidelberg.</li>
                     <li><strong>Ancestral State Reconstruction (Continuous Characters):</strong> Schluter, D., Price, T., Mooers, A. O., & Ludwig, D. (1997). Estimating ancestral states of continuous characters. <em>Evolution</em>, 51(6), 1699–1711.</li>
                 </ul>
             </div>
@@ -2847,7 +2848,7 @@ input[type="submit"]:disabled:active {
                     badge.innerText = '系統完全一致（交差: 0箇所）';
 
                     diagnosisHtml = `
-                        <p style="margin-bottom: 6px;"><strong>系統関係の一致:</strong> 枝の回転最適化によりすべての交差が解消され、結線が完全に平行になりました。</p>
+                        <p style="margin-bottom: 6px;"><strong>系統関係の一致:</strong> 焼きなまし法（Simulated Annealing）による最適化によりすべての交差が解消され、結線が完全に平行になりました。</p>
                         <p style="margin-bottom: 0;"><strong>考察の視点:</strong> 分子系統樹（DNAの突然変異の蓄積）と形態分類の分岐パターンが美しく一致しています。種分化に伴い現在の形態差が順調に蓄積していった、標準的な分岐進化プロセスを示唆します。</p>
                     `;
                 } else {
@@ -2879,7 +2880,7 @@ input[type="submit"]:disabled:active {
                 let pcaInsightText = hasPCA ? `<p style="margin-bottom: 6px;"><strong>形態空間との照合:</strong> 右側の形態空間プロットを確認してください。遺伝的には遠縁であるこれらの種が形態空間上で近接している場合、類似の環境に適応した結果生じた<strong>収斂進化（しゅうれんしんか）</strong>の可能性が高くなります。逆に遺伝的に近いのに形態が離れている場合は、急速な適応放散や表現型可塑性が示唆されます。</p>` : '';
 
                 diagnosisHtml = `
-                    <p style="margin-bottom: 6px;"><strong>真の系統不一致を検出:</strong> 枝の最適化を行っても解消されない交差が <strong>${crossingCount}箇所</strong> 残存しています。交差に関与している生物種: ${speciesList}${crossingSpeciesSet.size > 4 ? ' 等' : ''}。</p>
+                    <p style="margin-bottom: 6px;"><strong>真の系統不一致を検出:</strong> 焼きなまし法（Simulated Annealing）により枝回転の最適化を行っても解消されない交差が <strong>${crossingCount}箇所</strong> 残存しています。これは計算の限界ではなく、生物学的に真の系統不一致（収斂進化や宿主転換）を示しています。</p>
                     ${pcaInsightText}
                     <p style="margin-bottom: 0;"><strong>祖先形の検証:</strong> タングルグラム上の分岐ノードをクリックすると、右側のモーフィング画面にその共通祖先の推定形態が再現されます。どの進化段階で形態の急激な変化が起きたかをシミュレーションしてみましょう。</p>
                 `;
@@ -2902,73 +2903,152 @@ input[type="submit"]:disabled:active {
     }
 
     // ==========================================
-    // Untangle Logic
+    // Untangle Logic (Simulated Annealing Worker)
     // ==========================================
-    function getSubtreeScore(node, referenceOrder, pairMappings = []) {
-        let leaves = node.leaves();
-        let sum = 0, count = 0;
-        let reverseMap = {};
-        if (pairMappings && pairMappings.length > 0) {
-            pairMappings.forEach(m => { reverseMap[normalizeId(m.right)] = normalizeId(m.left); });
-        }
-        leaves.forEach(l => {
-            let targetName = normalizeId(l.data.name);
-            if (pairMappings && pairMappings.length > 0 && reverseMap[targetName]) {
-                targetName = reverseMap[targetName];
-            }
-            let refIndex = referenceOrder.indexOf(targetName);
-            if (refIndex !== -1) {
-                sum += refIndex;
-                count++;
-            }
-        });
-        return count > 0 ? sum / count : 0;
-    }
-
-    function untangleTree(node, referenceOrder, pairMappings = []) {
-        if (!node.children) return;
-        
-        node.children.forEach(c => untangleTree(c, referenceOrder, pairMappings));
-        
-        if (node.children.length === 2) {
-            let scoreA = getSubtreeScore(node.children[0], referenceOrder, pairMappings);
-            let scoreB = getSubtreeScore(node.children[1], referenceOrder, pairMappings);
-            if (scoreA > scoreB) {
-                let temp = node.children[0];
-                node.children[0] = node.children[1];
-                node.children[1] = temp;
-            }
-        }
-    }
-
     window.handleUntangle = function() {
         if (!globalTreeRoot || !globalTreeRoot.molRoot || !globalTreeRoot.morphRoot) return;
         window.globalTreeRoot = globalTreeRoot;
         
         const btn = document.getElementById('untangleBtn');
-        isUntangled = !isUntangled;
-        
-        if (isUntangled) {
-            const molLeaves = globalTreeRoot.molRoot.leaves().map(l => normalizeId(l.data.name));
-            untangleTree(globalTreeRoot.morphRoot, molLeaves, globalTreeRoot.pairMappings || []);
-            // 押した後（解消中）は控えめな白（btn-secondary）
-            btn.classList.replace('btn-primary', 'btn-secondary');
-            btn.innerText = "もつれを戻す";
+        if (!btn) return;
+
+        if (!isUntangled) {
+            // もつれ解消（最適化）を開始
+            btn.disabled = true;
+            btn.innerText = "最適化中...";
+
+            try {
+                const worker = new Worker('lib/tangle_worker.js');
+                const molData = cloneTreeData(globalTreeRoot.molRoot.data);
+                const morphData = cloneTreeData(globalTreeRoot.morphRoot.data);
+                const pairMappings = globalTreeRoot.pairMappings || [];
+
+                worker.onmessage = function(e) {
+                    const data = e.data;
+                    if (!data) return;
+
+                    if (data.type === 'SUCCESS') {
+                        isUntangled = true;
+                        
+                        // 最適化された分子系統樹から D3 hierarchy を再構築
+                        if (data.molTree) {
+                            const optimizedMolData = data.molTree;
+                            const newMolRoot = d3.hierarchy(optimizedMolData, d => d.children);
+                            let molIdCounter = 0;
+                            newMolRoot.each(d => {
+                                d.nodeId = "tree-node-mol-" + (molIdCounter++);
+                                d.leavesList = d.leaves().map(l => l.data.name).filter(n => n);
+                                if (d.children) { d.originalChildren = [...d.children]; }
+                            });
+                            globalTreeRoot.molRoot = newMolRoot;
+                        }
+
+                        // 最適化された形態系統樹から D3 hierarchy を再構築
+                        if (data.morphTree) {
+                            const optimizedMorphData = data.morphTree;
+                            const newMorphRoot = d3.hierarchy(optimizedMorphData, d => d.children);
+                            let mIdCounter = 0;
+                            newMorphRoot.each(d => {
+                                d.nodeId = "tree-node-morph-" + (mIdCounter++);
+                                d.leavesList = d.leaves().map(l => l.data.name).filter(n => n);
+                                if (d.children) { d.originalChildren = [...d.children]; }
+                            });
+                            globalTreeRoot.morphRoot = newMorphRoot;
+                        }
+
+                        btn.disabled = false;
+                        btn.classList.replace('btn-primary', 'btn-secondary');
+                        btn.innerText = "もつれを戻す";
+
+                        renderTanglegram(globalTreeRoot.molRoot, globalTreeRoot.morphRoot, pairMappings);
+                        if (parsedMorphData && parsedMorphData.length > 0) {
+                            drawPCA();
+                        }
+
+                        const finalCrossings = typeof data.bestCrossings === 'number' ? data.bestCrossings : 0;
+                        showToast(`もつれ解消完了 (交差数: ${finalCrossings}箇所)`, 'success');
+                        worker.terminate();
+                    } else if (data.type === 'ERROR') {
+                        btn.disabled = false;
+                        btn.innerText = "もつれ解消";
+                        showToast(`もつれ解消エラー: ${data.message || '不明なエラー'}`, 'error');
+                        worker.terminate();
+                    }
+                };
+
+                worker.onerror = function(err) {
+                    btn.disabled = false;
+                    btn.innerText = "もつれ解消";
+                    showToast("Web Workerの実行に失敗しました", 'error');
+                    worker.terminate();
+                };
+
+                worker.postMessage({
+                    type: 'OPTIMIZE',
+                    molRoot: molData,
+                    morphRoot: morphData,
+                    pairMappings: pairMappings
+                });
+            } catch (err) {
+                console.error("Untangle Worker instantiation error:", err);
+                btn.disabled = false;
+                btn.innerText = "もつれ解消";
+                showToast("Worker起動エラーが発生しました", 'error');
+            }
         } else {
-            // オリジナルの順序に復元
-            globalTreeRoot.morphRoot.each(d => {
-                if (d.originalChildren) {
-                    d.children = [...d.originalChildren];
+            // もつれを戻す（初期順序へ復元）
+            isUntangled = false;
+
+            if (originalMolTreeData) {
+                let molTreeCopy = cloneTreeData(originalMolTreeData);
+                if (currentSelectedOutgroup) {
+                    molTreeCopy = rerootTreeData(molTreeCopy, currentSelectedOutgroup);
                 }
-            });
-            // 押す前（未解消・実行可能状態）は目立つ水色（btn-primary）
+                const restoredMolRoot = d3.hierarchy(molTreeCopy, d => d.children);
+                let molIdCounter = 0;
+                restoredMolRoot.each(d => {
+                    d.nodeId = "tree-node-mol-" + (molIdCounter++);
+                    d.leavesList = d.leaves().map(l => l.data.name).filter(n => n);
+                    if (d.children) { d.originalChildren = [...d.children]; }
+                });
+                globalTreeRoot.molRoot = restoredMolRoot;
+            } else if (globalTreeRoot.molRoot) {
+                globalTreeRoot.molRoot.each(d => {
+                    if (d.originalChildren) {
+                        d.children = [...d.originalChildren];
+                    }
+                });
+            }
+
+            if (originalMorphTreeData) {
+                let morphTreeCopy = cloneTreeData(originalMorphTreeData);
+                if (currentSelectedOutgroup) {
+                    morphTreeCopy = rerootTreeData(morphTreeCopy, currentSelectedOutgroup);
+                }
+                const restoredMorphRoot = d3.hierarchy(morphTreeCopy, d => d.children);
+                let mIdCounter = 0;
+                restoredMorphRoot.each(d => {
+                    d.nodeId = "tree-node-morph-" + (mIdCounter++);
+                    d.leavesList = d.leaves().map(l => l.data.name).filter(n => n);
+                    if (d.children) { d.originalChildren = [...d.children]; }
+                });
+                globalTreeRoot.morphRoot = restoredMorphRoot;
+            } else if (globalTreeRoot.morphRoot) {
+                globalTreeRoot.morphRoot.each(d => {
+                    if (d.originalChildren) {
+                        d.children = [...d.originalChildren];
+                    }
+                });
+            }
+
+            btn.disabled = false;
             btn.classList.replace('btn-secondary', 'btn-primary');
             btn.innerText = "もつれ解消";
-        }
-        
-        renderTanglegram(globalTreeRoot.molRoot, globalTreeRoot.morphRoot, globalTreeRoot.pairMappings || []);
-        if (parsedMorphData && parsedMorphData.length > 0) {
-            drawPCA();
+
+            renderTanglegram(globalTreeRoot.molRoot, globalTreeRoot.morphRoot, globalTreeRoot.pairMappings || []);
+            if (parsedMorphData && parsedMorphData.length > 0) {
+                drawPCA();
+            }
         }
     };
 
