@@ -1187,8 +1187,16 @@ input[type="submit"]:disabled:active {
 
             
             <div style="background:white; border:1px solid var(--border-color); border-radius:4px; overflow:hidden;">
-                <div style="background:#f8f9fa; padding:10px 12px; font-size:13px; font-weight:bold; color:var(--primary); border-bottom:1px solid var(--border-color);">
-                    1. Top Hits (スコア順)
+                <div style="background:#f8f9fa; padding:10px 12px; font-size:13px; font-weight:bold; color:var(--primary); border-bottom:1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                    <span>1. Top Hits (スコア順)</span>
+                    <div class="export-btn-group" style="display: flex; gap: 8px;">
+                        <button id="exportHitsCsvBtn" class="btn btn-sm btn-secondary btn-dynamic" disabled onclick="exportHitsCsv()" data-tooltip="検索結果一覧をCSV形式で保存します">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> CSV保存
+                        </button>
+                        <button id="copyHitsBtn" class="btn btn-sm btn-secondary btn-dynamic" disabled onclick="copyHitsClipboard()" data-tooltip="検索結果一覧をクリップボードにコピーします">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> コピー
+                        </button>
+                    </div>
                 </div>
                 <div style="overflow-x: auto; max-height:200px; overflow-y:auto; -webkit-overflow-scrolling: touch;">
                     <table>
@@ -1930,6 +1938,11 @@ input[type="submit"]:disabled:active {
             runBtn.innerHTML = originalBtnHtml;
         }
 
+        const exportCsvBtn = document.getElementById('exportHitsCsvBtn');
+        const copyHitsBtn = document.getElementById('copyHitsBtn');
+        if (exportCsvBtn) exportCsvBtn.disabled = false;
+        if (copyHitsBtn) copyHitsBtn.disabled = false;
+
         const nowStr = Date.now().toString();
         localStorage.setItem('bio_edu_last_user_edit', nowStr);
         sessionStorage.setItem('bio_edu_last_user_edit', nowStr);
@@ -2026,8 +2039,13 @@ input[type="submit"]:disabled:active {
         }
 
         let html = `
-            <div style="margin-bottom:12px; color:#ecf0f1; border-bottom:1px solid #34495e; padding-bottom:8px; font-size: 13px;">
-                Alignment with <strong style="font-style:italic; color: #3498db;">${res.name}</strong> (Score: ${res.score}, E-value: ${res.evalue})
+            <div style="margin-bottom:12px; color:#ecf0f1; border-bottom:1px solid #34495e; padding-bottom:8px; font-size: 13px; display: flex; justify-content: space-between; align-items: center;">
+                <span>Alignment with <strong style="font-style:italic; color: #3498db;">${res.name}</strong> (Score: ${res.score}, E-value: ${res.evalue})</span>
+                <div class="export-btn-group">
+                    <button type="button" class="btn btn-sm btn-secondary" style="background: transparent; color: #bdc3c7; border-color: #34495e;" onclick="copyAlignmentText(${idx})" data-tooltip="このアライメント結果を等幅テキストとしてコピーします">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> テキストコピー
+                    </button>
+                </div>
             </div>
         `;
 
@@ -2099,6 +2117,87 @@ input[type="submit"]:disabled:active {
         }
 
         panel.innerHTML = html;
+    }
+
+    function exportHitsCsv() {
+        if (!currentResults || currentResults.length === 0) return;
+        let csvContent = "生物種 (学名 / 和名),遺伝子マーカー,最大スコア,一致率(%),E-value (期待値)\n";
+        currentResults.forEach(res => {
+            let name = res.name.replace(/"/g, '""');
+            let gene = res.gene || '-';
+            csvContent += `"${name}","${gene}",${res.score},${res.identity},${res.evalue}\n`;
+        });
+        let finalCsv = `# Source: App_7_Virtual_BLAST_Explorer\n# Timestamp: ${new Date().toISOString()}\n` + csvContent;
+        const bom = new Uint8Array([0xEF, 0xBB, 0xBF]); // Excel文字化け防止用BOM
+        const blob = new Blob([bom, finalCsv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        const today = new Date();
+        const yyyymmdd = today.getFullYear() + String(today.getMonth() + 1).padStart(2, '0') + String(today.getDate()).padStart(2, '0');
+        link.setAttribute("download", `BioEdu_Export_${yyyymmdd}_BLAST_Hits.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        if (typeof showToast === 'function') showToast("Top Hits結果をCSVとして保存しました。");
+    }
+
+    function copyHitsClipboard() {
+        if (!currentResults || currentResults.length === 0) return;
+        let textContent = "生物種 (学名 / 和名)\t遺伝子マーカー\t最大スコア\t一致率(%)\tE-value (期待値)\n";
+        currentResults.forEach(res => {
+            let gene = res.gene || '-';
+            textContent += `${res.name}\t${gene}\t${res.score}\t${res.identity}\t${res.evalue}\n`;
+        });
+        let finalText = `# Source: App_7_Virtual_BLAST_Explorer\n# Timestamp: ${new Date().toISOString()}\n\n` + textContent;
+        navigator.clipboard.writeText(finalText).then(() => {
+            if (typeof showToast === 'function') showToast("Top Hits結果をクリップボードにコピーしました。");
+        }).catch(err => {
+            if (typeof showToast === 'function') showToast("コピーに失敗しました。", "error");
+        });
+    }
+
+    function copyAlignmentText(idx) {
+        if (!currentResults || !currentResults[idx]) return;
+        let res = currentResults[idx];
+        let textContent = `Alignment with ${res.name}\n`;
+        textContent += `Score: ${res.score}, E-value: ${res.evalue}\n`;
+        textContent += `--------------------------------------------------\n\n`;
+        const BLOCK_SIZE = 60;
+        let qPos = res.qStart || 1;
+        let sPos = res.sStart || 1;
+        let totalLen = res.alignQ.length;
+        for (let b = 0; b < totalLen; b += BLOCK_SIZE) {
+            let blockQ = "", blockS = "", blockPipe = "";
+            let qStartBlock = qPos;
+            let sStartBlock = sPos;
+            let qCount = 0;
+            let sCount = 0;
+            for (let k = 0; k < BLOCK_SIZE && b + k < totalLen; k++) {
+                let idxChar = b + k;
+                let qChar = res.alignQ[idxChar];
+                let sChar = res.alignS[idxChar];
+                blockQ += qChar;
+                blockS += sChar;
+                blockPipe += res.alignPipe[idxChar];
+                if (qChar !== '-') qCount++;
+                if (sChar !== '-') sCount++;
+            }
+            let qEndBlock = qPos + qCount - 1;
+            let sEndBlock = sPos + sCount - 1;
+            textContent += `Query  ${String(qStartBlock).padStart(4, ' ')}  ${blockQ}  ${qEndBlock}\n`;
+            textContent += `             ${blockPipe}\n`;
+            textContent += `Sbjct  ${String(sStartBlock).padStart(4, ' ')}  ${blockS}  ${sEndBlock}\n\n`;
+            qPos += qCount;
+            sPos += sCount;
+        }
+        let finalText = `# Source: App_7_Virtual_BLAST_Explorer\n# Timestamp: ${new Date().toISOString()}\n\n` + textContent;
+        navigator.clipboard.writeText(finalText).then(() => {
+            if (typeof showToast === 'function') showToast("アライメント結果をクリップボードにコピーしました。");
+        }).catch(err => {
+            if (typeof showToast === 'function') showToast("コピーに失敗しました。", "error");
+        });
     }
 
     async function importFromNCBI() {
@@ -2513,6 +2612,10 @@ function closeFeedbackForm() {
                                 rows[state.selectedIdx].classList.add('selected');
                             }
                         }
+                        const exportCsvBtn = document.getElementById('exportHitsCsvBtn');
+                        const copyHitsBtn = document.getElementById('copyHitsBtn');
+                        if (exportCsvBtn) exportCsvBtn.disabled = false;
+                        if (copyHitsBtn) copyHitsBtn.disabled = false;
                     }
 
                     const alnPanel = document.getElementById('alignmentPanel');
