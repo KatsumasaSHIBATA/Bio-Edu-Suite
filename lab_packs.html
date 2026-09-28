@@ -1044,30 +1044,39 @@ input[type="submit"]:disabled:active {
         <div class="card">
           <div class="card-header">
             <div class="card-title-area">
-              <h3 class="card-title">2-B. 見た目のそっくりは本当の親戚か？</h3>
+              <h3 class="card-title">2-B. 謎の毛皮と頭骨が語る「収斂進化」の罠</h3>
               <div class="card-tags">
                 <span class="tag badge-morph">形態</span>
                 <span class="tag badge-gene">遺伝子</span>
+                <span class="tag badge-eco">生態</span>
               </div>
             </div>
           </div>
           <div class="card-body">
-            <div class="scenario-box"><strong>【Mission】</strong>タヌキ（イヌ科）、アライグマ（アライグマ科）、ハクビシン（ジャコウネコ科）。雑食で見た目も頭骨もそっくりな彼らは、本当に近い親戚なのか？「形態」と「DNA（遺伝子）」の矛盾から、収斂（しゅうれん）進化の罠を暴け！</div>
+            <div class="scenario-box"><b>【Mission】</b>猟師から持ち込まれた「3つの謎の毛皮」、そして麻布大学等の博物館から借り受けた「3種の頭骨標本」。雑食で見た目も骨の形もそっくりなこれらは、本当に近い親戚なのか？毛根からDNAを抽出し、制限酵素のハサミで正体を暴け。そして「DNAの真実」と「頭骨の形」が激突する時、収斂（しゅうれん）進化のドラマが幕を開ける！</div>
             
             <div class="db-info">
-              <strong>【収録生物種 (DB)】</strong> タヌキ、アライグマ、ハクビシン、ニホンジカ（外群）、ニホンザル（外群）。
+              <b>【収録生物種 (DB)】</b> タヌキ、アライグマ、ハクビシン、ニホンジカ（外群）、ニホンザル（外群）。
             </div>
 
             <div class="section-title">実験＆解析パイプライン</div>
             <ul class="step-list">
-              <li><span class="step-highlight no-wrap">Dry(形態):</span> 5種の頭骨（下顎骨）の真横シルエット画像をアプリ⑨に読み込ませ、楕円フーリエ解析（EFA）で「形の系統樹」を作成。</li>
-              <li><span class="step-highlight no-wrap">Dry(遺伝子):</span> NCBIから取得したミトコンドリアDNAデータを用いて分子系統樹を作成。</li>
-              <li><span class="step-highlight no-wrap">Dry(統合):</span> アプリ⑩のタングルグラムで比較し、「DNAのルーツはバラバラなのに、食性が同じだからアゴの形が似てしまった」という進化のドラマを証明する。</li>
+              <li><span class="step-highlight">Wet:</span> 毛皮の毛根からInstaGene法によりDNAを抽出（食肉偽装1-Aと同一プロトコル）。ミトコンドリアDNAのCytb遺伝子をPCR増幅し、制限酵素（AluI等）で切断して電気泳動（RFLP）にかける。<button class="rationale-btn" onclick="toggleRationale(event, 'data-method-chelex')" aria-label="なぜこの手法？">?</button></li>
+              <li><span class="step-highlight no-wrap">Dry(遺伝子/形態):</span> アプリ③を用いてバンドパターンから3種の正体を特定。同時にアプリ⑨（Morphometrics Studio）で借用した頭骨の真横・真上写真を読み込み、吻部長や頬骨弓幅を計測して形態の距離行列データ（PCA）を自ら測り出す。</li>
+              <li><span class="step-highlight no-wrap">Dry(統合):</span> アプリ⑧で分子系統樹を作り、アプリ⑩のタングルグラムで形態データと突き合わせる。全く異なる系統なのに形が酷似している矛盾を証明する。</li>
             </ul>
 
+            <div class="primer-box">
+              <b>【プライマー】</b><br>
+              標的遺伝子: ミトコンドリアDNA cytb遺伝子<br>
+              F: 5'-CCATCCAACATCTCAGCATGATGAAA-3'<br>
+              R: 5'-CCCCTCAGAATGATATTTGTCCTCA-3'<br>
+              <div class="reference-text">Kocher <i>et al.</i> (1989) PNAS. </div>
+            </div>
+
             <div class="bench-tip">
-              <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（外群のスパイス）</strong>
-              類似した3種だけを比較するのではなく、比較の基準となる「外群」として、草食のニホンジカや、顔の平坦なニホンザルのデータを混ぜておくのが秘訣です。これにより、タヌキたちの頭骨がいかに「局所的に似通ってしまったか」がデータ上でより劇的に際立ちます。
+              <strong><svg class="svg-hint" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>現場のコツ（最高のリアル体験とバーチャル運用）</strong>
+              麻布大学等が実施している「頭骨標本貸出制度」を活用した実測と、1-A（食肉偽装）と全く同じInstaGene抽出試薬・プライマーを毛根からの抽出に使い回すことで、低コストかつ大興奮のRFLPミステリーが実現します。なお、KocherらのUniversal Cytbプライマーで増幅される領域（約400bp）は、AluIなどの一般的な制限酵素で切断（RFLP）することで、タヌキ・ハクビシン・アライグマの種特異的なバンドパターンを明確に区別可能です。実際の毛皮の調達やWet実験が難しい場合は、あらかじめ用意された「仮想のDNAデータセット」と「頭骨写真」を配布し、ブラウザ完結型ミステリーとして実施することも可能です。
             </div>
 
             <div class="action-area">
