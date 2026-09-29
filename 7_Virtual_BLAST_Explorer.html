@@ -2129,7 +2129,7 @@ input[type="submit"]:disabled:active {
         });
         let finalCsv = `# Source: App_7_Virtual_BLAST_Explorer\n# Timestamp: ${new Date().toISOString()}\n` + csvContent;
         const bom = new Uint8Array([0xEF, 0xBB, 0xBF]); // Excel文字化け防止用BOM
-        const blob = new Blob([bom, finalCsv], { type: 'text/csv;charset=utf-8;' });
+        const blob = new Blob(['\uFEFF' + bom, finalCsv], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.setAttribute("href", url);

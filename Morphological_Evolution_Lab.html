@@ -1489,7 +1489,7 @@ input[type="submit"]:disabled:active {
 
             if (csv === "Sample_ID,前腕比率,手根中手比率,指骨比率,手首頑健指数,指展開指数\n") return;
 
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
             link.setAttribute("href", url);

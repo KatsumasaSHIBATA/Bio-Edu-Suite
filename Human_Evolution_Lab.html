@@ -1300,7 +1300,7 @@ input[type="submit"]:disabled:active {
 
             if (csv === "Sample_ID,顔角,脳頭蓋長比,顔面頭蓋長比\n") return;
 
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
             link.setAttribute("href", url);
