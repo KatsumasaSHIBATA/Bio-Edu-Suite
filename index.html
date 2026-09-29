@@ -1563,44 +1563,8 @@ input[type="submit"]:disabled:active {
 
     // AB1 プリセット波形データの IndexedDB 自動ハイドレーション
     async function hydrateAb1Presets() {
-      try {
-        const sampleIds = [
-          "SPECIMEN-00_gallus",
-          "SPECIMEN-01_magnirostris",
-          "SPECIMEN-02_fortis",
-          "SPECIMEN-03_parvulus",
-          "SPECIMEN-04_olivacea"
-        ];
-        const currentVersion = localStorage.getItem('bio_edu_ab1_version');
-        let needsHydration = currentVersion !== 'v3';
-        if (!needsHydration) {
-          for (const sid of sampleIds) {
-            const existing = await getFromIndexedDB(STORE_SAMPLES, sid);
-            if (!existing || !existing.data) {
-              needsHydration = true;
-              break;
-            }
-          }
-        }
-        if (!needsHydration) {
-          await syncTracesFromIndexedDB();
-          return;
-        }
-
-        const response = await fetch('data/ab1_presets.json?v=v3');
-        if (!response.ok) {
-          await syncTracesFromIndexedDB();
-          return;
-        }
-        const presets = await response.json();
-        for (const [id, preset] of Object.entries(presets)) {
-          await saveToIndexedDB(STORE_SAMPLES, preset);
-        }
-        localStorage.setItem('bio_edu_ab1_version', 'v3');
-        console.log("AB1 presets successfully hydrated into IndexedDB (v3).");
-      } catch (err) {
-        console.warn("Failed to hydrate AB1 presets:", err);
-      }
+      // プリセットab1ファイルの自動ダウンロードを無効化（データ軽量化のため）
+      // ※ユーザーが手動追加した波形データ向けの同期処理のみ実行
       await syncTracesFromIndexedDB();
     }
 
