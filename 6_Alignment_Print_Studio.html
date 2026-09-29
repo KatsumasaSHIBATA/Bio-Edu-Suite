@@ -1358,6 +1358,14 @@ input[type="submit"]:disabled:active {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 /* --- UNIFIED DISABLED BUTTON MASTER CSS END --- */
+
+/* 🖨️ v34.4 濃紺同化パッチ 印刷時キャンセラー */
+@media print {
+    html, body, .content-area {
+        background: none !important;
+        background-color: #ffffff !important;
+    }
+}
 </style>
 
 </head>
