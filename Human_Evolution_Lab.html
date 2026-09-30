@@ -812,6 +812,10 @@ input[type="submit"]:disabled:active {
 
         // 第7.4項: Session-Persistent Workspace Standard (ハイドレーション判定用ref)
         const isHydrated = React.useRef(false);
+        const tf = React.useRef({ scale: 1, offsetX: 0, offsetY: 0 });
+        const isPanning = React.useRef(false);
+        const panStart = React.useRef({ x: 0, y: 0 });
+        const [renderTrigger, setRenderTrigger] = useState(0);
 
         // 2D Digitizer states (第16.1項準拠: 初期ステート未選択 & 全画面展開ステート)
         const [uploadedImage, setUploadedImage] = useState(null);
@@ -827,6 +831,8 @@ input[type="submit"]:disabled:active {
             const handleKeyDown = (e) => {
                 if (e.key === 'Escape' && isDigitizerExpanded) {
                     setIsDigitizerExpanded(false);
+                    tf.current = { scale: 1, offsetX: 0, offsetY: 0 };
+                    setRenderTrigger(prev => prev + 1);
                 }
             };
             window.addEventListener('keydown', handleKeyDown);
@@ -834,6 +840,7 @@ input[type="submit"]:disabled:active {
         }, [isDigitizerExpanded]);
 
         const loadImageFile = (file) => {
+            tf.current = { scale: 1, offsetX: 0, offsetY: 0 };
             if (!file || !file.type.startsWith('image/')) {
                 if (typeof showToast === 'function') showToast("画像ファイル(PNG/JPEG等)を選択してください", "warning");
                 return;
@@ -1001,9 +1008,16 @@ input[type="submit"]:disabled:active {
             img.onload = () => {
                 canvas.width = img.width;
                 canvas.height = img.height;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.save();
+                if (isDigitizerExpanded) {
+                    ctx.translate(tf.current.offsetX, tf.current.offsetY);
+                    ctx.scale(tf.current.scale, tf.current.scale);
+                }
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                 
-                ctx.lineWidth = 3;
+                const invScale = isDigitizerExpanded ? (1 / tf.current.scale) : 1;
+                ctx.lineWidth = 3 * invScale;
                 
                 if (measureMode === 'A') {
                     ctx.strokeStyle = '#f59e0b';
@@ -1042,13 +1056,59 @@ input[type="submit"]:disabled:active {
                 
                 points.forEach(p => {
                     ctx.beginPath();
-                    ctx.arc(p.x, p.y, Math.max(3, canvas.width / 300), 0, 2 * Math.PI);
+                    ctx.arc(p.x, p.y, Math.max(3, canvas.width / 300) * invScale, 0, 2 * Math.PI);
                     ctx.fill();
                     ctx.stroke();
                 });
+                ctx.restore();
             };
             img.src = uploadedImage;
-        }, [uploadedImage, points, measureMode]);
+        }, [uploadedImage, points, measureMode, isDigitizerExpanded, renderTrigger]);
+
+        useEffect(() => {
+            const canvas = canvasRef.current;
+            if (!canvas || !isDigitizerExpanded) return;
+
+            const handleWheel = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const cx = (e.clientX - rect.left) * (canvas.width / rect.width);
+                const cy = (e.clientY - rect.top) * (canvas.height / rect.height);
+                const zoom = Math.exp(-e.deltaY * 0.001);
+                const newScale = Math.max(0.5, Math.min(15, tf.current.scale * zoom));
+                tf.current.offsetX = cx - (cx - tf.current.offsetX) * (newScale / tf.current.scale);
+                tf.current.offsetY = cy - (cy - tf.current.offsetY) * (newScale / tf.current.scale);
+                tf.current.scale = newScale;
+                setRenderTrigger(prev => prev + 1);
+                e.preventDefault();
+            };
+
+            canvas.addEventListener('wheel', handleWheel, { passive: false });
+            return () => {
+                canvas.removeEventListener('wheel', handleWheel);
+            };
+        }, [uploadedImage, isDigitizerExpanded]);
+
+        const handleMouseDown = (e) => {
+            if (!isDigitizerExpanded) return;
+            if (e.button === 2 || e.shiftKey) {
+                isPanning.current = true;
+                panStart.current = { x: e.clientX, y: e.clientY };
+            }
+        };
+        const handleMouseMove = (e) => {
+            if (!isPanning.current || !canvasRef.current) return;
+            const rect = canvasRef.current.getBoundingClientRect();
+            const scaleX = canvasRef.current.width / rect.width;
+            const scaleY = canvasRef.current.height / rect.height;
+            const dx = (e.clientX - panStart.current.x) * scaleX;
+            const dy = (e.clientY - panStart.current.y) * scaleY;
+            panStart.current = { x: e.clientX, y: e.clientY };
+            tf.current.offsetX += dx;
+            tf.current.offsetY += dy;
+            setRenderTrigger(prev => prev + 1);
+        };
+        const handleMouseUp = () => { isPanning.current = false; };
+        const handleMouseLeave = () => { isPanning.current = false; };
 
         const handleDragOver = (e) => {
             e.preventDefault();
@@ -1088,12 +1148,15 @@ input[type="submit"]:disabled:active {
         };
 
         const handleCanvasClick = (e) => {
+            if (e.button === 2) return;
             if (!canvasRef.current) return;
             const rect = canvasRef.current.getBoundingClientRect();
             const scaleX = canvasRef.current.width / rect.width;
             const scaleY = canvasRef.current.height / rect.height;
-            const x = (e.clientX - rect.left) * scaleX;
-            const y = (e.clientY - rect.top) * scaleY;
+            const canvasX = (e.clientX - rect.left) * scaleX;
+            const canvasY = (e.clientY - rect.top) * scaleY;
+            const x = isDigitizerExpanded ? ((canvasX - tf.current.offsetX) / tf.current.scale) : canvasX;
+            const y = isDigitizerExpanded ? ((canvasY - tf.current.offsetY) / tf.current.scale) : canvasY;
             
             setPoints(prev => {
                 const maxPoints = measureMode === 'A' ? 4 : 2;
@@ -1168,17 +1231,22 @@ input[type="submit"]:disabled:active {
             }
 
             setIsDigitizerExpanded(false);
+            tf.current = { scale: 1, offsetX: 0, offsetY: 0 };
+            setRenderTrigger(prev => prev + 1);
         };
 
         const handleModeChange = (mode) => {
             setMeasureMode(mode);
             setPoints([]);
+            tf.current = { scale: 1, offsetX: 0, offsetY: 0 };
+            setRenderTrigger(prev => prev + 1);
             if (uploadedImage) {
                 setIsDigitizerExpanded(true);
             }
         };
 
         const handleClearDigitizer = () => {
+            tf.current = { scale: 1, offsetX: 0, offsetY: 0 };
             setPoints([]);
             setMeasureMode(null);
             setIsDigitizerExpanded(false);
@@ -1624,6 +1692,11 @@ input[type="submit"]:disabled:active {
                                                 <canvas 
                                                     ref={canvasRef}
                                                     onClick={handleCanvasClick}
+                                                    onMouseDown={handleMouseDown}
+                                                    onMouseMove={handleMouseMove}
+                                                    onMouseUp={handleMouseUp}
+                                                    onMouseLeave={handleMouseLeave}
+                                                    onContextMenu={(e) => e.preventDefault()}
                                                     className="max-w-full max-h-full object-contain"
                                                 ></canvas>
                                             </div>
@@ -1633,8 +1706,8 @@ input[type="submit"]:disabled:active {
                                                 <div className={`text-[11px] font-bold ${isDigitizerExpanded ? 'text-slate-400' : 'text-slate-600'}`}>
                                                     {measureMode ? (
                                                         measureMode === 'A'
-                                                            ? `【顔角】カンペル平面(2点) → 顔面線(2点) の計4点をクリック ${isDigitizerExpanded ? '(ESCキーで縮小)' : ''}`
-                                                            : `【部位 ${measureMode}】2点をクリック ${isDigitizerExpanded ? '(ESCキーで縮小)' : ''}`
+                                                            ? `【顔角】カンペル平面(2点) → 顔面線(2点) の計4点をクリック ${isDigitizerExpanded ? '(ホイールで拡大 / 右ドラッグで移動 / ESCで縮小)' : ''}`
+                                                            : `【部位 ${measureMode}】2点をクリック ${isDigitizerExpanded ? '(ホイールで拡大 / 右ドラッグで移動 / ESCで縮小)' : ''}`
                                                     ) : '上のA・B・Cボタンを押して計測開始'}
                                                 </div>
 
