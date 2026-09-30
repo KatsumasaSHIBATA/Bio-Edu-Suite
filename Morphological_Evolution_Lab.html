@@ -984,8 +984,13 @@ input[type="submit"]:disabled:active {
         const fileInputRef = React.useRef(null);
         const [isDraggingOver, setIsDraggingOver] = useState(false);
         const isHydrated = useRef(false);
+        const tf = useRef({ scale: 1, offsetX: 0, offsetY: 0 });
+        const isPanning = useRef(false);
+        const panStart = useRef({ x: 0, y: 0 });
+        const [renderTrigger, setRenderTrigger] = useState(0);
 
         const loadImageFile = (file) => {
+            tf.current = { scale: 1, offsetX: 0, offsetY: 0 };
             if (!file || !file.type.startsWith('image/')) {
                 if (typeof showToast === 'function') showToast("画像ファイル(PNG/JPEG等)を選択してください", "warning");
                 return;
@@ -1054,10 +1059,17 @@ input[type="submit"]:disabled:active {
             img.onload = () => {
                 canvas.width = img.width;
                 canvas.height = img.height;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.save();
+                if (isDigitizerExpanded) {
+                    ctx.translate(tf.current.offsetX, tf.current.offsetY);
+                    ctx.scale(tf.current.scale, tf.current.scale);
+                }
                 ctx.drawImage(img, 0, 0);
 
                 if (points.length > 0) {
-                    ctx.lineWidth = 3;
+                    const invScale = isDigitizerExpanded ? (1 / tf.current.scale) : 1;
+                    ctx.lineWidth = 3 * invScale;
                     
                     if (measureMode === 'A') {
                         ctx.strokeStyle = '#bef264';
@@ -1085,12 +1097,12 @@ input[type="submit"]:disabled:active {
 
                     points.forEach((p, index) => {
                         ctx.beginPath();
-                        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+                        ctx.arc(p.x, p.y, 4 * invScale, 0, Math.PI * 2);
                         ctx.fill();
                         
                         ctx.fillStyle = '#fff';
-                        ctx.font = 'bold 14px sans-serif';
-                        ctx.fillText((index + 1).toString(), p.x + 8, p.y - 8);
+                        ctx.font = `bold ${Math.round(14 * invScale)}px sans-serif`;
+                        ctx.fillText((index + 1).toString(), p.x + 8 * invScale, p.y - 8 * invScale);
                         
                         if (measureMode === 'A') ctx.fillStyle = '#bef264';
                         else if (measureMode === 'B') ctx.fillStyle = '#fb7185';
@@ -1099,9 +1111,56 @@ input[type="submit"]:disabled:active {
                         else if (measureMode === 'E') ctx.fillStyle = '#a855f7';
                     });
                 }
+                ctx.restore();
             };
             img.src = uploadedImage;
-        }, [uploadedImage, points, measureMode]);
+        }, [uploadedImage, points, measureMode, isDigitizerExpanded, renderTrigger]);
+
+        useEffect(() => {
+            const canvas = canvasRef.current;
+            // 全画面展開時のみホイールズームを有効化
+            if (!canvas || !isDigitizerExpanded) return;
+
+            const handleWheel = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const cx = (e.clientX - rect.left) * (canvas.width / rect.width);
+                const cy = (e.clientY - rect.top) * (canvas.height / rect.height);
+                const zoom = Math.exp(-e.deltaY * 0.001);
+                const newScale = Math.max(0.5, Math.min(15, tf.current.scale * zoom));
+                tf.current.offsetX = cx - (cx - tf.current.offsetX) * (newScale / tf.current.scale);
+                tf.current.offsetY = cy - (cy - tf.current.offsetY) * (newScale / tf.current.scale);
+                tf.current.scale = newScale;
+                setRenderTrigger(prev => prev + 1);
+                e.preventDefault();
+            };
+
+            canvas.addEventListener('wheel', handleWheel, { passive: false });
+            return () => {
+                canvas.removeEventListener('wheel', handleWheel);
+            };
+        }, [uploadedImage, isDigitizerExpanded]);
+
+        const handleMouseDown = (e) => {
+            if (!isDigitizerExpanded) return;
+            if (e.button === 2 || e.shiftKey) {
+                isPanning.current = true;
+                panStart.current = { x: e.clientX, y: e.clientY };
+            }
+        };
+        const handleMouseMove = (e) => {
+            if (!isPanning.current || !canvasRef.current) return;
+            const rect = canvasRef.current.getBoundingClientRect();
+            const scaleX = canvasRef.current.width / rect.width;
+            const scaleY = canvasRef.current.height / rect.height;
+            const dx = (e.clientX - panStart.current.x) * scaleX;
+            const dy = (e.clientY - panStart.current.y) * scaleY;
+            panStart.current = { x: e.clientX, y: e.clientY };
+            tf.current.offsetX += dx;
+            tf.current.offsetY += dy;
+            setRenderTrigger(prev => prev + 1);
+        };
+        const handleMouseUp = () => { isPanning.current = false; };
+        const handleMouseLeave = () => { isPanning.current = false; };
 
         const handleDragOver = (e) => {
             e.preventDefault();
@@ -1141,14 +1200,17 @@ input[type="submit"]:disabled:active {
         };
 
         const handleCanvasClick = (e) => {
+            if (e.button === 2) return;
             if (!canvasRef.current) return;
             const rect = canvasRef.current.getBoundingClientRect();
             
             const scaleX = canvasRef.current.width / rect.width;
             const scaleY = canvasRef.current.height / rect.height;
             
-            const x = (e.clientX - rect.left) * scaleX;
-            const y = (e.clientY - rect.top) * scaleY;
+            const canvasX = (e.clientX - rect.left) * scaleX;
+            const canvasY = (e.clientY - rect.top) * scaleY;
+            const x = isDigitizerExpanded ? ((canvasX - tf.current.offsetX) / tf.current.scale) : canvasX;
+            const y = isDigitizerExpanded ? ((canvasY - tf.current.offsetY) / tf.current.scale) : canvasY;
             
             setPoints(prev => {
                 const maxPoints = 2;
@@ -1206,14 +1268,18 @@ input[type="submit"]:disabled:active {
                 showToast(`計測値 ${valStr} をコピーしました（ワークシートに貼り付け可）`, 'success');
             }
 
-            // 数値クリックで自動縮小復帰
+            // 数値クリックで自動縮小復帰＆位置リセット
             setIsDigitizerExpanded(false);
+            tf.current = { scale: 1, offsetX: 0, offsetY: 0 };
+            setRenderTrigger(prev => prev + 1);
         };
 
         useEffect(() => {
             const handleKeyDown = (e) => {
                 if (e.key === 'Escape' && isDigitizerExpanded) {
                     setIsDigitizerExpanded(false);
+                    tf.current = { scale: 1, offsetX: 0, offsetY: 0 };
+                    setRenderTrigger(prev => prev + 1);
                 }
             };
             window.addEventListener('keydown', handleKeyDown);
@@ -1223,6 +1289,8 @@ input[type="submit"]:disabled:active {
         const handleModeChange = (mode) => {
             setMeasureMode(mode);
             setPoints([]);
+            tf.current = { scale: 1, offsetX: 0, offsetY: 0 };
+            setRenderTrigger(prev => prev + 1);
             // 画像があれば自動で全画面拡大モードへ突入
             if (uploadedImage) {
                 setIsDigitizerExpanded(true);
@@ -1230,6 +1298,7 @@ input[type="submit"]:disabled:active {
         };
 
         const handleClearDigitizer = () => {
+            tf.current = { scale: 1, offsetX: 0, offsetY: 0 };
             setPoints([]);
             setMeasureMode(null);
             setIsDigitizerExpanded(false);
@@ -1837,6 +1906,11 @@ input[type="submit"]:disabled:active {
                                                     <canvas 
                                                         ref={canvasRef}
                                                         onClick={handleCanvasClick}
+                                                        onMouseDown={handleMouseDown}
+                                                        onMouseMove={handleMouseMove}
+                                                        onMouseUp={handleMouseUp}
+                                                        onMouseLeave={handleMouseLeave}
+                                                        onContextMenu={(e) => e.preventDefault()}
                                                         className="max-w-full max-h-full object-contain"
                                                     ></canvas>
                                                 </div>
@@ -1844,7 +1918,7 @@ input[type="submit"]:disabled:active {
                                                 {/* ステータスバー＆洗練されたインライン数値コピー領域 */}
                                                 <div className={`flex justify-between items-center px-2 shrink-0 ${isDigitizerExpanded ? 'pt-2 text-white' : ''}`}>
                                                     <div className={`text-[11px] font-bold ${isDigitizerExpanded ? 'text-slate-400' : 'text-slate-600'}`}>
-                                                        {measureMode ? `【部位 ${measureMode}】2点をクリック ${isDigitizerExpanded ? '(ESCキーで縮小)' : ''}` : '上のA・B・Cボタンを押して計測開始'}
+                                                        {measureMode ? `【部位 ${measureMode}】2点をクリック ${isDigitizerExpanded ? '(ホイールで拡大 / 右ドラッグで移動 / ESCで縮小)' : ''}` : '上のA・B・Cボタンを押して計測開始'}
                                                     </div>
 
                                                     {points.length === 2 ? (
