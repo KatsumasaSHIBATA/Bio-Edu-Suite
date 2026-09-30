@@ -1320,11 +1320,7 @@ input[type="submit"]:disabled:active {
                     <div style="position: relative; border: 1px solid #bdc3c7; height: 350px; background: #e0e0e0; border-radius: 4px; overflow: hidden; cursor: crosshair; margin-top: 10px;" id="gpaCanvasWrapper">
                         <canvas id="gpaCanvas" style="position: absolute; top:0; left:0; width:100%; height:100%;"></canvas>
                         
-                        <div style="position: absolute; bottom: 10px; right: 10px; display: flex; flex-direction: column; align-items: stretch; gap: 5px; background: rgba(255,255,255,0.9); padding: 6px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-                            <button class="btn btn-secondary" onclick="gpaZoom(1.2)" data-tooltip="拡大" style="padding: 4px; width: 100%; box-sizing: border-box;">+</button>
-                            <button class="btn btn-secondary" onclick="gpaZoom(1/1.2)" data-tooltip="縮小" style="padding: 4px; width: 100%; box-sizing: border-box;">-</button>
-                            <button class="btn btn-secondary" onclick="gpaResetView()" data-tooltip="初期表示に戻す" style="padding: 4px; font-size: 10px; width: 100%; box-sizing: border-box;">Reset</button>
-                        </div>
+                        <div style="position: absolute; bottom: 10px; right: 10px; background: rgba(255,255,255,0.7); padding: 4px 8px; border-radius: 4px; font-size: 10px; color: var(--text-muted); pointer-events: none; backdrop-filter: blur(2px);">※ホイールで拡大・右ドラッグで移動</div>
                     </div>
                 </div>
                 
