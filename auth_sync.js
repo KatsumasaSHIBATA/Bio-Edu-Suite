@@ -190,6 +190,16 @@ export async function registerMasterPreset(taskCode, payload) {
         let val = sanitizedPayload.sessionData[k];
         if (typeof val === 'string' && val.length > 150000) {
           val = "";
+        } else if (typeof val === 'string') {
+          try {
+            const parsed = JSON.parse(val);
+            if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+              if (parsed.uploadedImage && typeof parsed.uploadedImage === 'string' && parsed.uploadedImage.length > 150000) {
+                parsed.uploadedImage = "";
+                val = JSON.stringify(parsed);
+              }
+            }
+          } catch(e) {}
         }
         cleanSessionData[k.replace(/\./g, '__dot__')] = val;
       });
@@ -320,6 +330,26 @@ function mergeLocalImageData(targetWorkspace) {
             });
             if (patched) {
               targetWorkspace[k] = JSON.stringify(wsSamples);
+            }
+          }
+        } catch(e) {}
+      }
+    });
+
+    // 【追加】Labアプリの uploadedImage のローカルマージ
+    Object.keys(targetWorkspace).forEach(k => {
+      if (typeof targetWorkspace[k] === 'string' && targetWorkspace[k].includes('"uploadedImage":')) {
+        try {
+          const cloudParsed = JSON.parse(targetWorkspace[k]);
+          if (cloudParsed && typeof cloudParsed === 'object' && (!cloudParsed.uploadedImage || cloudParsed.uploadedImage.length < 100)) {
+            const restoredKey = k.replace(/__dot__/g, '.');
+            const localVal = sessionStorage.getItem(restoredKey);
+            if (localVal) {
+              const localParsed = JSON.parse(localVal);
+              if (localParsed.uploadedImage && localParsed.uploadedImage.length > 150000) {
+                cloudParsed.uploadedImage = localParsed.uploadedImage;
+                targetWorkspace[k] = JSON.stringify(cloudParsed);
+              }
             }
           }
         } catch(e) {}
@@ -457,6 +487,16 @@ export async function saveCurrentWorkspace() {
                 return copy;
               });
               val = JSON.stringify(sanitized);
+            }
+          } catch(e) {}
+        } else if (val) {
+          try {
+            const parsed = JSON.parse(val);
+            if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+              if (parsed.uploadedImage && typeof parsed.uploadedImage === 'string' && parsed.uploadedImage.length > 150000) {
+                parsed.uploadedImage = "";
+                val = JSON.stringify(parsed);
+              }
             }
           } catch(e) {}
         }
