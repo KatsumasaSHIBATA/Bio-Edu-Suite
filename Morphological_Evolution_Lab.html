@@ -1363,8 +1363,8 @@ input[type="submit"]:disabled:active {
             SPECIES_LIST.forEach(s => {
                 initialData[s.name] = { fore: "", meta: "", phal: "", width: "", spread: "" };
             });
-            initialData["自分の腕"] = { fore: "", meta: "", phal: "", width: "", spread: "" };
-            initialData["手羽先"] = { fore: "", meta: "", phal: "", width: "", spread: "" };
+            initialData["ヒト[自分の腕]"] = { fore: "", meta: "", phal: "", width: "", spread: "" };
+            initialData["ニワトリ[手羽先]"] = { fore: "", meta: "", phal: "", width: "", spread: "" };
             setMeasurements(initialData);
             isHydrated.current = true;
         }, []);
@@ -1511,7 +1511,7 @@ input[type="submit"]:disabled:active {
         const handleCopyAllCSV = () => {
             let csv = "";
             let hasError = false;
-            const allSpeciesToCopy = [...SPECIES_LIST.map(s => s.name), "自分の腕", "手羽先"];
+            const allSpeciesToCopy = [...SPECIES_LIST.map(s => s.name), "ヒト[自分の腕]", "ニワトリ[手羽先]"];
 
             allSpeciesToCopy.forEach(name => {
                 const data = measurements[name] || {};
@@ -1555,7 +1555,7 @@ input[type="submit"]:disabled:active {
 
         const handleDownloadAllCSV = () => {
             let csv = "Sample_ID,前腕比率,手根中手比率,指骨比率,手首頑健指数,指展開指数\n";
-            const allSpeciesToCopy = [...SPECIES_LIST.map(s => s.name), "自分の腕", "手羽先"];
+            const allSpeciesToCopy = [...SPECIES_LIST.map(s => s.name), "ヒト[自分の腕]", "ニワトリ[手羽先]"];
 
             allSpeciesToCopy.forEach(name => {
                 const data = measurements[name] || {};
@@ -1596,7 +1596,7 @@ input[type="submit"]:disabled:active {
             if (typeof showToast === 'function') showToast("CSVファイルをダウンロードしました", "success");
         };
         
-        const allSpeciesToCopy = [...SPECIES_LIST.map(s => s.name), "自分の腕", "手羽先"];
+        const allSpeciesToCopy = [...SPECIES_LIST.map(s => s.name), "ヒト[自分の腕]", "ニワトリ[手羽先]"];
         const canCopyAll = allSpeciesToCopy.some(name => {
             const data = measurements[name] || {};
             const fore = parseFloat(data.fore);
@@ -2132,7 +2132,7 @@ input[type="submit"]:disabled:active {
                                                 })}
                                                 
                                                 {(() => {
-                                                    const avgName = "自分の腕";
+                                                    const avgName = "ヒト[自分の腕]";
                                                     const avgData = measurements[avgName] || {};
                                                     const aForeVal = parseFloat(avgData.fore);
                                                     const aHasFore = !isNaN(aForeVal) && aForeVal > 0;
@@ -2159,7 +2159,7 @@ input[type="submit"]:disabled:active {
                                                 <tr className="bg-amber-50/80 border-t-2 border-amber-300">
                                                     <td className="px-3 py-2.5 text-[11px] font-bold text-amber-900 flex flex-col justify-center gap-0.5">
                                                         <div className="flex items-center gap-1.5">
-                                                            <span>自分の腕</span>
+                                                            <span>ヒト[自分の腕]</span>
                                                         </div>
                                                     </td>
                                                     <td className="px-1 py-1.5 text-center">
@@ -2208,7 +2208,7 @@ input[type="submit"]:disabled:active {
                                             })()}
                                             
                                             {(() => {
-                                                const chickName = "手羽先";
+                                                const chickName = "ニワトリ[手羽先]";
                                                 const chickData = measurements[chickName] || {};
                                                 const cForeVal = parseFloat(chickData.fore);
                                                 const cHasFore = !isNaN(cForeVal) && cForeVal > 0;
@@ -2235,7 +2235,7 @@ input[type="submit"]:disabled:active {
                                                 <tr className="bg-orange-50/80 border-t border-orange-200">
                                                     <td className="px-3 py-2.5 text-[11px] font-bold text-orange-900 flex flex-col justify-center gap-0.5">
                                                         <div className="flex items-center gap-1.5">
-                                                            <span>手羽先</span>
+                                                            <span>ニワトリ[手羽先]</span>
                                                         </div>
                                                     </td>
                                                     <td className="px-1 py-1.5 text-center">
