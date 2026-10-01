@@ -974,6 +974,7 @@ input[type="submit"]:disabled:active {
         
         const [measurements, setMeasurements] = useState({});
         const [copyStatus, setCopyStatus] = useState({});
+        const [stdMode, setStdMode] = useState('fore'); // 'fore' または 'total'
 
         // 2D Digitizer states
         const [uploadedImage, setUploadedImage] = useState(null);
@@ -1347,6 +1348,9 @@ input[type="submit"]:disabled:active {
                     if (parsed.points) {
                         setPoints(parsed.points);
                     }
+                    if (parsed.stdMode) {
+                        setStdMode(parsed.stdMode);
+                    }
                     isHydrated.current = true;
                     if (parsed.measurements) return;
                 } catch (e) {
@@ -1376,6 +1380,7 @@ input[type="submit"]:disabled:active {
                         if (parsed.uploadedImage) setUploadedImage(parsed.uploadedImage);
                         if (parsed.measureMode) setMeasureMode(parsed.measureMode);
                         if (parsed.points) setPoints(parsed.points);
+                        if (parsed.stdMode) setStdMode(parsed.stdMode);
                         if (typeof showToast === 'function') showToast("最新の前肢骨格データを同期しました", "info");
                     }
                 } catch (err) {
@@ -1401,7 +1406,8 @@ input[type="submit"]:disabled:active {
                     measurements,
                     uploadedImage,
                     measureMode,
-                    points
+                    points,
+                    stdMode
                 };
                 try {
                     sessionStorage.setItem('bio_edu_workspace_evolution_lab', JSON.stringify(dataToSave));
@@ -1410,7 +1416,7 @@ input[type="submit"]:disabled:active {
                     console.warn("Storage quota exceeded or error while saving workspace:", e);
                 }
             }
-        }, [measurements, uploadedImage, measureMode, points]);
+        }, [measurements, uploadedImage, measureMode, points, stdMode]);
 
         const handleInput = (speciesName, field, value) => {
             setMeasurements(prev => ({
@@ -1482,9 +1488,16 @@ input[type="submit"]:disabled:active {
             const width = parseFloat(data.width) || 0;
             const spread = parseFloat(data.spread) || 0;
             const sum = fore + meta + phal;
-            const x1 = ((fore / sum) * 100).toFixed(1);
-            const x2 = ((meta / sum) * 100).toFixed(1);
-            const x3 = ((phal / sum) * 100).toFixed(1);
+            let x1, x2, x3;
+            if (stdMode === 'fore') {
+                x1 = "100.0";
+                x2 = ((meta / fore) * 100).toFixed(1);
+                x3 = ((phal / fore) * 100).toFixed(1);
+            } else {
+                x1 = ((fore / sum) * 100).toFixed(1);
+                x2 = ((meta / sum) * 100).toFixed(1);
+                x3 = ((phal / sum) * 100).toFixed(1);
+            }
             const x4 = ((width / fore) * 100).toFixed(1); // 頑健性指数
             const x5 = (meta + phal > 0) ? ((spread / (meta + phal)) * 100).toFixed(1) : "0.0"; // スパン指数
             const csvRow = `${speciesName},${x1},${x2},${x3},${x4},${x5}`;
@@ -1510,9 +1523,16 @@ input[type="submit"]:disabled:active {
                     const width = parseFloat(data.width) || 0;
                     const spread = parseFloat(data.spread) || 0;
                     const sum = fore + meta + phal;
-                    const x1 = ((fore / sum) * 100).toFixed(1);
-                    const x2 = ((meta / sum) * 100).toFixed(1);
-                    const x3 = ((phal / sum) * 100).toFixed(1);
+                    let x1, x2, x3;
+                    if (stdMode === 'fore') {
+                        x1 = "100.0";
+                        x2 = ((meta / fore) * 100).toFixed(1);
+                        x3 = ((phal / fore) * 100).toFixed(1);
+                    } else {
+                        x1 = ((fore / sum) * 100).toFixed(1);
+                        x2 = ((meta / sum) * 100).toFixed(1);
+                        x3 = ((phal / sum) * 100).toFixed(1);
+                    }
                     const x4 = ((width / fore) * 100).toFixed(1); // 頑健性指数
                     const x5 = (meta + phal > 0) ? ((spread / (meta + phal)) * 100).toFixed(1) : "0.0"; // スパン指数
                     csv += `${name},${x1},${x2},${x3},${x4},${x5}\n`;
@@ -1547,9 +1567,16 @@ input[type="submit"]:disabled:active {
                     const width = parseFloat(data.width) || 0;
                     const spread = parseFloat(data.spread) || 0;
                     const sum = fore + meta + phal;
-                    const x1 = ((fore / sum) * 100).toFixed(1);
-                    const x2 = ((meta / sum) * 100).toFixed(1);
-                    const x3 = ((phal / sum) * 100).toFixed(1);
+                    let x1, x2, x3;
+                    if (stdMode === 'fore') {
+                        x1 = "100.0";
+                        x2 = ((meta / fore) * 100).toFixed(1);
+                        x3 = ((phal / fore) * 100).toFixed(1);
+                    } else {
+                        x1 = ((fore / sum) * 100).toFixed(1);
+                        x2 = ((meta / sum) * 100).toFixed(1);
+                        x3 = ((phal / sum) * 100).toFixed(1);
+                    }
                     const x4 = ((width / fore) * 100).toFixed(1);
                     const x5 = (meta + phal > 0) ? ((spread / (meta + phal)) * 100).toFixed(1) : "0.0";
                     csv += `${name},${x1},${x2},${x3},${x4},${x5}\n`;
@@ -1961,9 +1988,23 @@ input[type="submit"]:disabled:active {
                                 <div className="flex justify-between items-end mb-2 border-b-2 border-slate-200 pb-1.5 shrink-0">
                                     <div className="flex items-center gap-2">
                                         <h2 className="text-[14px] font-bold text-slate-800">Ⅲ. 計測ワークシート (単位: mm または px比率)</h2>
-
                                     </div>
                                     <span className="text-[10px] text-slate-500 font-bold bg-slate-200 px-2 py-0.5 rounded">※小数点第一位まで</span>
+                                </div>
+
+                                {/* 標準化モデル切替トグルバー（ライン下・テーブル上） */}
+                                <div className="flex items-center mb-2 shrink-0">
+                                    <div className="flex items-center bg-white px-2.5 py-1 rounded border border-slate-300 shadow-sm">
+                                        <span className="text-[11px] font-bold text-slate-600 mr-2">標準化モデル:</span>
+                                        <label className="flex items-center gap-1 cursor-pointer mr-3">
+                                            <input type="radio" name="stdMode" value="fore" checked={stdMode === 'fore'} onChange={() => setStdMode('fore')} className="cursor-pointer accent-emerald-600" />
+                                            <span className="text-[11px] font-bold text-slate-700">前腕(A)基準 <span className="font-normal text-slate-500 text-[10px]">[古典]</span></span>
+                                        </label>
+                                        <label className="flex items-center gap-1 cursor-pointer pr-0.5">
+                                            <input type="radio" name="stdMode" value="total" checked={stdMode === 'total'} onChange={() => setStdMode('total')} className="cursor-pointer accent-emerald-600" />
+                                            <span className="text-[11px] font-bold text-slate-700">前肢総延長(A+B+C)基準 <span className="font-normal text-slate-500 text-[10px]">[発展]</span></span>
+                                        </label>
+                                    </div>
                                 </div>
 
                                 <div className="bg-white border border-slate-300 rounded-lg shadow-sm overflow-hidden flex flex-col">
@@ -2022,9 +2063,21 @@ input[type="submit"]:disabled:active {
                                                     const metaVal = parseFloat(data.meta);
                                                     const phalVal = parseFloat(data.phal);
                                                     
-                                                    const ratioFore = hasFore ? `${ (100.0).toFixed(1) }%` : "";
-                                                    const ratioMeta = (hasFore && !isNaN(metaVal)) ? `${ ((metaVal / foreVal) * 100).toFixed(1) }%` : "";
-                                                    const ratioPhal = (hasFore && !isNaN(phalVal)) ? `${ ((phalVal / foreVal) * 100).toFixed(1) }%` : "";
+                                                    let ratioFore = "", ratioMeta = "", ratioPhal = "";
+                                                    if (hasFore) {
+                                                        if (stdMode === 'fore') {
+                                                            ratioFore = "100.0%";
+                                                            ratioMeta = !isNaN(metaVal) ? `${((metaVal / foreVal) * 100).toFixed(1)}%` : "";
+                                                            ratioPhal = !isNaN(phalVal) ? `${((phalVal / foreVal) * 100).toFixed(1)}%` : "";
+                                                        } else {
+                                                            if (!isNaN(metaVal) && !isNaN(phalVal)) {
+                                                                const sum = foreVal + metaVal + phalVal;
+                                                                ratioFore = `${((foreVal / sum) * 100).toFixed(1)}%`;
+                                                                ratioMeta = `${((metaVal / sum) * 100).toFixed(1)}%`;
+                                                                ratioPhal = `${((phalVal / sum) * 100).toFixed(1)}%`;
+                                                            }
+                                                        }
+                                                    }
 
                                                     return (
                                                     <tr key={species.id} className={`border-b border-slate-100 hover:bg-emerald-50/50 transition-colors ${species.isBase ? 'bg-indigo-50/30' : ''}`}>
@@ -2086,9 +2139,21 @@ input[type="submit"]:disabled:active {
                                                     const aMetaVal = parseFloat(avgData.meta);
                                                     const aPhalVal = parseFloat(avgData.phal);
                                                     
-                                                    const aRatioFore = aHasFore ? `${ (100.0).toFixed(1) }%` : "";
-                                                    const aRatioMeta = (aHasFore && !isNaN(aMetaVal)) ? `${ ((aMetaVal / aForeVal) * 100).toFixed(1) }%` : "";
-                                                    const aRatioPhal = (aHasFore && !isNaN(aPhalVal)) ? `${ ((aPhalVal / aForeVal) * 100).toFixed(1) }%` : "";
+                                                    let aRatioFore = "", aRatioMeta = "", aRatioPhal = "";
+                                                    if (aHasFore) {
+                                                        if (stdMode === 'fore') {
+                                                            aRatioFore = "100.0%";
+                                                            aRatioMeta = !isNaN(aMetaVal) ? `${((aMetaVal / aForeVal) * 100).toFixed(1)}%` : "";
+                                                            aRatioPhal = !isNaN(aPhalVal) ? `${((aPhalVal / aForeVal) * 100).toFixed(1)}%` : "";
+                                                        } else {
+                                                            if (!isNaN(aMetaVal) && !isNaN(aPhalVal)) {
+                                                                const sum = aForeVal + aMetaVal + aPhalVal;
+                                                                aRatioFore = `${((aForeVal / sum) * 100).toFixed(1)}%`;
+                                                                aRatioMeta = `${((aMetaVal / sum) * 100).toFixed(1)}%`;
+                                                                aRatioPhal = `${((aPhalVal / sum) * 100).toFixed(1)}%`;
+                                                            }
+                                                        }
+                                                    }
 
                                                     return (
                                                 <tr className="bg-amber-50/80 border-t-2 border-amber-300">
@@ -2150,9 +2215,21 @@ input[type="submit"]:disabled:active {
                                                 const cMetaVal = parseFloat(chickData.meta);
                                                 const cPhalVal = parseFloat(chickData.phal);
                                                 
-                                                const cRatioFore = cHasFore ? `${ (100.0).toFixed(1) }%` : "";
-                                                const cRatioMeta = (cHasFore && !isNaN(cMetaVal)) ? `${ ((cMetaVal / cForeVal) * 100).toFixed(1) }%` : "";
-                                                const cRatioPhal = (cHasFore && !isNaN(cPhalVal)) ? `${ ((cPhalVal / cForeVal) * 100).toFixed(1) }%` : "";
+                                                let cRatioFore = "", cRatioMeta = "", cRatioPhal = "";
+                                                if (cHasFore) {
+                                                    if (stdMode === 'fore') {
+                                                        cRatioFore = "100.0%";
+                                                        cRatioMeta = !isNaN(cMetaVal) ? `${((cMetaVal / cForeVal) * 100).toFixed(1)}%` : "";
+                                                        cRatioPhal = !isNaN(cPhalVal) ? `${((cPhalVal / cForeVal) * 100).toFixed(1)}%` : "";
+                                                    } else {
+                                                        if (!isNaN(cMetaVal) && !isNaN(cPhalVal)) {
+                                                            const sum = cForeVal + cMetaVal + cPhalVal;
+                                                            cRatioFore = `${((cForeVal / sum) * 100).toFixed(1)}%`;
+                                                            cRatioMeta = `${((cMetaVal / sum) * 100).toFixed(1)}%`;
+                                                            cRatioPhal = `${((cPhalVal / sum) * 100).toFixed(1)}%`;
+                                                        }
+                                                    }
+                                                }
 
                                                 return (
                                                 <tr className="bg-orange-50/80 border-t border-orange-200">
@@ -2209,7 +2286,7 @@ input[type="submit"]:disabled:active {
                                         </table>
                                     </div>
                                     
-                                    <div className="p-3 bg-slate-100 border-t border-slate-200 text-right flex justify-end gap-2 shrink-0">
+                                    <div className="p-3 bg-slate-100 border-t border-slate-200 flex justify-end gap-2 shrink-0">
                                         <button 
                                             onClick={handleCopyAllCSV}
                                             className="btn btn-secondary"
