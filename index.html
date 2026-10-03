@@ -1117,7 +1117,10 @@ input[type="submit"]:disabled:active {
     <div class="content-area">
 
       <div class="action-header">
-        <h3 style="margin: 0; color: var(--primary);">登録済みサンプル</h3>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <input type="checkbox" id="selectAllCheckbox" class="custom-checkbox" onchange="toggleSelectAll(event); triggerHapticFeedback();" data-tooltip="全選択 / 全解除">
+          <h3 style="margin: 0; color: var(--primary);">登録済みサンプル</h3>
+        </div>
         <button class="btn btn-primary" onclick="openModal(); triggerHapticFeedback();" data-tooltip="ノートに追加">＋ 登録</button>
       </div>
 
@@ -1758,7 +1761,7 @@ function closeFeedbackForm() {
       } else if (isCleared) {
         samples = [];
       } else {
-        samples = getDefaultFinchSamples();
+        samples = []; // [ Empty ] 状態を維持
         localStorage.setItem('bio_edu_finch_alx1_version', 'v37.3');
         saveToStorage();
       }
@@ -1797,7 +1800,7 @@ function closeFeedbackForm() {
       renderSamples();
       syncTracesFromIndexedDB();
       if (typeof showToast === 'function') {
-        showToast("初期サンプル（外群ニワトリ＋フィンチ4種）を復元しました", "success");
+        showToast("初期サンプル（外群ニワトリ＋フィンチ4種）を読み込みました", "success");
       }
     }
 
@@ -2181,7 +2184,7 @@ function closeFeedbackForm() {
             <p style="margin: 0;">「＋ 登録」から、採集したデータを入力してみましょう。</p>
             <button class="btn" onclick="restoreDefaultSamples(); triggerHapticFeedback();" style="background: var(--phase-color); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
               <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              初期サンプル（外群ニワトリ＋フィンチ4種）を復元
+              初期サンプル（外群ニワトリ＋フィンチ4種）を読込
             </button>
           </div>
         `;
@@ -2261,6 +2264,14 @@ function closeFeedbackForm() {
       updateBulkPanel();
     }
 
+    function toggleSelectAll(event) {
+      const isChecked = event.target.checked;
+      document.querySelectorAll('.sample-checkbox').forEach(cb => {
+        cb.checked = isChecked;
+      });
+      updateBulkPanel();
+    }
+
     function updateBulkPanel(event) {
       if(event) event.stopPropagation();
       
@@ -2269,6 +2280,23 @@ function closeFeedbackForm() {
       const panel = document.getElementById('bulkActionPanel');
       const countSpan = document.getElementById('selectedCount');
       
+      // --- 追記 ---
+      const selectAllCb = document.getElementById('selectAllCheckbox');
+      const totalSamples = document.querySelectorAll('.sample-checkbox').length;
+      if (selectAllCb) {
+        if (totalSamples > 0 && count === totalSamples) {
+          selectAllCb.checked = true;
+          selectAllCb.indeterminate = false;
+        } else if (count > 0) {
+          selectAllCb.checked = false;
+          selectAllCb.indeterminate = true;
+        } else {
+          selectAllCb.checked = false;
+          selectAllCb.indeterminate = false;
+        }
+      }
+      // --- 追記ここまで ---
+
       if (count > 0) {
         countSpan.innerText = count;
         
