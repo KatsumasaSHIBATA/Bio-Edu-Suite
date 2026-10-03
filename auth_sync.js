@@ -214,18 +214,9 @@ export async function registerMasterPreset(taskCode, payload) {
       createdAt: Date.now()
     };
 
-    // ① ルートコレクション master_tasks への書き込み
+    // ルートコレクション master_tasks への書き込みに完全一本化（ガイドライン第7.5.2項①準拠）
     const globalDocRef = doc(db, "master_tasks", cleanCode);
-    const p1 = setDoc(globalDocRef, taskData, { merge: true });
-
-    // ② 書き込み実績が確実に保証されている rooms/{currentRoomCode}/tasks にも二重保存（フェイルセーフ）
-    let p2 = Promise.resolve();
-    if (currentRoomCode) {
-      const roomTaskRef = doc(db, `rooms/${currentRoomCode}/tasks`, cleanCode);
-      p2 = setDoc(roomTaskRef, taskData, { merge: true });
-    }
-
-    await Promise.all([p1, p2]);
+    await setDoc(globalDocRef, taskData, { merge: true });
 
     if (typeof showToast === 'function') {
       showToast(`課題「${cleanCode}」をクラウドに登録・発行しました`, "success");
@@ -246,15 +237,9 @@ export async function importMasterPreset(taskCode) {
   try {
     if (typeof showToast === 'function') showToast(`課題「${cleanCode}」を取得中...`, "info");
     
-    // 1. まず master_tasks から探索
+    // ルートコレクション master_tasks から探索（ガイドライン第7.5.2項①準拠）
     const globalTaskRef = doc(db, "master_tasks", cleanCode);
-    let snap = await getDoc(globalTaskRef);
-
-    // 2. 見つからない場合は現在のルーム内の tasks からフェイルセーフ探索
-    if (!snap.exists() && currentRoomCode) {
-      const roomTaskRef = doc(db, `rooms/${currentRoomCode}/tasks`, cleanCode);
-      snap = await getDoc(roomTaskRef);
-    }
+    const snap = await getDoc(globalTaskRef);
 
     if (snap.exists()) {
       const data = snap.data();
@@ -533,16 +518,31 @@ export async function saveCurrentWorkspace() {
 // グローバル window オブジェクトへ saveCurrentWorkspace を公開し、他スクリプトから遅延なく即時保存を呼び出せるようにする
 window.saveCurrentWorkspace = saveCurrentWorkspace;
 
-// [Bio-Edu Suite v37.1] スマート初期化・ルーム解散ハイブリッド規格
+// [Bio-Edu Suite v37.2] スマート初期化・ルーム解散ハイブリッド規格（完全パージ＆ゾンビ復活防止）
 export async function executeHybridReset() {
   if (!isConnected || !auth.currentUser) return;
   try {
-    if (isTeacher) {
-      const roomRef = doc(db, "rooms", currentRoomCode);
+    // リスナーを即時遮断し、リロード直前の削除イベント逆流を物理防止
+    if (typeof unsubscribeRoomListener === 'function') {
+      unsubscribeRoomListener();
+      unsubscribeRoomListener = null;
+    }
+    const targetRoom = currentRoomCode;
+    const targetId = currentParticipantId;
+    const wasTeacher = isTeacher;
+
+    // 内部ステートを即座にリセット
+    currentRoomCode = "";
+    currentParticipantId = "";
+    isConnected = false;
+    isTeacher = false;
+
+    if (wasTeacher) {
+      const roomRef = doc(db, "rooms", targetRoom);
       await deleteDoc(roomRef);
-      if (typeof showToast === 'function') showToast(`ルーム「${currentRoomCode}」を解散しました`, "success");
+      if (typeof showToast === 'function') showToast(`ルーム「${targetRoom}」を解散しました`, "success");
     } else {
-      const docRef = doc(db, `rooms/${currentRoomCode}/participants`, currentParticipantId);
+      const docRef = doc(db, `rooms/${targetRoom}/participants`, targetId);
       await deleteDoc(docRef);
       if (typeof showToast === 'function') showToast("自分のクラウドデータを消去しました", "success");
     }
