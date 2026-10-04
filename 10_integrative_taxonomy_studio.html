@@ -1886,55 +1886,78 @@ input[type="submit"]:disabled:active {
     }
     window.getEnvCategory = getEnvCategory;
     function getNodeTooltipContent(nodeData) {
-        if (!nodeData) return '';
+        if (!nodeData) return null;
         if (nodeData.children && nodeData.children.length > 0) {
             return 'クリックしてこの枝を回転（モビール操作）';
         }
         const rawName = nodeData.data && nodeData.data.name ? nodeData.data.name : '';
-        const shortName = getShortLabel(rawName);
         const envCat = getEnvCategory(rawName);
+        const isMorphTree = nodeData.nodeId && nodeData.nodeId.includes('morph');
         
-        // 属性データの検索（normalizeId または isIdOrNameMatched を使用）
-        let attrData = null;
-        if (globalTreeRoot && globalTreeRoot.nodeAttributes) {
-            const normTarget = normalizeId(rawName);
-            if (globalTreeRoot.nodeAttributes[normTarget]) {
-                attrData = globalTreeRoot.nodeAttributes[normTarget];
-            } else {
-                for (let key of Object.keys(globalTreeRoot.nodeAttributes)) {
-                    if (isIdOrNameMatched(rawName, key)) {
-                        attrData = globalTreeRoot.nodeAttributes[key];
-                        break;
-                    }
-                }
-            }
-        }
+        let html = '';
 
-        let html = `<div style="font-weight: bold; font-size: 12px; margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 2px;">${escapeHTML(shortName)}</div>`;
-        if (rawName && rawName !== shortName) {
-            html += `<div style="font-size: 10px; opacity: 0.8; margin-bottom: 4px;">ID: ${escapeHTML(rawName)}</div>`;
-        }
+        // 1. 環境カテゴリバッジの表示
         if (envCat) {
             let badgeColor = '#3498db';
             if (globalTreeRoot && globalTreeRoot.envColorMap && globalTreeRoot.envColorMap[envCat]) {
                 badgeColor = globalTreeRoot.envColorMap[envCat];
             }
-            html += `<div style="margin-bottom: 6px;"><span style="display: inline-block; background-color: ${badgeColor}; color: white; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: bold;">${escapeHTML(envCat)}</span></div>`;
+            html += `<div style="margin-bottom: ${isMorphTree ? '6px' : '0'};"><span style="display: inline-block; background-color: ${badgeColor}; color: white; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: bold;">${escapeHTML(envCat)}</span></div>`;
         }
 
-        if (attrData && Object.keys(attrData).length > 0) {
-            html += `<table style="width: 100%; border-collapse: collapse; margin-top: 4px; font-size: 11px;">`;
-            for (let [k, v] of Object.entries(attrData)) {
-                let displayVal = v;
-                if (typeof v === 'number') {
-                    displayVal = Number.isInteger(v) ? v : v.toFixed(3);
+        // 2. 形態データの詳細は右側のツリー(isMorphTree)のみ限定表示
+        if (isMorphTree) {
+            let attrData = null;
+            if (globalTreeRoot && globalTreeRoot.nodeAttributes) {
+                const normTarget = normalizeId(rawName);
+                if (globalTreeRoot.nodeAttributes[normTarget]) {
+                    attrData = globalTreeRoot.nodeAttributes[normTarget];
+                } else {
+                    for (let key of Object.keys(globalTreeRoot.nodeAttributes)) {
+                        if (isIdOrNameMatched(rawName, key)) {
+                            attrData = globalTreeRoot.nodeAttributes[key];
+                            break;
+                        }
+                    }
                 }
-                html += `<tr><td style="text-align: left; padding: 2px 6px 2px 0; opacity: 0.85; border-bottom: 1px solid rgba(255,255,255,0.1);">${escapeHTML(k)}:</td><td style="text-align: right; padding: 2px 0 2px 6px; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.1);">${escapeHTML(String(displayVal))}</td></tr>`;
             }
-            html += `</table>`;
+
+            if (attrData && Object.keys(attrData).length > 0) {
+                const keys = Object.keys(attrData);
+                
+                // ヘッダー名に基づく動的タイトル判定（汎用性・柔軟性の担保）
+                let categoryTitle = '形態形質データ (計測値)';
+                const isPCA = keys.some(k => /^(pc|prin|主成分)/i.test(k));
+                const isRatio = keys.some(k => /(比|ratio|%)/i.test(k));
+                
+                if (isPCA) {
+                    categoryTitle = '形態データ (主成分スコア)';
+                } else if (isRatio) {
+                    categoryTitle = '形態計測データ (比率)';
+                } else if (keys.every(k => k.startsWith('形質') || k.startsWith('変数'))) {
+                    categoryTitle = '形態形質データ (計測値)';
+                } else {
+                    categoryTitle = '形態計測データ';
+                }
+
+                html += `<div style="font-size: 10px; color: #bdc3c7; margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 2px;">${escapeHTML(categoryTitle)}</div>`;
+                html += `<table style="width: 100%; border-collapse: collapse; font-size: 11px;">`;
+                let idx = 1;
+                for (let [k, v] of Object.entries(attrData)) {
+                    let displayVal = v;
+                    if (typeof v === 'number') {
+                        displayVal = Number.isInteger(v) ? v : v.toFixed(3);
+                    }
+                    let label = k.startsWith('変数') ? `形質${k.replace('変数', '')}` : k;
+                    html += `<tr><td style="text-align: left; padding: 2px 6px 2px 0; opacity: 0.85; border-bottom: 1px solid rgba(255,255,255,0.1);">${escapeHTML(label)}:</td><td style="text-align: right; padding: 2px 0 2px 6px; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.1);">${escapeHTML(String(displayVal))}</td></tr>`;
+                    idx++;
+                }
+                html += `</table>`;
+            }
         }
 
-        return html;
+        // 3. 表示すべき内容がなければ null を返し、空ツールチップの発生を遮断
+        return html ? html : null;
     }
     window.getNodeTooltipContent = getNodeTooltipContent;
 
@@ -2413,20 +2436,22 @@ input[type="submit"]:disabled:active {
                     let featureNames = [];
                     let startLineIdx = 0;
                     const firstLineParts = lines[0].split(/[,\t]+/).map(s => s.trim()).filter(s => s !== "");
-                    let firstNumIdx = -1;
-                    for (let j = 0; j < firstLineParts.length; j++) {
-                        if (!isNaN(parseFloat(firstLineParts[j])) && isFinite(firstLineParts[j])) {
-                            firstNumIdx = j;
-                            break;
-                        }
+                    
+                    // 1行目の先頭カラム以降に数値が存在するか（データ行かヘッダー行か）を判定
+                    let numCount = 0;
+                    for (let j = 1; j < firstLineParts.length; j++) {
+                        const val = parseFloat(firstLineParts[j]);
+                        if (!isNaN(val) && isFinite(val)) numCount++;
                     }
-                    if (firstNumIdx === -1 || firstNumIdx > 0) {
-                        let headerParts = firstLineParts;
-                        if (firstNumIdx > 0) {
-                            headerParts = firstLineParts.slice(firstNumIdx);
-                        }
-                        featureNames = headerParts;
+
+                    // 数値が1つも含まれない場合のみ本物のヘッダー行と判定
+                    if (numCount === 0 && firstLineParts.length > 1) {
+                        featureNames = firstLineParts.slice(1);
                         startLineIdx = 1;
+                    } else {
+                        // 1行目がニワトリなどのデータ行である場合はスキップせず0行目から読み込む
+                        featureNames = [];
+                        startLineIdx = 0;
                     }
 
                     const dataDirection = document.getElementById('data-direction').value;
