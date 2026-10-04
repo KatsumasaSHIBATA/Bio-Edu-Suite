@@ -1885,6 +1885,59 @@ input[type="submit"]:disabled:active {
         return null;
     }
     window.getEnvCategory = getEnvCategory;
+    function getNodeTooltipContent(nodeData) {
+        if (!nodeData) return '';
+        if (nodeData.children && nodeData.children.length > 0) {
+            return 'クリックしてこの枝を回転（モビール操作）';
+        }
+        const rawName = nodeData.data && nodeData.data.name ? nodeData.data.name : '';
+        const shortName = getShortLabel(rawName);
+        const envCat = getEnvCategory(rawName);
+        
+        // 属性データの検索（normalizeId または isIdOrNameMatched を使用）
+        let attrData = null;
+        if (globalTreeRoot && globalTreeRoot.nodeAttributes) {
+            const normTarget = normalizeId(rawName);
+            if (globalTreeRoot.nodeAttributes[normTarget]) {
+                attrData = globalTreeRoot.nodeAttributes[normTarget];
+            } else {
+                for (let key of Object.keys(globalTreeRoot.nodeAttributes)) {
+                    if (isIdOrNameMatched(rawName, key)) {
+                        attrData = globalTreeRoot.nodeAttributes[key];
+                        break;
+                    }
+                }
+            }
+        }
+
+        let html = `<div style="font-weight: bold; font-size: 12px; margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 2px;">${escapeHTML(shortName)}</div>`;
+        if (rawName && rawName !== shortName) {
+            html += `<div style="font-size: 10px; opacity: 0.8; margin-bottom: 4px;">ID: ${escapeHTML(rawName)}</div>`;
+        }
+        if (envCat) {
+            let badgeColor = '#3498db';
+            if (globalTreeRoot && globalTreeRoot.envColorMap && globalTreeRoot.envColorMap[envCat]) {
+                badgeColor = globalTreeRoot.envColorMap[envCat];
+            }
+            html += `<div style="margin-bottom: 6px;"><span style="display: inline-block; background-color: ${badgeColor}; color: white; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: bold;">${escapeHTML(envCat)}</span></div>`;
+        }
+
+        if (attrData && Object.keys(attrData).length > 0) {
+            html += `<table style="width: 100%; border-collapse: collapse; margin-top: 4px; font-size: 11px;">`;
+            for (let [k, v] of Object.entries(attrData)) {
+                let displayVal = v;
+                if (typeof v === 'number') {
+                    displayVal = Number.isInteger(v) ? v : v.toFixed(3);
+                }
+                html += `<tr><td style="text-align: left; padding: 2px 6px 2px 0; opacity: 0.85; border-bottom: 1px solid rgba(255,255,255,0.1);">${escapeHTML(k)}:</td><td style="text-align: right; padding: 2px 0 2px 6px; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.1);">${escapeHTML(String(displayVal))}</td></tr>`;
+            }
+            html += `</table>`;
+        }
+
+        return html;
+    }
+    window.getNodeTooltipContent = getNodeTooltipContent;
+
 
     function parseNewickString(s) {
         if (!s || typeof s !== 'string') return { name: "root" };
@@ -2349,6 +2402,84 @@ input[type="submit"]:disabled:active {
 
             globalTreeRoot = { molRoot, morphRoot, pairMappings, envMetadata, envColorMap }; 
             window.globalTreeRoot = globalTreeRoot;
+            
+            // 1. 各サンプルID（normalizeId済み）をキーとする属性辞書オブジェクトを初期化
+            globalTreeRoot.nodeAttributes = {};
+
+            // 第2枠（hybridMorphVal）のCSVデータから計測値およびfeatureNamesをパースしてnodeAttributesに格納
+            if (cleanHybridVal && !cleanHybridVal.startsWith('(') && !cleanHybridVal.endsWith(';')) {
+                const lines = cleanHybridVal.trim().split('\n').filter(l => l.trim().length > 0);
+                if (lines.length > 0) {
+                    let featureNames = [];
+                    let startLineIdx = 0;
+                    const firstLineParts = lines[0].split(/[,\t]+/).map(s => s.trim()).filter(s => s !== "");
+                    let firstNumIdx = -1;
+                    for (let j = 0; j < firstLineParts.length; j++) {
+                        if (!isNaN(parseFloat(firstLineParts[j])) && isFinite(firstLineParts[j])) {
+                            firstNumIdx = j;
+                            break;
+                        }
+                    }
+                    if (firstNumIdx === -1 || firstNumIdx > 0) {
+                        let headerParts = firstLineParts;
+                        if (firstNumIdx > 0) {
+                            headerParts = firstLineParts.slice(firstNumIdx);
+                        }
+                        featureNames = headerParts;
+                        startLineIdx = 1;
+                    }
+
+                    const dataDirection = document.getElementById('data-direction').value;
+                    if (dataDirection === 'row') {
+                        for (let i = startLineIdx; i < lines.length; i++) {
+                            const rawParts = lines[i].split(/[,\t]+/).map(s => s.trim()).filter(s => s !== "");
+                            if (rawParts.length < 2) continue;
+                            let fNumIdx = -1;
+                            for (let j = 1; j < rawParts.length; j++) {
+                                if (!isNaN(parseFloat(rawParts[j])) && isFinite(rawParts[j])) {
+                                    fNumIdx = j;
+                                    break;
+                                }
+                            }
+                            if (fNumIdx === -1) continue;
+                            const idParts = rawParts.slice(0, fNumIdx);
+                            const id = idParts.join('_');
+                            const normId = normalizeId(id);
+
+                            if (!globalTreeRoot.nodeAttributes[normId]) {
+                                globalTreeRoot.nodeAttributes[normId] = {};
+                            }
+                            for (let j = fNumIdx; j < rawParts.length; j++) {
+                                const val = parseFloat(rawParts[j]);
+                                const valToStore = isNaN(val) ? rawParts[j] : val;
+                                const fName = (featureNames && featureNames[j - fNumIdx]) ? featureNames[j - fNumIdx] : `変数${j - fNumIdx + 1}`;
+                                globalTreeRoot.nodeAttributes[normId][fName] = valToStore;
+                            }
+                        }
+                    } else {
+                        const rawLines = lines.map(l => l.split(/[,\t]+/).map(s => s.trim()).filter(s => s !== ""));
+                        if (rawLines.length > 1) {
+                            const headers = rawLines[0];
+                            for (let i = 1; i < rawLines.length; i++) {
+                                const parts = rawLines[i];
+                                const rowName = parts[0];
+                                for (let j = 1; j < headers.length; j++) {
+                                    if (j < parts.length) {
+                                        const sampleId = headers[j];
+                                        const normId = normalizeId(sampleId);
+                                        if (!globalTreeRoot.nodeAttributes[normId]) {
+                                            globalTreeRoot.nodeAttributes[normId] = {};
+                                        }
+                                        const val = parseFloat(parts[j]);
+                                        const valToStore = isNaN(val) ? parts[j] : val;
+                                        globalTreeRoot.nodeAttributes[normId][rowName] = valToStore;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             originalMolTreeData = cloneTreeData(molTree);
             originalMorphTreeData = morphTree ? cloneTreeData(morphTree) : null;
 
@@ -2562,7 +2693,7 @@ input[type="submit"]:disabled:active {
             .attr('stroke', '#fff')
             .attr('stroke-width', 1.5)
             .style('cursor', 'pointer')
-            .attr('data-tooltip', d => d.children ? 'クリックしてこの枝を回転（モビール操作）' : (d.data.name || null)); 
+            .attr('data-tooltip', d => getNodeTooltipContent(d)); 
             
         nodeMol.append('text')
             .attr('dy', '0.31em')
@@ -2737,7 +2868,7 @@ input[type="submit"]:disabled:active {
                 .attr('stroke', '#fff')
                 .attr('stroke-width', 1.5)
                 .style('cursor', 'pointer')
-                .attr('data-tooltip', d => d.children ? 'クリックしてこの枝を回転（モビール操作）' : (d.data.name || null));
+                .attr('data-tooltip', d => getNodeTooltipContent(d));
                 
             nodeMorph.append('text')
                 .attr('dy', '0.31em')
