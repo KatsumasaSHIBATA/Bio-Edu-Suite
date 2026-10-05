@@ -573,7 +573,13 @@ function toggleSidebarPin() {
 
         sidebar.classList.toggle('pinned');
 
-        document.body.classList.toggle('has-pinned-sidebar', sidebar.classList.contains('pinned'));
+        const isPinned = sidebar.classList.contains('pinned');
+
+        document.body.classList.toggle('has-pinned-sidebar', isPinned);
+
+        // ピン留め状態をローカルストレージへ永続化
+
+        localStorage.setItem('bio_edu_sidebar_pinned', isPinned);
 
     } else {
 
@@ -584,6 +590,28 @@ function toggleSidebarPin() {
     }
 
 }
+
+// ページ読み込み時にピン留め状態をハイドレーション（即時復元）
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    const isMobile = window.innerWidth <= 1024;
+
+    if (!isMobile && localStorage.getItem('bio_edu_sidebar_pinned') === 'true') {
+
+        const sidebar = document.querySelector('.sidebar');
+
+        if (sidebar) {
+
+            sidebar.classList.add('pinned');
+
+            document.body.classList.add('has-pinned-sidebar');
+
+        }
+
+    }
+
+});
 
 function openFeedbackForm() {
 
