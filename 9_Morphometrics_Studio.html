@@ -1476,6 +1476,12 @@ input[type="submit"]:disabled:active {
                 Newickコピー
               </button>
 
+              <!-- ★新設: アプリ⑩ 比較系統樹CSV行き -->
+              <button id="btnCopyMorphCSV" class="btn btn-secondary" onclick="copyMorphDataCSV(); triggerHapticFeedback();" disabled data-tooltip="⑩ Integrative Taxonomy Studioの比較系統樹用(CSV形式 / 多変量クラスタリング用)に出力">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                CSVコピー
+              </button>
+
               <!-- アプリ⑪ 行き -->
               <button id="btnCopyForApp11" class="btn btn-secondary" onclick="copyVariationDataForApp11(); triggerHapticFeedback();" disabled data-tooltip="⑪ Comparative Variant Analyzer用に出力">
                 <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
@@ -1869,6 +1875,9 @@ input[type="submit"]:disabled:active {
             
             // 1. 画像データの自動連携 (ダッシュボードからの受け入れ)
             if (bulkDataStr) {
+                window.isFreshBulkData = true;
+                sessionStorage.removeItem('bio_edu_autosave_app9_full');
+
                 const parsed = JSON.parse(bulkDataStr);
                 sourceApp = parsed.source || "App_1_Dashboard";
                 
@@ -1937,7 +1946,10 @@ input[type="submit"]:disabled:active {
                                     document.getElementById('active-sample-info').innerHTML = `
                                         <div style="display:flex; justify-content:space-between; align-items:center; gap: 10px; margin-bottom: 8px;">
                                             <span style="flex: 1; min-width: 0; word-break: break-word; font-weight:bold; font-size:12px; color:var(--primary);">受信済み画像サンプル <span style="color:var(--text-muted); font-size:10px;">(${totalImgs} samples)</span></span>
-                                            <span style="background:var(--success); color:white; padding:2px 6px; border-radius:10px; font-size:10px; font-weight:bold; flex-shrink: 0; white-space: nowrap;">連携済</span>
+                                            <div style="display: flex; gap: 6px; align-items: center;">
+                                                <span style="background:var(--success); color:white; padding:2px 6px; border-radius:10px; font-size:10px; font-weight:bold; flex-shrink: 0; white-space: nowrap;">連携済</span>
+                                                <button class="btn btn-secondary" onclick="clearReceivedBulkData(); triggerHapticFeedback();" style="font-size:10px; padding:2px 8px; min-height:24px; height:24px;">✕ 解除</button>
+                                            </div>
                                         </div>
                                         <div style="max-height: 120px; overflow-y: auto; background: white; border: 1px solid var(--border-color); border-radius: 4px; padding: 4px 8px;">
                                             ${sampleListHTML}
@@ -1976,13 +1988,86 @@ input[type="submit"]:disabled:active {
         const btn11 = document.getElementById('btnCopyForApp11');
         const btn12 = document.getElementById('btnCopyForApp12');
         const btnTree = document.getElementById('btnCopyMorphTree');
+        const btnCsv = document.getElementById('btnCopyMorphCSV');
         
         if (btn10) btn10.disabled = !hasValidData;
         if (btn11) btn11.disabled = !hasValidData;
         if (btn12) btn12.disabled = !hasValidData;
         if (btnTree) btnTree.disabled = !hasValidData;
+        if (btnCsv) btnCsv.disabled = !hasValidData;
     }
     window.updateExportButtonsState = updateExportButtonsState;
+
+    // ----------------------------------------------------
+    // copyMorphDataCSV() の実装
+    // ----------------------------------------------------
+    function copyMorphDataCSV() {
+        if (!globalPCA || globalSamples.length === 0) {
+            showToast("PCA解析を実行してからコピーしてください", "warning");
+            return;
+        }
+        let csvLines = ["Sample_ID, PC1, PC2"];
+        globalSamples.forEach((sample, i) => {
+            let originalSample = window.transferredSamples ? window.transferredSamples.find(s => s.id === sample.name || s.name === sample.name) : null;
+            let sampleId = originalSample ? originalSample.id : (sample.name || `SAMP_${i + 1}`);
+            let sampleName = originalSample ? originalSample.name : sample.name;
+            
+            let identifier = sampleId.replace(/,/g, '');
+            if (sampleName && sampleName !== sampleId && !identifier.includes(sampleName)) {
+                identifier = `${identifier}_${sampleName.replace(/\s+/g, '_')}`;
+            }
+            const pc1 = globalPCA.pc1[i].toFixed(4);
+            const pc2 = globalPCA.pc2[i].toFixed(4);
+            csvLines.push(`${identifier}, ${pc1}, ${pc2}`);
+        });
+        const csvText = csvLines.join('\n');
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(csvText).then(() => {
+                showToast("⑩ 比較系統樹用 CSVをクリップボードにコピーしました！", "success");
+            }).catch(err => {
+                fallbackCopyTextToClipboard(csvText, "⑩ 比較系統樹用 CSVをクリップボードにコピーしました！");
+            });
+        } else {
+            fallbackCopyTextToClipboard(csvText, "⑩ 比較系統樹用 CSVをクリップボードにコピーしました！");
+        }
+    }
+    window.copyMorphDataCSV = copyMorphDataCSV;
+
+    // ----------------------------------------------------
+    // 受信データ初期化 clearReceivedBulkData() の実装
+    // ----------------------------------------------------
+    function clearReceivedBulkData() {
+        window.transferredSamples = null;
+        efaImageQueue = [];
+        gpaDataList = [];
+        efaCurrentIndex = -1;
+        gpaCurrentIdx = -1;
+        globalSamples = [];
+        globalPCA = null;
+        analysisResult = null;
+        
+        sessionStorage.removeItem('bio_edu_autosave_app9_full');
+        sessionStorage.removeItem('bio_edu_bulk_data');
+
+        const dzA = document.getElementById('dropZoneImgA');
+        const dzC = document.getElementById('dropZoneImgC');
+        if (dzA) dzA.style.display = 'flex';
+        if (dzC) dzC.style.display = 'flex';
+
+        const info = document.getElementById('active-sample-info');
+        if (info) {
+            info.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; color: var(--text-muted); gap: 10px;">
+                    <span style="flex: 1; min-width: 0; word-break: break-word;"><strong>Target:</strong> 画像データ未受信 (ダッシュボードから送信するか、下部エリアから画像を読み込んでください)</span>
+                    <span style="background:var(--border-color); color:white; padding:2px 6px; border-radius:10px; font-size:10px; font-weight:bold; flex-shrink: 0; white-space: nowrap;">未選択</span>
+                </div>
+            `;
+        }
+
+        updateExportButtonsState(false);
+        showToast("受信データを解除しました。新しい画像を読み込めます。", "info");
+    }
+    window.clearReceivedBulkData = clearReceivedBulkData;
 
     function generateUPGMANewick(samples) {
         const n = samples.length;
@@ -3736,6 +3821,10 @@ function closeFeedbackForm() {
             }
         }
         function restoreApp9Session() {
+            if (window.isFreshBulkData) {
+                window.isFreshBulkData = false;
+                return; // 新規データ受信時は古いセッション復元を遮断
+            }
             try {
                 const raw = sessionStorage.getItem(AUTOSAVE_KEY);
                 if (!raw) return;
