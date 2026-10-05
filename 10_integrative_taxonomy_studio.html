@@ -1888,7 +1888,22 @@ input[type="submit"]:disabled:active {
     function getNodeTooltipContent(nodeData) {
         if (!nodeData) return null;
         if (nodeData.children && nodeData.children.length > 0) {
-            return 'クリックしてこの枝を回転（モビール操作）';
+            let info = [];
+            const rawName = nodeData.data && nodeData.data.name ? String(nodeData.data.name).trim() : '';
+            const numVal = parseFloat(rawName);
+            if (!isNaN(numVal) && isFinite(numVal)) {
+                info.push(`ブートストラップ支持率: ${numVal}%`);
+            } else if (rawName) {
+                info.push(`クレード: ${escapeHTML(rawName)}`);
+            }
+            if (nodeData.data && nodeData.data.length !== undefined) {
+                const lenVal = parseFloat(nodeData.data.length);
+                if (!isNaN(lenVal)) {
+                    info.push(`枝長: ${lenVal.toFixed(4)}`);
+                }
+            }
+            info.push('<span style="color:#bdc3c7; font-size:10px;">クリックして枝を回転（モビール操作）</span>');
+            return info.join('<br>');
         }
         const rawName = nodeData.data && nodeData.data.name ? nodeData.data.name : '';
         const envCat = getEnvCategory(rawName);
@@ -2663,6 +2678,34 @@ input[type="submit"]:disabled:active {
         const treeLinksLayer = svg.append('g').attr('class', 'layer-tree-links');
         const treeNodesLayer = svg.append('g').attr('class', 'layer-tree-nodes');
 
+        function applyTrueBranchLength(rootNode, width) {
+            let hasLength = false;
+            rootNode.each(d => { if (d.data.length !== undefined) hasLength = true; });
+            if (!hasLength) return;
+
+            function setHeight(n) {
+                if (!n.children || n.children.length === 0) {
+                    n.nodeHeight = 0;
+                    return 0;
+                }
+                let maxH = 0;
+                for (let i = 0; i < n.children.length; i++) {
+                    let c = n.children[i];
+                    let h = setHeight(c) + (c.data.length || 0);
+                    if (h > maxH) maxH = h;
+                }
+                n.nodeHeight = maxH;
+                return maxH;
+            }
+            
+            let maxTotalHeight = setHeight(rootNode);
+            if (maxTotalHeight > 0) {
+                rootNode.each(d => {
+                    d.y = width * (1 - d.nodeHeight / maxTotalHeight);
+                });
+            }
+        }
+
         if (globalTreeRoot.envMetadata && Object.keys(globalTreeRoot.envColorMap).length > 0) {
             const legendGroup = svg.append('g')
                 .attr('class', 'env-legend')
@@ -2711,6 +2754,7 @@ input[type="submit"]:disabled:active {
         // --- 左ツリー (分子系統樹) ---
         const treeLayoutMol = d3.cluster().size([h, treeWidth]);
         treeLayoutMol(molRoot);
+        applyTrueBranchLength(molRoot, treeWidth); // 追加
         
         molRoot.each(d => {
             d.yMol = d.y;
@@ -2728,6 +2772,18 @@ input[type="submit"]:disabled:active {
             .attr('id', d => `link-${d.source.nodeId}-${d.target.nodeId}`)
             .attr('d', d => `M${d.source.yMol},${d.source.xMol} V${d.target.xMol} H${d.target.yMol}`);
             
+        function formatNodeLabel(d) {
+            if (!d.data || !d.data.name) return "";
+            if (d.children && d.children.length > 0) {
+                const num = parseFloat(d.data.name);
+                if (!isNaN(num) && isFinite(num)) {
+                    return num >= 70 ? String(Math.round(num)) : "";
+                }
+                return getShortLabel(d.data.name);
+            }
+            return getShortLabel(d.data.name);
+        }
+
         const nodeMol = treeNodesLayer.selectAll('.node-mol')
             .data(molRoot.descendants())
             .enter().append('g')
@@ -2747,15 +2803,15 @@ input[type="submit"]:disabled:active {
             .attr('dy', '0.31em')
             .attr('x', d => d.children ? -8 : 10)
             .attr('text-anchor', d => d.children ? 'end' : 'start')
-            .attr('fill', d => getTextColor(d))
-            .attr('font-size', '11px')
-            .attr('font-weight', 'bold')
+            .attr('fill', d => d.children ? '#7f8c8d' : getTextColor(d))
+            .attr('font-size', d => d.children ? '9px' : '11px')
+            .attr('font-weight', d => d.children ? 'normal' : 'bold')
             .attr('font-family', 'Segoe UI, sans-serif')
             .style('paint-order', 'stroke fill')
             .style('stroke', '#ffffff')
             .style('stroke-width', '3.5px')
             .style('stroke-linejoin', 'round')
-            .text(d => getShortLabel(d.data.name))
+            .text(d => formatNodeLabel(d))
             .style('pointer-events', 'none');
             
         nodeMol.on('mouseenter', (event, d) => handleNodeHover(d))
@@ -2774,6 +2830,7 @@ input[type="submit"]:disabled:active {
         if (morphRoot) {
             const treeLayoutMorph = d3.cluster().size([h, treeWidth]);
             treeLayoutMorph(morphRoot);
+            applyTrueBranchLength(morphRoot, treeWidth); // 追加
             
             const offset = w - treeWidth;
             morphRoot.each(d => {
@@ -2922,15 +2979,15 @@ input[type="submit"]:disabled:active {
                 .attr('dy', '0.31em')
                 .attr('x', d => d.children ? 8 : -10)
                 .attr('text-anchor', d => d.children ? 'start' : 'end')
-                .attr('fill', d => getTextColor(d))
-                .attr('font-size', '11px')
-                .attr('font-weight', 'bold')
+                .attr('fill', d => d.children ? '#7f8c8d' : getTextColor(d))
+                .attr('font-size', d => d.children ? '9px' : '11px')
+                .attr('font-weight', d => d.children ? 'normal' : 'bold')
                 .attr('font-family', 'Segoe UI, sans-serif')
                 .style('paint-order', 'stroke fill')
                 .style('stroke', '#ffffff')
                 .style('stroke-width', '3.5px')
                 .style('stroke-linejoin', 'round')
-                .text(d => getShortLabel(d.data.name))
+                .text(d => formatNodeLabel(d))
                 .style('pointer-events', 'none');
 
             nodeMorph.on('mouseenter', (event, d) => handleNodeHover(d))
