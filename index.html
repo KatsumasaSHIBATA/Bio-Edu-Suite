@@ -1614,19 +1614,35 @@ input[type="submit"]:disabled:active {
     }
 
     // Peg Menu ピン留め切り替え
-    function toggleSidebarPin() {
-      const sidebar = document.querySelector('.sidebar');
-      const overlay = document.querySelector('.sidebar-overlay');
-      const isMobile = window.innerWidth <= 1024; // v34.4: タブレット縦表示(1024px以下)も含めてモバイル判定
-      
-      if (!isMobile) {
+    /* --------------------------------------------------- JS実装規格: ドロワー制御 --------------------------------------------------- */ 
+function toggleSidebarPin() { 
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    const isMobile = window.innerWidth <= 1024; // v34.4: タブレット縦表示(1024px以下)も含めてモバイル判定
+    
+    if (!isMobile) {
         sidebar.classList.toggle('pinned');
-        document.body.classList.toggle('has-pinned-sidebar', sidebar.classList.contains('pinned'));
-      } else {
+        const isPinned = sidebar.classList.contains('pinned');
+        document.body.classList.toggle('has-pinned-sidebar', isPinned);
+        // ピン留め状態をローカルストレージへ永続化
+        localStorage.setItem('bio_edu_sidebar_pinned', isPinned);
+    } else {
         sidebar.classList.toggle('open');
         if(overlay) overlay.classList.toggle('open', sidebar.classList.contains('open'));
-      }
     }
+}
+
+// ページ読み込み時にピン留め状態をハイドレーション（即時復元）
+document.addEventListener('DOMContentLoaded', () => {
+    const isMobile = window.innerWidth <= 1024;
+    if (!isMobile && localStorage.getItem('bio_edu_sidebar_pinned') === 'true') {
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) {
+            sidebar.classList.add('pinned');
+            document.body.classList.add('has-pinned-sidebar');
+        }
+    }
+});
     
     // ご意見箱（Googleフォーム）への動的パラメータ付き遷移
     // Googleフォーム アプリ内モーダル開閉関数 (濃紺コンテキスト維持)

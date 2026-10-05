@@ -556,6 +556,20 @@ input[type="submit"]:disabled:active {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 /* --- UNIFIED DISABLED BUTTON MASTER CSS END --- */
+
+/* ④ ハンバーガー：未固定・ホバー時 ≡ ／ 固定・展開時（pinned・open）のみ × */
+.sidebar .hamburger-btn .icon-menu { display: block; }
+.sidebar .hamburger-btn .icon-close { display: none; }
+.sidebar .hamburger-btn .icon-menu, .sidebar .hamburger-btn .icon-close { color: inherit; }
+
+/* ホバー時も ≡ を維持（切り替えない） */
+.sidebar:hover .hamburger-btn .icon-menu { display: block; }
+.sidebar:hover .hamburger-btn .icon-close { display: none; }
+
+/* 固定・展開時のみ × へ。※必ず上記 :hover 規則より後方に置くこと */
+.sidebar.pinned .hamburger-btn .icon-menu, .sidebar.open .hamburger-btn .icon-menu { display: none; }
+.sidebar.pinned .hamburger-btn .icon-close, .sidebar.open .hamburger-btn .icon-close { display: block; }
+
 </style>
 
 </head>
@@ -811,19 +825,35 @@ input[type="submit"]:disabled:active {
     if (navigator.vibrate) navigator.vibrate(10);
   }
 
-  function toggleSidebarPin() { 
+  /* --------------------------------------------------- JS実装規格: ドロワー制御 --------------------------------------------------- */ 
+function toggleSidebarPin() { 
     const sidebar = document.querySelector('.sidebar');
     const overlay = document.querySelector('.sidebar-overlay');
-    const isMobile = window.innerWidth <= 1024;
+    const isMobile = window.innerWidth <= 1024; // v34.4: タブレット縦表示(1024px以下)も含めてモバイル判定
     
     if (!isMobile) {
-      sidebar.classList.toggle('pinned');
-      document.body.classList.toggle('has-pinned-sidebar', sidebar.classList.contains('pinned'));
+        sidebar.classList.toggle('pinned');
+        const isPinned = sidebar.classList.contains('pinned');
+        document.body.classList.toggle('has-pinned-sidebar', isPinned);
+        // ピン留め状態をローカルストレージへ永続化
+        localStorage.setItem('bio_edu_sidebar_pinned', isPinned);
     } else {
-      sidebar.classList.toggle('open');
-      if(overlay) overlay.classList.toggle('open', sidebar.classList.contains('open'));
+        sidebar.classList.toggle('open');
+        if(overlay) overlay.classList.toggle('open', sidebar.classList.contains('open'));
     }
-  }
+}
+
+// ページ読み込み時にピン留め状態をハイドレーション（即時復元）
+document.addEventListener('DOMContentLoaded', () => {
+    const isMobile = window.innerWidth <= 1024;
+    if (!isMobile && localStorage.getItem('bio_edu_sidebar_pinned') === 'true') {
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) {
+            sidebar.classList.add('pinned');
+            document.body.classList.add('has-pinned-sidebar');
+        }
+    }
+});
 
   function openFeedbackForm() {
     const baseUrl = "https://docs.google.com/forms/d/e/1FAIpQLSet9LJgsTO0aZ6pbdekLr4fBeeDPAxREk8xmzY1f-gTcDnFrQ/viewform";
