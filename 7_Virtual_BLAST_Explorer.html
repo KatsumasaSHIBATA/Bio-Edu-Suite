@@ -1643,7 +1643,7 @@ input[type="submit"]:disabled:active {
                 if(line.startsWith('>')) {
                     if(!currentQueryName) currentQueryName = line.substring(1).trim();
                 } else {
-                    seq += line.toUpperCase().replace(/[^ATGC]/g, '');
+                    seq += line.toUpperCase().replace(/[^A-Z]/gi, '');
                 }
             });
             if(!currentQueryName && e.target.files[0]) {
@@ -1751,7 +1751,7 @@ input[type="submit"]:disabled:active {
                         if(currentName.length > 50) currentName = currentName.substring(0,50)+"...";
                         currentSeq = "";
                     } else {
-                        currentSeq += line.toUpperCase().replace(/[^ATGC]/g, '');
+                        currentSeq += line.toUpperCase().replace(/[^A-Z]/gi, '');
                     }
                 });
                 if (currentName && currentSeq) {
@@ -1817,7 +1817,12 @@ input[type="submit"]:disabled:active {
 
         for (let i = 1; i <= m; i++) {
             for (let j = 1; j <= n; j++) {
-                let scoreDiag = dp[i-1][j-1] + (query[i-1] === subject[j-1] ? match : mismatch);
+                const qChar = query[i-1];
+                const sChar = subject[j-1];
+                const isMatch = (qChar === sChar) && (qChar === 'A' || qChar === 'T' || qChar === 'G' || qChar === 'C');
+                let weight = isMatch ? match : mismatch;
+
+                let scoreDiag = dp[i-1][j-1] + weight;
                 let scoreUp = dp[i-1][j] + gap;
                 let scoreLeft = dp[i][j-1] + gap;
                 
@@ -1840,21 +1845,24 @@ input[type="submit"]:disabled:active {
             let diag = dp[i-1][j-1];
             let up = dp[i-1][j];
             let left = dp[i][j-1];
-            let weight = query[i-1] === subject[j-1] ? match : mismatch;
+            const qChar = query[i-1];
+            const sChar = subject[j-1];
+            const isMatch = (qChar === sChar) && (qChar === 'A' || qChar === 'T' || qChar === 'G' || qChar === 'C');
+            let weight = isMatch ? match : mismatch;
 
             if (current === diag + weight) {
-                alignQ = query[i-1] + alignQ;
-                alignS = subject[j-1] + alignS;
-                if (query[i-1] === subject[j-1]) { alignPipe = "|" + alignPipe; matches++; }
+                alignQ = qChar + alignQ;
+                alignS = sChar + alignS;
+                if (isMatch) { alignPipe = "|" + alignPipe; matches++; }
                 else { alignPipe = " " + alignPipe; }
                 i--; j--;
             } else if (current === left + gap) {
                 alignQ = "-" + alignQ;
-                alignS = subject[j-1] + alignS;
+                alignS = sChar + alignS;
                 alignPipe = " " + alignPipe;
                 j--;
             } else {
-                alignQ = query[i-1] + alignQ;
+                alignQ = qChar + alignQ;
                 alignS = "-" + alignS;
                 alignPipe = " " + alignPipe;
                 i--;
@@ -1886,7 +1894,7 @@ input[type="submit"]:disabled:active {
 
     function runVirtualBlast() {
         let rawInput = document.getElementById('queryInput').value;
-        let query = rawInput.split('\n').filter(line => !line.startsWith('>')).join('').toUpperCase().replace(/[^ATGC]/g, '');
+        let query = rawInput.split('\n').filter(line => !line.startsWith('>')).join('').toUpperCase().replace(/[^A-Z]/gi, '');
 
         if (!localDB || localDB.length === 0) {
             loadAllCombinedDB(true);
@@ -2252,7 +2260,7 @@ input[type="submit"]:disabled:active {
                     if(currentName.length > 50) currentName = currentName.substring(0,50)+"...";
                     currentSeq = "";
                 } else {
-                    currentSeq += line.toUpperCase().replace(/[^ATGC]/g, '');
+                    currentSeq += line.toUpperCase().replace(/[^A-Z]/gi, '');
                 }
             });
             if (currentName && currentSeq) {
@@ -2646,7 +2654,7 @@ function closeFeedbackForm() {
                         linkPanel.style.display = state.ncbiLinkDisplay || 'none';
                         const directLink = document.getElementById('ncbiDirectLink');
                         if (directLink && state.query) {
-                            const q = state.query.split('\n').filter(line => !line.startsWith('>')).join('').toUpperCase().replace(/[^ATGC]/g, '');
+                            const q = state.query.split('\n').filter(line => !line.startsWith('>')).join('').toUpperCase().replace(/[^A-Z]/gi, '');
                             if (q) {
                                 directLink.href = 'https://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=blastn&PAGE_TYPE=BlastSearch&LINK_LOC=blasthome&QUERY=' + encodeURIComponent(q);
                             }
