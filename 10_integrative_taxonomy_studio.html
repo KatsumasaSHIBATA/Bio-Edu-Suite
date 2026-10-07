@@ -2629,6 +2629,7 @@ input[type="submit"]:disabled:active {
 
             if (missingLeaves.length === 0) {
                 showToast('統合解析を完了しました。', 'success');
+            if (typeof saveApp10Session === 'function') saveApp10Session();
             }
             
         } catch(e) {
@@ -4036,10 +4037,24 @@ function closeFeedbackForm() {
                 isExecuted: isExecuted
             };
 
-            sessionStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state));
+            try {
+                sessionStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state));
+            } catch (quotaErr) {
+                console.warn('[AutoSave] App10 quota exceeded, saving fallback without jsonVal:', quotaErr);
+                state.jsonVal = '';
+                sessionStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state));
+            }
+            window.dispatchEvent(new CustomEvent('bio_edu_request_save'));
         } catch (e) {
             console.warn('[AutoSave] App10 save failed:', e);
         }
+    }
+
+    // フォーム入力時のデバウンス即時保存（150ms）
+    let saveTimeoutApp10 = null;
+    function debounceSaveApp10() {
+        if (saveTimeoutApp10) clearTimeout(saveTimeoutApp10);
+        saveTimeoutApp10 = setTimeout(saveApp10Session, 150);
     }
 
     function restoreApp10Session() {
@@ -4251,9 +4266,13 @@ document.addEventListener('DOMContentLoaded', () => {
     ['newick-mol-input', 'hybrid-morph-input', 'json-input', 'mapping-input'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-            el.addEventListener('input', checkApp10Inputs);
-            el.addEventListener('change', checkApp10Inputs);
+            el.addEventListener('input', () => { checkApp10Inputs(); if (typeof debounceSaveApp10 === 'function') debounceSaveApp10(); });
+            el.addEventListener('change', () => { checkApp10Inputs(); if (typeof debounceSaveApp10 === 'function') debounceSaveApp10(); });
         }
+    });
+    ['data-direction', 'dist-type', 'link-type'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('change', () => { if (typeof debounceSaveApp10 === 'function') debounceSaveApp10(); });
     });
 
     // 初期化チェック

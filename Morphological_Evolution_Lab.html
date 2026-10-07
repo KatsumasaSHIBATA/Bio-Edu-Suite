@@ -1401,6 +1401,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // [Bio-Edu Suite v36.2] Morphological Evolution Cloud Hydration
         useEffect(() => {
+            const handleVisibility = () => { if (document.visibilityState === 'hidden') window.dispatchEvent(new CustomEvent('bio_edu_request_save')); };
+            const handlePageHide = () => window.dispatchEvent(new CustomEvent('bio_edu_request_save'));
+            const handlePageShow = () => {
+                const savedData = sessionStorage.getItem('bio_edu_workspace_evolution_lab');
+                if (savedData && !window.isResetting) {
+                    try {
+                        const parsed = JSON.parse(savedData);
+                        if (parsed.measurements) setMeasurements(parsed.measurements);
+                        if (parsed.uploadedImage) setUploadedImage(parsed.uploadedImage);
+                        if (parsed.measureMode) setMeasureMode(parsed.measureMode);
+                        if (parsed.points) setPoints(parsed.points);
+                        if (parsed.stdMode) setStdMode(parsed.stdMode);
+                    } catch(e) {}
+                }
+            };
+            document.addEventListener('visibilitychange', handleVisibility);
+            window.addEventListener('pagehide', handlePageHide);
+            window.addEventListener('pageshow', handlePageShow);
+            return () => {
+                document.removeEventListener('visibilitychange', handleVisibility);
+                window.removeEventListener('pagehide', handlePageHide);
+                window.removeEventListener('pageshow', handlePageShow);
+            };
+        }, []);
+        useEffect(() => {
             const handleCloudSync = () => {
                 try {
                     const savedData = sessionStorage.getItem('bio_edu_workspace_evolution_lab');
@@ -1441,9 +1466,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
                 try {
                     sessionStorage.setItem('bio_edu_workspace_evolution_lab', JSON.stringify(dataToSave));
-                window.dispatchEvent(new CustomEvent('bio_edu_request_save'));
+                    window.dispatchEvent(new CustomEvent('bio_edu_request_save'));
                 } catch (e) {
-                    console.warn("Storage quota exceeded or error while saving workspace:", e);
+                    console.warn("[AutoSave] Image quota exceeded, saving fallback:", e);
+                    try {
+                        const fallbackData = { measurements, uploadedImage: null, measureMode, points, stdMode };
+                        sessionStorage.setItem('bio_edu_workspace_evolution_lab', JSON.stringify(fallbackData));
+                        window.dispatchEvent(new CustomEvent('bio_edu_request_save'));
+                    } catch (e2) {}
                 }
             }
         }, [measurements, uploadedImage, measureMode, points, stdMode]);

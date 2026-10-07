@@ -2432,6 +2432,117 @@ if ('serviceWorker' in navigator) {
     });
   </script>
 
+  <!-- [Bio-Edu Suite v37.3] セッション永続化モジュール (第7.4項準拠) -->
+  <script>
+    (function() {
+        const AUTOSAVE_KEY = 'bio_edu_workspace_app8';
+        let isHydrating = false;
+
+        function saveApp8Session() {
+            if (isHydrating || window.isResetting) return;
+            try {
+                const fastaEl = document.getElementById('fastaInput');
+                const fastaVal = fastaEl ? fastaEl.value.trim() : '';
+                const algoEl = document.getElementById('algoSelect');
+                const algoVal = algoEl ? algoEl.value : 'UPGMA';
+                const bsEl = document.querySelector('input[name="bootstrap"]:checked');
+                const bsVal = bsEl ? bsEl.value : '0';
+                const ogEl = document.getElementById('outgroupSelect');
+                const ogVal = ogEl ? ogEl.value : '';
+
+                const btnNewick = document.getElementById('btnCopyForApp10');
+                const isExecuted = btnNewick ? !btnNewick.disabled : false;
+
+                if (!fastaVal && !isExecuted) {
+                    sessionStorage.removeItem(AUTOSAVE_KEY);
+                    return;
+                }
+
+                const state = {
+                    savedAt: Date.now(),
+                    fastaVal: fastaVal,
+                    algoVal: algoVal,
+                    bsVal: bsVal,
+                    ogVal: ogVal,
+                    isExecuted: isExecuted
+                };
+
+                sessionStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state));
+                window.dispatchEvent(new CustomEvent('bio_edu_request_save'));
+            } catch (e) {
+                console.warn('[AutoSave] App8 save failed:', e);
+            }
+        }
+
+        function restoreApp8Session() {
+            try {
+                const raw = sessionStorage.getItem(AUTOSAVE_KEY);
+                if (!raw) return;
+                const state = JSON.parse(raw);
+                if (!state) return;
+
+                isHydrating = true;
+                const fastaEl = document.getElementById('fastaInput');
+                if (fastaEl && state.fastaVal && !fastaEl.value.trim()) {
+                    fastaEl.value = state.fastaVal;
+                }
+
+                const algoEl = document.getElementById('algoSelect');
+                if (algoEl && state.algoVal) {
+                    algoEl.value = state.algoVal;
+                    if (typeof switchAlgo === 'function') switchAlgo();
+                }
+
+                if (state.bsVal) {
+                    const bsRadio = document.querySelector(`input[name="bootstrap"][value="${state.bsVal}"]`);
+                    if (bsRadio) bsRadio.checked = true;
+                }
+
+                if (state.isExecuted && typeof handleExecute === 'function') {
+                    requestAnimationFrame(() => {
+                        handleExecute();
+                        if (state.ogVal) {
+                            const ogEl = document.getElementById('outgroupSelect');
+                            if (ogEl) {
+                                ogEl.value = state.ogVal;
+                                if (typeof changeOutgroup === 'function') changeOutgroup();
+                            }
+                        }
+                        if (typeof showToast === 'function') {
+                            showToast('前回の系統樹解析データを復元しました', 'info');
+                        }
+                    });
+                }
+                setTimeout(() => { isHydrating = false; }, 100);
+            } catch (e) {
+                console.warn('[AutoSave] App8 restore failed:', e);
+                isHydrating = false;
+            }
+        }
+
+        let saveTimeoutApp8 = null;
+        function debounceSaveApp8() {
+            if (saveTimeoutApp8) clearTimeout(saveTimeoutApp8);
+            saveTimeoutApp8 = setTimeout(saveApp8Session, 150);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const fastaEl = document.getElementById('fastaInput');
+            if (fastaEl) fastaEl.addEventListener('input', debounceSaveApp8);
+            const algoEl = document.getElementById('algoSelect');
+            if (algoEl) algoEl.addEventListener('change', debounceSaveApp8);
+            document.querySelectorAll('input[name="bootstrap"]').forEach(r => r.addEventListener('change', debounceSaveApp8));
+            setTimeout(restoreApp8Session, 80);
+        });
+
+        window.addEventListener('pageshow', () => setTimeout(restoreApp8Session, 60));
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') saveApp8Session();
+        });
+        window.saveApp8Session = saveApp8Session;
+        window.restoreApp8Session = restoreApp8Session;
+    })();
+  </script>
   <!-- Session-Persistent Workspace 共通モジュール -->
   <script src="./js/workspace_sync.js"></script>
 

@@ -2793,7 +2793,13 @@ function closeFeedbackForm() {
                     queue: serializedQueue
                 };
 
-                sessionStorage.setItem(AUTOSAVE_KEY, JSON.stringify(payload));
+                try {
+                    sessionStorage.setItem(AUTOSAVE_KEY, JSON.stringify(payload));
+                } catch (quotaErr) {
+                    console.warn('[AutoSave] App4 quota exceeded, saving queue without raw binary data:', quotaErr);
+                    payload.queue = payload.queue.map(q => ({ ...q, data: null }));
+                    sessionStorage.setItem(AUTOSAVE_KEY, JSON.stringify(payload));
+                }
             } catch (e) {
                 console.warn('[AutoSave] App4 save failed:', e);
             }
@@ -2851,6 +2857,7 @@ function closeFeedbackForm() {
             if (document.visibilityState === 'hidden') saveApp4Session();
         });
         window.addEventListener('pagehide', saveApp4Session);
+        window.addEventListener('pageshow', () => setTimeout(restoreApp4Session, 60));
 
         window.addEventListener('DOMContentLoaded', () => {
             // IndexedDBの一括受信チェックが終わった直後に復元を試みる

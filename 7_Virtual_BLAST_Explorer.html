@@ -2674,6 +2674,7 @@ function closeFeedbackForm() {
             if (document.visibilityState === 'hidden') saveApp7Session();
         });
         window.addEventListener('pagehide', saveApp7Session);
+        window.addEventListener('pageshow', () => setTimeout(restoreApp7Session, 60));
 
         // ロード完了後に確実に復元
         window.saveApp7Session = saveApp7Session;
