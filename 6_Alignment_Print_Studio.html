@@ -1385,6 +1385,26 @@ input[type="submit"]:disabled:active {
     </button>
 </div>
 <script>
+    // [Bio-Edu Suite] Quota-Safe Storage Engine (Guideline 7.4)
+    function safeSessionSetItem(key, value) {
+        try {
+            sessionStorage.setItem(key, value);
+        } catch (quotaErr) {
+            console.warn('[AutoSave] Quota exceeded for ' + key + ', trying minimal fallback:', quotaErr);
+            try {
+                const parsed = JSON.parse(value);
+                if (typeof parsed === 'object' && parsed !== null) {
+                    ['image', 'images', 'data', 'queue', 'fullCoeffs', 'rawData'].forEach(k => {
+                        if (k in parsed) delete parsed[k];
+                    });
+                    sessionStorage.setItem(key, JSON.stringify(parsed));
+                }
+            } catch (e2) {
+                console.error('[AutoSave] Critical save fallback failed:', e2);
+            }
+        }
+    }
+
     // 端末がスマホ(iPhone/Android等)か判定し、該当する場合のみ警告を表示
     if (/Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
         document.getElementById('mobile-warning-overlay').style.display = 'flex';
@@ -1758,6 +1778,16 @@ input[type="submit"]:disabled:active {
     }
 
     // ウィンドウロード時に初期化
+    window.addEventListener('pageshow', () => {
+        try {
+            const el = document.getElementById('inputText');
+            const saved = sessionStorage.getItem('bio_edu_autosave_app6');
+            if (el && saved && el.value.trim() === '') {
+                el.value = saved;
+                renderText();
+            }
+        } catch(e) {}
+    });
     window.addEventListener('load', () => {
         initTooltips();
         // v34.3.7: 一時保存があれば復元してから描画する（入力欄が空のときのみ）
@@ -1784,7 +1814,7 @@ input[type="submit"]:disabled:active {
         try {
             const el = document.getElementById('inputText');
             if (el && el.value.trim() !== '') {
-                sessionStorage.setItem('bio_edu_autosave_app6', el.value);
+                safeSessionSetItem('bio_edu_autosave_app6', el.value);
             } else {
                 sessionStorage.removeItem('bio_edu_autosave_app6');
             }
@@ -2157,7 +2187,7 @@ function closeFeedbackForm() {
             try {
       const nowTimeBES = Date.now().toString();
       localStorage.setItem('bio_edu_last_user_edit', nowTimeBES);
-      sessionStorage.setItem('bio_edu_last_user_edit', nowTimeBES);
+      safeSessionSetItem('bio_edu_last_user_edit', nowTimeBES);
 
                 const inputs = document.querySelectorAll('input, textarea, select');
                 const draft = {};

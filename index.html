@@ -950,6 +950,26 @@ input[type="submit"]:disabled:active {
 
   <!-- PWA起動時ルーティング（State Restoration - ガイドライン第7.3項） -->
   <script>
+    // [Bio-Edu Suite] Quota-Safe Storage Engine (Guideline 7.4)
+    function safeSessionSetItem(key, value) {
+        try {
+            sessionStorage.setItem(key, value);
+        } catch (quotaErr) {
+            console.warn('[AutoSave] Quota exceeded for ' + key + ', trying minimal fallback:', quotaErr);
+            try {
+                const parsed = JSON.parse(value);
+                if (typeof parsed === 'object' && parsed !== null) {
+                    ['image', 'images', 'data', 'queue', 'fullCoeffs', 'rawData'].forEach(k => {
+                        if (k in parsed) delete parsed[k];
+                    });
+                    sessionStorage.setItem(key, JSON.stringify(parsed));
+                }
+            } catch (e2) {
+                console.error('[AutoSave] Critical save fallback failed:', e2);
+            }
+        }
+    }
+
     (function() {
       try {
         const urlParams = new URLSearchParams(window.location.search);
@@ -1966,7 +1986,7 @@ function closeFeedbackForm() {
     function saveToStorage() {
       const nowTimeBES = Date.now().toString();
       localStorage.setItem('bio_edu_last_user_edit', nowTimeBES);
-      sessionStorage.setItem('bio_edu_last_user_edit', nowTimeBES);
+      safeSessionSetItem('bio_edu_last_user_edit', nowTimeBES);
 
       const serialized = JSON.stringify(samples);
       try {
@@ -1974,7 +1994,7 @@ function closeFeedbackForm() {
       } catch(e) { console.warn('Failed to save localStorage', e); }
 
       try {
-        sessionStorage.setItem(SESSION_WORKSPACE_KEY, serialized);
+        safeSessionSetItem(SESSION_WORKSPACE_KEY, serialized);
       } catch(e) { console.warn('Failed to save sessionStorage', e); }
 
       // ダッシュボード固有：状態変更時に即時クラウド同期（window.saveCurrentWorkspace が存在する場合は優先して即時同期キック）
@@ -3085,7 +3105,7 @@ function closeFeedbackForm() {
             try {
       const nowTimeBES = Date.now().toString();
       localStorage.setItem('bio_edu_last_user_edit', nowTimeBES);
-      sessionStorage.setItem('bio_edu_last_user_edit', nowTimeBES);
+      safeSessionSetItem('bio_edu_last_user_edit', nowTimeBES);
 
                 const inputs = document.querySelectorAll('input, textarea, select');
                 const draft = {};
@@ -3142,6 +3162,7 @@ function closeFeedbackForm() {
         window.addEventListener('pagehide', () => {
             serializeUIState();
         });
+        window.addEventListener('pageshow', () => setTimeout(hydrateUIState, 60));
         window.addEventListener('beforeunload', () => {
             serializeUIState();
         });

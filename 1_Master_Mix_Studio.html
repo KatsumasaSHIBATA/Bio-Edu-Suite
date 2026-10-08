@@ -1339,6 +1339,26 @@ input[type="submit"]:disabled:active {
 <div id="toast" class="toast"></div>
 
 <script>
+    // [Bio-Edu Suite] Quota-Safe Storage Engine (Guideline 7.4)
+    function safeSessionSetItem(key, value) {
+        try {
+            sessionStorage.setItem(key, value);
+        } catch (quotaErr) {
+            console.warn('[AutoSave] Quota exceeded for ' + key + ', trying minimal fallback:', quotaErr);
+            try {
+                const parsed = JSON.parse(value);
+                if (typeof parsed === 'object' && parsed !== null) {
+                    ['image', 'images', 'data', 'queue', 'fullCoeffs', 'rawData'].forEach(k => {
+                        if (k in parsed) delete parsed[k];
+                    });
+                    sessionStorage.setItem(key, JSON.stringify(parsed));
+                }
+            } catch (e2) {
+                console.error('[AutoSave] Critical save fallback failed:', e2);
+            }
+        }
+    }
+
     // --- ドロワー開閉制御 ---
     function toggleSidebar() {
         const sidebar = document.querySelector('.sidebar');
@@ -1789,7 +1809,7 @@ function closeFeedbackForm() {
             try {
       const nowTimeBES = Date.now().toString();
       localStorage.setItem('bio_edu_last_user_edit', nowTimeBES);
-      sessionStorage.setItem('bio_edu_last_user_edit', nowTimeBES);
+      safeSessionSetItem('bio_edu_last_user_edit', nowTimeBES);
 
                 const inputs = document.querySelectorAll('input, textarea, select');
                 const draft = {};

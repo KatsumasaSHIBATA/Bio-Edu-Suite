@@ -1676,6 +1676,7 @@ function closeFeedbackForm() {
         if (document.visibilityState === 'hidden') saveApp11Session();
     });
     window.addEventListener('pagehide', saveApp11Session);
+    window.addEventListener('pageshow', () => setTimeout(restoreApp11Session, 60));
 
     // Chart.js および DOMレイアウト確定後に確実に復元
     window.addEventListener('load', () => {

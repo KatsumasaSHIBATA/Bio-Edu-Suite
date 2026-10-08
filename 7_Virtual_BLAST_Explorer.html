@@ -873,6 +873,26 @@ input[type="submit"]:disabled:active {
     </button>
 </div>
 <script>
+    // [Bio-Edu Suite] Quota-Safe Storage Engine (Guideline 7.4)
+    function safeSessionSetItem(key, value) {
+        try {
+            sessionStorage.setItem(key, value);
+        } catch (quotaErr) {
+            console.warn('[AutoSave] Quota exceeded for ' + key + ', trying minimal fallback:', quotaErr);
+            try {
+                const parsed = JSON.parse(value);
+                if (typeof parsed === 'object' && parsed !== null) {
+                    ['image', 'images', 'data', 'queue', 'fullCoeffs', 'rawData'].forEach(k => {
+                        if (k in parsed) delete parsed[k];
+                    });
+                    sessionStorage.setItem(key, JSON.stringify(parsed));
+                }
+            } catch (e2) {
+                console.error('[AutoSave] Critical save fallback failed:', e2);
+            }
+        }
+    }
+
     if (/Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
         document.getElementById('mobile-warning-overlay').style.display = 'flex';
     }
@@ -1719,7 +1739,7 @@ input[type="submit"]:disabled:active {
                     // LWW調停タイムスタンプ更新＆セッション保存＆クラウド同期要求
                     const nowStr = Date.now().toString();
                     localStorage.setItem('bio_edu_last_user_edit', nowStr);
-                    sessionStorage.setItem('bio_edu_last_user_edit', nowStr);
+                    safeSessionSetItem('bio_edu_last_user_edit', nowStr);
                     if (typeof window.saveApp7Session === "function") window.saveApp7Session();
                     window.dispatchEvent(new CustomEvent('bio_edu_request_save'));
                 } catch(err) {
@@ -1789,7 +1809,7 @@ input[type="submit"]:disabled:active {
                 
                 const nowStr = Date.now().toString();
                 localStorage.setItem('bio_edu_last_user_edit', nowStr);
-                sessionStorage.setItem('bio_edu_last_user_edit', nowStr);
+                safeSessionSetItem('bio_edu_last_user_edit', nowStr);
                 if (typeof window.saveApp7Session === "function") window.saveApp7Session();
                 window.dispatchEvent(new CustomEvent('bio_edu_request_save'));
             }
@@ -1953,7 +1973,7 @@ input[type="submit"]:disabled:active {
 
         const nowStr = Date.now().toString();
         localStorage.setItem('bio_edu_last_user_edit', nowStr);
-        sessionStorage.setItem('bio_edu_last_user_edit', nowStr);
+        safeSessionSetItem('bio_edu_last_user_edit', nowStr);
         if (typeof window.saveApp7Session === 'function') {
             window.saveApp7Session();
         }
@@ -2302,7 +2322,7 @@ input[type="submit"]:disabled:active {
             queryInput.addEventListener('input', () => {
                 const nowStr = Date.now().toString();
                 localStorage.setItem('bio_edu_last_user_edit', nowStr);
-                sessionStorage.setItem('bio_edu_last_user_edit', nowStr);
+                safeSessionSetItem('bio_edu_last_user_edit', nowStr);
                 if (typeof window.saveApp7Session === 'function') window.saveApp7Session();
             });
         }
@@ -2313,7 +2333,7 @@ input[type="submit"]:disabled:active {
                 el.addEventListener('change', () => {
                     const nowStr = Date.now().toString();
                     localStorage.setItem('bio_edu_last_user_edit', nowStr);
-                    sessionStorage.setItem('bio_edu_last_user_edit', nowStr);
+                    safeSessionSetItem('bio_edu_last_user_edit', nowStr);
                     if (typeof window.saveApp7Session === 'function') window.saveApp7Session();
                 });
             }
