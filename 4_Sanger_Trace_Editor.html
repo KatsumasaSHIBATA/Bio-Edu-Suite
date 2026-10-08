@@ -160,8 +160,8 @@
         .trace-outer-container { flex: 1; overflow-x: auto; overflow-y: hidden; background: white; position: relative; display: flex; flex-direction: column; min-height: 400px; user-select: none; }
         .trace-inner { position: relative; min-height: 100%; min-width: 100%; flex: 1; display: flex; flex-direction: column;}
         
-        .bases-layer { position: absolute; top: 0; left: 0; height: 30px; background: rgba(236, 240, 241, 0.8); border-bottom: 1px solid #bdc3c7; width: 100%; z-index: 10; display: flex; }
-        .canvas-layer { position: absolute; top: 30px; left: 0; height: calc(100% - 30px); background: #fff; z-index: 1; }
+        .bases-layer { position: absolute; top: 0; left: 0; height: 30px; background: rgba(236, 240, 241, 0.8); border-bottom: 1px solid #bdc3c7; width: 100%; z-index: 10; display: block; }
+        .canvas-layer { position: absolute; top: 30px; left: 0; width: 100%; height: calc(100% - 30px); background: #fff; z-index: 1; display: block; }
         
         .base-char { position: absolute; top: 0; width: 20px; text-align: center; margin-left: -10px; font-family: 'Courier New', Courier, monospace; font-size: 14px; font-weight: 900; line-height: 30px; cursor: pointer; user-select: none; transition: 0.1s; border-radius: 2px;}
         .base-char:hover { background: #bdc3c7; }
@@ -1735,11 +1735,22 @@ input[type="submit"]:disabled:active {
         const totalWidth = Math.min(ab1Data.traceLength * baseWidth * scaleX, 30000); 
         
         container.style.width = totalWidth + 'px';
-        canvas.width = totalWidth;
         
         let clientH = container.clientHeight;
         if (clientH < 100) { clientH = 400; } 
-        canvas.height = clientH - 30; 
+        
+        const logicalHeight = clientH - 30;
+        const dpr = window.devicePixelRatio || 1;
+        
+        // CSS論理サイズと物理(Canvas)解像度の厳格な同期 (HiDPIスケールズレ防止)
+        canvas.style.width = totalWidth + 'px';
+        canvas.style.height = logicalHeight + 'px';
+        canvas.width = totalWidth * dpr;
+        canvas.height = logicalHeight * dpr;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.scale(dpr, dpr);
         
         drawTraces(canvas, scaleX, scaleY, baseWidth);
         renderBases(basesLayer, scaleX, baseWidth);
@@ -1747,9 +1758,14 @@ input[type="submit"]:disabled:active {
 
     function drawTraces(canvas, scaleX, scaleY, baseWidth) {
         const ctx = canvas.getContext('2d');
-        const w = canvas.width;
-        const h = canvas.height;
-        ctx.clearRect(0, 0, w, h);
+        // DPR対応：描画計算には物理サイズではなくCSS論理サイズを使用する
+        const w = parseFloat(canvas.style.width) || canvas.width;
+        const h = parseFloat(canvas.style.height) || canvas.height;
+        
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
 
         const dataLen = ab1Data.traceLength;
         const drawScaleY = (h * 0.9) / (ab1Data.maxVal / scaleY);
