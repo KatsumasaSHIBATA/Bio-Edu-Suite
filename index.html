@@ -1802,20 +1802,12 @@ function closeFeedbackForm() {
         saveToStorage();
       }
 
-      // ストレージキャッシュの自律昇格 (v37.3)
+      // ストレージキャッシュの自律昇格 (v37.3 - 先祖返り・混ざり防止ガード)
       const currentVer = localStorage.getItem('bio_edu_finch_alx1_version');
       if (currentVer !== 'v37.3' && Array.isArray(samples)) {
-        const defaults = getDefaultFinchSamples();
-        const userCustomSamples = samples.filter(s => !/^SPECIMEN-0[0-4]/.test(s.id));
-        const updatedDefaults = defaults.map(d => {
-          const existing = samples.find(s => s.id === d.id);
-          return {
-            ...d,
-            traces: (existing && existing.traces && existing.traces.length > 0) ? existing.traces : d.traces,
-            sequences: parseFastaMarkers(d.dnaData)
-          };
-        });
-        samples = [...updatedDefaults, ...userCustomSamples];
+        if (samples.length === 0 && !isCleared) {
+          samples = getDefaultFinchSamples();
+        }
         localStorage.setItem('bio_edu_finch_alx1_version', 'v37.3');
         saveToStorage();
       }
@@ -3062,12 +3054,8 @@ function closeFeedbackForm() {
 
             try {
                 const targetSamples = (Array.isArray(samples) && samples.length > 0) ? samples : (typeof getDefaultFinchSamples === 'function' ? getDefaultFinchSamples() : []);
-                const sessionSnap = {};
-                for (let i = 0; i < sessionStorage.length; i++) {
-                    const k = sessionStorage.key(i);
-                    if (k) sessionSnap[k] = sessionStorage.getItem(k);
-                }
                 const sanitizedWorkspaceKey = (typeof SESSION_WORKSPACE_KEY !== 'undefined' ? SESSION_WORKSPACE_KEY : 'bio_edu_workspace_dashboard_samples');
+                const sessionSnap = {};
                 sessionSnap[sanitizedWorkspaceKey] = JSON.stringify(targetSamples);
 
                 const payload = {

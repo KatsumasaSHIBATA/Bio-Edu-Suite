@@ -2471,5 +2471,92 @@ window.confirmDataReset = function() {
 };
 </script>
 
+
+<!-- [Bio-Edu Suite v36.2] アプリ⑧ 完全セッション永続化＆クラウド同期ハイドレーションエンジン -->
+<script>
+(function() {
+    const AUTOSAVE_KEY = 'bio_edu_autosave_app8_full';
+    function saveApp8Session() {
+        if (window.isHydratingApp8) return;
+        try {
+            const fastaEl = document.getElementById('fastaInput');
+            const fastaVal = fastaEl ? fastaEl.value.trim() : '';
+            const isExecuted = document.getElementById('btnCopyForApp10') ? !document.getElementById('btnCopyForApp10').disabled : false;
+            if (!fastaVal && !isExecuted) { sessionStorage.removeItem(AUTOSAVE_KEY); return; }
+            const state = {
+                savedAt: Date.now(), fasta: fastaVal,
+                algo: document.getElementById('algoSelect') ? document.getElementById('algoSelect').value : 'UPGMA',
+                bootstrap: document.querySelector('input[name="bootstrap"]:checked')?.value || '0',
+                outgroup: document.getElementById('outgroupSelect') ? document.getElementById('outgroupSelect').value : '',
+                matrixHtml: document.getElementById('matrixContainer') ? document.getElementById('matrixContainer').innerHTML : '',
+                logHtml: document.getElementById('logTableBody') ? document.getElementById('logTableBody').innerHTML : '',
+                statusBoxHtml: document.getElementById('statusLog') ? document.getElementById('statusLog').innerHTML : '',
+                isExecuted: isExecuted,
+                lastNewick: window.lastGeneratedNewick || '',
+                analysisLogs: (typeof analysisLogs !== 'undefined' && Array.isArray(analysisLogs)) ? analysisLogs : []
+            };
+            sessionStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state));
+            window.dispatchEvent(new CustomEvent('bio_edu_request_save'));
+        } catch (e) { console.warn('[AutoSave] App8 save failed:', e); }
+    }
+    function restoreApp8Session() {
+        try {
+            const raw = sessionStorage.getItem(AUTOSAVE_KEY);
+            if (!raw) return;
+            const state = JSON.parse(raw);
+            if (!state) return;
+            window.isHydratingApp8 = true;
+            if (state.fasta) document.getElementById('fastaInput').value = state.fasta;
+            if (state.algo) document.getElementById('algoSelect').value = state.algo;
+            if (state.bootstrap) {
+                const bsRadio = document.querySelector(`input[name="bootstrap"][value="${state.bootstrap}"]`);
+                if (bsRadio) bsRadio.checked = true;
+            }
+            if (state.statusBoxHtml) document.getElementById('statusLog').innerHTML = state.statusBoxHtml;
+            if (state.matrixHtml) document.getElementById('matrixContainer').innerHTML = state.matrixHtml;
+            if (state.logHtml) document.getElementById('logTableBody').innerHTML = state.logHtml;
+            if (state.lastNewick) window.lastGeneratedNewick = state.lastNewick;
+            if (state.analysisLogs) window.analysisLogs = state.analysisLogs;
+            if (state.isExecuted) {
+                ['btnCopyForApp10', 'btnCopyForApp11', 'btnSaveImg', 'btnDownloadLog', 'btnToggleHeatmap', 'btnExportCSV'].forEach(id => {
+                    const btn = document.getElementById(id);
+                    if (btn) btn.disabled = false;
+                });
+                const outSel = document.getElementById('outgroupSelect');
+                if (outSel) { outSel.disabled = false; if (state.outgroup) outSel.value = state.outgroup; }
+                if (window.analysisLogs && window.analysisLogs.length > 0 && typeof restoreLogState === 'function') {
+                    restoreLogState(window.analysisLogs.length - 1);
+                } else if (state.fasta && typeof handleExecute === 'function') {
+                    handleExecute();
+                }
+            }
+            setTimeout(() => { window.isHydratingApp8 = false; }, 60);
+        } catch (e) { console.warn('[AutoSave] App8 restore failed:', e); window.isHydratingApp8 = false; }
+    }
+    window.saveApp8Session = saveApp8Session;
+    window.restoreApp8Session = restoreApp8Session;
+    window.restoreWorkspace = restoreApp8Session;
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveApp8Session(); });
+    window.addEventListener('pagehide', saveApp8Session);
+    window.addEventListener('pageshow', () => setTimeout(restoreApp8Session, 60));
+    window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(restoreApp8Session, 100);
+        document.getElementById('fastaInput')?.addEventListener('input', () => {
+            const now = Date.now().toString();
+            localStorage.setItem('bio_edu_last_user_edit', now);
+            sessionStorage.setItem('bio_edu_last_user_edit', now);
+            saveApp8Session();
+        });
+    });
+    window.addEventListener('click', (e) => {
+        if (e.target.closest('#btnExecute') || e.target.closest('#btnNextStep') || e.target.closest('#btnCopyForApp10')) {
+            setTimeout(saveApp8Session, 300);
+        }
+    });
+    window.addEventListener('bio_edu_cloud_synced', restoreApp8Session);
+    window.addEventListener('bio_edu_preset_loaded', restoreApp8Session);
+})();
+</script>
+
 </body>
 </html>
