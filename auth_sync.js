@@ -216,7 +216,16 @@ export async function registerMasterPreset(taskCode, payload) {
 
     // ルートコレクション master_tasks への書き込みに完全一本化（ガイドライン第7.5.2項①準拠）
     const globalDocRef = doc(db, "master_tasks", cleanCode);
-    await setDoc(globalDocRef, taskData, { merge: true });
+    try {
+      await setDoc(globalDocRef, taskData, { merge: true });
+    } catch (err) {
+      if (err.message && err.message.toLowerCase().includes('invalid')) {
+        console.warn("Firestore type conflict detected in master_tasks. Falling back to overwrite mode.");
+        await setDoc(globalDocRef, taskData);
+      } else {
+        throw err;
+      }
+    }
 
     if (typeof showToast === 'function') {
       showToast(`課題「${cleanCode}」をクラウドに登録・発行しました`, "success");
@@ -504,11 +513,29 @@ export async function saveCurrentWorkspace() {
       roomPayload.teacherId = currentParticipantId;
       roomPayload.teacherUpdatedAt = nowTime;
     }
-    await setDoc(roomRef, roomPayload, { merge: true });
+    try {
+      await setDoc(roomRef, roomPayload, { merge: true });
+    } catch (err) {
+      if (err.message && err.message.toLowerCase().includes('invalid')) {
+        console.warn("Firestore type conflict detected in room data. Falling back to overwrite mode.");
+        await setDoc(roomRef, roomPayload);
+      } else {
+        throw err;
+      }
+    }
 
     if (hasData || isTeacher) {
       const docRef = doc(db, `rooms/${currentRoomCode}/participants`, currentParticipantId);
-      await setDoc(docRef, { workspace: snap, participantId: currentParticipantId, isTeacher: isTeacher, lastUpdated: nowTime }, { merge: true });
+      try {
+        await setDoc(docRef, { workspace: snap, participantId: currentParticipantId, isTeacher: isTeacher, lastUpdated: nowTime }, { merge: true });
+      } catch (err) {
+        if (err.message && err.message.toLowerCase().includes('invalid')) {
+          console.warn("Firestore type conflict detected in participant data. Falling back to overwrite mode.");
+          await setDoc(docRef, { workspace: snap, participantId: currentParticipantId, isTeacher: isTeacher, lastUpdated: nowTime });
+        } else {
+          throw err;
+        }
+      }
     }
   } catch (e) {
     console.warn("Cloud sync write error:", e);
