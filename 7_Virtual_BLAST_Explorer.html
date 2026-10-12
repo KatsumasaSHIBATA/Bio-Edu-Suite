@@ -2764,6 +2764,11 @@ function closeFeedbackForm() {
             if (typeof closeAccountSettings === 'function') closeAccountSettings();
         };
     window.handleRegisterCurrentPreset = async function() {
+            try {
+              if (typeof window.saveApp7Session === 'function') {
+                window.saveApp7Session();
+              }
+            } catch(e) {}
             const tEl = document.getElementById('newMasterTaskCodeInput') || document.getElementById('loggedInMasterTaskCodeInput');
             const t = tEl ? tEl.value.trim() : '';
             if (!t) {

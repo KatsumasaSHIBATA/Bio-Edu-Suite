@@ -202,6 +202,24 @@ export async function registerMasterPreset(taskCode, payload) {
               val = typeof val === 'string' ? JSON.stringify(cleanedSamples) : cleanedSamples;
             }
           } catch(e) {}
+        } else if (k.includes('autosave_app7') || (typeof val === 'string' && val.includes('localDB'))) {
+          try {
+            const app7Data = typeof val === 'string' ? JSON.parse(val) : val;
+            if (app7Data && typeof app7Data === 'object') {
+              app7Data.alignmentHtml = "";
+              app7Data.currentResults = [];
+              val = JSON.stringify(app7Data);
+            }
+          } catch(e) {}
+        } else if (k.includes('autosave_app7') || (typeof val === 'string' && val.includes('localDB'))) {
+          try {
+            const app7Data = typeof val === 'string' ? JSON.parse(val) : val;
+            if (app7Data && typeof app7Data === 'object') {
+              app7Data.alignmentHtml = "";
+              app7Data.currentResults = [];
+              val = JSON.stringify(app7Data);
+            }
+          } catch(e) {}
         } else if (typeof val === 'string' && val.length > 150000) {
           val = "";
         } else if (typeof val === 'string') {
@@ -299,7 +317,7 @@ export async function importMasterPreset(taskCode) {
         // セッションデータの復元（payload.sessionData または payload直下のキー群）
         const sessionSource = (payload.sessionData && typeof payload.sessionData === 'object') ? payload.sessionData : payload;
         Object.keys(sessionSource).forEach((k) => {
-          if (k.startsWith('bio_edu_ws_') || k.startsWith('bio_edu_workspace_') || k.startsWith('bio_edu_draft_')) {
+          if (k.startsWith('bio_edu_ws_') || k.startsWith('bio_edu_workspace_') || k.startsWith('bio_edu_draft_') || k.startsWith('bio_edu_autosave_')) {
             const restoredKey = k.replace(/__dot__/g, '.');
             sessionStorage.setItem(restoredKey, sessionSource[k]);
           }
