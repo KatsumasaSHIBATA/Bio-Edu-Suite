@@ -183,12 +183,26 @@ export async function registerMasterPreset(taskCode, payload) {
       });
     }
 
-    // sessionData内の不要な巨大データをパージして軽量化
+    // sessionData内の不要な巨大データをパージして軽量化 (dashboard_samples等の配列構造保持対応)
     if (sanitizedPayload.sessionData && typeof sanitizedPayload.sessionData === 'object') {
       const cleanSessionData = {};
       Object.keys(sanitizedPayload.sessionData).forEach((k) => {
         let val = sanitizedPayload.sessionData[k];
-        if (typeof val === 'string' && val.length > 150000) {
+        if (k.includes('dashboard_samples') || (typeof val === 'string' && val.includes('dashboard_samples'))) {
+          try {
+            const sampleObj = typeof val === 'string' ? JSON.parse(val) : val;
+            if (Array.isArray(sampleObj)) {
+              const cleanedSamples = sampleObj.map(s => {
+                const scopy = { ...s };
+                if (scopy.image_data && typeof scopy.image_data === 'string') {
+                  scopy.image_data = "";
+                }
+                return scopy;
+              });
+              val = typeof val === 'string' ? JSON.stringify(cleanedSamples) : cleanedSamples;
+            }
+          } catch(e) {}
+        } else if (typeof val === 'string' && val.length > 150000) {
           val = "";
         } else if (typeof val === 'string') {
           try {
@@ -213,6 +227,23 @@ export async function registerMasterPreset(taskCode, payload) {
       creatorId: currentParticipantId || "",
       createdAt: Date.now()
     };
+
+    // 1MB超過フリーズ防止安全ガード：900,000文字を超える場合は超巨大セッションキーを間引く
+    let serializedTaskData = JSON.stringify(taskData);
+    if (serializedTaskData.length > 900000 && taskData.payload && taskData.payload.sessionData) {
+      console.warn("Task data size exceeds 900KB. Thinning session data to prevent 1MB Firestore limit restriction.");
+      const keys = Object.keys(taskData.payload.sessionData);
+      keys.sort((a, b) => {
+        const valA = typeof taskData.payload.sessionData[a] === 'string' ? taskData.payload.sessionData[a].length : 0;
+        const valB = typeof taskData.payload.sessionData[b] === 'string' ? taskData.payload.sessionData[b].length : 0;
+        return valB - valA;
+      });
+      for (const k of keys) {
+        if (serializedTaskData.length <= 900000) break;
+        taskData.payload.sessionData[k] = "";
+        serializedTaskData = JSON.stringify(taskData);
+      }
+    }
 
     // ルートコレクション master_tasks への書き込みに完全一本化（ガイドライン第7.5.2項①準拠）
     const globalDocRef = doc(db, "master_tasks", cleanCode);
@@ -252,23 +283,28 @@ export async function importMasterPreset(taskCode) {
 
     if (snap.exists()) {
       const data = snap.data();
-      let payload = data.payload;
+      let payload = data.payload || data;
       if (typeof payload === 'string') {
         try { payload = JSON.parse(payload); } catch(e) {}
       }
       if (payload) {
+        // テキストエリアへの復元
         const activeTextarea = document.querySelector('textarea.paste-area, textarea#dnaInput, textarea#fastaInput, textarea#chain-code-input, textarea#pasteArea, input#pdbId');
         if (activeTextarea && payload.sequence) {
           activeTextarea.value = payload.sequence;
           activeTextarea.dispatchEvent(new Event('input', { bubbles: true }));
           activeTextarea.dispatchEvent(new Event('change', { bubbles: true }));
         }
-        if (payload.sessionData) {
-          Object.keys(payload.sessionData).forEach((k) => {
+        
+        // セッションデータの復元（payload.sessionData または payload直下のキー群）
+        const sessionSource = (payload.sessionData && typeof payload.sessionData === 'object') ? payload.sessionData : payload;
+        Object.keys(sessionSource).forEach((k) => {
+          if (k.startsWith('bio_edu_ws_') || k.startsWith('bio_edu_workspace_') || k.startsWith('bio_edu_draft_')) {
             const restoredKey = k.replace(/__dot__/g, '.');
-            sessionStorage.setItem(restoredKey, payload.sessionData[k]);
-          });
-        }
+            sessionStorage.setItem(restoredKey, sessionSource[k]);
+          }
+        });
+        
         window.dispatchEvent(new CustomEvent('bio_edu_preset_loaded', { detail: { taskCode: cleanCode, payload: payload } }));
         if (typeof showToast === 'function') showToast(`課題「${cleanCode}」を展開しました`, "success");
       }
