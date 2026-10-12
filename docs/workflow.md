@@ -33,9 +33,11 @@ AIを「職人的な専属リードエンジニア 兼 シニアUI/UXデザイ�
 * **モデル段階的エスカレーション基準（Level 0〜4）**:
   - **Level 0**: `gemini-3.6-flash`（手足・標準無人巡航）
   - **Level 1**: `gemini-3.8-flash`（差分マージ2回失敗時の軽度昇格）
+  - **Level Local**: `Ollama` (`qwen2.5-coder:32b` / 完全オフライン環境・APIレート制限超過時の特例フォールバック)
   - **Level 2**: `gemini-3.8-flash`（ステート競合時の高速推論）
   - **Level 3**: `gemini-3.1-pro-preview`（Web側司令塔固定・Cline割当禁止）
   - **Level 4**: **Cline + Anthropic API**（`Claude 3.7 Sonnet` / 新規チャット・単一ファイル・外科手術限定・完了後即時Level 0復帰）
+* **【ローカルモデル運用補則】**: Level Local 稼働時は、ローカルのコンテキスト圧迫を防止するため「単一責務・マイクロタスク原則（1指示1関数）」を極限まで厳格に適用すること。
 * **Cline・マルチLLM緊急外科手術プロトコル**:
   - Cline（Google AI Studio / Gemini）での標準巡航で解決不能なファイル競合や複雑なバグに直面した際は、VS Code上で即座にClineのAPIプロバイダーを「Anthropic（Claude 3.7 Sonnet）」へ切り替えて特例召喚（Level 4）する。
   - **【雪だるま式課金の物理遮断（必須）】**: 上位モデルへ切り替える際は、肥大化したコンテキストによるトークン浪費を防ぐため、**「必ず直前のClineチャット履歴をClear（新規タスク作成）」**してから極小の単一指示を与えること。
@@ -287,9 +289,11 @@ Clineの実行結果ログです。現状の分析を行い、日本学術会議
 1. **モデル段階的エスカレーション基準（Level 0〜4）**:
    - **Level 0**: `gemini-3.6-flash`（手足・標準無人巡航・リカバリー最大1回）
    - **Level 1**: `gemini-3.8-flash`（戦術リカバリー＆即値解決・ループ物理遮断）
+   - **Level Local**: `Ollama` (`qwen2.5-coder:32b` / 完全オフライン環境・APIレート制限超過時の特例フォールバック)
    - **Level 2**: `gemini-3.8-flash`（Web側司令塔の日常・意図把握メイン頭脳 / Cline側の高度推論）
    - **Level 3**: `gemini-3.1-pro-preview`（Web側司令塔の特例・深淵設計・数理モデル構築）
    - **Level 4**: **Cline + Anthropic API**（`Claude 3.7 Sonnet` / 新規チャット・単一ファイル・外科手術限定・完了後即時Level 0復帰）
+   - 【ローカルモデル運用補則】: Level Local 稼働時は、ローカルのコンテキスト圧迫を防止するため「単一責務・マイクロタスク原則（1指示1関数）」を極限まで厳格に適用すること。
 
 2. **Cline・マルチLLM緊急外科手術プロトコル**:
    - Cline（Google AI Studio / Gemini）での標準巡航で解決不能なファイル競合や複雑なバグに直面した際は、VS Code上で即座にClineのAPIプロバイダーを「Anthropic（Claude 3.7 Sonnet）」へ切り替えて特例召喚（Level 4）する。
