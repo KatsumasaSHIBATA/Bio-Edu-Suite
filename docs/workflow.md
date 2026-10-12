@@ -35,9 +35,11 @@ AIを「職人的な専属リードエンジニア 兼 シニアUI/UXデザイ�
   - **Level 1**: `gemini-3.8-flash`（差分マージ2回失敗時の軽度昇格）
   - **Level 2**: `gemini-3.8-flash`（ステート競合時の高速推論）
   - **Level 3**: `gemini-3.1-pro-preview`（Web側司令塔固定・Cline割当禁止）
-  - **Level 4**: **Claude Code**（`Claude 3.7 Sonnet` / 新規チャット・単一ファイル・外科手術限定・完了後即時Level 0復帰）
-* **Claude Code緊急外科手術プロトコル**:
-  - Clineでの標準巡航（Level 0〜2）で手に負えない複雑な競合、モジュール崩壊、または頑固なバグに直面した際は、即座に **Claude Code（Level 4）** を単一ファイル・外科手術限定で動かし、完了後は直ちにLevel 0（Cline / Flash-Lite）へ復帰すること。
+  - **Level 4**: **Cline + Anthropic API**（`Claude 3.7 Sonnet` / 新規チャット・単一ファイル・外科手術限定・完了後即時Level 0復帰）
+* **Cline・マルチLLM緊急外科手術プロトコル**:
+  - Cline（Google AI Studio / Gemini）での標準巡航で解決不能なファイル競合や複雑なバグに直面した際は、VS Code上で即座にClineのAPIプロバイダーを「Anthropic（Claude 3.7 Sonnet）」へ切り替えて特例召喚（Level 4）する。
+  - **【雪だるま式課金の物理遮断（必須）】**: 上位モデルへ切り替える際は、肥大化したコンテキストによるトークン浪費を防ぐため、**「必ず直前のClineチャット履歴をClear（新規タスク作成）」**してから極小の単一指示を与えること。
+  - 外科手術（Case A）完了後は速やかにAPIを AI Studio（Gemini）へ戻し、Level 0の無人巡航体制へ復帰すること。
 
 ### 2. **🛠️ 現場職人（VS Code拡張機能：Cline）**
 * **実行責務**:
@@ -280,18 +282,19 @@ Clineの実行結果ログです。現状の分析を行い、日本学術会議
 
 ---
 
-## **🚀 第8章：モデル段階的エスカレーション基準 & Claude Code外科手術プロトコル**
+## **🚀 第8章：モデル段階的エスカレーション基準 & Cline・マルチLLM緊急外科手術プロトコル**
 
 1. **モデル段階的エスカレーション基準（Level 0〜4）**:
-   - **Level 0**: `gemini-3.6-flash`（手足・標準無0人巡航・リカバリー最大1回）
+   - **Level 0**: `gemini-3.6-flash`（手足・標準無人巡航・リカバリー最大1回）
    - **Level 1**: `gemini-3.8-flash`（戦術リカバリー＆即値解決・ループ物理遮断）
    - **Level 2**: `gemini-3.8-flash`（Web側司令塔の日常・意図把握メイン頭脳 / Cline側の高度推論）
    - **Level 3**: `gemini-3.1-pro-preview`（Web側司令塔の特例・深淵設計・数理モデル構築）
-   - **Level 4**: `Claude Code`（`Claude 3.7 Sonnet` / 新規チャット・単一ファイル・外科手術限定・完了後即時Level 0復帰）
+   - **Level 4**: **Cline + Anthropic API**（`Claude 3.7 Sonnet` / 新規チャット・単一ファイル・外科手術限定・完了後即時Level 0復帰）
 
-2. **Claude Code緊急外科手術プロトコル**:
-   - Cline（Level 0〜2）による標準巡航で解決不能なファイル競合、モジュール崩壊、または頑固なバグに直面した際のみ、**Claude Code（Level 4）**を単一ファイル・外科手術限定で投入する。
-   - 外科手術完了後は速やかにLevel 0（Cline / Flash-Lite）へ復帰し、無人巡航体制を維持すること。
+2. **Cline・マルチLLM緊急外科手術プロトコル**:
+   - Cline（Google AI Studio / Gemini）での標準巡航で解決不能なファイル競合や複雑なバグに直面した際は、VS Code上で即座にClineのAPIプロバイダーを「Anthropic（Claude 3.7 Sonnet）」へ切り替えて特例召喚（Level 4）する。
+   - **【雪だるま式課金の物理遮断（必須）】**: 上位モデルへ切り替える際は、肥大化したコンテキストによるトークン浪費を防ぐため、**「必ず直前のClineチャット履歴をClear（新規タスク作成）」**してから極小の単一指示を与えること。
+   - 外科手術（Case A）完了後は速やかにAPIを AI Studio（Gemini）へ戻し、Level 0の無人巡航体制へ復帰すること。
 
 
 ## **⚙️ 【必須セットアップ】プロジェクトルート構成定義**
