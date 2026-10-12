@@ -1,9 +1,10 @@
-# Bio-Edu Suite - Claude Code Execution Rules
+# Bio-Edu Suite - Multi-LLM Execution Rules (Claude 3.7 Sonnet & Universal Guardrails)
 
 ## 1. Project Overview & Architecture
 Bio-Edu Suite is an educational bioinformatics web application suite for Japanese high schools.
-- Single Source of Truth: `docs/guideline.md`
-- Master Workflow: `docs/workflow.md`
+- Single Source of Truth: `docs/guideline.md` & `docs/workflow.md`
+- Level 4 Surgical Role: Specialized for solving complex UI/logic conflicts or module collapses when invoked via Cline. Must return to Level 0 immediately upon completion.
+- Snowball Context Cutoff: Must be initiated with a newly cleared context (Cleared chat) without inheriting long historical logs.
 
 ## 2. Absolute Guardrails (Zero-Modification)
 - **Zero-Modification**: NEVER refactor, modernize, or clean up existing HTML structure, CSS layout, or D3.js visualization logic unless explicitly commanded. Apply strict, minimal diff patches only.
