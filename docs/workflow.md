@@ -34,6 +34,12 @@ AIを「職人的な専属リードエンジニア 兼 シニアUI/UXデザイ�
   - **Level 0**: `gemini-3.6-flash`（手足・標準無人巡航）
   - **Level 1**: `gemini-3.8-flash`（差分マージ2回失敗時の軽度昇格）
   - **Level Local**: `Ollama` (`qwen2.5-coder:32b` / 完全オフライン環境・APIレート制限超過時の特例フォールバック)
+  - **【Level Local (Ollama / Qwen2.5-Coder 32B) 運用ライフサイクルSOP】**:
+    1. 【起動】Macのターミナルを開き `ollama serve` を実行（ログが流れ始めたらウィンドウを最小化して放置）。
+    2. 【接続】Cline設定で Provider: `Ollama`、Model ID: `qwen2.5-coder:32b` を指定し、チャットをClearしてタスク投入。
+    3. 【停止】作業完了後、ターミナルで `Ctrl + C` を押してサーバーを安全停止し、ウィンドウを閉じる。
+    4. 【復帰】Cline設定で日常巡航モデル `Google Gemini (gemini-3.6-flash)` へ戻し、チャットをClearする。
+    ※たまにしか使わないユーザーの負荷をゼロにするため、司令塔（Web側Gemini）はLevel Localを推奨・アサインする際、必ず上記1〜4のナビゲーション手順をセットで案内する義務を負う。
   - **Level 2**: `gemini-3.8-flash`（ステート競合時の高速推論）
   - **Level 3**: `gemini-3.1-pro-preview`（Web側司令塔固定・Cline割当禁止）
   - **Level 4**: **Cline + Anthropic API**（`Claude 3.7 Sonnet` / 新規チャット・単一ファイル・外科手術限定・完了後即時Level 0復帰）
