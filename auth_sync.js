@@ -246,10 +246,11 @@ export async function registerMasterPreset(taskCode, payload) {
       createdAt: Date.now()
     };
 
-    // 1MB超過フリーズ防止安全ガード：900,000文字を超える場合は超巨大セッションキーを間引く
+    // 1MB超過フリーズ防止安全ガード：750,000バイトを超える場合は超巨大セッションキーを間引く
     let serializedTaskData = JSON.stringify(taskData);
-    if (serializedTaskData.length > 900000 && taskData.payload && taskData.payload.sessionData) {
-      console.warn("Task data size exceeds 900KB. Thinning session data to prevent 1MB Firestore limit restriction.");
+    const getTaskByteSize = (str) => new Blob([str]).size;
+    if (getTaskByteSize(serializedTaskData) > 750000 && taskData.payload && taskData.payload.sessionData) {
+      console.warn("Task data byte size exceeds 750KB. Thinning session data to prevent 1MB Firestore limit restriction.");
       const keys = Object.keys(taskData.payload.sessionData);
       keys.sort((a, b) => {
         const valA = typeof taskData.payload.sessionData[a] === 'string' ? taskData.payload.sessionData[a].length : 0;
@@ -257,7 +258,7 @@ export async function registerMasterPreset(taskCode, payload) {
         return valB - valA;
       });
       for (const k of keys) {
-        if (serializedTaskData.length <= 900000) break;
+        if (getTaskByteSize(serializedTaskData) <= 750000) break;
         taskData.payload.sessionData[k] = "";
         serializedTaskData = JSON.stringify(taskData);
       }
@@ -549,6 +550,17 @@ export async function saveCurrentWorkspace() {
           } catch(e) {}
         }
         snap[k.replace(/\./g, '__dot__')] = val;
+      }
+    }
+    let snapStr = JSON.stringify(snap);
+    const getSnapByteSize = (str) => new Blob([str]).size;
+    if (getSnapByteSize(snapStr) > 750000) {
+      const snapKeys = Object.keys(snap);
+      snapKeys.sort((a, b) => (snap[b] ? snap[b].length : 0) - (snap[a] ? snap[a].length : 0));
+      for (const sk of snapKeys) {
+        if (getSnapByteSize(snapStr) <= 750000) break;
+        snap[sk] = "";
+        snapStr = JSON.stringify(snap);
       }
     }
     const hasData = Object.keys(snap).length > 0;
