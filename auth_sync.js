@@ -1,6 +1,6 @@
-import { initializeApp } from "[https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js](https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js)";
-import { getAuth, onAuthStateChanged, signInAnonymously } from "[https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js](https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js)";
-import { getFirestore, enableIndexedDbPersistence, doc, setDoc, getDoc, onSnapshot, deleteDoc } from "[https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js](https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js)";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getFirestore, enableIndexedDbPersistence, doc, setDoc, getDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAFJ8dH4K50MCLAkHgaS6pqdvsTNUzAzHk",
@@ -182,12 +182,7 @@ function sanitizeSessionMap(rawSessionObj) {
 
   Object.keys(rawSessionObj).forEach((rawKey) => {
     const origKey = rawKey.replace(/__dot__/g, '.');
-    if (
-      !origKey.startsWith('bio_edu_ws_') &&
-      !origKey.startsWith('bio_edu_draft_') &&
-      !origKey.startsWith('bio_edu_autosave_') &&
-      !origKey.startsWith('bio_edu_workspace_')
-    ) {
+    if (origKey === 'bio_edu_just_joined' || origKey === 'bio_edu_last_user_edit') {
       return;
     }
 
@@ -222,7 +217,7 @@ function sanitizeSessionMap(rawSessionObj) {
           });
           val = JSON.stringify(sanitizedArr);
           // もし .ab1 波形バイナリ(traces)が複数入って単一キーで550KBを超える場合のみ、tracesの巨大Base64を間引く
-          if (getUtf8ByteSize(val) > 550000) {
+          if (getUtf8ByteSize(val) > 750000) {
             const slimArr = sanitizedArr.map(item => {
               const copy = { ...item };
               if (Array.isArray(copy.traces)) {
@@ -267,9 +262,7 @@ function sanitizeSessionMap(rawSessionObj) {
           val = JSON.stringify(parsed);
         }
       } catch (e) {}
-      if (getUtf8ByteSize(val) > 250000) {
-        val = "";
-      }
+
     }
 
     const safeKey = origKey.replace(/\./g, '__dot__');
@@ -278,7 +271,7 @@ function sanitizeSessionMap(rawSessionObj) {
 
   // 最終防壁：全体で750KBを超える場合、コアデータ（dashboard_samples, autosave_app7）以外から優先的にダイエット
   let totalBytes = getUtf8ByteSize(JSON.stringify(cleaned));
-  if (totalBytes > 750000) {
+  if (totalBytes > 850000) {
     const keys = Object.keys(cleaned);
     keys.sort((a, b) => {
       const isCoreA = a.includes('dashboard_samples') || a.includes('autosave_app7') ? 1 : 0;
@@ -287,7 +280,7 @@ function sanitizeSessionMap(rawSessionObj) {
       return (cleaned[b] ? cleaned[b].length : 0) - (cleaned[a] ? cleaned[a].length : 0);
     });
     for (const k of keys) {
-      if (getUtf8ByteSize(JSON.stringify(cleaned)) <= 750000) break;
+      if (getUtf8ByteSize(JSON.stringify(cleaned)) <= 850000) break;
       if (k.includes('dashboard_samples')) {
         try {
           const arr = JSON.parse(cleaned[k]);
@@ -329,11 +322,11 @@ export async function registerMasterPreset(taskCode, payload) {
         return copy;
       });
       // sessionData側と完全に重複して750KBを超える場合は、sessionData側に一本化
-      if (getUtf8ByteSize(JSON.stringify(sanitizedPayload)) > 750000 && sanitizedPayload.sessionData['bio_edu_workspace_dashboard_samples']) {
+      if (getUtf8ByteSize(JSON.stringify(sanitizedPayload)) > 850000 && sanitizedPayload.sessionData['bio_edu_workspace_dashboard_samples']) {
         delete sanitizedPayload.samples;
       }
     }
-    if (sanitizedPayload.traces && getUtf8ByteSize(JSON.stringify(sanitizedPayload)) > 750000) {
+    if (sanitizedPayload.traces && getUtf8ByteSize(JSON.stringify(sanitizedPayload)) > 850000) {
       delete sanitizedPayload.traces;
     }
 
@@ -387,16 +380,12 @@ export async function importMasterPreset(taskCode) {
 
         // セッションデータの展開（ラップ構造・フラット構造の両対応）
         const sessionSource = (payload.sessionData && typeof payload.sessionData === 'object') ? payload.sessionData : payload;
+        const metaSkip = ['taskCode', 'payload', 'creatorRoom', 'creatorId', 'createdAt', 'sequence', 'appName', 'registeredAt'];
         Object.keys(sessionSource).forEach((k) => {
-          if (
-            k.startsWith('bio_edu_ws_') ||
-            k.startsWith('bio_edu_workspace_') ||
-            k.startsWith('bio_edu_draft_') ||
-            k.startsWith('bio_edu_autosave_')
-          ) {
+          if (!metaSkip.includes(k)) {
             const restoredKey = k.replace(/__dot__/g, '.');
             const val = typeof sessionSource[k] === 'string' ? sessionSource[k] : JSON.stringify(sessionSource[k]);
-            if (val !== undefined && val !== null) {
+            if (val !== undefined && val !== null && val !== "") {
               sessionStorage.setItem(restoredKey, val);
             }
           }
