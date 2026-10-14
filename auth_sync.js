@@ -1,6 +1,6 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, enableIndexedDbPersistence, doc, setDoc, getDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { initializeApp } from "[https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js](https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js)";
+import { getAuth, onAuthStateChanged, signInAnonymously } from "[https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js](https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js)";
+import { getFirestore, enableIndexedDbPersistence, doc, setDoc, getDoc, onSnapshot, deleteDoc } from "[https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js](https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js)";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAFJ8dH4K50MCLAkHgaS6pqdvsTNUzAzHk",
@@ -24,7 +24,9 @@ let currentRoomCode = localStorage.getItem('bio_edu_room_code') || "";
 let currentParticipantId = localStorage.getItem('bio_edu_participant_id') || "";
 let isConnected = !!(currentRoomCode && currentParticipantId);
 let isTeacher = currentParticipantId.toUpperCase().startsWith("TEACHER");
-let unsubscribeRoomListener = null; // [Bio-Edu Suite v36.2] Teacher Live Sync
+let unsubscribeRoomListener = null;
+let lastSentTimestamp = 0;
+
 
 export function renderAuthStatus() {
   const icon = document.getElementById("accountUserIcon");
@@ -93,7 +95,6 @@ export function renderAuthStatus() {
       participantDisplay.style.display = "block";
     }
 
-    // 教員モード時のみシークレット登録パネルを動的解放
     if (teacherSection) {
       teacherSection.style.display = isTeacher ? "block" : "none";
     }
@@ -107,9 +108,9 @@ onAuthStateChanged(auth, (user) => {
   if (!user) {
     signInAnonymously(auth).catch((e) => console.warn("匿名認証待機:", e));
   } else {
-    // 認証完了時、すでに入室情報があればクラウド同期を実行
     if (isConnected) {
       syncFromCloud();
+      startRoomListener();
     }
   }
   renderAuthStatus();
@@ -165,77 +166,175 @@ export function leaveRoom() {
   }
 }
 
-// 教員用：マスター課題データの登録・発行 (軽量化・ルーム二重保存・完全堅牢化)
+function getUtf8ByteSize(str) {
+  try {
+    return new Blob([str]).size;
+  } catch (e) {
+    return str ? str.length * 2 : 0;
+  }
+}
+
+// 構造維持型スマートサニタイザー（カセットlocalDBやサンプル構造を絶対に破壊せず、巨大画像・HTMLキャッシュ・重複キーのみを軽量化）
+function sanitizeSessionMap(rawSessionObj) {
+  if (!rawSessionObj || typeof rawSessionObj !== 'object') return {};
+  const cleaned = {};
+  const hasApp7Full = Object.keys(rawSessionObj).some(k => k.includes('autosave_app7_full'));
+
+  Object.keys(rawSessionObj).forEach((rawKey) => {
+    const origKey = rawKey.replace(/__dot__/g, '.');
+    if (
+      !origKey.startsWith('bio_edu_ws_') &&
+      !origKey.startsWith('bio_edu_draft_') &&
+      !origKey.startsWith('bio_edu_autosave_') &&
+      !origKey.startsWith('bio_edu_workspace_')
+    ) {
+      return;
+    }
+
+    // アプリ⑦の三重重複保存キーがある場合、autosave_app7_full に一本化して容量浪費を防ぐ
+    if (hasApp7Full && (origKey.includes('workspace_7_Virtual_BLAST') || origKey.includes('ws_7_Virtual_BLAST'))) {
+      return;
+    }
+
+    let val = rawSessionObj[rawKey];
+    if (typeof val !== 'string') {
+      try { val = JSON.stringify(val); } catch (e) { val = ""; }
+    }
+
+    // 1. ダッシュボードサンプル一覧：構造と塩基配列は100%死守し、超巨大画像や過剰バイナリのみ軽量化
+    if (origKey.includes('dashboard_samples') && val) {
+      try {
+        const arr = JSON.parse(val);
+        if (Array.isArray(arr)) {
+          const sanitizedArr = arr.map(item => {
+            const copy = { ...item };
+            if (copy.image_data && typeof copy.image_data === 'string' && copy.image_data.length > 100000) {
+              copy.image_data = "";
+            }
+            if (Array.isArray(copy.images)) {
+              copy.images = copy.images.map(img => {
+                if (typeof img === 'string' && img.length > 100000) return "";
+                if (img && typeof img === 'object' && img.data && img.data.length > 100000) return { ...img, data: "" };
+                return img;
+              });
+            }
+            return copy;
+          });
+          val = JSON.stringify(sanitizedArr);
+          // もし .ab1 波形バイナリ(traces)が複数入って単一キーで550KBを超える場合のみ、tracesの巨大Base64を間引く
+          if (getUtf8ByteSize(val) > 550000) {
+            const slimArr = sanitizedArr.map(item => {
+              const copy = { ...item };
+              if (Array.isArray(copy.traces)) {
+                copy.traces = copy.traces.map(tr => {
+                  if (tr && tr.data && tr.data.length > 120000) {
+                    return { ...tr, data: "" };
+                  }
+                  return tr;
+                });
+              }
+              return copy;
+            });
+            val = JSON.stringify(slimArr);
+          }
+        }
+      } catch (e) {}
+    }
+    // 2. アプリ⑦ BLAST：localDB（カセット）とクエリは絶対に保護し、再計算可能なHTML塊のみ除去
+    else if ((origKey.includes('autosave_app7') || (val && val.includes('"localDB"'))) && val) {
+      try {
+        const app7 = JSON.parse(val);
+        if (app7 && typeof app7 === 'object') {
+          app7.alignmentHtml = "";
+          app7.ncbiLinkHtml = "";
+          if (getUtf8ByteSize(JSON.stringify(app7)) > 250000) {
+            app7.currentResults = [];
+          }
+          val = JSON.stringify(app7);
+        }
+      } catch (e) {}
+    }
+    // 3. その他のアプリデータ：120KB超の埋め込み画像や巨大キャッシュのみ軽量化
+    else if (val && val.length > 120000) {
+      try {
+        const parsed = JSON.parse(val);
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+          ['uploadedImage', 'image_data', 'image', 'rawData', 'fullCoeffs', 'alignmentHtml'].forEach(prop => {
+            if (parsed[prop] && typeof parsed[prop] === 'string' && parsed[prop].length > 80000) {
+              parsed[prop] = "";
+            }
+          });
+          val = JSON.stringify(parsed);
+        }
+      } catch (e) {}
+      if (getUtf8ByteSize(val) > 250000) {
+        val = "";
+      }
+    }
+
+    const safeKey = origKey.replace(/\./g, '__dot__');
+    cleaned[safeKey] = val;
+  });
+
+  // 最終防壁：全体で750KBを超える場合、コアデータ（dashboard_samples, autosave_app7）以外から優先的にダイエット
+  let totalBytes = getUtf8ByteSize(JSON.stringify(cleaned));
+  if (totalBytes > 750000) {
+    const keys = Object.keys(cleaned);
+    keys.sort((a, b) => {
+      const isCoreA = a.includes('dashboard_samples') || a.includes('autosave_app7') ? 1 : 0;
+      const isCoreB = b.includes('dashboard_samples') || b.includes('autosave_app7') ? 1 : 0;
+      if (isCoreA !== isCoreB) return isCoreA - isCoreB; // 非コアを先に削る
+      return (cleaned[b] ? cleaned[b].length : 0) - (cleaned[a] ? cleaned[a].length : 0);
+    });
+    for (const k of keys) {
+      if (getUtf8ByteSize(JSON.stringify(cleaned)) <= 750000) break;
+      if (k.includes('dashboard_samples')) {
+        try {
+          const arr = JSON.parse(cleaned[k]);
+          if (Array.isArray(arr)) {
+            arr.forEach(s => {
+              s.image_data = "";
+              if (Array.isArray(s.traces)) s.traces.forEach(t => { if (t) t.data = ""; });
+            });
+            cleaned[k] = JSON.stringify(arr);
+          }
+        } catch (e) { cleaned[k] = "[]"; }
+      } else {
+        cleaned[k] = "";
+      }
+    }
+  }
+
+  return cleaned;
+}
+
+// 教員用：マスター課題データの登録・発行（merge: true を廃止し、過去の残留ゴミデータを完全一掃）
 export async function registerMasterPreset(taskCode, payload) {
   if (!taskCode || !payload) return;
   const cleanCode = taskCode.toUpperCase().trim();
   try {
     const sanitizedPayload = JSON.parse(JSON.stringify(payload));
-    
-    // サンプル内の巨大画像を適正サイズ（150,000文字 ≒ 110KB以下）は保持し、それ以上の超巨大画像のみ間引く
+
+    // sessionDataのスマート軽量化
+    const rawSession = sanitizedPayload.sessionData || {};
+    sanitizedPayload.sessionData = sanitizeSessionMap(rawSession);
+
+    // もしトップレベルに samples や traces がある場合の二重持ち・容量超過を防止
     if (sanitizedPayload.samples && Array.isArray(sanitizedPayload.samples)) {
       sanitizedPayload.samples = sanitizedPayload.samples.map(item => {
         const copy = { ...item };
-        if (copy.image_data && typeof copy.image_data === 'string' && copy.image_data.length > 150000) {
+        if (copy.image_data && typeof copy.image_data === 'string' && copy.image_data.length > 100000) {
           copy.image_data = "";
         }
         return copy;
       });
+      // sessionData側と完全に重複して750KBを超える場合は、sessionData側に一本化
+      if (getUtf8ByteSize(JSON.stringify(sanitizedPayload)) > 750000 && sanitizedPayload.sessionData['bio_edu_workspace_dashboard_samples']) {
+        delete sanitizedPayload.samples;
+      }
     }
-
-    // sessionData内の不要な巨大データをパージして軽量化 (dashboard_samples等の配列構造保持対応)
-    if (sanitizedPayload.sessionData && typeof sanitizedPayload.sessionData === 'object') {
-      const cleanSessionData = {};
-      Object.keys(sanitizedPayload.sessionData).forEach((k) => {
-        let val = sanitizedPayload.sessionData[k];
-        if (k.includes('dashboard_samples') || (typeof val === 'string' && val.includes('dashboard_samples'))) {
-          try {
-            const sampleObj = typeof val === 'string' ? JSON.parse(val) : val;
-            if (Array.isArray(sampleObj)) {
-              const cleanedSamples = sampleObj.map(s => {
-                const scopy = { ...s };
-                if (scopy.image_data && typeof scopy.image_data === 'string') {
-                  scopy.image_data = "";
-                }
-                return scopy;
-              });
-              val = typeof val === 'string' ? JSON.stringify(cleanedSamples) : cleanedSamples;
-            }
-          } catch(e) {}
-        } else if (k.includes('autosave_app7') || (typeof val === 'string' && val.includes('localDB'))) {
-          try {
-            const app7Data = typeof val === 'string' ? JSON.parse(val) : val;
-            if (app7Data && typeof app7Data === 'object') {
-              app7Data.alignmentHtml = "";
-              app7Data.currentResults = [];
-              val = JSON.stringify(app7Data);
-            }
-          } catch(e) {}
-        } else if (k.includes('autosave_app7') || (typeof val === 'string' && val.includes('localDB'))) {
-          try {
-            const app7Data = typeof val === 'string' ? JSON.parse(val) : val;
-            if (app7Data && typeof app7Data === 'object') {
-              app7Data.alignmentHtml = "";
-              app7Data.currentResults = [];
-              val = JSON.stringify(app7Data);
-            }
-          } catch(e) {}
-        } else if (typeof val === 'string' && val.length > 150000) {
-          val = "";
-        } else if (typeof val === 'string') {
-          try {
-            const parsed = JSON.parse(val);
-            if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-              if (parsed.uploadedImage && typeof parsed.uploadedImage === 'string' && parsed.uploadedImage.length > 150000) {
-                parsed.uploadedImage = "";
-                val = JSON.stringify(parsed);
-              }
-            }
-          } catch(e) {}
-        }
-        cleanSessionData[k.replace(/\./g, '__dot__')] = val;
-      });
-      sanitizedPayload.sessionData = cleanSessionData;
+    if (sanitizedPayload.traces && getUtf8ByteSize(JSON.stringify(sanitizedPayload)) > 750000) {
+      delete sanitizedPayload.traces;
     }
 
     const taskData = {
@@ -246,36 +345,9 @@ export async function registerMasterPreset(taskCode, payload) {
       createdAt: Date.now()
     };
 
-    // 1MB超過フリーズ防止安全ガード：750,000バイトを超える場合は超巨大セッションキーを間引く
-    let serializedTaskData = JSON.stringify(taskData);
-    const getTaskByteSize = (str) => new Blob([str]).size;
-    if (getTaskByteSize(serializedTaskData) > 750000 && taskData.payload && taskData.payload.sessionData) {
-      console.warn("Task data byte size exceeds 750KB. Thinning session data to prevent 1MB Firestore limit restriction.");
-      const keys = Object.keys(taskData.payload.sessionData);
-      keys.sort((a, b) => {
-        const valA = typeof taskData.payload.sessionData[a] === 'string' ? taskData.payload.sessionData[a].length : 0;
-        const valB = typeof taskData.payload.sessionData[b] === 'string' ? taskData.payload.sessionData[b].length : 0;
-        return valB - valA;
-      });
-      for (const k of keys) {
-        if (getTaskByteSize(serializedTaskData) <= 750000) break;
-        taskData.payload.sessionData[k] = "";
-        serializedTaskData = JSON.stringify(taskData);
-      }
-    }
-
-    // ルートコレクション master_tasks への書き込みに完全一本化（ガイドライン第7.5.2項①準拠）
+    // ルートコレクション master_tasks への完全上書き（merge: true を使わないことで過去データとの合算1MB超過＆型コンフリクトを根絶）
     const globalDocRef = doc(db, "master_tasks", cleanCode);
-    try {
-      await setDoc(globalDocRef, taskData, { merge: true });
-    } catch (err) {
-      if (err.message && err.message.toLowerCase().includes('invalid')) {
-        console.warn("Firestore type conflict detected in master_tasks. Falling back to overwrite mode.");
-        await setDoc(globalDocRef, taskData);
-      } else {
-        throw err;
-      }
-    }
+    await setDoc(globalDocRef, taskData);
 
     if (typeof showToast === 'function') {
       showToast(`課題「${cleanCode}」をクラウドに登録・発行しました`, "success");
@@ -289,14 +361,13 @@ export async function registerMasterPreset(taskCode, payload) {
   }
 }
 
-// 生徒用：教員マスター課題データの読込・展開 (グローバル＆ルーム内ハイブリッド探索)
+// 生徒用：教員マスター課題データの読込・展開
 export async function importMasterPreset(taskCode) {
   if (!taskCode) return;
   const cleanCode = taskCode.toUpperCase().trim();
   try {
     if (typeof showToast === 'function') showToast(`課題「${cleanCode}」を取得中...`, "info");
-    
-    // ルートコレクション master_tasks から探索（ガイドライン第7.5.2項①準拠）
+
     const globalTaskRef = doc(db, "master_tasks", cleanCode);
     const snap = await getDoc(globalTaskRef);
 
@@ -304,27 +375,48 @@ export async function importMasterPreset(taskCode) {
       const data = snap.data();
       let payload = data.payload || data;
       if (typeof payload === 'string') {
-        try { payload = JSON.parse(payload); } catch(e) {}
+        try { payload = JSON.parse(payload); } catch (e) {}
       }
       if (payload) {
-        // テキストエリアへの復元
-        const activeTextarea = document.querySelector('textarea.paste-area, textarea#dnaInput, textarea#fastaInput, textarea#chain-code-input, textarea#pasteArea, input#pdbId');
+        const activeTextarea = document.querySelector('textarea.paste-area, textarea#dnaInput, textarea#fastaInput, textarea#chain-code-input, textarea#pasteArea, textarea#queryInput, input#pdbId');
         if (activeTextarea && payload.sequence) {
           activeTextarea.value = payload.sequence;
           activeTextarea.dispatchEvent(new Event('input', { bubbles: true }));
           activeTextarea.dispatchEvent(new Event('change', { bubbles: true }));
         }
-        
-        // セッションデータの復元（payload.sessionData または payload直下のキー群）
+
+        // セッションデータの展開（ラップ構造・フラット構造の両対応）
         const sessionSource = (payload.sessionData && typeof payload.sessionData === 'object') ? payload.sessionData : payload;
         Object.keys(sessionSource).forEach((k) => {
-          if (k.startsWith('bio_edu_ws_') || k.startsWith('bio_edu_workspace_') || k.startsWith('bio_edu_draft_') || k.startsWith('bio_edu_autosave_')) {
+          if (
+            k.startsWith('bio_edu_ws_') ||
+            k.startsWith('bio_edu_workspace_') ||
+            k.startsWith('bio_edu_draft_') ||
+            k.startsWith('bio_edu_autosave_')
+          ) {
             const restoredKey = k.replace(/__dot__/g, '.');
-            sessionStorage.setItem(restoredKey, sessionSource[k]);
+            const val = typeof sessionSource[k] === 'string' ? sessionSource[k] : JSON.stringify(sessionSource[k]);
+            if (val !== undefined && val !== null) {
+              sessionStorage.setItem(restoredKey, val);
+            }
           }
         });
-        
+
+        // ダッシュボードサンプルが含まれている場合は localStorage 側にも確実に同期してアプリ④等への導線を確保
+        const sampleJson = sessionStorage.getItem('bio_edu_workspace_dashboard_samples') || (payload.samples ? JSON.stringify(payload.samples) : null);
+        if (sampleJson && sampleJson !== '""' && sampleJson !== '[]') {
+          try {
+            localStorage.setItem('bio_edu_samples', sampleJson);
+            sessionStorage.setItem('bio_edu_workspace_dashboard_samples', sampleJson);
+          } catch (e) {}
+        }
+
+        const nowTime = Date.now().toString();
+        localStorage.setItem('bio_edu_last_user_edit', nowTime);
+        sessionStorage.setItem('bio_edu_last_user_edit', nowTime);
+
         window.dispatchEvent(new CustomEvent('bio_edu_preset_loaded', { detail: { taskCode: cleanCode, payload: payload } }));
+        window.dispatchEvent(new CustomEvent('bio_edu_cloud_synced', { detail: sessionSource }));
         if (typeof showToast === 'function') showToast(`課題「${cleanCode}」を展開しました`, "success");
       }
     } else {
@@ -340,13 +432,10 @@ export async function importMasterPreset(taskCode) {
 function parseWorkspacePayload(raw) {
   if (!raw) return null;
   if (typeof raw === 'string') {
-    try { return JSON.parse(raw); } catch(e) { return null; }
+    try { return JSON.parse(raw); } catch (e) { return null; }
   }
   return raw;
 }
-
-// [Bio-Edu Suite v36.2] Teacher Live Sync & Hydration Engine
-let lastSentTimestamp = 0;
 
 function mergeLocalImageData(targetWorkspace) {
   if (!targetWorkspace || typeof targetWorkspace !== 'object') return targetWorkspace;
@@ -355,15 +444,15 @@ function mergeLocalImageData(targetWorkspace) {
     if (!rawLocalSamples) return targetWorkspace;
     const localSamples = JSON.parse(rawLocalSamples);
     if (!Array.isArray(localSamples)) return targetWorkspace;
-    
-    // local map by id
+
     const imgMap = {};
+    const traceMap = {};
     localSamples.forEach(s => {
-      if (s && s.id && s.image_data) {
-        imgMap[s.id] = s.image_data;
+      if (s && s.id) {
+        if (s.image_data) imgMap[s.id] = s.image_data;
+        if (Array.isArray(s.traces) && s.traces.length > 0) traceMap[s.id] = s.traces;
       }
     });
-    if (Object.keys(imgMap).length === 0) return targetWorkspace;
 
     Object.keys(targetWorkspace).forEach(k => {
       if (k.includes('dashboard_samples') && targetWorkspace[k]) {
@@ -372,42 +461,63 @@ function mergeLocalImageData(targetWorkspace) {
           if (Array.isArray(wsSamples)) {
             let patched = false;
             wsSamples.forEach(ws => {
-              if (ws && ws.id && (!ws.image_data || ws.image_data === '') && imgMap[ws.id]) {
-                ws.image_data = imgMap[ws.id];
-                patched = true;
+              if (ws && ws.id) {
+                if ((!ws.image_data || ws.image_data === '') && imgMap[ws.id]) {
+                  ws.image_data = imgMap[ws.id];
+                  patched = true;
+                }
+                if (traceMap[ws.id] && Array.isArray(ws.traces)) {
+                  ws.traces.forEach((tr, idx) => {
+                    if (tr && (!tr.data || tr.data === '') && traceMap[ws.id][idx] && traceMap[ws.id][idx].data) {
+                      tr.data = traceMap[ws.id][idx].data;
+                      patched = true;
+                    }
+                  });
+                }
               }
             });
             if (patched) {
               targetWorkspace[k] = JSON.stringify(wsSamples);
             }
           }
-        } catch(e) {}
+        } catch (e) {}
       }
     });
-
-    // 【追加】Labアプリの uploadedImage のローカルマージ
-    Object.keys(targetWorkspace).forEach(k => {
-      if (typeof targetWorkspace[k] === 'string' && targetWorkspace[k].includes('"uploadedImage":')) {
-        try {
-          const cloudParsed = JSON.parse(targetWorkspace[k]);
-          if (cloudParsed && typeof cloudParsed === 'object' && (!cloudParsed.uploadedImage || cloudParsed.uploadedImage.length < 100)) {
-            const restoredKey = k.replace(/__dot__/g, '.');
-            const localVal = sessionStorage.getItem(restoredKey);
-            if (localVal) {
-              const localParsed = JSON.parse(localVal);
-              if (localParsed.uploadedImage && localParsed.uploadedImage.length > 150000) {
-                cloudParsed.uploadedImage = localParsed.uploadedImage;
-                targetWorkspace[k] = JSON.stringify(cloudParsed);
-              }
-            }
-          }
-        } catch(e) {}
-      }
-    });
-  } catch(e) {
+  } catch (e) {
     console.warn("mergeLocalImageData error:", e);
   }
   return targetWorkspace;
+}
+
+function applyWorkspaceToSession(workspaceObj, remoteTime) {
+  if (!workspaceObj || typeof workspaceObj !== 'object') return false;
+  const merged = mergeLocalImageData(workspaceObj);
+  let changed = false;
+  Object.keys(merged).forEach((k) => {
+    const restoredKey = k.replace(/__dot__/g, '.');
+    if (
+      restoredKey.startsWith('bio_edu_ws_') ||
+      restoredKey.startsWith('bio_edu_workspace_') ||
+      restoredKey.startsWith('bio_edu_draft_') ||
+      restoredKey.startsWith('bio_edu_autosave_')
+    ) {
+      const val = merged[k];
+      if (val !== undefined && val !== null && val !== "" && sessionStorage.getItem(restoredKey) !== val) {
+        sessionStorage.setItem(restoredKey, val);
+        if (restoredKey === 'bio_edu_workspace_dashboard_samples') {
+          try { localStorage.setItem('bio_edu_samples', val); } catch (e) {}
+        }
+        changed = true;
+      }
+    }
+  });
+  if (changed) {
+    const ts = (remoteTime || Date.now()).toString();
+    localStorage.setItem('bio_edu_last_user_edit', ts);
+    sessionStorage.setItem('bio_edu_last_user_edit', ts);
+    window.dispatchEvent(new CustomEvent('bio_edu_cloud_synced', { detail: merged }));
+  }
+  return changed;
 }
 
 function startRoomListener() {
@@ -420,29 +530,14 @@ function startRoomListener() {
     unsubscribeRoomListener = onSnapshot(roomRef, (snap) => {
       if (!snap.exists()) return;
       const data = snap.data();
-      
-      // 自身が直前に送信した更新は無視するガード
+
       if (data?.teacherId === currentParticipantId && (Date.now() - lastSentTimestamp < 3000)) {
         return;
       }
 
       const liveState = parseWorkspacePayload(data?.teacherLiveState);
       if (liveState && typeof liveState === 'object') {
-        const mergedLiveState = mergeLocalImageData(liveState);
-        let changed = false;
-        Object.keys(mergedLiveState).forEach((k) => {
-          const restoredKey = k.replace(/__dot__/g, '.');
-          if (sessionStorage.getItem(restoredKey) !== mergedLiveState[k]) {
-            sessionStorage.setItem(restoredKey, mergedLiveState[k]);
-            changed = true;
-          }
-        });
-        if (changed) {
-          const remoteTime = data.teacherUpdatedAt || Date.now();
-          localStorage.setItem('bio_edu_last_user_edit', remoteTime.toString());
-          sessionStorage.setItem('bio_edu_last_user_edit', remoteTime.toString());
-          window.dispatchEvent(new CustomEvent('bio_edu_cloud_synced', { detail: mergedLiveState }));
-        }
+        applyWorkspaceToSession(liveState, data.teacherUpdatedAt);
       }
     }, (err) => {
       console.warn("Room listener warning:", err);
@@ -459,10 +554,9 @@ async function syncFromCloud() {
     const docRef = doc(db, `rooms/${currentRoomCode}/participants`, currentParticipantId);
 
     const [roomSnap, userSnap] = await Promise.all([getDoc(roomRef), getDoc(docRef)]);
-    
-    // 編集時刻の取得（未編集の場合は 0）
+
     const localEditTime = parseInt(localStorage.getItem('bio_edu_last_user_edit') || sessionStorage.getItem('bio_edu_last_user_edit') || '0', 10);
-    
+
     let remoteUpdatedAt = 0;
     let targetWorkspace = null;
 
@@ -474,36 +568,17 @@ async function syncFromCloud() {
       remoteUpdatedAt = roomSnap.data().teacherUpdatedAt || roomSnap.data().lastActive || 0;
     }
 
-    // LWW (Last-Write-Wins) 判定: クラウドがローカルより新しい場合（またはローカル未編集/初回入室時）
     const isJustJoined = sessionStorage.getItem('bio_edu_just_joined') === 'true';
 
-    // LWW (Last-Write-Wins) 判定: 初回入室時、またはクラウドがローカルより新しい場合
     if (targetWorkspace && typeof targetWorkspace === 'object' && (isJustJoined || remoteUpdatedAt > localEditTime || localEditTime === 0)) {
-      targetWorkspace = mergeLocalImageData(targetWorkspace);
-      Object.keys(targetWorkspace).forEach((k) => {
-        const restoredKey = k.replace(/__dot__/g, '.');
-        sessionStorage.setItem(restoredKey, targetWorkspace[k]);
-      });
+      applyWorkspaceToSession(targetWorkspace, remoteUpdatedAt);
       if (isJustJoined) sessionStorage.removeItem('bio_edu_just_joined');
-      localStorage.setItem('bio_edu_last_user_edit', remoteUpdatedAt.toString());
-      sessionStorage.setItem('bio_edu_last_user_edit', remoteUpdatedAt.toString());
-      
-      window.dispatchEvent(new CustomEvent('bio_edu_cloud_synced', { detail: targetWorkspace }));
       if (typeof showToast === 'function') showToast("最新の作業状態を同期しました", "info");
     } else if (localEditTime > remoteUpdatedAt && localEditTime > 0) {
-      // ローカルの方が新しい場合はローカルの作業状態をクラウドへ保存
       await saveCurrentWorkspace();
     } else if (targetWorkspace && typeof targetWorkspace === 'object') {
-      targetWorkspace = mergeLocalImageData(targetWorkspace);
-      Object.keys(targetWorkspace).forEach((k) => {
-        const restoredKey = k.replace(/__dot__/g, '.');
-        sessionStorage.setItem(restoredKey, targetWorkspace[k]);
-      });
+      applyWorkspaceToSession(targetWorkspace, remoteUpdatedAt);
       if (isJustJoined) sessionStorage.removeItem('bio_edu_just_joined');
-      localStorage.setItem('bio_edu_last_user_edit', remoteUpdatedAt.toString());
-      sessionStorage.setItem('bio_edu_last_user_edit', remoteUpdatedAt.toString());
-      
-      window.dispatchEvent(new CustomEvent('bio_edu_cloud_synced', { detail: targetWorkspace }));
     } else {
       await saveCurrentWorkspace();
     }
@@ -512,59 +587,20 @@ async function syncFromCloud() {
   }
 }
 
-// ワークスペース自動同期 (画像許容枠を150,000文字へ拡大)
+// ワークスペース自動同期（merge: true による過去ゴミデータの蓄積・1.5MB膨張を完全遮断）
 export async function saveCurrentWorkspace() {
   if (!isConnected || !auth.currentUser) return;
   if (window.isResetting === true) return;
 
   try {
-    const snap = {};
+    const rawSession = {};
     for (let i = 0; i < sessionStorage.length; i++) {
       const k = sessionStorage.key(i);
-      if (k && (k.startsWith('bio_edu_ws_') || k.startsWith('bio_edu_draft_') || k.startsWith('bio_edu_autosave_') || k.startsWith('bio_edu_workspace_'))) {
-        let val = sessionStorage.getItem(k);
-        if (k.includes('dashboard_samples') && val) {
-          try {
-            const arr = JSON.parse(val);
-            if (Array.isArray(arr)) {
-              const sanitized = arr.map(item => {
-                const copy = { ...item };
-                // 150,000文字（約110KB）を超える異常な巨大画像のみ除外し、通常の軽量画像は確実に通す
-                if (copy.image_data && copy.image_data.startsWith('data:image') && copy.image_data.length > 150000) {
-                  copy.image_data = "";
-                }
-                return copy;
-              });
-              val = JSON.stringify(sanitized);
-            }
-          } catch(e) {}
-        } else if (val) {
-          try {
-            const parsed = JSON.parse(val);
-            if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-              if (parsed.uploadedImage && typeof parsed.uploadedImage === 'string' && parsed.uploadedImage.length > 150000) {
-                parsed.uploadedImage = "";
-                val = JSON.stringify(parsed);
-              }
-            }
-          } catch(e) {}
-        }
-        snap[k.replace(/\./g, '__dot__')] = val;
-      }
+      if (k) rawSession[k] = sessionStorage.getItem(k);
     }
-    let snapStr = JSON.stringify(snap);
-    const getSnapByteSize = (str) => new Blob([str]).size;
-    if (getSnapByteSize(snapStr) > 750000) {
-      const snapKeys = Object.keys(snap);
-      snapKeys.sort((a, b) => (snap[b] ? snap[b].length : 0) - (snap[a] ? snap[a].length : 0));
-      for (const sk of snapKeys) {
-        if (getSnapByteSize(snapStr) <= 750000) break;
-        snap[sk] = "";
-        snapStr = JSON.stringify(snap);
-      }
-    }
+
+    const snap = sanitizeSessionMap(rawSession);
     const hasData = Object.keys(snap).length > 0;
-    // 教員はデータが空でも部屋を確保する。生徒は空ならスキップ。
     if (!hasData && !isTeacher) return;
 
     const nowTime = Date.now();
@@ -573,49 +609,39 @@ export async function saveCurrentWorkspace() {
     sessionStorage.setItem('bio_edu_last_user_edit', nowTime.toString());
 
     const roomRef = doc(db, "rooms", currentRoomCode);
-    const roomPayload = { roomCode: currentRoomCode, lastActive: nowTime };
     if (isTeacher) {
-      if (hasData) roomPayload.teacherLiveState = snap;
-      roomPayload.teacherId = currentParticipantId;
-      roomPayload.teacherUpdatedAt = nowTime;
-    }
-    try {
-      await setDoc(roomRef, roomPayload, { merge: true });
-    } catch (err) {
-      if (err.message && err.message.toLowerCase().includes('invalid')) {
-        console.warn("Firestore type conflict detected in room data. Falling back to overwrite mode.");
-        await setDoc(roomRef, roomPayload);
-      } else {
-        throw err;
-      }
+      const roomPayload = {
+        roomCode: currentRoomCode,
+        lastActive: nowTime,
+        teacherId: currentParticipantId,
+        teacherUpdatedAt: nowTime,
+        teacherLiveState: snap
+      };
+      // merge: true を使わず完全置換することで、過去の古いセッションキーの残留・1.5MB膨張を根絶
+      await setDoc(roomRef, roomPayload);
+    } else {
+      await setDoc(roomRef, { roomCode: currentRoomCode, lastActive: nowTime }, { merge: true });
     }
 
     if (hasData || isTeacher) {
       const docRef = doc(db, `rooms/${currentRoomCode}/participants`, currentParticipantId);
-      try {
-        await setDoc(docRef, { workspace: snap, participantId: currentParticipantId, isTeacher: isTeacher, lastUpdated: nowTime }, { merge: true });
-      } catch (err) {
-        if (err.message && err.message.toLowerCase().includes('invalid')) {
-          console.warn("Firestore type conflict detected in participant data. Falling back to overwrite mode.");
-          await setDoc(docRef, { workspace: snap, participantId: currentParticipantId, isTeacher: isTeacher, lastUpdated: nowTime });
-        } else {
-          throw err;
-        }
-      }
+      await setDoc(docRef, {
+        workspace: snap,
+        participantId: currentParticipantId,
+        isTeacher: isTeacher,
+        lastUpdated: nowTime
+      });
     }
   } catch (e) {
     console.warn("Cloud sync write error:", e);
   }
 }
 
-// グローバル window オブジェクトへ saveCurrentWorkspace を公開し、他スクリプトから遅延なく即時保存を呼び出せるようにする
 window.saveCurrentWorkspace = saveCurrentWorkspace;
 
-// [Bio-Edu Suite v37.2] スマート初期化・ルーム解散ハイブリッド規格（完全パージ＆ゾンビ復活防止）
 export async function executeHybridReset() {
   if (!isConnected || !auth.currentUser) return;
   try {
-    // リスナーを即時遮断し、リロード直前の削除イベント逆流を物理防止
     if (typeof unsubscribeRoomListener === 'function') {
       unsubscribeRoomListener();
       unsubscribeRoomListener = null;
@@ -624,7 +650,6 @@ export async function executeHybridReset() {
     const targetId = currentParticipantId;
     const wasTeacher = isTeacher;
 
-    // 内部ステートを即座にリセット
     currentRoomCode = "";
     currentParticipantId = "";
     isConnected = false;
@@ -646,7 +671,7 @@ export async function executeHybridReset() {
 window.executeHybridReset = executeHybridReset;
 
 export { app, auth, db };
-// [Bio-Edu Suite v36.2] 各アプリからの即時保存要求リスナー
+
 let saveDebounceTimer = null;
 window.addEventListener('bio_edu_request_save', () => {
   if (!isConnected || !auth.currentUser) return;
