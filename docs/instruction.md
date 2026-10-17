@@ -115,11 +115,10 @@
 
 ---
 
-【パターン3：複数アプリにまたがる一括改修（Pythonスクリプト駆動型 SOP）】
+【パターン3：複数アプリにまたがる一括改修（Pythonスクリプト駆動型ハイブリッド SOP）】
 
-* **推奨モード:** `Act`
-* **最適モデル:** `gemini-3.6-flash`（または `gemini-3.8-flash`）
-（※以下のコードブロックをコピーしてVS CodeのClineに渡してください）
+* **ルート①（手動コピペ実行・第一推奨・完全0円）:** 下記Pythonコードをコピーして `scripts/update_XXXX.py` に保存し、ターミナルで `python3 scripts/update_XXXX.py` を実行。
+* **ルート②（Cline無人代行実行・半自動）:** 推奨モード `Act` / 最適モデル `gemini-3.6-flash（Level 0）`（※以下の指示書をClineに渡して実行）
 
 ```text
 <task type="batch_python_sop">
