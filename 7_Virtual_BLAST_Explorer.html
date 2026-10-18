@@ -1612,10 +1612,11 @@ input[type="submit"]:disabled:active {
     }
 
     function loadPresetDB() {
+        if (typeof isHydrating !== 'undefined' && isHydrating) return;
         const selector = document.getElementById('presetSelector');
         if (!selector) return;
         const val = selector.value;
-        if (!val) return;
+        if (!val || val === 'custom') return;
 
         if (val === 'all') {
             loadAllCombinedDB();
@@ -2595,8 +2596,9 @@ function closeFeedbackForm() {
                     selectedIdx: selectedIdx
                 };
 
-                sessionStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state));
-                window.dispatchEvent(new CustomEvent('bio_edu_request_save'));
+                const serializedState = JSON.stringify(state);
+                sessionStorage.setItem(AUTOSAVE_KEY, serializedState);
+                try { localStorage.setItem(AUTOSAVE_KEY + '_backup', serializedState); } catch (e) {}
             } catch (e) {
                 console.warn('[AutoSave] App7 save failed:', e);
             }
@@ -2604,16 +2606,25 @@ function closeFeedbackForm() {
 
         function restoreApp7Session() {
             try {
-                const raw = sessionStorage.getItem(AUTOSAVE_KEY);
+                let raw = sessionStorage.getItem(AUTOSAVE_KEY);
+                if (!raw) {
+                    raw = localStorage.getItem(AUTOSAVE_KEY + '_backup');
+                    if (raw) sessionStorage.setItem(AUTOSAVE_KEY, raw);
+                }
                 if (!raw) return false;
                 const state = JSON.parse(raw);
                 if (!state) return false;
 
                 isHydrating = true;
 
+                // 競合する汎用DOMキャッシュをパージして117種への巻き戻りを物理遮断
+                sessionStorage.removeItem('bio_edu_workspace_7_Virtual_BLAST_Explorer');
+                sessionStorage.removeItem('bio_edu_ws_7_Virtual_BLAST_Explorer.html_dom_inputs');
+                sessionStorage.removeItem('bio_edu_draft_7_Virtual_BLAST_Explorer.html');
+
                 // 1. クエリおよびスコアリング設定の復元
                 const queryEl = document.getElementById('queryInput');
-                if (queryEl && (!queryEl.value || queryEl.value.trim() === '')) {
+                if (queryEl && state.query !== undefined) {
                     queryEl.value = state.query || '';
                 }
                 if (state.queryName && typeof currentQueryName !== 'undefined') {
@@ -2681,7 +2692,7 @@ function closeFeedbackForm() {
                         }
                     }
                 }
-                setTimeout(() => { isHydrating = false; }, 60);
+                setTimeout(() => { isHydrating = false; }, 350);
                 return true;
             } catch (e) {
                 console.warn('[AutoSave] App7 restore failed:', e);

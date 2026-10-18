@@ -595,16 +595,24 @@
         .btn-secondary { background-color: #fdfefe; color: var(--text-main); border: 1px solid var(--border-color); }
         .btn-secondary:hover { background-color: #f4f6f7; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
-        /* --- 第8項 システム必須モーダル --- */
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1100; backdrop-filter: blur(2px); }
-        .modal-content { background: white; border-radius: 8px; width: 400px; max-width: 95vw; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border-top: 6px solid var(--phase-color); z-index: 1010;}
-        .modal-header { padding: 15px 20px; background: #f8f9f9; color: var(--primary); border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ecf0f1; }
-        .modal-header h3 { margin: 0; font-size: 16px; }
-        .modal-close { background: none; border: none; color: #7f8c8d; font-size: 20px; cursor: pointer; padding: 0 5px; font-weight: bold; }
-        .modal-close:hover { color: var(--danger); }
-        .modal-body { padding: 20px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; }
-        .modal-footer { padding: 15px 20px; border-top: 1px solid #ecf0f1; display: flex; justify-content: flex-end; gap: 10px; background: #fdfefe; border-radius: 0 0 8px 8px; }
-        @media (max-width: 768px) { .modal-content { width: 95%; margin: 10px; max-height: 95vh; } }
+        /* --- 第8項 システム必須モーダル（既存 .modal-* 定義に干渉しないようID限定で完結させる） --- */
+        #confirmModal, #accountModal {
+          position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: auto; height: auto;
+          background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center;
+          z-index: 1100; backdrop-filter: blur(2px); opacity: 1; visibility: visible; transition: none;
+        }
+        #confirmModal > .modal-content, #accountModal > .modal-content {
+          background: white; border-radius: 8px; width: 400px; max-width: 95vw; max-height: 90vh;
+          display: flex; flex-direction: column; padding: 0; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+          border-top: 6px solid var(--phase-color); z-index: 1010; transform: none;
+        }
+        #confirmModal .modal-header, #accountModal .modal-header { padding: 15px 20px; background: #f8f9f9; color: var(--primary); border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ecf0f1; }
+        #confirmModal .modal-header h3, #accountModal .modal-header h3 { margin: 0; font-size: 16px; }
+        #confirmModal .modal-close, #accountModal .modal-close { background: none; border: none; color: #7f8c8d; font-size: 20px; cursor: pointer; padding: 0 5px; font-weight: bold; }
+        #confirmModal .modal-close:hover, #accountModal .modal-close:hover { color: var(--danger); }
+        #confirmModal .modal-body, #accountModal .modal-body { padding: 20px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; }
+        #confirmModal .modal-footer, #accountModal .modal-footer { padding: 15px 20px; border-top: 1px solid #ecf0f1; display: flex; justify-content: flex-end; gap: 10px; background: #fdfefe; border-radius: 0 0 8px 8px; }
+        @media (max-width: 768px) { #confirmModal > .modal-content, #accountModal > .modal-content { width: 95%; margin: 10px; max-height: 95vh; } }
 
         /* ===================================================================
            【第4項-1 Primary（青色系 / #3498db）＝「前進・主要アクション」】

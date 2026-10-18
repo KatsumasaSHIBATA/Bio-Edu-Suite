@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, enableIndexedDbPersistence, doc, setDoc, getDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, enableIndexedDbPersistence, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAFJ8dH4K50MCLAkHgaS6pqdvsTNUzAzHk",
@@ -24,11 +24,95 @@ let currentRoomCode = localStorage.getItem('bio_edu_room_code') || "";
 let currentParticipantId = localStorage.getItem('bio_edu_participant_id') || "";
 let isConnected = !!(currentRoomCode && currentParticipantId);
 let isTeacher = currentParticipantId.toUpperCase().startsWith("TEACHER");
-let unsubscribeRoomListener = null;
-let lastSentTimestamp = 0;
 
+// [ガイドライン第2項準拠] 絵文字を完全排除したインラインSVG線画アイコン
+const SVG_CLOUD_UPLOAD = `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path><polyline points="16 16 12 12 8 16"></polyline><line x1="12" y1="12" x2="12" y2="21"></line></svg>`;
+const SVG_CLOUD_DOWNLOAD = `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path><polyline points="8 17 12 21 16 17"></polyline><line x1="12" y1="12" x2="12" y2="21"></line></svg>`;
+
+// [v38.0] モーダル内への手動クラウド保存・復元ボタンの動的配備（インラインSVG搭載・完全冪等）
+// [全アプリ共通規格] #accountModal の余白バグ解消＆入力フォントの完全統一 (Segoe UI / Noto Sans JP)
+function ensureAccountModalUnifiedStyles() {
+  if (document.getElementById("bio_edu_account_modal_unified_styles")) return;
+  const style = document.createElement("style");
+  style.id = "bio_edu_account_modal_unified_styles";
+  style.textContent = `
+    #accountModal > .modal-content {
+      padding: 0 !important;
+      border-radius: 8px !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+      overflow: hidden !important;
+    }
+    #accountModal .modal-header {
+      padding: 15px 20px !important;
+      background: #f8f9f9 !important;
+      border-bottom: 1px solid #ecf0f1 !important;
+      margin: 0 !important;
+    }
+    #accountModal .modal-body {
+      padding: 20px !important;
+    }
+    #accountModal input,
+    #accountModal .primer-input {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Noto Sans JP' !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      letter-spacing: 0.5px !important;
+      padding: 8px 10px !important;
+      border: 1px solid var(--border-color, #bdc3c7) !important;
+      border-radius: 4px !important;
+      background: #fafafa !important;
+      color: var(--text-main, #2c3e50) !important;
+      box-sizing: border-box !important;
+      outline: none !important;
+    }
+    #accountModal input:focus,
+    #accountModal .primer-input:focus {
+      border-color: var(--phase-color, #1abc9c) !important;
+      background: #ffffff !important;
+      box-shadow: 0 0 0 2px rgba(26, 188, 156, 0.2) !important;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+function ensureManualSyncButtons() {
+  const loggedInView = document.getElementById("modalLoggedInView");
+  if (!loggedInView || document.getElementById("manualCloudSyncSection")) return;
+
+  const section = document.createElement("div");
+  section.id = "manualCloudSyncSection";
+  section.style.cssText = "border-top: 1px dashed var(--border-color); padding-top: 12px; margin-bottom: 14px;";
+  section.innerHTML = `
+    <label style="font-size: 11px; font-weight: bold; color: var(--primary); display: block; margin-bottom: 6px;">手動クラウド同期（セーブ／ロード）</label>
+    <div style="display: flex; gap: 8px; width: 100%;">
+      <button type="button" id="btnManualCloudSave" class="btn btn-primary" style="flex: 1; font-size: 12px; padding: 8px 10px; justify-content: center; background: #27ae60; border-color: #1e8449; color: #fff;" onclick="window.handleManualCloudSave && window.handleManualCloudSave()">
+        ${SVG_CLOUD_UPLOAD}
+        <span>クラウドに保存</span>
+      </button>
+      <button type="button" id="btnManualCloudLoad" class="btn btn-secondary" style="flex: 1; font-size: 12px; padding: 8px 10px; justify-content: center;" onclick="window.handleManualCloudLoad && window.handleManualCloudLoad()">
+        ${SVG_CLOUD_DOWNLOAD}
+        <span>クラウドから復元</span>
+      </button>
+    </div>
+    <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px; line-height: 1.4;">
+      ※アプリ移動時のデータ消失を防ぐため自動通信は停止しています。別端末へ引き継ぐ際やバックアップ時に押してください。
+    </div>
+  `;
+
+  const teacherSec = document.getElementById("teacherPresetSection");
+  if (teacherSec && teacherSec.parentNode === loggedInView) {
+    loggedInView.insertBefore(section, teacherSec);
+  } else {
+    const leaveBtn = loggedInView.querySelector("button:last-of-type");
+    if (leaveBtn) loggedInView.insertBefore(section, leaveBtn);
+    else loggedInView.appendChild(section);
+  }
+}
 
 export function renderAuthStatus() {
+  ensureAccountModalUnifiedStyles();
+  ensureManualSyncButtons();
+
   const icon = document.getElementById("accountUserIcon");
   const text = document.getElementById("accountStatusText");
   const modalLoggedOut = document.getElementById("modalLoggedOutView");
@@ -66,7 +150,7 @@ export function renderAuthStatus() {
         text.style.color = isTeacher ? "#f39c12" : "var(--phase-color)";
       }
       if (syncBadge) {
-        syncBadge.textContent = isTeacher ? "🟢 教員モード同期中" : "🟢 ルーム同期中";
+        syncBadge.textContent = isTeacher ? "🟢 教員モード接続中（手動同期）" : "🟢 ルーム接続中（手動同期）";
         syncBadge.style.color = isTeacher ? "#f39c12" : "#2ecc71";
       }
       if (syncNote) syncNote.style.display = "none";
@@ -76,11 +160,11 @@ export function renderAuthStatus() {
         icon.style.fill = "var(--danger)";
       }
       if (text) {
-        text.textContent = "オフライン";
+        text.textContent = "オフライン（ローカル要塞稼働中）";
         text.style.color = "var(--danger)";
       }
       if (syncBadge) {
-        syncBadge.textContent = "🔴 オフライン（一時停止）";
+        syncBadge.textContent = "🔴 オフライン（ローカル保存のみ）";
         syncBadge.style.color = "var(--danger)";
       }
       if (syncNote) syncNote.style.display = "block";
@@ -107,11 +191,6 @@ export function renderAuthStatus() {
 onAuthStateChanged(auth, (user) => {
   if (!user) {
     signInAnonymously(auth).catch((e) => console.warn("匿名認証待機:", e));
-  } else {
-    if (isConnected) {
-      syncFromCloud();
-      startRoomListener();
-    }
   }
   renderAuthStatus();
 });
@@ -126,7 +205,6 @@ export function joinRoom(roomCode, participantId) {
   currentParticipantId = participantId.trim();
   isConnected = true;
   isTeacher = currentParticipantId.toUpperCase().startsWith("TEACHER");
-  sessionStorage.setItem('bio_edu_just_joined', 'true');
 
   localStorage.setItem('bio_edu_room_code', currentRoomCode);
   localStorage.setItem('bio_edu_participant_id', currentParticipantId);
@@ -135,13 +213,8 @@ export function joinRoom(roomCode, participantId) {
 
   if (typeof showToast === 'function') {
     const roleMsg = isTeacher ? "【教員モード】" : "";
-    showToast(`${roleMsg}ルーム「${currentRoomCode}」に入室しました`, "success");
+    showToast(`${roleMsg}ルーム「${currentRoomCode}」に接続しました（手動同期モード）`, "success");
   }
-
-  if (auth.currentUser) {
-    syncFromCloud();
-  }
-  startRoomListener();
 }
 
 export function leaveRoom() {
@@ -153,11 +226,6 @@ export function leaveRoom() {
 
   localStorage.removeItem('bio_edu_room_code');
   localStorage.removeItem('bio_edu_participant_id');
-
-  if (typeof unsubscribeRoomListener === 'function') {
-    unsubscribeRoomListener();
-    unsubscribeRoomListener = null;
-  }
 
   renderAuthStatus();
 
@@ -174,11 +242,47 @@ function getUtf8ByteSize(str) {
   }
 }
 
-// 構造維持型スマートサニタイザー（カセットlocalDBやサンプル構造を絶対に破壊せず、巨大画像・HTMLキャッシュ・重複キーのみを軽量化）
+function flushCurrentAppSession() {
+  try {
+    if (typeof window.saveApp4Session === 'function') window.saveApp4Session();
+    if (typeof window.saveApp7Session === 'function') window.saveApp7Session();
+    if (typeof window.saveWorkspaceDraft === 'function') window.saveWorkspaceDraft();
+    if (typeof window.saveApp8Session === 'function') window.saveApp8Session();
+    if (typeof window.saveApp10Session === 'function') window.saveApp10Session();
+  } catch (e) {
+    console.warn("Flush session warning:", e);
+  }
+}
+
+function triggerCurrentAppRestore() {
+  try {
+    if (typeof window.restoreApp4Session === 'function') window.restoreApp4Session(true);
+    if (typeof window.restoreApp7Session === 'function') {
+      window.restoreApp7Session();
+      setTimeout(() => window.restoreApp7Session(), 120);
+    }
+    if (typeof window.restoreFromAutosave === 'function') window.restoreFromAutosave();
+    if (typeof window.restoreApp8Session === 'function') window.restoreApp8Session();
+    if (typeof window.restoreApp10Session === 'function') window.restoreApp10Session();
+    if (typeof window.loadSamples === 'function' && typeof window.renderSamples === 'function') {
+      window.loadSamples();
+      window.renderSamples();
+    }
+  } catch (e) {
+    console.warn("Restore trigger warning:", e);
+  }
+}
+
 function sanitizeSessionMap(rawSessionObj) {
   if (!rawSessionObj || typeof rawSessionObj !== 'object') return {};
   const cleaned = {};
-  const hasApp7Full = Object.keys(rawSessionObj).some(k => k.includes('autosave_app7_full'));
+  const allOrigKeys = Object.keys(rawSessionObj).map(k => k.replace(/__dot__/g, '.'));
+
+  const hasApp4 = allOrigKeys.includes('bio_edu_workspace_app4');
+  const hasApp5 = allOrigKeys.includes('bio_edu_autosave_app5');
+  const hasApp7 = allOrigKeys.includes('bio_edu_autosave_app7_full');
+  const hasApp8 = allOrigKeys.includes('bio_edu_autosave_app8_full');
+  const hasApp10 = allOrigKeys.includes('bio_edu_autosave_app10_full');
 
   Object.keys(rawSessionObj).forEach((rawKey) => {
     const origKey = rawKey.replace(/__dot__/g, '.');
@@ -186,147 +290,123 @@ function sanitizeSessionMap(rawSessionObj) {
       return;
     }
 
-    // アプリ⑦の三重重複保存キーがある場合、autosave_app7_full に一本化して容量浪費を防ぐ
-    if (hasApp7Full && (origKey.includes('workspace_7_Virtual_BLAST') || origKey.includes('ws_7_Virtual_BLAST'))) {
-      return;
-    }
+    if (hasApp4 && origKey.includes('4_Sanger_Trace_Editor')) return;
+    if (hasApp5 && origKey.includes('5_DNA_Alignment_Studio')) return;
+    if (hasApp7 && origKey.includes('7_Virtual_BLAST_Explorer')) return;
+    if (hasApp8 && (origKey.includes('8_Phylogenetic_Tree_Builder') || origKey === 'bio_edu_workspace_app8_custom')) return;
+    if (hasApp10 && origKey.includes('10_integrative_taxonomy_studio')) return;
 
     let val = rawSessionObj[rawKey];
     if (typeof val !== 'string') {
       try { val = JSON.stringify(val); } catch (e) { val = ""; }
     }
+    if (!val) return;
 
-    // 1. ダッシュボードサンプル一覧：構造と塩基配列は100%死守し、超巨大画像や過剰バイナリのみ軽量化
-    if (origKey.includes('dashboard_samples') && val) {
+    if (origKey === 'bio_edu_workspace_app4') {
       try {
-        const arr = JSON.parse(val);
-        if (Array.isArray(arr)) {
-          const sanitizedArr = arr.map(item => {
+        const app4 = JSON.parse(val);
+        if (app4 && Array.isArray(app4.queue)) {
+          app4.queue = app4.queue.map(item => {
             const copy = { ...item };
-            if (copy.image_data && typeof copy.image_data === 'string' && copy.image_data.length > 100000) {
-              copy.image_data = "";
-            }
-            if (Array.isArray(copy.images)) {
-              copy.images = copy.images.map(img => {
-                if (typeof img === 'string' && img.length > 100000) return "";
-                if (img && typeof img === 'object' && img.data && img.data.length > 100000) return { ...img, data: "" };
-                return img;
-              });
+            if (copy.editedAb1Data && copy.editedAb1Data.traces && copy.editedAb1Data.bases) {
+              copy.data = null;
+              copy.savedHistoryStack = [];
+              copy.savedHistoryIndex = 0;
             }
             return copy;
           });
-          val = JSON.stringify(sanitizedArr);
-          // もし .ab1 波形バイナリ(traces)が複数入って単一キーで550KBを超える場合のみ、tracesの巨大Base64を間引く
-          if (getUtf8ByteSize(val) > 750000) {
-            const slimArr = sanitizedArr.map(item => {
-              const copy = { ...item };
-              if (Array.isArray(copy.traces)) {
-                copy.traces = copy.traces.map(tr => {
-                  if (tr && tr.data && tr.data.length > 120000) {
-                    return { ...tr, data: "" };
-                  }
-                  return tr;
-                });
-              }
-              return copy;
-            });
-            val = JSON.stringify(slimArr);
-          }
+          val = JSON.stringify(app4);
         }
       } catch (e) {}
     }
-    // 2. アプリ⑦ BLAST：localDB（カセット）とクエリは絶対に保護し、再計算可能なHTML塊のみ除去
-    else if ((origKey.includes('autosave_app7') || (val && val.includes('"localDB"'))) && val) {
+    else if (origKey === 'bio_edu_autosave_app7_full' || (val && val.includes('"localDB"'))) {
       try {
         const app7 = JSON.parse(val);
         if (app7 && typeof app7 === 'object') {
           app7.alignmentHtml = "";
           app7.ncbiLinkHtml = "";
-          if (getUtf8ByteSize(JSON.stringify(app7)) > 250000) {
-            app7.currentResults = [];
-          }
           val = JSON.stringify(app7);
         }
       } catch (e) {}
     }
-    // 3. その他のアプリデータ：120KB超の埋め込み画像や巨大キャッシュのみ軽量化
-    else if (val && val.length > 120000) {
+    else if (origKey.includes('dashboard_samples')) {
+      try {
+        const arr = JSON.parse(val);
+        if (Array.isArray(arr)) {
+          const sanitizedArr = arr.map(item => {
+            const copy = { ...item };
+            if (copy.image_data && typeof copy.image_data === 'string' && copy.image_data.length > 120000) {
+              copy.image_data = "";
+            }
+            return copy;
+          });
+          val = JSON.stringify(sanitizedArr);
+        }
+      } catch (e) {}
+    }
+    else if (val.length > 150000) {
       try {
         const parsed = JSON.parse(val);
         if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
           ['uploadedImage', 'image_data', 'image', 'rawData', 'fullCoeffs', 'alignmentHtml'].forEach(prop => {
-            if (parsed[prop] && typeof parsed[prop] === 'string' && parsed[prop].length > 80000) {
+            if (parsed[prop] && typeof parsed[prop] === 'string' && parsed[prop].length > 100000) {
               parsed[prop] = "";
             }
           });
           val = JSON.stringify(parsed);
         }
       } catch (e) {}
-
     }
 
     const safeKey = origKey.replace(/\./g, '__dot__');
     cleaned[safeKey] = val;
   });
 
-  // 最終防壁：全体で750KBを超える場合、コアデータ（dashboard_samples, autosave_app7）以外から優先的にダイエット
-  let totalBytes = getUtf8ByteSize(JSON.stringify(cleaned));
-  if (totalBytes > 850000) {
-    const keys = Object.keys(cleaned);
-    keys.sort((a, b) => {
-      const isCoreA = a.includes('dashboard_samples') || a.includes('autosave_app7') ? 1 : 0;
-      const isCoreB = b.includes('dashboard_samples') || b.includes('autosave_app7') ? 1 : 0;
-      if (isCoreA !== isCoreB) return isCoreA - isCoreB; // 非コアを先に削る
-      return (cleaned[b] ? cleaned[b].length : 0) - (cleaned[a] ? cleaned[a].length : 0);
-    });
-    for (const k of keys) {
-      if (getUtf8ByteSize(JSON.stringify(cleaned)) <= 850000) break;
-      if (k.includes('dashboard_samples')) {
-        try {
-          const arr = JSON.parse(cleaned[k]);
-          if (Array.isArray(arr)) {
-            arr.forEach(s => {
-              s.image_data = "";
-              if (Array.isArray(s.traces)) s.traces.forEach(t => { if (t) t.data = ""; });
-            });
-            cleaned[k] = JSON.stringify(arr);
-          }
-        } catch (e) { cleaned[k] = "[]"; }
-      } else {
-        cleaned[k] = "";
-      }
+  if (getUtf8ByteSize(JSON.stringify(cleaned)) > 850000) {
+    const dsKey = 'bio_edu_workspace_dashboard_samples';
+    if (cleaned[dsKey]) {
+      try {
+        const arr = JSON.parse(cleaned[dsKey]);
+        if (Array.isArray(arr)) {
+          arr.forEach(s => {
+            s.image_data = "";
+            if (cleaned['bio_edu_workspace_app4'] && Array.isArray(s.traces)) {
+              s.traces.forEach(t => { if (t && t.data && t.data.length > 100000) t.data = ""; });
+            }}
+          );
+          cleaned[dsKey] = JSON.stringify(arr);
+        }
+      } catch (e) {}
     }
   }
 
   return cleaned;
 }
 
-// 教員用：マスター課題データの登録・発行（merge: true を廃止し、過去の残留ゴミデータを完全一掃）
 export async function registerMasterPreset(taskCode, payload) {
   if (!taskCode || !payload) return;
   const cleanCode = taskCode.toUpperCase().trim();
   try {
-    const sanitizedPayload = JSON.parse(JSON.stringify(payload));
-
-    // sessionDataのスマート軽量化
-    const rawSession = sanitizedPayload.sessionData || {};
-    sanitizedPayload.sessionData = sanitizeSessionMap(rawSession);
-
-    // もしトップレベルに samples や traces がある場合の二重持ち・容量超過を防止
-    if (sanitizedPayload.samples && Array.isArray(sanitizedPayload.samples)) {
-      sanitizedPayload.samples = sanitizedPayload.samples.map(item => {
-        const copy = { ...item };
-        if (copy.image_data && typeof copy.image_data === 'string' && copy.image_data.length > 100000) {
-          copy.image_data = "";
-        }
-        return copy;
-      });
-      // sessionData側と完全に重複して750KBを超える場合は、sessionData側に一本化
-      if (getUtf8ByteSize(JSON.stringify(sanitizedPayload)) > 850000 && sanitizedPayload.sessionData['bio_edu_workspace_dashboard_samples']) {
-        delete sanitizedPayload.samples;
+    flushCurrentAppSession();
+    const freshSessionSnap = {};
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const k = sessionStorage.key(i);
+      if (k) freshSessionSnap[k] = sessionStorage.getItem(k);
+    }
+    if (!freshSessionSnap['bio_edu_workspace_dashboard_samples']) {
+      const lsSamples = localStorage.getItem('bio_edu_samples');
+      if (lsSamples && lsSamples !== '[]') {
+        freshSessionSnap['bio_edu_workspace_dashboard_samples'] = lsSamples;
       }
     }
-    if (sanitizedPayload.traces && getUtf8ByteSize(JSON.stringify(sanitizedPayload)) > 850000) {
+
+    const sanitizedPayload = JSON.parse(JSON.stringify(payload));
+    sanitizedPayload.sessionData = sanitizeSessionMap(freshSessionSnap);
+
+    if (sanitizedPayload.samples && sanitizedPayload.sessionData['bio_edu_workspace_dashboard_samples']) {
+      delete sanitizedPayload.samples;
+    }
+    if (sanitizedPayload.traces) {
       delete sanitizedPayload.traces;
     }
 
@@ -338,7 +418,6 @@ export async function registerMasterPreset(taskCode, payload) {
       createdAt: Date.now()
     };
 
-    // ルートコレクション master_tasks への完全上書き（merge: true を使わないことで過去データとの合算1MB超過＆型コンフリクトを根絶）
     const globalDocRef = doc(db, "master_tasks", cleanCode);
     await setDoc(globalDocRef, taskData);
 
@@ -354,7 +433,50 @@ export async function registerMasterPreset(taskCode, payload) {
   }
 }
 
-// 生徒用：教員マスター課題データの読込・展開
+function applySessionMapToBrowser(sessionSource, remoteTime) {
+  if (!sessionSource || typeof sessionSource !== 'object') return false;
+  const merged = mergeLocalImageData({ ...sessionSource });
+  const metaSkip = ['taskCode', 'payload', 'creatorRoom', 'creatorId', 'createdAt', 'sequence', 'appName', 'registeredAt'];
+  let changed = false;
+
+  Object.keys(merged).forEach((k) => {
+    if (metaSkip.includes(k)) return;
+    const restoredKey = k.replace(/__dot__/g, '.');
+    const val = typeof merged[k] === 'string' ? merged[k] : JSON.stringify(merged[k]);
+    if (val !== undefined && val !== null && val !== "") {
+      sessionStorage.setItem(restoredKey, val);
+      if (restoredKey === 'bio_edu_workspace_dashboard_samples') {
+        try { localStorage.setItem('bio_edu_samples', val); } catch (e) {}
+      } else if (restoredKey === 'bio_edu_workspace_app4' || restoredKey === 'bio_edu_autosave_app7_full') {
+        try { localStorage.setItem(restoredKey + '_backup', val); } catch (e) {}
+      }
+      changed = true;
+    }
+  });
+
+  if (sessionStorage.getItem('bio_edu_autosave_app7_full')) {
+    sessionStorage.removeItem('bio_edu_workspace_7_Virtual_BLAST_Explorer');
+    sessionStorage.removeItem('bio_edu_ws_7_Virtual_BLAST_Explorer.html_dom_inputs');
+    sessionStorage.removeItem('bio_edu_draft_7_Virtual_BLAST_Explorer.html');
+  }
+  if (sessionStorage.getItem('bio_edu_workspace_app4')) {
+    sessionStorage.removeItem('bio_edu_workspace_4_Sanger_Trace_Editor');
+    sessionStorage.removeItem('bio_edu_ws_4_Sanger_Trace_Editor.html_dom_inputs');
+    sessionStorage.removeItem('bio_edu_draft_4_Sanger_Trace_Editor.html');
+  }
+  if (sessionStorage.getItem('bio_edu_autosave_app5')) {
+    sessionStorage.removeItem('bio_edu_workspace_5_DNA_Alignment_Studio');
+    sessionStorage.removeItem('bio_edu_ws_5_DNA_Alignment_Studio.html_dom_inputs');
+    sessionStorage.removeItem('bio_edu_draft_5_DNA_Alignment_Studio.html');
+  }
+
+  const ts = (remoteTime || Date.now()).toString();
+  localStorage.setItem('bio_edu_last_user_edit', ts);
+  sessionStorage.setItem('bio_edu_last_user_edit', ts);
+
+  return changed;
+}
+
 export async function importMasterPreset(taskCode) {
   if (!taskCode) return;
   const cleanCode = taskCode.toUpperCase().trim();
@@ -371,41 +493,28 @@ export async function importMasterPreset(taskCode) {
         try { payload = JSON.parse(payload); } catch (e) {}
       }
       if (payload) {
-        const activeTextarea = document.querySelector('textarea.paste-area, textarea#dnaInput, textarea#fastaInput, textarea#chain-code-input, textarea#pasteArea, textarea#queryInput, input#pdbId');
-        if (activeTextarea && payload.sequence) {
-          activeTextarea.value = payload.sequence;
-          activeTextarea.dispatchEvent(new Event('input', { bubbles: true }));
-          activeTextarea.dispatchEvent(new Event('change', { bubbles: true }));
-        }
-
-        // セッションデータの展開（ラップ構造・フラット構造の両対応）
-        const sessionSource = (payload.sessionData && typeof payload.sessionData === 'object') ? payload.sessionData : payload;
-        const metaSkip = ['taskCode', 'payload', 'creatorRoom', 'creatorId', 'createdAt', 'sequence', 'appName', 'registeredAt'];
-        Object.keys(sessionSource).forEach((k) => {
-          if (!metaSkip.includes(k)) {
-            const restoredKey = k.replace(/__dot__/g, '.');
-            const val = typeof sessionSource[k] === 'string' ? sessionSource[k] : JSON.stringify(sessionSource[k]);
-            if (val !== undefined && val !== null && val !== "") {
-              sessionStorage.setItem(restoredKey, val);
-            }
+        if (payload.sequence && payload.appName && payload.appName === document.title) {
+          const activeTextarea = document.querySelector('textarea.paste-area, textarea#dnaInput, textarea#chain-code-input, textarea#pasteArea, textarea#queryInput, input#pdbId');
+          if (activeTextarea && activeTextarea.id !== 'fastaInput') {
+            activeTextarea.value = payload.sequence;
+            activeTextarea.dispatchEvent(new Event('input', { bubbles: true }));
+            activeTextarea.dispatchEvent(new Event('change', { bubbles: true }));
           }
-        });
-
-        // ダッシュボードサンプルが含まれている場合は localStorage 側にも確実に同期してアプリ④等への導線を確保
-        const sampleJson = sessionStorage.getItem('bio_edu_workspace_dashboard_samples') || (payload.samples ? JSON.stringify(payload.samples) : null);
-        if (sampleJson && sampleJson !== '""' && sampleJson !== '[]') {
-          try {
-            localStorage.setItem('bio_edu_samples', sampleJson);
-            sessionStorage.setItem('bio_edu_workspace_dashboard_samples', sampleJson);
-          } catch (e) {}
         }
 
-        const nowTime = Date.now().toString();
-        localStorage.setItem('bio_edu_last_user_edit', nowTime);
-        sessionStorage.setItem('bio_edu_last_user_edit', nowTime);
+        const sessionSource = (payload.sessionData && typeof payload.sessionData === 'object') ? payload.sessionData : payload;
+        applySessionMapToBrowser(sessionSource, data.createdAt || Date.now());
+
+        if (payload.samples && !sessionStorage.getItem('bio_edu_workspace_dashboard_samples')) {
+          const sJson = JSON.stringify(payload.samples);
+          sessionStorage.setItem('bio_edu_workspace_dashboard_samples', sJson);
+          try { localStorage.setItem('bio_edu_samples', sJson); } catch (e) {}
+        }
 
         window.dispatchEvent(new CustomEvent('bio_edu_preset_loaded', { detail: { taskCode: cleanCode, payload: payload } }));
         window.dispatchEvent(new CustomEvent('bio_edu_cloud_synced', { detail: sessionSource }));
+        triggerCurrentAppRestore();
+
         if (typeof showToast === 'function') showToast(`課題「${cleanCode}」を展開しました`, "success");
       }
     } else {
@@ -478,122 +587,79 @@ function mergeLocalImageData(targetWorkspace) {
   return targetWorkspace;
 }
 
-function applyWorkspaceToSession(workspaceObj, remoteTime) {
-  if (!workspaceObj || typeof workspaceObj !== 'object') return false;
-  const merged = mergeLocalImageData(workspaceObj);
-  let changed = false;
-  Object.keys(merged).forEach((k) => {
-    const restoredKey = k.replace(/__dot__/g, '.');
-    if (
-      restoredKey.startsWith('bio_edu_ws_') ||
-      restoredKey.startsWith('bio_edu_workspace_') ||
-      restoredKey.startsWith('bio_edu_draft_') ||
-      restoredKey.startsWith('bio_edu_autosave_')
-    ) {
-      const val = merged[k];
-      if (val !== undefined && val !== null && val !== "" && sessionStorage.getItem(restoredKey) !== val) {
-        sessionStorage.setItem(restoredKey, val);
-        if (restoredKey === 'bio_edu_workspace_dashboard_samples') {
-          try { localStorage.setItem('bio_edu_samples', val); } catch (e) {}
-        }
-        changed = true;
-      }
-    }
-  });
-  if (changed) {
-    const ts = (remoteTime || Date.now()).toString();
-    localStorage.setItem('bio_edu_last_user_edit', ts);
-    sessionStorage.setItem('bio_edu_last_user_edit', ts);
-    window.dispatchEvent(new CustomEvent('bio_edu_cloud_synced', { detail: merged }));
+export async function syncFromCloud(isManual = false) {
+  if (!isManual) return;
+  if (!isConnected || !auth.currentUser) {
+    if (typeof showToast === 'function') showToast("先にルームへ入室してください", "warning");
+    return;
   }
-  return changed;
-}
-
-function startRoomListener() {
-  if (!isConnected || !auth.currentUser) return;
-  if (typeof unsubscribeRoomListener === 'function') {
-    unsubscribeRoomListener();
-  }
-  try {
-    const roomRef = doc(db, "rooms", currentRoomCode);
-    unsubscribeRoomListener = onSnapshot(roomRef, (snap) => {
-      if (!snap.exists()) return;
-      const data = snap.data();
-
-      if (data?.teacherId === currentParticipantId && (Date.now() - lastSentTimestamp < 3000)) {
-        return;
-      }
-
-      const liveState = parseWorkspacePayload(data?.teacherLiveState);
-      if (liveState && typeof liveState === 'object') {
-        applyWorkspaceToSession(liveState, data.teacherUpdatedAt);
-      }
-    }, (err) => {
-      console.warn("Room listener warning:", err);
-    });
-  } catch (e) {
-    console.warn("Start room listener error:", e);
-  }
-}
-
-async function syncFromCloud() {
-  if (!isConnected || !auth.currentUser) return;
+  const btn = document.getElementById("btnManualCloudLoad");
+  const origHtml = btn ? btn.innerHTML : "";
+  if (btn) { btn.disabled = true; btn.innerText = "復元中..."; }
   try {
     const roomRef = doc(db, "rooms", currentRoomCode);
     const docRef = doc(db, `rooms/${currentRoomCode}/participants`, currentParticipantId);
 
     const [roomSnap, userSnap] = await Promise.all([getDoc(roomRef), getDoc(docRef)]);
 
-    const localEditTime = parseInt(localStorage.getItem('bio_edu_last_user_edit') || sessionStorage.getItem('bio_edu_last_user_edit') || '0', 10);
-
     let remoteUpdatedAt = 0;
     let targetWorkspace = null;
 
     if (userSnap.exists() && userSnap.data()?.workspace) {
       targetWorkspace = parseWorkspacePayload(userSnap.data().workspace);
-      remoteUpdatedAt = userSnap.data().lastUpdated || 0;
+      remoteUpdatedAt = userSnap.data().lastUpdated || Date.now();
     } else if (roomSnap.exists() && roomSnap.data()?.teacherLiveState) {
       targetWorkspace = parseWorkspacePayload(roomSnap.data().teacherLiveState);
-      remoteUpdatedAt = roomSnap.data().teacherUpdatedAt || roomSnap.data().lastActive || 0;
+      remoteUpdatedAt = roomSnap.data().teacherUpdatedAt || roomSnap.data().lastActive || Date.now();
     }
 
-    const isJustJoined = sessionStorage.getItem('bio_edu_just_joined') === 'true';
-
-    if (targetWorkspace && typeof targetWorkspace === 'object' && (isJustJoined || remoteUpdatedAt > localEditTime || localEditTime === 0)) {
-      applyWorkspaceToSession(targetWorkspace, remoteUpdatedAt);
-      if (isJustJoined) sessionStorage.removeItem('bio_edu_just_joined');
-      if (typeof showToast === 'function') showToast("最新の作業状態を同期しました", "info");
-    } else if (localEditTime > remoteUpdatedAt && localEditTime > 0) {
-      await saveCurrentWorkspace();
-    } else if (targetWorkspace && typeof targetWorkspace === 'object') {
-      applyWorkspaceToSession(targetWorkspace, remoteUpdatedAt);
-      if (isJustJoined) sessionStorage.removeItem('bio_edu_just_joined');
+    if (targetWorkspace && typeof targetWorkspace === 'object' && Object.keys(targetWorkspace).length > 0) {
+      applySessionMapToBrowser(targetWorkspace, remoteUpdatedAt);
+      window.dispatchEvent(new CustomEvent('bio_edu_cloud_synced', { detail: targetWorkspace }));
+      triggerCurrentAppRestore();
+      if (typeof showToast === 'function') showToast("クラウドから作業状態を復元しました", "success");
+      if (typeof closeAccountSettings === 'function') closeAccountSettings();
     } else {
-      await saveCurrentWorkspace();
+      if (typeof showToast === 'function') showToast("クラウド上に保存されたデータがありません", "warning");
     }
   } catch (e) {
-    console.warn("Cloud sync read error:", e);
+    console.error("Cloud manual load error:", e);
+    if (typeof showToast === 'function') showToast("クラウドからの復元に失敗しました: " + (e.message || e), "error");
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
   }
 }
 
-// ワークスペース自動同期（merge: true による過去ゴミデータの蓄積・1.5MB膨張を完全遮断）
-export async function saveCurrentWorkspace() {
-  if (!isConnected || !auth.currentUser) return;
+export async function saveCurrentWorkspace(isManual = false) {
   if (window.isResetting === true) return;
+  if (isManual !== true) return;
+
+  if (!isConnected || !auth.currentUser) {
+    if (typeof showToast === 'function') showToast("先にルームへ入室してください", "warning");
+    return;
+  }
+
+  const btn = document.getElementById("btnManualCloudSave");
+  const origHtml = btn ? btn.innerHTML : "";
+  if (btn) { btn.disabled = true; btn.innerText = "保存中..."; }
 
   try {
+    flushCurrentAppSession();
+
     const rawSession = {};
     for (let i = 0; i < sessionStorage.length; i++) {
       const k = sessionStorage.key(i);
       if (k) rawSession[k] = sessionStorage.getItem(k);
     }
+    if (!rawSession['bio_edu_workspace_dashboard_samples']) {
+      const lsSamples = localStorage.getItem('bio_edu_samples');
+      if (lsSamples && lsSamples !== '[]') {
+        rawSession['bio_edu_workspace_dashboard_samples'] = lsSamples;
+      }
+    }
 
     const snap = sanitizeSessionMap(rawSession);
-    const hasData = Object.keys(snap).length > 0;
-    if (!hasData && !isTeacher) return;
-
     const nowTime = Date.now();
-    lastSentTimestamp = nowTime;
     localStorage.setItem('bio_edu_last_user_edit', nowTime.toString());
     sessionStorage.setItem('bio_edu_last_user_edit', nowTime.toString());
 
@@ -606,35 +672,36 @@ export async function saveCurrentWorkspace() {
         teacherUpdatedAt: nowTime,
         teacherLiveState: snap
       };
-      // merge: true を使わず完全置換することで、過去の古いセッションキーの残留・1.5MB膨張を根絶
       await setDoc(roomRef, roomPayload);
     } else {
       await setDoc(roomRef, { roomCode: currentRoomCode, lastActive: nowTime }, { merge: true });
     }
 
-    if (hasData || isTeacher) {
-      const docRef = doc(db, `rooms/${currentRoomCode}/participants`, currentParticipantId);
-      await setDoc(docRef, {
-        workspace: snap,
-        participantId: currentParticipantId,
-        isTeacher: isTeacher,
-        lastUpdated: nowTime
-      });
-    }
+    const docRef = doc(db, `rooms/${currentRoomCode}/participants`, currentParticipantId);
+    await setDoc(docRef, {
+      workspace: snap,
+      participantId: currentParticipantId,
+      isTeacher: isTeacher,
+      lastUpdated: nowTime
+    });
+
+    if (typeof showToast === 'function') showToast("現在の作業状態をクラウドに保存しました", "success");
+    if (typeof closeAccountSettings === 'function') closeAccountSettings();
   } catch (e) {
-    console.warn("Cloud sync write error:", e);
+    console.error("Cloud manual write error:", e);
+    if (typeof showToast === 'function') showToast("クラウド保存エラー: " + (e.message || e), "error");
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
   }
 }
 
 window.saveCurrentWorkspace = saveCurrentWorkspace;
+window.handleManualCloudSave = () => saveCurrentWorkspace(true);
+window.handleManualCloudLoad = () => syncFromCloud(true);
 
 export async function executeHybridReset() {
   if (!isConnected || !auth.currentUser) return;
   try {
-    if (typeof unsubscribeRoomListener === 'function') {
-      unsubscribeRoomListener();
-      unsubscribeRoomListener = null;
-    }
     const targetRoom = currentRoomCode;
     const targetId = currentParticipantId;
     const wasTeacher = isTeacher;
@@ -660,12 +727,3 @@ export async function executeHybridReset() {
 window.executeHybridReset = executeHybridReset;
 
 export { app, auth, db };
-
-let saveDebounceTimer = null;
-window.addEventListener('bio_edu_request_save', () => {
-  if (!isConnected || !auth.currentUser) return;
-  clearTimeout(saveDebounceTimer);
-  saveDebounceTimer = setTimeout(() => {
-    saveCurrentWorkspace();
-  }, 250);
-});

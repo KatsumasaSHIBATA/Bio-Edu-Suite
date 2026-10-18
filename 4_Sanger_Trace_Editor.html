@@ -1633,6 +1633,9 @@ input[type="submit"]:disabled:active {
             historyStack.shift();
             historyIndex--;
         }
+        if (typeof window.saveApp4Session === 'function') {
+            window.saveApp4Session();
+        }
     }
 
     function undo() {
@@ -2775,7 +2778,7 @@ function closeFeedbackForm() {
                 }
 
                 if (!ab1Queue || ab1Queue.length === 0) {
-                    sessionStorage.removeItem(AUTOSAVE_KEY);
+                    sessionStorage.removeItem(AUTOSAVE_KEY); try { localStorage.removeItem(AUTOSAVE_KEY + '_backup'); } catch(e) {} try { localStorage.removeItem(AUTOSAVE_KEY + '_backup'); } catch(e) {}
                     return;
                 }
 
@@ -2810,24 +2813,37 @@ function closeFeedbackForm() {
                 };
 
                 try {
-                    sessionStorage.setItem(AUTOSAVE_KEY, JSON.stringify(payload));
+                    const slimPayload = {
+                        ...payload,
+                        queue: payload.queue.map(q => (q.editedAb1Data ? { ...q, data: null, savedHistoryStack: [] } : q))
+                    };
+                    const serialized = JSON.stringify(slimPayload);
+                    sessionStorage.setItem(AUTOSAVE_KEY, serialized);
+                    try { localStorage.setItem(AUTOSAVE_KEY + '_backup', serialized); } catch (e) {}
                 } catch (quotaErr) {
                     console.warn('[AutoSave] App4 quota exceeded, saving queue without raw binary data:', quotaErr);
-                    payload.queue = payload.queue.map(q => ({ ...q, data: null }));
-                    sessionStorage.setItem(AUTOSAVE_KEY, JSON.stringify(payload));
+                    payload.queue = payload.queue.map(q => ({ ...q, data: null, savedHistoryStack: [] }));
+                    const fallbackStr = JSON.stringify(payload);
+                    sessionStorage.setItem(AUTOSAVE_KEY, fallbackStr);
+                    try { localStorage.setItem(AUTOSAVE_KEY + '_backup', fallbackStr); } catch (e) {}
                 }
             } catch (e) {
                 console.warn('[AutoSave] App4 save failed:', e);
             }
         }
 
-        // 起動時：退避データを復元して再描画
-        function restoreApp4Session() {
+        // 起動時および課題展開時：退避データを復元して再描画
+        function restoreApp4Session(forceOverwrite = false) {
             try {
-                const raw = sessionStorage.getItem(AUTOSAVE_KEY);
+                let raw = sessionStorage.getItem(AUTOSAVE_KEY);
+                if (!raw) {
+                    raw = localStorage.getItem(AUTOSAVE_KEY + '_backup');
+                    if (raw) sessionStorage.setItem(AUTOSAVE_KEY, raw);
+                }
                 if (!raw) return;
                 const saved = JSON.parse(raw);
-                if (!saved || !saved.queue || saved.queue.length === 0 || ab1Data) return; // 新規ロード済みなら上書きしない
+                if (!saved || !saved.queue || saved.queue.length === 0) return;
+                if (ab1Data && !forceOverwrite) return; // 通常起動時のみ既存データを保護
 
                 ab1Queue = saved.queue.map(item => {
                     let buffer = null;
@@ -2875,16 +2891,24 @@ function closeFeedbackForm() {
         window.addEventListener('pagehide', saveApp4Session);
         window.addEventListener('pageshow', () => setTimeout(restoreApp4Session, 60));
 
+        window.saveApp4Session = saveApp4Session;
+        window.restoreApp4Session = restoreApp4Session;
+
         window.addEventListener('DOMContentLoaded', () => {
-            // IndexedDBの一括受信チェックが終わった直後に復元を試みる
-            setTimeout(restoreApp4Session, 80);
+            setTimeout(() => restoreApp4Session(false), 80);
+        });
+        window.addEventListener('bio_edu_cloud_synced', () => {
+            restoreApp4Session(true);
+        });
+        window.addEventListener('bio_edu_preset_loaded', () => {
+            restoreApp4Session(true);
         });
 
         // 初期化モーダル実行時にセッション保存も破棄
         const origConfirm = window.confirmDataReset;
         if (typeof origConfirm === 'function') {
             window.confirmDataReset = function() {
-                sessionStorage.removeItem(AUTOSAVE_KEY);
+                sessionStorage.removeItem(AUTOSAVE_KEY); try { localStorage.removeItem(AUTOSAVE_KEY + '_backup'); } catch(e) {} try { localStorage.removeItem(AUTOSAVE_KEY + '_backup'); } catch(e) {}
                 origConfirm();
             };
         }
