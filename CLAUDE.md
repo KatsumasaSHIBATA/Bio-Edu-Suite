@@ -1,24 +1,63 @@
-# Bio-Edu Suite - Multi-LLM Execution Rules (Claude 3.7 Sonnet & Universal Guardrails)
+# Bio-Edu Suite - Universal AI Agent Rules (v38.2 Pure Integrated Standard)
 
-## 1. Project Overview & Architecture
-Bio-Edu Suite is an educational bioinformatics web application suite for Japanese high schools.
-- Single Source of Truth: `docs/guideline.md` & `docs/workflow.md`
-- Level 4 Surgical Role: Specialized for solving complex UI/logic conflicts or module collapses when invoked via Cline. Must return to Level 0 immediately upon completion.
-- Snowball Context Cutoff: Must be initiated with a newly cleared context (Cleared chat) without inheriting long historical logs.
+本ファイル（`CLAUDE.md` / `AGENTS.md` / `.clinerules`）は、Bio-Edu Suite プロジェクトに接続されるすべてのAIエージェント（Cline, Claude, Gemini, Ollama / Qwen等）が絶対遵守すべき実行憲法である。実装・改修時は `docs/guideline.md` (v38.2) および `docs/workflow.md` (v5.15) を唯一の正解基準（Single Source of Truth）として厳格に適用すること。
 
-## 2. Absolute Guardrails (Zero-Modification)
-- **Zero-Modification**: NEVER refactor, modernize, or clean up existing HTML structure, CSS layout, or D3.js visualization logic unless explicitly commanded. Apply strict, minimal diff patches only.
-- **No Educational Mocking**: Never replace biological/mathematical models with hardcoded fake data or simplified mock formulas.
+---
 
-## 3. Strict Biological Terminology (SCJ 2025 Standard)
-Strictly enforce the Science Council of Japan (2025) high school biology terminology:
-- Use **顕性 (dominant)** and **潜性 (recessive)**. NEVER use "優性" or "劣性".
-- Distinguish **突然変異 (mutation: process)** and **変異 (variation: diversity)**.
-- Specify targets: Use **DNA**, **mRNA**, **タンパク質** (avoid ambiguous "核酸" where specific). Use **塩基配列** and **アミノ酸配列** (never "1D配列" or "Sequence" in UI).
-- Use Hiragana for non-Joyo kanji: **血しょう**, **かく乱**, **胚のう**.
-- Use **アーキア** (never "古細菌").
+## 0. マルチLLMルーティング＆コンテキスト遮断規律
+- **Level 0（標準無人巡航）**: `gemini-3.6-flash`（リカバリー試行は最大1回まで）。
+- **Level 1〜2（ファストフェイル昇格）**: `gemini-3.8-flash`。Level 0で1回失敗時、または長考ループの兆候がある場合は即座に昇格させ一撃で完了させる。
+- **Level Local（オフライン・制限時安全弁）**: `Ollama` (`qwen2.5-coder:32b`)。1ファイル・1関数のマイクロタスク限定。
+- **Level 4（緊急外科手術）**: `Claude 3.7 Sonnet`。複雑なモジュール競合やD3.js描画問題の解決にのみ単一ファイル限定で召喚し、完了後は即座にLevel 0へ復帰する。
+- **雪だるま式課金の物理遮断**: 上位モデルや別プロバイダーへ切り替える際、および1タスク完了（Case A）・白紙撤回（Case C）時は、**必ずチャット履歴をClear（新規タスク作成）**してから実行すること。
 
-## 4. Token & Context Protection Rules
-- **No Full File Reads**: For files exceeding 100 lines, NEVER read the full file. Always inspect specific line offsets/ranges or use git diff/AST outlines.
-- **Batch Processing Standard**: NEVER edit all 14 apps directly via LLM. Multi-file/cross-app updates MUST be performed by writing an idempotent Python script under `scripts/` and executing it in the terminal (`python3 scripts/XXXX.py`).
-- **One-Shot Task Focus**: Focus strictly on the single assigned file/scope. Do not touch adjacent files.
+---
+
+## 1. 破壊なき進化 (Zero-Modification) とコア資産保護
+- **勝手なリファクタリングの絶対禁止**: 既存のHTML構造、CSSレイアウト、D3.js等の描画・アニメーションロジック、および計算アルゴリズムは、**明示的な指示がない限り1文字も変更・近代化・整形してはならない**。指定箇所への最小限の差分（Diff）パッチ適用のみを行うこと。
+- **教育的ハリボテ（計算偽装）の禁止**: 60fpsの滑らかさを優先して裏側の数理・確率モデルを固定値や簡易モック式で偽装することを固く禁ずる。事前一括計算（プレキャッシュ）等で本物のモデル（`lib/bio_math_engine.js` 等）を回すこと。
+- **MVC分離基準（140KB）**: 140KBを超えるファイルはUI制御JSを `js/[app_name]_ui.js` へ分離し、140KB未満は単一HTML内で完結させる。重い数学計算はすべて `lib/bio_math_engine.js` または専用 Web Worker（`phylo_worker.js` 等）へ集約する。
+- **コア資産ホワイトリスト保護**: ルート直下の全アプリHTML、`lib/`、`js/`、`docs/` を勝手に削除・リネームしてはならない。
+
+---
+
+## 2. トークン枯渇防止＆Pythonスクリプト駆動ハイブリッドSOP
+- **全行読込の禁止**: 100行を超えるファイル全体の `read_file` を原則禁止する。必ず行範囲（Offset/Limit）、AST骨格、または `git diff` で対象箇所のみを参照すること。
+- **単一責務・マイクロタスク原則**: Actモードによる直接Diff編集は「1ファイル・1〜2箇所の局所修正」のみに限定する。
+- **【3箇所ルールのPython強制昇格】**: **単一ファイル内であっても修正が3箇所以上に及ぶ場合**、または**複数アプリ（全14アプリ等）の一括改修時**は、AIによる直接多重編集を物理的に禁止する。必ず `scripts/update_XXXX.py` に冪等性（多重実行防止）を備えたPythonスクリプトを作成・実行（`python3 scripts/update_XXXX.py`）して一括適用すること。
+- **自律クリーンアップ義務**: Pythonスクリプトによる改修および `git diff` 検証が完了した直後は、必ず `python3 scripts/cleanup_audit.py --apply` を実行し、作業用スクリプトを `scripts/archive/` へ安全に退避させること。
+
+---
+
+## 3. 日本学術会議（2025年版）重要用語規格【絶対死守】
+UIテキスト、ラベル、プレースホルダー、解説ポップオーバー（`.rationale-text`）、現場のコツ（`.bench-tip`）において、以下の2025年版規格を厳守すること。
+1. **顕性・潜性の完全統一**: 「優性」「劣性」「優性効果」「優性分散」は**使用禁止**。すべて **顕性**・**潜性**（**顕性効果**、**顕性分散**）に統一する。
+2. **突然変異と変異の厳格な区別**:
+   - **突然変異 (mutation)**: 遺伝情報（塩基配列）が変化するプロセス（別名: 変異）。
+   - **変異 (variation)**: mutation等の結果として生じた集団内の形質差・多様性（別名: 多様性）。※`biodiversity`（生物多様性）とは明確に区別する。
+   - **突然変異体 (mutant)**: 突然変異によって通常とは異なる形質を持つ生物（別名: 変異体）。
+3. **免疫系の表記**: 「細胞性免疫」「液性免疫（体液性免疫）」は重要語から削除されたため優先しない。**自然免疫** と **獲得免疫（適応免疫）** の協調を最優先で記述する。
+4. **分類群**: 「古細菌」は使用禁止。**アーキア** に統一する。
+5. **対象分子・配列の明記**: UI上での「1D配列」「Sequence」の使用は禁止（英語サブタイトル・論文引用・コード内変数名を除く）。総称の「核酸」で濁さず **DNA**、**mRNA**、**タンパク質** と明記し、配列は **塩基配列**、**アミノ酸配列** と表記する。
+6. **常用漢字外の平仮名表記**: 難解な漢字を強制せず、「血漿」→ **血しょう**、「攪乱」→ **かく乱**、「胚囊」→ **胚のう** と平仮名表記を優先する。
+
+---
+
+## 4. ローカル要塞化（Local Fortress）＆手動オンデマンド同期規格 (v38.0/v38.2)
+- **バックグラウンド自動クラウド通信の全面禁止**: アプリ遷移時や入力変更時の自動クラウド通信（`onSnapshot` 常時監視、`bio_edu_request_save` デバウンス自動送信、入室時の自動クラウド上書き）およびGoogle OAuthログインは**一切混入させてはならない**。
+- **100%ローカル完結と即時ハイドレーション**: 日常の作業保存とアプリ間遷移は端末内ローカル（`localStorage` / `sessionStorage` / 大容量データは `IndexedDB: BioEdu_IndexedDB`）のみで完結させる（キー名: `bio_edu_workspace_<app_name>`、`index.html` は `bio_edu_workspace_dashboard` に正規化）。
+- **完全手動（オンデマンド）クラウド同期**: Firestoreとの通信は、`#accountModal` 内の明示的な操作ボタン（「☁️ 現在の作業をクラウドに保存」「📥 クラウドから作業を復元」「👑 課題として登録・発行」「📖 課題データを読込」）がクリックされた時のみ実行する。教員プリセットの正本は `/master_tasks/{taskCode}` のみに一元化する。
+- **非破壊ストレージ原則**: 通信ペイロード最適化のために、端末内のローカルストレージや `IndexedDB` 上の画像・元データを消去・空文字化することを固く禁ずる。
+- **「コピー」＋「ローカルファイル保存」ペア設置義務**: データを出力するすべてのアプリにおいて、「コピーボタン（二重シート型SVG / `.btn-secondary`）」の横に必ず「ローカルファイル保存ボタン（フロッピー型SVG / `.btn-success` または `.btn-secondary`）」をペアで並置し、次工程アプリの `.drop-zone` へのファイルドロップで100%解析を継続できる冗長性を担保すること。
+- **解析アプリの完全空箱化**: 解析アプリ（⑤〜⑭）内にデモデータ呼出ボタンや固定プリセットを配置することを禁ずる。
+
+---
+
+## 5. UI/UX・グローバルドロワー（Peg Menu）絶対仕様
+- **絵文字・ネイティブAlert・title属性の全廃**: HTML内（`<title>`, `<h1>`, 動的ヒント等）でのネイティブ絵文字（🧬等）の使用を全面禁止し、親要素に同期するインラインSVG（`stroke="currentColor"`）へ統一する。`alert()` は `#toast` へ、`title="..."` 属性は `data-tooltip="..."` へ完全移行する。
+- **グローバル・ドロワー（`.sidebar`）の厳格仕様**:
+  - PC表示（`min-width: 1025px`）は閉鎖時幅 `60px`（ホバーまたは `.pinned` で `280px` 展開）。閉鎖時はハンバーガー・ナビアイテム・下部アクションの全アイコン中心を **左端から30px** に厳密に揃える。
+  - タブレット縦・スマホ表示（`max-width: 1024px`）はドロワーを画面外（`left: -280px`）へ完全隠蔽し、ヘッダー左端の `.mobile-hamburger` で開閉する。
+  - ハンバーガーアイコンはホバーでは切り替えず（「≡」を維持）、**ピン留め固定時（`.sidebar.pinned`）とモバイル展開時（`.sidebar.open`）のみ「×」へ切り替える**。
+- **タッチターゲット寸法**: タップ可能な全要素（`.btn`, `.nav-item`, `.sidebar-action-btn`, `.hamburger-btn`, `select`）は最小高さ `44px`（`1024px` 以下では `48px`）を確保する。
+- **根拠ポップオーバー（`.rationale-text`）**: ホバー表示は禁止（クリック駆動のみ）。見出しは `<strong>【根拠：〇〇】</strong>`（直後の `<br>` 禁止）、インライン強調は `<b>`、箇条書きは「・（中黒）」を使用する。
