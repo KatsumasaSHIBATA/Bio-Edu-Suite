@@ -659,7 +659,7 @@
         /* 🖨️ 印刷時専用のスタイル */
         @media print {
             body { background: white; padding: 0; margin: 0; }
-            .no-print { display: none !important; }
+            .no-print, .sidebar, .sidebar-overlay { display: none !important; }
             .main-content { padding: 0; gap: 0; display: block; max-width: none; }
             
             .control-panel.preview-panel { 
@@ -1416,7 +1416,7 @@ input[type="submit"]:disabled:active {
 <div class="sidebar-overlay no-print" onclick="toggleSidebarPin(); triggerHapticFeedback();"></div>
 
 <!-- 2. グローバル・ドロワー (Peg Menu) -->
-<div class="sidebar no-print">
+<div class="sidebar">
   <div class="sidebar-header">
     <button class="hamburger-btn" onclick="toggleSidebarPin(); triggerHapticFeedback();" aria-label="メニューを開く/閉じる">
       <!-- ≡ アイコン -->
