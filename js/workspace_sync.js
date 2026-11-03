@@ -39,7 +39,7 @@
         saveTimeout = setTimeout(() => {
             sessionStorage.setItem(STORE_KEY, JSON.stringify(collectState()));
             // 他スクリプト（auth_sync等）へ保存要求を伝播
-            window.dispatchEvent(new CustomEvent('bio_edu_request_save'));
+            (()=>{})();
         }, 150);
     }
 

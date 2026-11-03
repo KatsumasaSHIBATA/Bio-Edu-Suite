@@ -1333,7 +1333,7 @@ input[type="submit"]:disabled:active {
 
 <!-- ダークテーマ・フッター規格（マスター同期） -->
 <div class="footer">
-    &copy; 2026 Bio-Edu Suite v34.4 | Developed for Bioinformatics &amp; Wet-Lab Education
+    &copy; 2026 Bio-Edu Suite v38.2 | Developed for Bioinformatics &amp; Wet-Lab Education
 </div>
 
 </div><!-- /.main-wrapper -->
@@ -1796,89 +1796,82 @@ function closeFeedbackForm() {
 </div>
 
 <!-- アカウント・同期設定（ログインパネル）モーダル -->
-<!-- ルーム接続・同期設定（Kahoot方式）モーダル v35.4 -->
+<!-- 2. ルーム・同期・課題設定モーダル (Kahoot方式 ＆ v38.0 完全手動クラウド同期規格) -->
 <div class="modal-overlay" id="accountModal">
-  <div class="modal-content" style="max-width: 380px;">
+  <div class="modal-content" style="max-width: 400px;">
     <div class="modal-header">
-      <h3 style="margin: 0; font-size: 16px;">ルーム接続・同期設定</h3>
+      <h3 style="margin: 0; font-size: 16px;">ルーム接続・クラウド同期・課題設定</h3>
       <button class="modal-close" onclick="closeAccountSettings(); triggerHapticFeedback();" data-tooltip="閉じる">
         <svg class="btn-icon" style="margin:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg>
       </button>
     </div>
     <div class="modal-body" style="padding: 20px;">
 
-      <!-- ① 未接続ビュー -->
+      <!-- ① 未入室時（ローカル要塞モード）ビュー -->
       <div id="modalLoggedOutView">
         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-          <span style="font-size: 14px; font-weight: bold; color: var(--text-muted);">⚪️ 未接続（ローカル作業中）</span>
+          <svg class="btn-icon" style="width:16px;height:16px;color:var(--primary);flex-shrink:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span style="font-size: 14px; font-weight: bold; color: var(--text-main);">ローカル自動保存モード（端末内保存）</span>
         </div>
-        <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 14px 0; line-height: 1.5;">
-          ルームコードとIDを入力して入室すると、班員とのリアルタイム共有や、自宅端末へのデータ引き継ぎが可能です。
+        <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 12px 0; line-height: 1.6;">
+          日常の作業は通信なしで端末内に自動保存されます。班での共有や別端末への引き継ぎを行う場合は、ルームコードとIDを入力して入室してください。
         </p>
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;">
+          <input type="text" id="roomCodeInput" placeholder="ルームコード (例: BIO-101)" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 13px;">
+          <input type="text" id="participantIdInput" placeholder="参加者ID (例: Team-A / No-12)" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 13px;">
+        </div>
+        <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="if(window.joinRoom) window.joinRoom(); triggerHapticFeedback();">
+          ルームに入室する
+        </button>
+      </div>
 
-        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px;">
-          <div>
-            <label style="font-size: 11px; font-weight: bold; color: var(--primary); display: block; margin-bottom: 4px;">ルームコード</label>
-            <input type="text" id="roomCodeInput" class="primer-input" placeholder="例: BIO-101" style="width: 100%; box-sizing: border-box; text-transform: uppercase;">
-          </div>
-          <div>
-            <label style="font-size: 11px; font-weight: bold; color: var(--primary); display: block; margin-bottom: 4px;">参加者ID（班名 または 出席番号）</label>
-            <input type="text" id="participantIdInput" class="primer-input" placeholder="例: Team-B02 または No-15" style="width: 100%; box-sizing: border-box;">
-          </div>
+      <!-- ② ルーム入室中（オンデマンド手動同期）ビュー -->
+      <div id="modalLoggedInView" style="display: none;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+          <svg class="btn-icon" style="width:12px;height:12px;color:var(--success);flex-shrink:0;" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><circle cx="12" cy="12" r="8"/></svg>
+          <span id="syncStatusBadge" style="font-size: 14px; font-weight: bold; color: var(--phase-color);">ルーム接続中</span>
+        </div>
+        <div style="background: #f8f9fa; border: 1px solid #e1e8ed; border-radius: 6px; padding: 12px; margin-bottom: 12px;">
+          <div id="userNameDisplay" style="font-weight: bold; font-size: 14px; color: var(--primary);"></div>
+          <div id="userEmailDisplay" style="font-size: 11px; color: var(--text-muted); margin-top: 2px;"></div>
+          <div id="syncStatusNote" style="font-size: 11px; color: var(--danger); margin-top: 6px; display: none;"></div>
         </div>
 
-        <button class="btn btn-primary" style="width: 100%; margin-bottom: 14px;" onclick="window.handleJoinRoom(); triggerHapticFeedback();">
-          ルームに入室・同期開始
-        </button>
+        <!-- 手動クラウドセーブ＆ロードボタン群 (v38.0) -->
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+          <button id="manualCloudSaveBtn" class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="if(window.manualSaveToCloud) window.manualSaveToCloud(); triggerHapticFeedback();">
+            <svg class="btn-icon" style="width:16px;height:16px;margin-right:6px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/></svg>現在の作業をクラウドに保存
+          </button>
+          <button id="manualCloudLoadBtn" class="btn btn-secondary" style="width: 100%; justify-content: center;" onclick="if(window.manualLoadFromCloud) window.manualLoadFromCloud(); triggerHapticFeedback();">
+            <svg class="btn-icon" style="width:16px;height:16px;margin-right:6px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>クラウドから作業を復元
+          </button>
+        </div>
 
-        <div style="border-top: 1px dashed var(--border-color); padding-top: 12px;">
-          <label style="font-size: 11px; font-weight: bold; color: var(--text-muted); display: block; margin-bottom: 4px;">教員マスター課題データの読込</label>
-          <div style="display: flex; gap: 6px;">
-            <input type="text" id="masterTaskCodeInput" class="primer-input" placeholder="課題コード (例: TASK-01)" style="flex: 1; text-transform: uppercase;">
-            <button class="btn btn-secondary" style="font-size: 11px; padding: 6px 10px; white-space: nowrap;" onclick="window.handleImportPreset(); triggerHapticFeedback();">読込</button>
-          </div>
+        <button class="btn btn-secondary" style="width: 100%; justify-content: center; color: var(--danger); border-color: #f5b7b1;" onclick="if(window.leaveRoom) window.leaveRoom(); else if(window.handleLogout) window.handleLogout(); triggerHapticFeedback();">
+          ルームから退出する
+        </button>
+      </div>
+
+      <!-- ③ オンデマンド課題プリセット読込パネル（常設 / v36.9） -->
+      <div id="presetImportSection" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e1e8ed;">
+        <div style="font-size: 12px; font-weight: bold; color: var(--primary); margin-bottom: 8px;">
+          <svg class="btn-icon" style="width:14px;height:14px;vertical-align:-2px;margin-right:4px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>課題データを読込（教員プリセット展開）
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="presetTaskCodeInput" placeholder="課題コード (例: TASK-01)" style="flex: 1; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 13px;">
+          <button id="importPresetBtn" class="btn btn-secondary" onclick="if(window.importMasterPreset) window.importMasterPreset(); triggerHapticFeedback();">読込</button>
         </div>
       </div>
 
-      <!-- ② 接続中ビュー -->
-      <div id="modalLoggedInView" style="display: none;">
-        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-          <span id="syncStatusBadge" style="font-size: 14px; font-weight: bold; color: var(--phase-color);">🟢 ルーム同期中</span>
+      <!-- ④ 隠れ教師モード専用：課題プリセット登録・発行パネル（TEACHER-* 入室時のみ表示 / v35.5） -->
+      <div id="teacherPresetSection" style="display: none; margin-top: 16px; padding-top: 16px; border-top: 2px dashed var(--warning);">
+        <div style="font-size: 12px; font-weight: bold; color: #d35400; margin-bottom: 8px;">
+          <svg class="btn-icon" style="width:14px;height:14px;vertical-align:-2px;margin-right:4px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>教員専用：現在の画面データを課題として発行
         </div>
-
-                <!-- 入室中：教員マスター課題データのオンデマンド読込パネル -->
-        <div style="border-top: 1px dashed var(--border-color); padding-top: 12px; margin-bottom: 14px;">
-          <label style="font-size: 11px; font-weight: bold; color: var(--text-muted); display: block; margin-bottom: 4px;">教員マスター課題データの読込</label>
-          <div style="display: flex; gap: 6px;">
-            <input type="text" id="loggedInMasterTaskCodeInput" class="primer-input" placeholder="課題コード (例: TASK-01)" style="flex: 1; text-transform: uppercase;">
-            <button class="btn btn-secondary" style="font-size: 11px; padding: 6px 10px; white-space: nowrap;" onclick="window.handleImportPreset('loggedInMasterTaskCodeInput'); triggerHapticFeedback();">読込</button>
-          </div>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="publishTaskCodeInput" placeholder="発行コード (例: TASK-01)" style="flex: 1; padding: 8px 10px; border: 1px solid var(--warning); border-radius: 4px; font-size: 13px;">
+          <button id="publishPresetBtn" class="btn btn-primary" style="background: var(--warning); border-color: var(--warning); color: #fff;" onclick="if(window.registerMasterPreset) window.registerMasterPreset(); triggerHapticFeedback();">登録・発行</button>
         </div>
-<div style="background: #f8f9fa; border: 1px solid #e1e8ed; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
-          <div id="roomDisplay" style="font-weight: bold; font-size: 14px; color: var(--primary);"></div>
-          <div id="participantDisplay" style="font-size: 12px; color: var(--text-muted); margin-top: 2px;"></div>
-          <div id="syncStatusNote" style="font-size: 11px; color: var(--danger); margin-top: 6px; display: none;">
-            ※オフライン中です。データは端末内に一時保存され、再接続時に自動同期されます。
-          </div>
-        </div>
-
-        
-        <!-- 教員専用：マスター課題データ発行パネル（isTeacher時のみ動的表示） -->
-        <div id="teacherPresetSection" style="display: none; border-top: 1px dashed var(--border-color); padding-top: 12px; margin-bottom: 14px;">
-          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
-            <span style="font-size: 12px; font-weight: bold; color: #d35400;">教員専用：現在の画面を課題として発行</span>
-          </div>
-          <p style="font-size: 11px; color: var(--text-muted); margin: 0 0 8px 0; line-height: 1.4;">
-            現在の画面の入力データを、生徒が一括インポートできる課題コードとしてクラウドに登録します。
-          </p>
-          <div style="display: flex; gap: 6px;">
-            <input type="text" id="newMasterTaskCodeInput" class="primer-input" placeholder="新課題コード (例: TASK-01)" style="flex: 1; text-transform: uppercase;">
-            <button class="btn btn-primary" style="font-size: 11px; padding: 6px 12px; white-space: nowrap; background: #e67e22; border-color: #d35400;" onclick="window.handleRegisterCurrentPreset(); triggerHapticFeedback();">登録・発行</button>
-          </div>
-        </div>
-<button class="btn btn-secondary" style="width: 100%; color: var(--danger); border-color: #f5b7b1;" onclick="window.handleLeaveRoom(); triggerHapticFeedback();">
-          ルームから退出（切断）
-        </button>
       </div>
 
     </div>
@@ -1991,7 +1984,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 
-  <!-- /* [Bio-Edu Suite v35.1] Session-Persistent Workspace Standard */ -->
+  <!-- /* [Bio-Edu Suite v38.2] Session-Persistent Workspace Standard */ -->
   <script src="js/session_workspace.js"></script>
 <!-- Bio-Edu Suite Context Menu Guard (Guideline 10.1) -->
 <script id="bio-edu-contextmenu-guard">
@@ -2011,7 +2004,7 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 
-  <!-- [Bio-Edu Suite v36.2] 全アプリ共通クラウド同期ハイドレーションリスナー -->
+  <!-- [Bio-Edu Suite v38.2] 全アプリ共通クラウド同期ハイドレーションリスナー -->
   <script>
     window.addEventListener('bio_edu_cloud_synced', () => {
       try {
@@ -2031,7 +2024,7 @@ if ('serviceWorker' in navigator) {
   <!-- Session-Persistent Workspace 共通モジュール -->
   <script src="./js/workspace_sync.js"></script>
 
-<!-- [Bio-Edu Suite v37.1] ハイブリッド初期化（非破壊上書きパッチ） -->
+<!-- [Bio-Edu Suite v38.2] ハイブリッド初期化（非破壊上書きパッチ） -->
 <script>
 window.confirmDataReset = function() {
     if (window.innerWidth <= 1024) {
@@ -2042,8 +2035,8 @@ window.confirmDataReset = function() {
     }
     const isTeacher = localStorage.getItem('bio_edu_participant_id')?.toUpperCase().startsWith("TEACHER");
     const msg = isTeacher 
-      ? "⚠️ 【確認】ルームを解散し、すべての生徒のデータおよびローカルデータを初期化して退出しますか？\nこの操作は取り消せません。" 
-      : "⚠️ 【確認】自分のクラウドデータおよびローカルデータを初期化し、ルームから退出しますか？\nこの操作は取り消せません。";
+      ? "【確認】ルームを解散し、すべての生徒のデータおよびローカルデータを初期化して退出しますか？\nこの操作は取り消せません。" 
+      : "【確認】自分のクラウドデータおよびローカルデータを初期化し、ルームから退出しますか？\nこの操作は取り消せません。";
 
     const showConf = typeof window.showConfirm === 'function' ? window.showConfirm : (typeof showConfirm === 'function' ? showConfirm : window.confirm);
     

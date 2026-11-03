@@ -150,7 +150,7 @@ export function renderAuthStatus() {
         text.style.color = isTeacher ? "#f39c12" : "var(--phase-color)";
       }
       if (syncBadge) {
-        syncBadge.textContent = isTeacher ? "🟢 教員モード接続中（手動同期）" : "🟢 ルーム接続中（手動同期）";
+        syncBadge.textContent = isTeacher ? "[同期] 教員モード接続中（手動同期）" : "[同期] ルーム接続中（手動同期）";
         syncBadge.style.color = isTeacher ? "#f39c12" : "#2ecc71";
       }
       if (syncNote) syncNote.style.display = "none";
@@ -164,7 +164,7 @@ export function renderAuthStatus() {
         text.style.color = "var(--danger)";
       }
       if (syncBadge) {
-        syncBadge.textContent = "🔴 オフライン（ローカル保存のみ）";
+        syncBadge.textContent = "[オフライン] ローカル保存のみ";
         syncBadge.style.color = "var(--danger)";
       }
       if (syncNote) syncNote.style.display = "block";
