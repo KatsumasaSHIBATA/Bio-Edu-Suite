@@ -7,8 +7,8 @@
 ## 🤖 モデル選択＆マルチLLMルーティング戦略
 
 - **司令塔・デュアル／トライコア運用 (Web側)**:
-  * **前衛頭脳**: `gemini-3.8-flash`（または `4 Argon` 標準：日常・UI/UX調整・指示書生成）
-  * **後衛頭脳**: `gemini-3.1-pro-preview`（または `4 Argon 思考レベル：高値`：深淵設計・量的遺伝学数理モデル・原因不明バグ解析特例）
+  * **前衛頭脳**: `gemini-3.8-flash`（日常・UI/UX調整・指示書生成）
+  * **後衛頭脳**: `gemini-3.1-pro-preview`（深淵設計・量的遺伝学数理モデル・原因不明バグ解析特例）
   * ※「Web側は常にProに固定」という旧規律は破棄する。
 - **現場職人・マルチLLMルーティング運用 (Cline側)**:
   * **標準無人巡航 (Level 0)**: `Google AI Studio` (`gemini-3.6-flash` / 無料枠巡航)。リカバリー試行は最大1回まで。
@@ -57,6 +57,7 @@
 ---
 
 ## 🚨 AI行動ガードレール (Zero-Modification & Local Fortress)
+- **破壊なき進化 (Zero-Modification)**: 既存のHTML構造、CSS、D3.js描画ロジック、計算アルゴリズムは指定がない限り1文字も変更しない。
 - **勝手なリファクタリングの禁止**: 既存のD3.jsロジックやCSSレイアウトの独自近代化を固く禁ずる。
 - **純粋なパッチ適用**: 差分（Diff）のみを適用することを指示に含める。
 - **教育的ハリボテの禁止**: スライダー数値を固定値で偽装する実装は許可しない。
@@ -64,6 +65,7 @@
   - 日常の作業保存とアプリ間遷移は100%端末内ローカル（`localStorage` / `sessionStorage` / `IndexedDB`）で完結させ、バックグラウンド自動クラウド通信（`onSnapshot` や `bio_edu_request_save`）およびGoogleログインを一切混入させないこと。
   - データを出力する全アプリにおいて「コピーボタン（二重シート型SVG）」と「ローカルファイル保存ボタン（フロッピー型SVG）」のペア設置を徹底すること。
 - **非破壊ストレージ原則（Non-destructive Storage Principle）**: クラウド同期や通信ペイロードの最適化を行う際、ユーザーが端末内に保存した画像データや元データをローカルストレージ上で破壊・消去・空文字化する実装を固く禁ずる。
+- **恒久保護アセット（聖域）の死守**: `arm.jpg`、`skull.jpg`、`print_materials`、`cartridges`、`images`、`preset_db.js` は教育現場およびアプリで必要な恒久アセットであり、削除や変更の対象外とする。
 
 ---
 
@@ -128,8 +130,8 @@ Clineへ投入する指示書（またはPythonスクリプト）は、ワンク
 
 ### 【パターン3：複数アプリ一括改修 または 3箇所以上の修正（Pythonスクリプト駆動型ハイブリッド SOP）】
 
-* **ルート①（手動コピペ実行・第一推奨・APIコスト完全0円）:** 下記Pythonコードをコピーして `scripts/_patch_runner.py` に保存し、ターミナルで `python3 scripts/_patch_runner.py` を実行後、`git diff` で差分を確認し、`python3 scripts/cleanup_audit.py --apply && python3 scripts/master_compliance_audit.py` で作業スクリプト消去と準拠監査を実行してください。
-* **ルート②（Cline無人代行実行・半自動）:** 推奨モード `Act` / 最適モデル `gemini-3.6-flash（Level 0）` で、Clineに `scripts/_patch_runner.py` の作成・実行・`git diff` 検証・`cleanup_audit.py --apply && python3 scripts/master_compliance_audit.py` による消去と準拠監査を行わせてください。
+* **ルート①（手動コピペ実行・第一推奨・APIコスト完全0円）:** 下記Pythonコードをコピーして単一の固定ファイル `scripts/_patch_runner.py` に保存し、ターミナルで `python3 scripts/_patch_runner.py` を実行してください（実行後は `python3 scripts/cleanup_audit.py --apply && python3 scripts/master_compliance_audit.py` で作業スクリプトを自動消滅させ、統合監査を実施します）。
+* **ルート②（Cline無人代行実行・半自動）:** 推奨モード `Act` / 最適モデル `gemini-3.6-flash（Level 0）` で、Clineに `scripts/_patch_runner.py` の作成・実行・差分検証・自律消去を行わせてください。
 
 ```python
 # scripts/_patch_runner.py
@@ -146,11 +148,10 @@ Clineへ投入する指示書（またはPythonスクリプト）は、ワンク
 1. **状況の翻訳:** [ログの核心原因を簡潔に解説]
 2. **原因と対策:** [ガイドラインに基づく解決策]
 3. **Clineへの返信指示:**
+
 * **推奨モード:** `Act`
 * **最適モデル:** `gemini-3.8-flash`（※Level 0で1回失敗した場合は昇格、チャットはそのまま継続）
 * **チャット:** **現在のClineタスクを維持し、そのまま返信として投入してください**
-
-
 
 ```text
 <task type="recovery">
@@ -176,7 +177,7 @@ Clineへ投入する指示書（またはPythonスクリプト）は、ワンク
 🧭 **【ネクストアクション（3分岐）】**
 
 * **✅ Case A（完全動作・PASS）**:
-ターミナルで `git add . && git commit -m "..." && git push` を実行して確定してください。その後、**Web側・Cline側の両チャットを Clear（新規作成）** して次のタスクへ進みます。
+ターミナルで `python3 scripts/cleanup_audit.py --apply && python3 scripts/master_compliance_audit.py && git add . && git commit -m "feat: [改修内容]" && git push` を実行して確定してください。その後、**Web側・Cline側の両チャットを Clear（新規作成）** して次のタスクへ進みます。
 * **⚠️ Case B（不具合・FAIL）**:
 エラー箇所を探す必要はありません。ターミナル生ログやCline報告文を**丸ごと**このWebチャットへ貼り付けてください。**両チャットは Clear せず継続**し、Cline側が `gemini-3.6-flash` で1回失敗した場合はモデルを `gemini-3.8-flash` へ昇格させて待機してください。
 * **🛑 Case C（画面崩壊・長考ループ・トークン超過・CRITICAL）**:
