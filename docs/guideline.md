@@ -827,6 +827,13 @@ Bio-Edu Suiteは「生徒にデータ構造と思考プロセスを体験させ�
 * **超重量バイナリの分離と15万文字画像許容枠**: クラウド保存ペイロードに数百KB〜数MBの `.ab1` バイナリ等を直接含めることを禁じ、軽量な作業ステート（指示書）と端末内 `IndexedDB` / マスター原本をハイドレーション結合する。画像データは **150,000文字（約110KB）以下** をクラウド同期許容枠とし、これを超える巨大画像は通信ペイロード上でのみ間引き、端末内のローカル実データは非破壊で保護・自動マージすること。
 
 
+5. **`auth_sync.js` グローバル関数バインド＆DOM操作安全防壁規格**:
+* **グローバル関数（`window.*`）の完全バインド義務**: 全アプリの `#accountModal` 内のボタン（`onclick` 属性）から確実に呼び出せるよう、`auth_sync.js` は初期化時および `DOMContentLoaded` 時に以下の全関数を `window` オブジェクトへバインドしなければならない。
+  `window.joinRoom`, `window.leaveRoom`, `window.importMasterPreset`, `window.registerMasterPreset`, `window.saveCurrentWorkspace`, `window.syncFromCloud`, `window.manualSaveToCloud`, `window.manualLoadFromCloud`, `window.handleJoinRoom`, `window.handleLeaveRoom`, `window.handleImportPreset`, `window.handleRegisterCurrentPreset`, `window.handleManualCloudSave`, `window.handleManualCloudLoad`
+* **引数省略呼び出し時のDOM自律解決とID両対応**: `joinRoom()`, `importMasterPreset()`, `registerMasterPreset()` が引数なしで呼び出された場合は、モーダル内の入力欄（`#roomCodeInput`, `#participantIdInput`, `#presetTaskCodeInput` [旧 `#masterTaskCodeInput`], `#publishTaskCodeInput` [旧 `#newMasterTaskCodeInput` / `#loggedInMasterTaskCodeInput`]）から自律的に値を取得し、処理完了後に `closeAccountSettings()` でモーダルを自動クローズすること。また、ステータス表示要素は `#roomDisplay` / `#userNameDisplay` および `#participantDisplay` / `#userEmailDisplay` の双方に対応させること。
+* **動的ボタン注入の冪等性と `insertBefore` クラッシュ防止**: `#modalLoggedInView` 内に静的ボタン（`#manualCloudSaveBtn` 等）が既に存在する場合は動的生成（`ensureManualSyncButtons`）をスキップすること。フォールバックで動的挿入を行う際も、参照ノードが親要素の直接の子要素（`Array.from(loggedInView.children)`）であることを必ず確認し、入れ子要素に対する `insertBefore` の `NotFoundError` 例外を物理的に遮断すること。
+
+
 
 ### **7.6 スマート初期化・ルーム解散・デッドロック防止＆ゾンビ復活遮断規格**
 
