@@ -128,11 +128,11 @@ Clineへ投入する指示書（またはPythonスクリプト）は、ワンク
 
 ### 【パターン3：複数アプリ一括改修 または 3箇所以上の修正（Pythonスクリプト駆動型ハイブリッド SOP）】
 
-* **ルート①（手動コピペ実行・第一推奨・APIコスト完全0円）:** 下記Pythonコードをコピーして `scripts/update_XXXX.py` に保存し、ターミナルで `python3 scripts/update_XXXX.py` を実行後、`git diff` で差分を確認し、`python3 scripts/cleanup_audit.py --apply` で退避してください。
-* **ルート②（Cline無人代行実行・半自動）:** 推奨モード `Act` / 最適モデル `gemini-3.6-flash（Level 0）` で、Clineに `scripts/update_XXXX.py` の作成・実行・`git diff` 検証・`cleanup_audit.py --apply` 退避を行わせてください。
+* **ルート①（手動コピペ実行・第一推奨・APIコスト完全0円）:** 下記Pythonコードをコピーして `scripts/_patch_runner.py` に保存し、ターミナルで `python3 scripts/_patch_runner.py` を実行後、`git diff` で差分を確認し、`python3 scripts/cleanup_audit.py --apply && python3 scripts/master_compliance_audit.py` で作業スクリプト消去と準拠監査を実行してください。
+* **ルート②（Cline無人代行実行・半自動）:** 推奨モード `Act` / 最適モデル `gemini-3.6-flash（Level 0）` で、Clineに `scripts/_patch_runner.py` の作成・実行・`git diff` 検証・`cleanup_audit.py --apply && python3 scripts/master_compliance_audit.py` による消去と準拠監査を行わせてください。
 
 ```python
-# scripts/update_XXXX.py
+# scripts/_patch_runner.py
 # [司令塔が100%完成させた、冪等性（多重実行防止）を備えた完全なPythonコードをここに出力]
 
 ```

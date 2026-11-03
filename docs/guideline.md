@@ -14,11 +14,10 @@
 * **勝手なリファクタリングの禁止**: AIによる「コードの近代化」「CSSの整理」「独自の装飾追加」など、ユーザーの明示的な指示がない改変はバグの温床となるため一切禁ずる。
 * **共通エンジンへのMVC集約**: 各アプリ（View）のHTML/JSファイル内に固有の高度な数学計算（PCA、フーリエ変換、ダイアレル分析等）やデータ処理ロジックを直接記述することを禁ずる。すべての重い計算と描画用補間ロジックは、必ず共通ライブラリである `lib/bio_math_engine.js` (Model/Controller) に集約し、各アプリはそれを呼び出して描画するだけの純粋なビューワーとして設計すること。
 * **教育的ハリボテ（計算の偽装）の絶対禁止**: 教育シミュレーターにおいて、スライダーやアニメーションの「滑らかさ（60fps）」を優先するあまり、裏側のロジックを固定値や簡易な二次関数ででっち上げる（偽装する）行為を固く禁ずる。UIがどうであれ、裏側では「本物の数学・確率モデル（フェルゼンスタインのアルゴリズム等）」を確実に回し、真の算出結果を生徒に提示しなければならない。
-* **HTML/JSの完全MVC分離（140KB基準）**: AIのコンテキストウィンドウ圧迫による「コードの省略・息切れ・ハルシネーション」を防ぐため、140KBを超えるファイルについては、HTMLからUI制御JSを `[app_name]_ui.js` (Controller) へ物理的に完全分離して開発を進めること。**※ただし、ファイルサイズが140KBを下回る場合は、分離のオーバーヘッドを避けるため1つのHTMLファイル内で完結させること。また、修正が1〜2箇所の単純な変更で済む場合は、ファイル全体を出力するのではなく「変更前・変更後のコードスニペット（差分）」のみを適用すること。**
 * **広域一括改修時のトークン制限回避プロトコル（Pythonスクリプト駆動ハイブリッドSOP）**: 全14アプリにまたがる共通パッチ適用や広域改修において、AIのコンテキストに全ファイルを直接読み込ませて多重編集を行うことを固く禁止する。複数ファイルの一括更新は、「Pythonスクリプト駆動型一括更新（冪等性対応）」を唯一の標準作業手順（SOP）とする。実行方式は以下の二段構えとする。
-  1. **手動コピペ実行ルート（第一推奨・APIコスト完全0円）**: 司令塔が100%完成させたPythonコードをユーザーが `scripts/update_XXXX.py` にペーストし、ターミナルで `python3 scripts/update_XXXX.py` を手動実行する。推論はWeb側（Gemini）で完了しているため、ClineのAPIトークン消費は完全に0円となり、通信エラーや上位モデル誤投入のリスクもゼロとなる。
+  1. **手動コピペ実行ルート（第一推奨・APIコスト完全0円）**: 司令塔が100%完成させたPythonコードをユーザーが `scripts/_patch_runner.py` にペーストし、ターミナルで `python3 scripts/_patch_runner.py` を手動実行する。推論はWeb側（Gemini）で完了しているため、ClineのAPIトークン消費は完全に0円となり、通信エラーや上位モデル誤投入のリスクもゼロとなる。
   2. **Cline無人代行ルート（半自動実行）**: 完全自動で差分検証まで完結させたい場合、Cline（Level 0: `gemini-3.6-flash`）にスクリプト作成から実行・監査までを代行させる。
-  * ※いずれのルートにおいても、実行後は必ず `git diff` で差分を監査し、`python3 scripts/cleanup_audit.py --apply` で作業スクリプトを `scripts/archive/` へ安全に退避させること。
+  * ※いずれのルートにおいても、実行後は必ず `git diff` で差分を監査し、`python3 scripts/cleanup_audit.py --apply` で作業スクリプト `scripts/_patch_runner.py` を即時自動消去し、`scripts/` 内は常駐2ファイル（`master_compliance_audit.py` と `cleanup_audit.py`）のみのクリーン状態を維持すること（`scripts/archive/` への蓄積は廃止）。
   * **【3箇所ルールのPython強制昇格】**: 単一ファイル内であっても、修正箇所が3箇所以上に及ぶ場合はActモードの直接Diff編集を禁止し、上記Pythonスクリプト駆動型一括更新へ強制昇格させること。
 * **知見・設計合意の即時法制化原則 (Constitutional Synchronization)**:
   * チャット上の議論や口頭で確立された新たなアーキテクチャ設計、AIハルシネーション防止策、およびデータ連携の仕様変更を、会話履歴や作業者の記憶の中だけにとどめておくことを固く禁ずる。
@@ -810,13 +809,13 @@ Bio-Edu Suiteは「生徒にデータ構造と思考プロセスを体験させ�
 
 2. **バックグラウンド自動クラウド通信の全面禁止とオンデマンド手動化 (v38.0 最重要規律)**:
 * アプリ間遷移時や入力変更時の自動クラウド送受信（`onSnapshot` 常時監視、`bio_edu_request_save` によるデバウンス自動送信、入室時の自動クラウド上書き）は**完全廃止・全面禁止**する。
-* クラウド（Firestore）との通信は、ユーザーが `#accountModal` 内の明示的な操作ボタン（「☁️ 現在の作業をクラウドに保存」「📥 クラウドから作業を復元」「👑 課題として登録・発行」「📖 課題データを読込」）を**手動でクリックした時のみ**実行する。
+* クラウド（Firestore）との通信は、ユーザーが `#accountModal` 内の明示的な操作ボタン（「現在の作業をクラウドに保存」「クラウドから作業を復元」「課題として登録・発行」「課題データを読込」）を**手動でクリックした時のみ**実行する。
 * 通信実行時はボタン上に進行状態（「保存中...」「読込中...」）を明示し、完了またはエラーをトースト通知でフィードバックすること。
 * クラウドからの復元完了時、および課題プリセット読込完了時には、それぞれ `bio_edu_cloud_synced` / `bio_edu_preset_loaded` カスタムイベントをディスパッチし、全アプリで `restoreWorkspace()` 等の再描画関数をサイレント実行して画面へ即時反映させること。
 
 
 3. **隠れ教師モード（Secret Teacher Mode）と教材マスター（`/master_tasks`）単一正本化規格**:
-* **教員ロール判定**: 参加者IDの先頭が大文字・小文字を問わず「`TEACHER`」（例: `TEACHER`, `TEACHER-01`）の場合、教員端末（`isTeacher = true`）として認識し、モーダル内の「👑 教員専用：課題プリセット発行パネル（`#teacherPresetSection`）」を動的に表示（`display: block`）する（生徒端末では完全不可視化）。
+* **教員ロール判定**: 参加者IDの先頭が大文字・小文字を問わず「`TEACHER`」（例: `TEACHER`, `TEACHER-01`）の場合、教員端末（`isTeacher = true`）として認識し、モーダル内の「教員専用：課題プリセット発行パネル（`#teacherPresetSection`）」を動的に表示（`display: block`）する（生徒端末では完全不可視化）。
 * **単一正本の原則（Single Source of Truth）**: 教員が発行する教材データ（`registerMasterPreset`）は、Firestoreのルートコレクション `/master_tasks/{taskCode}` のみに保存する（ペイロード構造: `{ sequence, sessionData, appName, registeredAt }`）。ルーム配下（`rooms/{roomCode}/tasks`）への二重保存や分散探索は一切禁止する。
 * **入室中オンデマンド課題読込窓の常設**: 未入室時・ルーム入室中（`#modalLoggedInView`）を問わず、生徒・教員が任意のタイミングで課題コードを入力して `importMasterPreset` を実行できる読込パネルをモーダル内に常設する。
 * **インポート時 `IndexedDB` 自動ハイドレーション義務**: 課題インポート（`bio_edu_preset_loaded`）受信時、サンプル内に `.ab1` 波形バイナリ（`traces[].data` 等）が含まれている場合は、バックグラウンド非同期処理で直ちに端末内 `IndexedDB`（`BioEdu_IndexedDB` の `sample_binaries` ストア）へ自動書き込みを行い、保存ボタンを押さずとも即座に「④ .ab1 を送る」が機能することを保証する。
@@ -831,7 +830,7 @@ Bio-Edu Suiteは「生徒にデータ構造と思考プロセスを体験させ�
 
 ### **7.6 スマート初期化・ルーム解散・デッドロック防止＆ゾンビ復活遮断規格**
 
-ドロワー最下部の「🗑️ データを初期化（`confirmDataReset`）」実行時は、以下の安全規格を厳守する。
+ドロワー最下部の「データを初期化（`confirmDataReset`）」実行時は、以下の安全規格を厳守する。
 
 1. **ダイアログキャンセル時の保存機能リカバリ保証**:
 確認ダイアログ（`#confirmModal`）を表示した段階では保存機能を止めず、ユーザーがダイアログ内で「初期化する（OK）」を押したコールバック内で初めて `window.isResetting = true;` および `Storage.prototype.setItem = function() {};` を発動させること（キャンセル押下時に保存機能が死んだままになるバグを物理遮断する）。
@@ -893,7 +892,7 @@ Bio-Edu Suiteは「生徒にデータ構造と思考プロセスを体験させ�
       <!-- ① 未入室時（ローカル要塞モード）ビュー -->
       <div id="modalLoggedOutView">
         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-          <span style="font-size: 14px; font-weight: bold; color: var(--text-main);">🛡️ ローカル自動保存モード（端末内保存）</span>
+          <span style="font-size: 14px; font-weight: bold; color: var(--text-main);"><svg class="btn-icon" style="width:16px;height:16px;vertical-align:-3px;margin-right:4px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>ローカル自動保存モード（端末内保存）</span>
         </div>
         <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 12px 0; line-height: 1.6;">
           日常の作業は通信なしで端末内に自動保存されます。班での共有や別端末への引き継ぎを行う場合は、ルームコードとIDを入力して入室してください。
@@ -910,7 +909,7 @@ Bio-Edu Suiteは「生徒にデータ構造と思考プロセスを体験させ�
       <!-- ② ルーム入室中（オンデマンド手動同期）ビュー -->
       <div id="modalLoggedInView" style="display: none;">
         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-          <span id="syncStatusBadge" style="font-size: 14px; font-weight: bold; color: var(--phase-color);">🟢 ルーム接続中</span>
+          <span id="syncStatusBadge" style="font-size: 14px; font-weight: bold; color: var(--phase-color);"><svg class="btn-icon" style="width:12px;height:12px;vertical-align:-1px;margin-right:4px;" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><circle cx="12" cy="12" r="8"/></svg>ルーム接続中</span>
         </div>
         <div style="background: #f8f9fa; border: 1px solid #e1e8ed; border-radius: 6px; padding: 12px; margin-bottom: 12px;">
           <div id="userNameDisplay" style="font-weight: bold; font-size: 14px; color: var(--primary);"></div>
@@ -921,10 +920,10 @@ Bio-Edu Suiteは「生徒にデータ構造と思考プロセスを体験させ�
         <!-- 手動クラウドセーブ＆ロードボタン群 (v38.0) -->
         <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
           <button id="manualCloudSaveBtn" class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="if(window.manualSaveToCloud) window.manualSaveToCloud(); triggerHapticFeedback();">
-            ☁️ 現在の作業をクラウドに保存
+            <svg class="btn-icon" style="width:16px;height:16px;margin-right:6px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/></svg>現在の作業をクラウドに保存
           </button>
           <button id="manualCloudLoadBtn" class="btn btn-secondary" style="width: 100%; justify-content: center;" onclick="if(window.manualLoadFromCloud) window.manualLoadFromCloud(); triggerHapticFeedback();">
-            📥 クラウドから作業を復元
+            <svg class="btn-icon" style="width:16px;height:16px;margin-right:6px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>クラウドから作業を復元
           </button>
         </div>
 
@@ -935,7 +934,7 @@ Bio-Edu Suiteは「生徒にデータ構造と思考プロセスを体験させ�
 
       <!-- ③ オンデマンド課題プリセット読込パネル（常設 / v36.9） -->
       <div id="presetImportSection" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e1e8ed;">
-        <div style="font-size: 12px; font-weight: bold; color: var(--primary); margin-bottom: 8px;">📖 課題データを読込（教員プリセット展開）</div>
+        <div style="font-size: 12px; font-weight: bold; color: var(--primary); margin-bottom: 8px;"><svg class="btn-icon" style="width:15px;height:15px;vertical-align:-2px;margin-right:4px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>課題データを読込（教員プリセット展開）</div>
         <div style="display: flex; gap: 8px;">
           <input type="text" id="presetTaskCodeInput" placeholder="課題コード (例: TASK-01)" style="flex: 1; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 13px;">
           <button id="importPresetBtn" class="btn btn-secondary" onclick="if(window.importMasterPreset) window.importMasterPreset(); triggerHapticFeedback();">読込</button>
@@ -944,7 +943,7 @@ Bio-Edu Suiteは「生徒にデータ構造と思考プロセスを体験させ�
 
       <!-- ④ 隠れ教師モード専用：課題プリセット登録・発行パネル（TEACHER-* 入室時のみ表示 / v35.5） -->
       <div id="teacherPresetSection" style="display: none; margin-top: 16px; padding-top: 16px; border-top: 2px dashed var(--warning);">
-        <div style="font-size: 12px; font-weight: bold; color: #d35400; margin-bottom: 8px;">👑 教員専用：現在の画面データを課題として発行</div>
+        <div style="font-size: 12px; font-weight: bold; color: #d35400; margin-bottom: 8px;"><svg class="btn-icon" style="width:15px;height:15px;vertical-align:-2px;margin-right:4px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>教員専用：現在の画面データを課題として発行</div>
         <div style="display: flex; gap: 8px;">
           <input type="text" id="publishTaskCodeInput" placeholder="発行コード (例: TASK-01)" style="flex: 1; padding: 8px 10px; border: 1px solid var(--warning); border-radius: 4px; font-size: 13px;">
           <button id="publishPresetBtn" class="btn btn-primary" style="background: var(--warning); border-color: var(--warning); color: #fff;" onclick="if(window.registerMasterPreset) window.registerMasterPreset(); triggerHapticFeedback();">登録・発行</button>
@@ -1381,7 +1380,7 @@ AI（Gemini / Cline）を活用した持続可能な開発、APIコストの極�
 9. **前処理・ログ要約とWeb側生ログ全文受容特例**: Web版Gemini（司令塔）へのエラー報告時は、ユーザーに切り抜き作業を強いることを禁じ、ターミナル生ログやCline報告書の丸ごと貼付・添付を受け入れて司令塔側が原因を特定・蒸留する。
 10. **巨大データ強制トランケーション規格**: 長大なFASTA塩基配列・アミノ酸配列・Base64・JSONは、生データ全投入を禁じ、先頭5行・末尾5行＋`... [中略: 配列長N] ...` に切り詰める。
 11. **ワンショット・コンテキストリセット規格（リカバリー継続特例付き）**: 1タスク完了（Case A）または白紙撤回（Case C）ごとにチャット履歴を必ずClearする。修正・リカバリー継続中（Case B）のみ文脈保持のためチャットを継続する。
-12. **ワークスペース自律クリーンアップ規格**: OS一時ファイルや一括改修用ワンショットスクリプトは、作業完了後に直ちに `python3 scripts/cleanup_audit.py --apply` を実行して `scripts/archive/` へ自動退避させる。
+12. **ワークスペース自律クリーンアップ＆2ファイル常駐規格**: 一括改修スクリプトは常に単一の `scripts/_patch_runner.py` を再利用し、実行後は直ちに `python3 scripts/cleanup_audit.py --apply` で自動消去する。`scripts/` 内は `master_compliance_audit.py` と `cleanup_audit.py` の2ファイル常駐制とし、アーカイブ蓄積を全面禁止する。
 13. **検証後ネクストアクション3分岐規格**: 司令塔が出力するすべての指示書末尾には、動作確認後の行動指針（Case A: Git Commit & Push / Case B: 生ログ丸ごとリカバリー / Case C: `git restore .` による即時白紙撤回）とチャットClear/継続指定を必ず明記する。
 
 ### **17.4 クレジット安全運用およびマルチLLM統合防壁（`.clinerules` / `CLAUDE.md`）**

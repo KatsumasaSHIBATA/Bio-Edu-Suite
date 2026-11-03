@@ -16,3 +16,6 @@ cache.db
 
 # Environment variables
 .env
+__pycache__/
+scripts/_patch_runner.py
+.roomodes
