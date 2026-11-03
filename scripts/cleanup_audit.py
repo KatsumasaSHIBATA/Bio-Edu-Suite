@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Bio-Edu Suite ワークスペース自律クリーンアップ＆検疫システム (cleanup_audit.py)
-常駐許可: scripts/cleanup_audit.py, scripts/master_compliance_audit.py の2本のみ。
+Bio-Edu Suite ワークスペース安全クリーンアップシステム (cleanup_audit.py)
+【安全原則】
+- ルート直下の全HTML・教材・画像アセット（arm.jpg, skull.jpg, print_materials等）は恒久聖域とし、絶対に変更・削除しない。
+- 削除対象は OS一時ファイル（.DS_Store）、エディタ一時ファイル、Pythonキャッシュ、および scripts/_patch_runner.py のみに限定する。
 """
 import os
 import sys
@@ -14,96 +16,36 @@ SCRIPTS_DIR = ROOT / "scripts"
 
 ALLOWED_SCRIPTS = {"cleanup_audit.py", "master_compliance_audit.py"}
 
-ROOT_GARBAGE_TARGETS = [
-    ".aider.chat.history.md",
-    ".aider.conf.yml",
-    ".aider.input.history",
-    ".aider.tags.cache.v4",
-    ".roomodes",
-    "apply_and_cleanup.sh",
-    ".DS_Store",
-]
-
-CORE_HTML_WHITELIST = {
-    "index.html",
-    "1_Master_Mix_Studio.html",
-    "2_Thermal_Cycler_Simulator.html",
-    "3_Virtual_PCR_RFLP.html",
-    "4_Sanger_Trace_Editor.html",
-    "5_DNA_Alignment_Studio.html",
-    "6_Alignment_Print_Studio.html",
-    "7_Virtual_BLAST_Explorer.html",
-    "8_Phylogenetic_Tree_Builder.html",
-    "9_Morphometrics_Studio.html",
-    "10_integrative_taxonomy_studio.html",
-    "11_Comparative_Variant_Analyzer.html",
-    "12_Statistical_Genetics_Lab.html",
-    "13_Central_Dogma_Simulator.html",
-    "14_Protein_Structure_Explorer.html",
-    "lab_packs.html",
-}
-
-def find_garbage(purge_orphans=False):
+def find_safe_cleanup_targets():
     targets = []
 
-    # 1. ルート直下の既知のゴミ
-    for name in ROOT_GARBAGE_TARGETS:
-        p = ROOT / name
-        if p.exists():
-            targets.append((p, "Root legacy/temp garbage"))
+    # 1. scripts/ ディレクトリ内の作業一時スクリプト（_patch_runner.py 等）
+    if SCRIPTS_DIR.exists():
+        for item in SCRIPTS_DIR.iterdir():
+            if item.name not in ALLOWED_SCRIPTS:
+                targets.append((item, "scripts/ 一時作業ファイル（2ファイル常駐制）"))
 
-    # 2. 全階層の一時ファイル (.DS_Store, *.bak, *.tmp, *~, __pycache__)
+    # 2. 全階層の一時ゴミファイル (.DS_Store, *.bak, *.tmp, __pycache__)
     for p in ROOT.rglob("*"):
         if ".git" in p.parts:
             continue
         if p.name in {".DS_Store"} or p.suffix in {".bak", ".tmp", ".orig"} or p.name.endswith("~"):
-            targets.append((p, "OS/Editor temp file"))
+            targets.append((p, "OS/エディタ一時ファイル"))
         elif p.is_dir() and p.name == "__pycache__":
-            targets.append((p, "Python cache dir"))
+            targets.append((p, "Pythonバイトコードキャッシュ"))
 
-    # 3. scripts/ 内の非許可ファイル・ディレクトリ
-    if SCRIPTS_DIR.exists():
-        for item in SCRIPTS_DIR.iterdir():
-            if item.name not in ALLOWED_SCRIPTS:
-                targets.append((item, "Unauthorized file/dir in scripts/ (2-file residency rule)"))
-
-    # 4. --purge-orphans 指定時の未参照HTML/画像検査
-    if purge_orphans:
-        active_contents = ""
-        for html_name in CORE_HTML_WHITELIST:
-            hp = ROOT / html_name
-            if hp.exists():
-                active_contents += hp.read_text(encoding="utf-8", errors="ignore") + "\n"
-        for js_dir in [ROOT, ROOT / "js", ROOT / "lib"]:
-            if js_dir.exists():
-                for jp in js_dir.glob("*.js"):
-                    if jp.name != "preset_db.js":
-                        active_contents += jp.read_text(encoding="utf-8", errors="ignore") + "\n"
-
-        suspects = [
-            "Human_Evolution_Lab.html",
-            "Morphological_Evolution_Lab.html",
-            "arm.jpg",
-            "skull.jpg",
-            "preset_db.js",
-        ]
-        for s in suspects:
-            sp = ROOT / s
-            if sp.exists() and (s not in active_contents):
-                targets.append((sp, "Unreferenced orphan file in root"))
-
+    # 重複排除とソート
     unique_targets = {}
     for p, reason in targets:
         unique_targets[p] = reason
     return sorted(unique_targets.items(), key=lambda x: str(x[0]))
 
 def main():
-    apply_mode = "--apply" in sys.argv or "--purge-orphans" in sys.argv
-    purge_orphans = "--purge-orphans" in sys.argv
+    apply_mode = "--apply" in sys.argv
+    targets = find_safe_cleanup_targets()
 
-    targets = find_garbage(purge_orphans=purge_orphans)
     print("=" * 72)
-    print("🧹 Bio-Edu Suite Workspace Cleanup & Quarantine System")
+    print("🧹 Bio-Edu Suite Workspace Safe Cleanup System")
     print("=" * 72)
 
     if not targets:
@@ -131,9 +73,9 @@ def main():
 
     print("-" * 72)
     if apply_mode:
-        print(f"✅ 合計 {deleted_count} 件の不要項目を完全消去しました。")
+        print(f"✅ 合計 {deleted_count} 件の一時ファイルを安全に消去しました（教材・画像アセットは完全保護）。")
     else:
-        print(f"💡 合計 {len(targets)} 件の不要項目が検出されました。消去するには `--apply` を付与して実行してください。")
+        print(f"💡 合計 {len(targets)} 件の一時ファイルが検出されました。消去するには `--apply` を付与して実行してください。")
     return 0
 
 if __name__ == "__main__":
