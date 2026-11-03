@@ -77,7 +77,7 @@ function ensureAccountModalUnifiedStyles() {
 
 function ensureManualSyncButtons() {
   const loggedInView = document.getElementById("modalLoggedInView");
-  if (!loggedInView || document.getElementById("manualCloudSyncSection")) return;
+  if (!loggedInView || document.getElementById("manualCloudSyncSection") || document.getElementById("manualCloudSaveBtn")) return;
 
   const section = document.createElement("div");
   section.id = "manualCloudSyncSection";
@@ -103,8 +103,8 @@ function ensureManualSyncButtons() {
   if (teacherSec && teacherSec.parentNode === loggedInView) {
     loggedInView.insertBefore(section, teacherSec);
   } else {
-    const leaveBtn = loggedInView.querySelector("button:last-of-type");
-    if (leaveBtn) loggedInView.insertBefore(section, leaveBtn);
+    const directLeaveBtn = Array.from(loggedInView.children).find(el => el.tagName === "BUTTON");
+    if (directLeaveBtn) loggedInView.insertBefore(section, directLeaveBtn);
     else loggedInView.appendChild(section);
   }
 }
@@ -117,8 +117,8 @@ export function renderAuthStatus() {
   const text = document.getElementById("accountStatusText");
   const modalLoggedOut = document.getElementById("modalLoggedOutView");
   const modalLoggedIn = document.getElementById("modalLoggedInView");
-  const roomDisplay = document.getElementById("roomDisplay");
-  const participantDisplay = document.getElementById("participantDisplay");
+  const roomDisplay = document.getElementById("roomDisplay") || document.getElementById("userNameDisplay");
+  const participantDisplay = document.getElementById("participantDisplay") || document.getElementById("userEmailDisplay");
   const syncBadge = document.getElementById("syncStatusBadge");
   const syncNote = document.getElementById("syncStatusNote");
   const teacherSection = document.getElementById("teacherPresetSection");
@@ -200,9 +200,17 @@ window.addEventListener("online", renderAuthStatus);
 document.addEventListener("DOMContentLoaded", renderAuthStatus);
 
 export function joinRoom(roomCode, participantId) {
-  if (!roomCode || !participantId) return;
-  currentRoomCode = roomCode.toUpperCase().trim();
-  currentParticipantId = participantId.trim();
+  const rEl = document.getElementById('roomCodeInput');
+  const pEl = document.getElementById('participantIdInput');
+  const resolvedRoom = (typeof roomCode === 'string' && roomCode.trim()) ? roomCode.trim() : (rEl ? rEl.value.trim() : '');
+  const resolvedId = (typeof participantId === 'string' && participantId.trim()) ? participantId.trim() : (pEl ? pEl.value.trim() : '');
+
+  if (!resolvedRoom || !resolvedId) {
+    if (typeof showToast === 'function') showToast('ルームコードと参加者IDを入力してください', 'warning');
+    return;
+  }
+  currentRoomCode = resolvedRoom.toUpperCase().trim();
+  currentParticipantId = resolvedId.trim();
   isConnected = true;
   isTeacher = currentParticipantId.toUpperCase().startsWith("TEACHER");
 
@@ -215,6 +223,7 @@ export function joinRoom(roomCode, participantId) {
     const roleMsg = isTeacher ? "【教員モード】" : "";
     showToast(`${roleMsg}ルーム「${currentRoomCode}」に接続しました（手動同期モード）`, "success");
   }
+  if (typeof closeAccountSettings === 'function') closeAccountSettings();
 }
 
 export function leaveRoom() {
@@ -232,6 +241,7 @@ export function leaveRoom() {
   if (typeof showToast === 'function') {
     showToast(`ルーム「${oldRoom}」から退出しました`, "info");
   }
+  if (typeof closeAccountSettings === 'function') closeAccountSettings();
 }
 
 function getUtf8ByteSize(str) {
@@ -262,6 +272,7 @@ function triggerCurrentAppRestore() {
       setTimeout(() => window.restoreApp7Session(), 120);
     }
     if (typeof window.restoreFromAutosave === 'function') window.restoreFromAutosave();
+    if (typeof window.restoreWorkspace === 'function') window.restoreWorkspace();
     if (typeof window.restoreApp8Session === 'function') window.restoreApp8Session();
     if (typeof window.restoreApp10Session === 'function') window.restoreApp10Session();
     if (typeof window.loadSamples === 'function' && typeof window.renderSamples === 'function') {
@@ -384,9 +395,23 @@ function sanitizeSessionMap(rawSessionObj) {
 }
 
 export async function registerMasterPreset(taskCode, payload) {
-  if (!taskCode || !payload) return;
-  const cleanCode = taskCode.toUpperCase().trim();
+  const tEl = document.getElementById('publishTaskCodeInput') || document.getElementById('newMasterTaskCodeInput') || document.getElementById('loggedInMasterTaskCodeInput');
+  const resolvedCode = (typeof taskCode === 'string' && taskCode.trim()) ? taskCode.trim() : (tEl ? tEl.value.trim() : '');
+  if (!resolvedCode) {
+    if (typeof showToast === 'function') showToast('発行する課題コードを入力してください', 'warning');
+    return;
+  }
+  const cleanCode = resolvedCode.toUpperCase().trim();
+  const btn = document.getElementById('publishPresetBtn') || document.querySelector('#teacherPresetSection button.btn-primary');
+  const origBtnText = btn ? btn.innerText : '登録・発行';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerText = '登録中...';
+  }
   try {
+    if (!auth.currentUser) {
+      try { await signInAnonymously(auth); } catch (e) {}
+    }
     flushCurrentAppSession();
     const freshSessionSnap = {};
     for (let i = 0; i < sessionStorage.length; i++) {
@@ -400,7 +425,19 @@ export async function registerMasterPreset(taskCode, payload) {
       }
     }
 
-    const sanitizedPayload = JSON.parse(JSON.stringify(payload));
+    let basePayload = payload;
+    if (!basePayload || typeof basePayload !== 'object') {
+      const activeTextarea = document.querySelector('textarea.paste-area, textarea#dnaInput, textarea#fastaInput, textarea#chain-code-input, textarea#pasteArea, textarea#queryInput, input#pdbId');
+      const seq = activeTextarea ? activeTextarea.value.trim() : '';
+      basePayload = {
+        sequence: seq,
+        sessionData: freshSessionSnap,
+        appName: document.title,
+        registeredAt: Date.now()
+      };
+    }
+
+    const sanitizedPayload = JSON.parse(JSON.stringify(basePayload));
     sanitizedPayload.sessionData = sanitizeSessionMap(freshSessionSnap);
 
     if (sanitizedPayload.samples && sanitizedPayload.sessionData['bio_edu_workspace_dashboard_samples']) {
@@ -421,15 +458,22 @@ export async function registerMasterPreset(taskCode, payload) {
     const globalDocRef = doc(db, "master_tasks", cleanCode);
     await setDoc(globalDocRef, taskData);
 
+    if (tEl) tEl.value = '';
     if (typeof showToast === 'function') {
       showToast(`課題「${cleanCode}」をクラウドに登録・発行しました`, "success");
     }
+    if (typeof closeAccountSettings === 'function') closeAccountSettings();
   } catch (e) {
     console.error("Master task registration error:", e);
     if (typeof showToast === 'function') {
       showToast("課題の登録に失敗しました: " + (e.message || e), "error");
     }
     throw e;
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerText = origBtnText;
+    }
   }
 }
 
@@ -478,9 +522,29 @@ function applySessionMapToBrowser(sessionSource, remoteTime) {
 }
 
 export async function importMasterPreset(taskCode) {
-  if (!taskCode) return;
-  const cleanCode = taskCode.toUpperCase().trim();
+  const tEl = document.getElementById('presetTaskCodeInput') || document.getElementById('masterTaskCodeInput');
+  let resolvedCode = '';
+  if (typeof taskCode === 'string' && taskCode.trim()) {
+    const maybeInput = document.getElementById(taskCode.trim());
+    resolvedCode = maybeInput ? maybeInput.value.trim() : taskCode.trim();
+  } else if (tEl) {
+    resolvedCode = tEl.value.trim();
+  }
+  if (!resolvedCode) {
+    if (typeof showToast === 'function') showToast('課題コードを入力してください', 'warning');
+    return;
+  }
+  const cleanCode = resolvedCode.toUpperCase();
+  const btn = document.getElementById('importPresetBtn');
+  const origBtnText = btn ? btn.innerText : '読込';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerText = '読込中...';
+  }
   try {
+    if (!auth.currentUser) {
+      try { await signInAnonymously(auth); } catch (e) {}
+    }
     if (typeof showToast === 'function') showToast(`課題「${cleanCode}」を取得中...`, "info");
 
     const globalTaskRef = doc(db, "master_tasks", cleanCode);
@@ -515,7 +579,9 @@ export async function importMasterPreset(taskCode) {
         window.dispatchEvent(new CustomEvent('bio_edu_cloud_synced', { detail: sessionSource }));
         triggerCurrentAppRestore();
 
+        if (tEl) tEl.value = '';
         if (typeof showToast === 'function') showToast(`課題「${cleanCode}」を展開しました`, "success");
+        if (typeof closeAccountSettings === 'function') closeAccountSettings();
       }
     } else {
       if (typeof showToast === 'function') showToast(`課題コード「${cleanCode}」が見つかりませんでした`, "error");
@@ -524,6 +590,11 @@ export async function importMasterPreset(taskCode) {
     console.error("Preset import error:", e);
     if (typeof showToast === 'function') showToast("課題の取得に失敗しました", "error");
     throw e;
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerText = origBtnText;
+    }
   }
 }
 
@@ -589,11 +660,14 @@ function mergeLocalImageData(targetWorkspace) {
 
 export async function syncFromCloud(isManual = false) {
   if (!isManual) return;
-  if (!isConnected || !auth.currentUser) {
+  if (!isConnected) {
     if (typeof showToast === 'function') showToast("先にルームへ入室してください", "warning");
     return;
   }
-  const btn = document.getElementById("btnManualCloudLoad");
+  if (!auth.currentUser) {
+    try { await signInAnonymously(auth); } catch (e) {}
+  }
+  const btn = document.getElementById("manualCloudLoadBtn") || document.getElementById("btnManualCloudLoad");
   const origHtml = btn ? btn.innerHTML : "";
   if (btn) { btn.disabled = true; btn.innerText = "復元中..."; }
   try {
@@ -634,12 +708,15 @@ export async function saveCurrentWorkspace(isManual = false) {
   if (window.isResetting === true) return;
   if (isManual !== true) return;
 
-  if (!isConnected || !auth.currentUser) {
+  if (!isConnected) {
     if (typeof showToast === 'function') showToast("先にルームへ入室してください", "warning");
     return;
   }
+  if (!auth.currentUser) {
+    try { await signInAnonymously(auth); } catch (e) {}
+  }
 
-  const btn = document.getElementById("btnManualCloudSave");
+  const btn = document.getElementById("manualCloudSaveBtn") || document.getElementById("btnManualCloudSave");
   const origHtml = btn ? btn.innerHTML : "";
   if (btn) { btn.disabled = true; btn.innerText = "保存中..."; }
 
@@ -695,9 +772,24 @@ export async function saveCurrentWorkspace(isManual = false) {
   }
 }
 
-window.saveCurrentWorkspace = saveCurrentWorkspace;
-window.handleManualCloudSave = () => saveCurrentWorkspace(true);
-window.handleManualCloudLoad = () => syncFromCloud(true);
+function bindAuthSyncGlobals() {
+  window.joinRoom = joinRoom;
+  window.leaveRoom = leaveRoom;
+  window.importMasterPreset = importMasterPreset;
+  window.registerMasterPreset = registerMasterPreset;
+  window.saveCurrentWorkspace = saveCurrentWorkspace;
+  window.syncFromCloud = syncFromCloud;
+  window.manualSaveToCloud = () => saveCurrentWorkspace(true);
+  window.manualLoadFromCloud = () => syncFromCloud(true);
+  window.handleManualCloudSave = () => saveCurrentWorkspace(true);
+  window.handleManualCloudLoad = () => syncFromCloud(true);
+  window.handleJoinRoom = joinRoom;
+  window.handleLeaveRoom = leaveRoom;
+  window.handleImportPreset = importMasterPreset;
+  window.handleRegisterCurrentPreset = registerMasterPreset;
+}
+bindAuthSyncGlobals();
+document.addEventListener("DOMContentLoaded", bindAuthSyncGlobals);
 
 export async function executeHybridReset() {
   if (!isConnected || !auth.currentUser) return;
